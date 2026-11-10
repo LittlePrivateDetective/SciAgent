@@ -1,0 +1,10 @@
+INFO:     Started server process [30332]
+INFO:     Waiting for application startup.
+23:34:58 | INFO    | app.db.session           | 数据库就绪：<repo>\data\sciagent.db
+23:34:58 | INFO    | app.rag.store            | Chroma 不可用，自动降级 SQLite+NumPy：No module named 'chromadb'
+23:34:58 | INFO    | app.rag.store            | 向量后端：SQLite+NumPy
+23:34:58 | INFO    | app.main                 | SciAgent 启动完成：{'llm_route': '见 /api/system/info', 'vector_backend': 'sqlite', 'data_dir': '<repo>\\data', 'official_pdfs': 39}
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8012 (Press CTRL+C to quit)
+INFO:     127.0.0.1:49292 - "POST /api/chat HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:49294 - "GET /api/graph HTTP/1.1" 200 OK

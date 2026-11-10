@@ -2,6 +2,10 @@
 .venv/
 __pycache__/
 *.pyc
-data/*.pdf
+data/pdf/
+data/uploads/
+data/pages/
+data/exports/
 data/index/
+data/*.pdf
 .DS_Store

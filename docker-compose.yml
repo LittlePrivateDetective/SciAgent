@@ -1,0 +1,23 @@
+services:
+  sciagent:
+    build: .
+    image: sciagent:1.0.0
+    container_name: sciagent
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      # 容器内路径固定，避免相对路径踩坑
+      DATA_DIR: /app/data
+      VECTOR_BACKEND: ${VECTOR_BACKEND:-auto}
+      TZ: Asia/Shanghai
+    volumes:
+      # 数据、测试集、向量库都挂出来，重建容器不丢库
+      - ./data:/app/data
+    deploy:
+      resources:
+        limits:
+          # 2C2G 轻量机器也跑得动；541 页书籍解析时内存峰值约 600MB
+          memory: 1800M

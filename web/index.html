@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SciAgent · 科研智能体</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/element-plus@2.7.6/dist/index.css" />
+  <link rel="stylesheet" href="/static/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/vue@3.4.31/dist/vue.global.prod.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/element-plus@2.7.6/dist/index.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/element-plus@2.7.6/dist/locale/zh-cn.min.js"></script>
+</head>
+<body>
+<div id="app" v-cloak>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">Sci</span>
+      <span class="title">SciAgent</span>
+      <span class="sub">锚点可验证的科研智能体</span>
+    </div>
+    <div class="badges">
+      <el-tag size="small" :type="info.llm && info.llm.mock ? 'warning' : 'success'" effect="plain">
+        {{ info.llm ? (info.llm.mock ? '模型未配置（模拟）' : info.llm.model) : '加载中' }}
+      </el-tag>
+      <el-tag size="small" effect="plain">向量库 {{ info.vector_backend || '-' }}</el-tag>
+      <el-tag size="small" effect="plain">文献 {{ info.counts ? info.counts.documents : 0 }}</el-tag>
+      <el-tag size="small" effect="plain">块 {{ info.counts ? info.counts.chunks : 0 }}</el-tag>
+    </div>
+  </header>
+
+  <div class="layout">
+    <!-- 左：文献库 -->
+    <aside class="panel left">
+      <div class="panel-head">
+        <span>文献库</span>
+        <el-button size="small" text @click="loadDocs">刷新</el-button>
+      </div>
+
+      <div class="upload-area">
+        <el-upload :show-file-list="false" :http-request="doUpload" accept=".pdf" multiple>
+          <el-button type="primary" size="small" style="width:100%">上传 PDF</el-button>
+        </el-upload>
+        <el-button size="small" style="width:100%;margin-top:6px" @click="rescan" :loading="rescanning">
+          一键导入官方测试集（{{ info.official_pdfs || 0 }} 篇）
+        </el-button>
+      </div>
+
+      <div class="doc-list">
+        <div v-if="!docs.length" class="empty">还没有文献，先上传或一键导入</div>
+        <div v-for="d in docs" :key="d.id" class="doc-item" :class="{active: activeDocId===d.id}">
+          <el-checkbox v-model="d._sel" @change="syncSelection" />
+          <div class="doc-main" @click="openDoc(d)">
+            <div class="doc-title" :title="d.title || d.filename">{{ d.title || d.filename }}</div>
+            <div class="doc-meta">
+              {{ d.page_count }}页 · {{ d.chunks }}块
+              <span v-if="d.is_scanned" class="tag-warn">扫描件</span>
+              <span v-if="d.version>1" class="tag-warn">v{{ d.version }}</span>
+            </div>
+          </div>
+          <el-button text size="small" type="danger" @click.stop="removeDoc(d)">删</el-button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 中：阅读器 -->
+    <main class="panel center">
+      <div class="panel-head">
+        <span>阅读器 <small v-if="activeDoc">{{ activeDoc.filename }}</small></span>
+        <div class="viewer-tools">
+          <el-button size="small" text @click="toggleTree">章节树</el-button>
+          <el-button size="small" text :disabled="page<=1" @click="goPage(page-1)">上一页</el-button>
+          <span class="pager">{{ page }} / {{ pageCount }}</span>
+          <el-button size="small" text :disabled="page>=pageCount" @click="goPage(page+1)">下一页</el-button>
+        </div>
+      </div>
+
+      <div class="viewer-wrap">
+        <div v-if="showTree" class="tree">
+          <div class="tree-title">章节导航</div>
+          <div v-for="(s,i) in sections" :key="i" class="tree-item" :style="{paddingLeft: (8 + (s.level-1)*12) + 'px'}"
+               @click="goPage(s.page)">
+            <span class="lvl">L{{ s.level }}</span>{{ s.title }}
+          </div>
+        </div>
+
+        <div class="page-stage" v-if="activeDoc">
+          <img :src="pageUrl" class="pdf-page" @load="onImgLoad" />
+          <div class="hl" v-for="(box,i) in highlights" :key="i" :style="box.style"
+               :title="box.text"></div>
+        </div>
+        <div v-else class="empty big">选择左侧文献开始阅读</div>
+      </div>
+    </main>
+
+    <!-- 右：对话 -->
+    <section class="panel right">
+      <div class="panel-head">
+        <span>智能问答</span>
+        <el-radio-group v-model="mode" size="small">
+          <el-radio-button label="qa">问答</el-radio-button>
+          <el-radio-button label="compare">多篇对比</el-radio-button>
+        </el-radio-group>
+      </div>
+
+      <div class="chat-list" ref="chatList">
+        <div v-if="!messages.length" class="empty">
+          试试点这个：<br>
+          <a v-for="(q,i) in samples" :key="i" href="#" @click.prevent="ask(q)">· {{ q }}</a>
+        </div>
+        <div v-for="(m,i) in messages" :key="i" class="msg" :class="m.role">
+          <div class="bubble">
+            <div class="md" v-html="m.html"></div>
+            <div v-if="m.verify && m.verify.total" class="verify">
+              引用校验：{{ m.verify.valid }}/{{ m.verify.total }} 命中
+              <span v-if="m.verify.rate < 1" class="warn">（{{ m.verify.invalid }} 处未核实）</span>
+            </div>
+            <div v-if="m.trace && m.trace.length" class="trace">
+              <span v-for="(t,j) in m.trace" :key="j" class="step">{{ t.agent }}</span>
+            </div>
+            <div v-if="m.evidence && m.evidence.length" class="evid">
+              <div class="evid-title">原文证据（点击跳转高亮）</div>
+              <div v-for="(e,j) in m.evidence" :key="j" class="evid-item" @click="jump(e)">
+                <span class="evid-idx">[{{ j+1 }}]</span>
+                <span class="evid-doc">{{ e.doc_name }} p{{ e.page }}</span>
+                <span class="evid-txt">{{ e.text.slice(0,90) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div v-if="loading" class="msg assistant"><div class="bubble loading">Agent 正在执行…</div></div>
+      </div>
+
+      <div class="ask-bar">
+        <el-input v-model="question" placeholder="问点什么…（Enter 发送）" @keyup.enter="ask()" :disabled="loading" />
+        <el-button type="primary" :loading="loading" @click="ask()">发送</el-button>
+      </div>
+    </section>
+  </div>
+
+  <!-- 去重确认 -->
+  <el-dialog v-model="dup.visible" title="检测到重复文献" width="520px">
+    <p class="dup-msg">{{ dup.message }}</p>
+    <div v-for="(d,i) in dup.items" :key="i" class="dup-item">
+      <div class="dup-name">{{ d.filename }} <span class="tag-warn">v{{ d.version }}</span></div>
+      <div class="dup-reason">{{ d.reason }} · 相似度 {{ d.similarity }} · {{ d.suggestion }}</div>
+    </div>
+    <template #footer>
+      <el-button @click="resolveDup('keep_old')">保留库中版本</el-button>
+      <el-button @click="resolveDup('both')">两份都留</el-button>
+      <el-button type="primary" @click="resolveDup('keep_new')">用新文件覆盖</el-button>
+    </template>
+  </el-dialog>
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
