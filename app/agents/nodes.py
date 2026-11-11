@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import json
+import re
 import time
 
 from sqlalchemy import select
@@ -24,10 +25,16 @@ from app.core.llm import LLMError, gateway
 from app.core.logger import get_logger
 from app.db.models import Lesson
 from app.db.session import SessionLocal
-from app.rag.anchors import citation_table, verify
-from app.rag.hybrid import search_with_rerank
+from app.rag.anchors import attach_anchors, citation_table, verify
+from app.rag.hybrid import search_with_rerank, tokenize
 
 log = get_logger(__name__)
+
+# 只有用户明确表达"对比/差异/演进"意图时才走多篇对比模板
+COMPARE_HINT = re.compile(
+    r"(对比|比较|相比|异同|区别|差异|演进|承袭|变化|vs\.?|versus|compare|difference)",
+    re.IGNORECASE,
+)
 
 
 def _step(state: dict, agent: str, tool: str = "", **extra) -> None:
@@ -168,13 +175,45 @@ def node_retrieve(state: dict) -> dict:
 
 
 # ---------------- 作答 ----------------
-def _evidence_block(evidence: list[dict], max_chars_each: int = 700) -> str:
+def _key_sentences(text: str, query: str, limit: int = 2) -> list[str]:
+    """从证据段落里挑出与问题最相关的句子。
+
+    为什么需要：PDF 切块后证据经常"从半句开始"（如 "ence pairs containing…"），
+    模型容易只看开头就判定"未提及"。把含关键词的句子提到最前面，
+    等于替模型做了句子级对齐，实测能显著减少"明明有却答没有"。
+    """
+    q = set(tokenize(query))
+    sents = [s.strip() for s in re.split(r"(?<=[.。!?！？])\s+|\n", text) if len(s.strip()) >= 20]
+    scored: list[tuple[int, int, str]] = []
+    for s in sents:
+        hit = len(q & set(tokenize(s)))
+        if hit:
+            scored.append((hit, -len(s), s))
+    scored.sort(key=lambda x: (-x[0], -x[1]))
+    out: list[str] = []
+    for _, _, s in scored[:limit]:
+        if s not in out:
+            out.append(s)
+    return out
+
+
+def _evidence_block(evidence: list[dict], max_chars_each: int = 1600, query: str = "") -> str:
     lines = []
     for i, ev in enumerate(evidence, start=1):
-        body = (ev.get("text") or "")[:max_chars_each].replace("\n", " ")
+        body = ev.get("text") or ""
+        if len(body) > max_chars_each:
+            cut = body[:max_chars_each]
+            # 尽量切在句末，别把"半句话"喂给模型（否则它会答"证据被截断"）
+            p = max(cut.rfind("。"), cut.rfind(". "), cut.rfind("\n"))
+            if p > max_chars_each * 0.6:
+                cut = cut[: p + 1]
+            body = cut + " …（本段后文省略）"
+        body = body.replace("\n", " ")
         sec = ev.get("section_path") or ""
         sec_info = f"（章节：{sec}）" if sec else ""
-        lines.append(f"[{i}] 来源：{ev.get('doc_name')} 第{ev.get('page')}页{sec_info} | {body}")
+        key = _key_sentences(ev.get("text") or "", query) if query else []
+        key_line = ("▸ 关键句：" + " ｜ ".join(key) + "\n") if key else ""
+        lines.append(f"[{i}] 来源：{ev.get('doc_name')} 第{ev.get('page')}页{sec_info} | {body}\n{key_line}")
     return "\n".join(lines) if lines else "（无检索结果）"
 
 
@@ -188,7 +227,13 @@ def node_answer(state: dict) -> dict:
         _step(state, "writer", "answer", note="no_evidence")
         return state
 
-    is_compare = state.get("mode") == "compare" or len({e["doc_id"] for e in evidence}) > 1
+    # 是否走"多篇对比"模板：必须以用户意图为准。
+    # 早期版本用"证据里出现多篇文档"就判定对比，结果单篇问题只要同时召回两篇
+    # 就会被强行做成对比表格（实测"Adam 的 beta1"被拿去跟 PPO 论文对比）。
+    is_compare = state.get("mode") == "compare" or (
+        bool(COMPARE_HINT.search(state.get("goal", "")))
+        and len({e["doc_id"] for e in evidence}) > 1
+    )
     tpl = COMPARE_PROMPT if is_compare else ANSWER_PROMPT
 
     try:
@@ -197,7 +242,11 @@ def node_answer(state: dict) -> dict:
                 {"role": "system", "content": SYSTEM_CONTRACT.format(role="科研写作助手" if not is_compare else "对比分析师")},
                 {
                     "role": "user",
-                    "content": render(tpl, evidence=_evidence_block(evidence), question=state["goal"]),
+                    "content": render(
+                        tpl,
+                        evidence=_evidence_block(evidence, query=state["goal"]),
+                        question=state["goal"],
+                    ),
                 },
             ],
             temperature=0.2,
@@ -217,11 +266,11 @@ def node_answer(state: dict) -> dict:
 def node_verify(state: dict) -> dict:
     t0 = time.time()
     evidence = state.get("evidence") or []
-    result = verify(state.get("answer", ""), evidence)
+    result = verify(state.get("answer", ""), evidence, state.get("goal", ""))
     state["verify"] = result
 
-    # 引用越界比例过高 → 触发一次重规划（换检索式再来一遍）
-    if result["total"] and result["rate"] < 0.8 and state.get("retries", 0) < 1:
+    # 引用/数字溯源通过率过低 → 换检索式重来一次（动态重规划）
+    if result["total"] and result["rate"] < 0.75 and state.get("retries", 0) < 1:
         state["retries"] = state.get("retries", 0) + 1
         state["need_replan"] = True
     else:
@@ -248,7 +297,7 @@ def node_review(state: dict) -> dict:
                     "content": render(
                         REVIEW_PROMPT,
                         answer=state.get("answer", "")[:3000],
-                        evidence=_evidence_block(state["evidence"][:5], 300),
+                        evidence=_evidence_block(state["evidence"][:5], 400, query=state.get("goal", "")),
                     ),
                 },
             ],
@@ -327,10 +376,11 @@ def node_reflect(state: dict) -> dict:
 
 
 def finalize(state: dict) -> dict:
-    """拼装最终返回：正文 + 引用表。"""
+    """拼装最终返回：正文 + 引用表；另存一份带坐标锚点的版本供导出核验。"""
     body = state.get("answer", "")
-    if state.get("mode") != "compare" or "|" not in body:
-        pass
-    table = citation_table(state.get("evidence") or [])
+    evidence = state.get("evidence") or []
+    table = citation_table(evidence)
     state["answer_rendered"] = body + table
+    # 导出用的"可核验版"：每个 [1] 后面直接跟 [p7@x0,y0,x1,y1]，拿到 PDF 里能精准定位
+    state["answer_anchored"] = attach_anchors(body, evidence) + table
     return state

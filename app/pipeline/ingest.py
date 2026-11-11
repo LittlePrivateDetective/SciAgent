@@ -268,6 +268,68 @@ def delete_document(db: Session, doc_id: str) -> bool:
     return True
 
 
+def reembed_all(batch_size: int = 48) -> dict:
+    """换 embedding 模型后，重算全库向量（不重新解析 PDF，几秒钟搞定）。
+
+    为什么需要：解析 39 篇 1986 页要几分钟，但换向量模型只跟文本有关。
+    分开做，答辩现场可以演示"把兜底 hash 向量切成真实语义向量，检索质量立刻变化"。
+    """
+    from sqlalchemy import update
+
+    from app.db.session import SessionLocal
+
+    t0 = time.time()
+    with SessionLocal() as db:
+        rows = db.execute(select(Chunk.id, Chunk.doc_id, Chunk.page, Chunk.text)).all()
+    if not rows:
+        return {"ok": True, "total": 0, "message": "库中没有可重算的文本块"}
+
+    store = get_store()
+    try:
+        store.reset()  # 旧向量与新模型不兼容，整体重建
+    except Exception as exc:  # noqa: BLE001
+        log.warning("重置向量库失败（继续写入）：%s", exc)
+
+    dim = 0
+    for i in range(0, len(rows), batch_size):
+        batch = rows[i : i + batch_size]
+        vecs = embed_texts([r.text for r in batch])
+        dim = int(vecs.shape[1])
+        with SessionLocal() as db:
+            for r, v in zip(batch, vecs):
+                db.execute(update(Chunk).where(Chunk.id == r.id).values(embedding=to_bytes(v)))
+            db.commit()
+        if store.name == "chroma":
+            try:
+                store.upsert(
+                    [
+                        {
+                            "id": r.id,
+                            "doc_id": r.doc_id,
+                            "page": r.page,
+                            "text": r.text,
+                            "embedding": v.tolist(),
+                        }
+                        for r, v in zip(batch, vecs)
+                    ]
+                )
+            except Exception as exc:  # noqa: BLE001
+                log.warning("Chroma 写入失败（SQLite 已写入）：%s", exc)
+
+    invalidate_cache()
+    elapsed = int((time.time() - t0) * 1000)
+    log.info("全库向量重算完成：%d 块 / %d 维 / %dms", len(rows), dim, elapsed)
+    return {
+        "ok": True,
+        "total": len(rows),
+        "dim": dim,
+        "provider": settings.emb_provider,
+        "model": settings.emb_model if settings.emb_provider == "api" else settings.emb_local_model,
+        "elapsed_ms": elapsed,
+        "vector_backend": store.name,
+    }
+
+
 def rescan_library() -> dict:
     """把 data/pdf 下的官方测试集批量入库（首次启动/演示前一键灌库）。"""
     from app.db.session import SessionLocal

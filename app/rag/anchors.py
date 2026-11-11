@@ -13,6 +13,13 @@ from __future__ import annotations
 import re
 
 ANCHOR_RE = re.compile(r"\[p(\d+)@(-?\d+),(-?\d+),(-?\d+),(-?\d+)\]")
+# 模型输出的引用记号：[1] / [12]
+REF_RE = re.compile(r"\[(\d{1,3})\]")
+# 引号内的内容是原文照抄，里面的 [18] 是论文自己的参考文献编号，
+# 不能当成"引用了不存在的证据"——这是实测出来的误报来源。
+_QUOTE_RE = re.compile(r'"[^"]{0,500}"|“[^”]{0,500}”|「[^」]{0,500}」')
+# 数字：前后不能紧邻字母（排除 beta1、p7、WMT2014 里的粘连同字母），支持 1,000 / 28.4
+_NUM_RE = re.compile(r"(?<![^\W\d_])(?<![0-9.])\d+(?:[.,]\d+)*(?![^\W\d_])")
 TOL = 3.0
 
 
@@ -28,48 +35,106 @@ def _parse(text: str) -> list[tuple[str, int, tuple[float, float, float, float]]
     ]
 
 
-def verify(answer: str, evidence: list[dict]) -> dict:
-    """返回 {total, valid, invalid, rate, invalid_anchors, cleaned}。"""
-    anchors = _parse(answer)
-    if not anchors:
-        return {
-            "total": 0,
-            "valid": 0,
-            "invalid": 0,
-            "rate": 0.0,
-            "invalid_anchors": [],
-            "cleaned": answer,
-            "has_citation": False,
-        }
+def _to_float(token: str) -> float | None:
+    try:
+        return float(token.replace(",", ""))
+    except ValueError:
+        return None
 
+
+def _numbers(text: str) -> list[tuple[str, float]]:
+    """抽取文中的量化数字，返回 (原始写法, 数值)。
+
+    先剥掉锚点和引用编号，否则 [p7@107,153,504,206] 会被当成 107、153 等数字。
+    """
+    body = REF_RE.sub(" ", ANCHOR_RE.sub(" ", text))
+    out: list[tuple[str, float]] = []
+    for m in _NUM_RE.finditer(body):
+        v = _to_float(m.group(0))
+        if v is not None:
+            out.append((m.group(0), v))
+    return out
+
+
+def _supported(value: float, pool: list[float]) -> bool:
+    """允许千分位与轻微的写法差异（28.4 vs 28.40），但不容忍改数值。"""
+    tol = max(1e-6, 0.005 * abs(value))
+    return any(abs(v - value) <= tol for v in pool)
+
+
+def verify(answer: str, evidence: list[dict], question: str = "") -> dict:
+    """三重校验，返回可量化指标。
+
+    1) 引用编号合法性：模型写的 [k] 必须落在本次证据条数范围内（防止它引用不存在的第 9 条）
+    2) 锚点合法性：若模型自行写了 [pN@...]，坐标必须能在证据里找到（防止编造坐标）
+    3) 数字溯源：回答里出现的每个数字，必须出现在它引用的证据原文里
+       —— 这条是对抗"把 28.4 写成 28.9"这类最隐蔽的幻觉，也是评委最容易验证的一条
+    """
+    anchors = _parse(answer)
+    # 只统计引号外的编号：引号内是原文照抄，其中的 [18] 属于论文自己的参考文献
+    refs = [int(x) for x in REF_RE.findall(_QUOTE_RE.sub(" ", answer))]
+    n_ev = len(evidence)
+
+    checks = 0
     valid = 0
-    bad: list[str] = []
+    bad_anchors: list[str] = []
+    bad_refs: list[int] = []
+    bad_numbers: list[str] = []
     cleaned = answer
 
+    # ---- 1) 锚点合法性 ----
     for token, page, bbox in anchors:
-        ok = False
+        checks += 1
+        hit = False
         for ev in evidence:
             if int(ev.get("page", -1)) != page:
                 continue
             eb = ev.get("bbox") or [0, 0, 0, 0]
             if all(abs(float(eb[i]) - bbox[i]) <= TOL for i in range(4)):
-                ok = True
+                hit = True
                 break
-        if ok:
+        if hit:
             valid += 1
         else:
-            bad.append(token)
+            bad_anchors.append(token)
             cleaned = cleaned.replace(token, "[未核实]")
 
-    total = len(anchors)
+    # ---- 2) 引用编号合法性 ----
+    for k in refs:
+        checks += 1
+        if 1 <= k <= n_ev:
+            valid += 1
+        else:
+            bad_refs.append(k)
+
+    # ---- 3) 数字溯源 ----
+    cited = [evidence[k - 1] for k in {k for k in refs if 1 <= k <= n_ev}]
+    pool_src = cited or evidence
+    # 章节路径里的编号（如 "5.3 Optimizer"）也算证据的一部分，否则会被误判为幻觉数字
+    pool_text = " ".join(
+        ((ev.get("text") or "") + " " + (ev.get("section_path") or "")) for ev in pool_src
+    )
+    pool = [v for _, v in _numbers(pool_text)]
+    q_pool = [v for _, v in _numbers(question)] if question else []
+
+    for raw, val in _numbers(_QUOTE_RE.sub(" ", answer)):
+        checks += 1
+        if _supported(val, pool) or _supported(val, q_pool):
+            valid += 1
+        else:
+            bad_numbers.append(raw)
+
+    total = checks
     return {
         "total": total,
         "valid": valid,
-        "invalid": len(bad),
+        "invalid": total - valid,
         "rate": round(valid / total, 4) if total else 0.0,
-        "invalid_anchors": bad,
+        "invalid_anchors": bad_anchors,
+        "invalid_refs": bad_refs,
+        "bad_numbers": bad_numbers[:12],
         "cleaned": cleaned,
-        "has_citation": True,
+        "has_citation": bool(refs or anchors),
     }
 
 

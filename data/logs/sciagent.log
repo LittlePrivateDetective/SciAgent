@@ -103,3 +103,262 @@ During task with name 'retrieve' and id '0f8835b7-f109-200e-e891-6f573ee61878'
 2026-11-10 23:34:58,459 | INFO    | app.rag.store            | Chroma 不可用，自动降级 SQLite+NumPy：No module named 'chromadb'
 2026-11-10 23:34:58,459 | INFO    | app.rag.store            | 向量后端：SQLite+NumPy
 2026-11-10 23:34:58,462 | INFO    | app.main                 | SciAgent 启动完成：{'llm_route': '见 /api/system/info', 'vector_backend': 'sqlite', 'data_dir': '<repo>\\data', 'official_pdfs': 39}
+2026-11-10 23:35:23,753 | INFO    | app.db.session           | 数据库就绪：<repo>\data\sciagent.db
+2026-11-10 23:35:23,755 | INFO    | app.rag.store            | Chroma 不可用，自动降级 SQLite+NumPy：No module named 'chromadb'
+2026-11-10 23:35:23,756 | INFO    | app.rag.store            | 向量后端：SQLite+NumPy
+2026-11-10 23:35:23,758 | INFO    | app.main                 | SciAgent 启动完成：{'llm_route': '见 /api/system/info', 'vector_backend': 'sqlite', 'data_dir': '<repo>\\data', 'official_pdfs': 39}
+2026-11-10 23:35:33,982 | INFO    | app.agents.graph         | 编排引擎：LangGraph
+2026-11-10 23:35:34,030 | DEBUG   | jieba                    | Building prefix dict from the default dictionary ...
+2026-11-10 23:35:34,031 | DEBUG   | jieba                    | Loading model from cache <user>\AppData\Local\Temp\jieba.cache
+2026-11-10 23:35:34,824 | DEBUG   | jieba                    | Loading model cost 0.793 seconds.
+2026-11-10 23:35:34,824 | DEBUG   | jieba                    | Prefix dict has been built successfully.
+2026-11-11 09:44:41,129 | INFO    | app.parse.structure      | 解析完成 <repo>\data\pdf\1607.06450v1.pdf：14 页 / 982 区块 / 30 标题 / 0 参考文献 / 扫描件=False
+2026-11-11 09:44:41,288 | INFO    | app.pipeline.ingest      | 入库成功 1607.06450v1.pdf：198 块 / 向量 1024 维 / 耗时 322ms（其中向量化 71ms）
+2026-11-11 09:44:42,723 | INFO    | app.parse.structure      | 解析完成 <repo>\data\pdf\1706.03762v1_img.pdf：15 页 / 0 区块 / 0 标题 / 0 参考文献 / 扫描件=True
+2026-11-11 09:44:42,723 | INFO    | app.pipeline.ingest      | 检测到扫描件，开始 OCR：共 15 页（上限 60）
+2026-11-11 09:44:42,915 | WARNING | app.parse.ocr            | 第 1 页 OCR 不可用（未配置 VLM 且未安装 tesseract）
+2026-11-11 09:44:43,142 | WARNING | app.parse.ocr            | 第 2 页 OCR 不可用（未配置 VLM 且未安装 tesseract）
+2026-11-11 09:44:43,316 | WARNING | app.parse.ocr            | 第 3 页 OCR 不可用（未配置 VLM 且未安装 tesseract）
+2026-11-11 09:44:43,540 | WARNING | app.parse.ocr            | 第 4 页 OCR 不可用（未配置 VLM 且未安装 tesseract）
+2026-11-11 09:44:43,750 | WARNING | app.parse.ocr            | 第 5 页 OCR 不可用（未配置 VLM 且未安装 tesseract）
+2026-11-11 09:44:43,958 | WARNING | app.parse.ocr            | 第 6 页 OCR 不可用（未配置 VLM 且未安装 tesseract）
+2026-11-11 09:44:44,143 | WARNING | app.parse.ocr            | 第 7 页 OCR 不可用（未配置 VLM 且未安装 tesseract）
+2026-11-11 09:44:44,357 | WARNING | app.parse.ocr            | 第 8 页 OCR 不可用（未配置 VLM 且未安装 tesseract）
+2026-11-11 09:44:44,563 | WARNING | app.parse.ocr            | 第 9 页 OCR 不可用（未配置 VLM 且未安装 tesseract）
+2026-11-11 09:44:44,779 | WARNING | app.parse.ocr            | 第 10 页 OCR 不可用（未配置 VLM 且未安装 tesseract）
+2026-11-11 09:44:45,005 | WARNING | app.parse.ocr            | 第 11 页 OCR 不可用（未配置 VLM 且未安装 tesseract）
+2026-11-11 09:44:45,161 | WARNING | app.parse.ocr            | 第 12 页 OCR 不可用（未配置 VLM 且未安装 tesseract）
+2026-11-11 09:44:45,323 | WARNING | app.parse.ocr            | 第 13 页 OCR 不可用（未配置 VLM 且未安装 tesseract）
+2026-11-11 09:44:45,504 | WARNING | app.parse.ocr            | 第 14 页 OCR 不可用（未配置 VLM 且未安装 tesseract）
+2026-11-11 09:44:45,705 | WARNING | app.parse.ocr            | 第 15 页 OCR 不可用（未配置 VLM 且未安装 tesseract）
+2026-11-11 09:44:45,705 | WARNING | app.pipeline.ingest      | OCR 未取得任何文本，请检查 VLM 配置或 tesseract 安装
+2026-11-11 09:44:46,070 | INFO    | app.parse.structure      | 解析完成 <repo>\data\pdf\1706.03762v7.pdf：15 页 / 725 区块 / 30 标题 / 40 参考文献 / 扫描件=False
+2026-11-11 09:44:46,328 | INFO    | app.parse.structure      | 解析完成 <repo>\data\pdf\1707.06347v2.pdf：12 页 / 828 区块 / 19 标题 / 0 参考文献 / 扫描件=False
+2026-11-11 09:44:46,392 | INFO    | app.pipeline.ingest      | 入库成功 1707.06347v2.pdf：129 块 / 向量 1024 维 / 耗时 312ms（其中向量化 25ms）
+2026-11-11 09:44:46,933 | INFO    | app.parse.structure      | 解析完成 <repo>\data\pdf\1910.02054v3.pdf：24 页 / 953 区块 / 47 标题 / 23 参考文献 / 扫描件=False
+2026-11-11 09:44:47,029 | ERROR   | app.api.routes           | 批量导入失败
+Traceback (most recent call last):
+  File "<repo>\app\api\routes.py", line 334, in job
+    stats = rescan_library()
+  File "<repo>\app\pipeline\ingest.py", line 283, in rescan_library
+    r = ingest(db, p, p.name)
+  File "<repo>\app\pipeline\ingest.py", line 173, in ingest
+    db.flush()
+    ~~~~~~~~^^
+  File "<repo>\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 4626, in flush
+    self._flush(objects)
+    ~~~~~~~~~~~^^^^^^^^^
+  File "<sqlalchemy generated warned() wrapper for sqlalchemy.orm.session.Session._flush>", line 2, in _flush
+    return target(fn, self, objects=objects)
+  File "<repo>\.venv\Lib\site-packages\sqlalchemy\util\deprecations.py", line 281, in warned
+    return fn(*args, **kwargs)  # type: ignore[no-any-return]
+  File "<repo>\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 4769, in _flush
+    with util.safe_reraise():
+         ~~~~~~~~~~~~~~~~~^^
+  File "<repo>\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 166, in __exit__
+    raise exc_value.with_traceback(exc_tb)
+  File "<repo>\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 4730, in _flush
+    flush_context.execute()
+    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "<repo>\.venv\Lib\site-packages\sqlalchemy\orm\unitofwork.py", line 467, in execute
+    rec.execute(self)
+    ~~~~~~~~~~~^^^^^^
+  File "<repo>\.venv\Lib\site-packages\sqlalchemy\orm\unitofwork.py", line 643, in execute
+    util.preloaded.orm_persistence._save_obj(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self.mapper,
+        ^^^^^^^^^^^^
+        uow.states_for_mapper_hierarchy(self.mapper, False, False),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        uow,
+        ^^^^
+    )
+    ^
+  File "<repo>\.venv\Lib\site-packages\sqlalchemy\orm\persistence.py", line 92, in _save_obj
+    _emit_insert_statements(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        base_mapper,
+        ^^^^^^^^^^^^
+    ...<3 lines>...
+        insert,
+        ^^^^^^^
+    )
+    ^
+  File "<repo>\.venv\Lib\site-packages\sqlalchemy\orm\persistence.py", line 1250, in _emit_insert_statements
+    result = connection.execute(
+        statement,
+        params,
+        execution_options=execution_options,
+    )
+  File "<repo>\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1494, in execute
+    return meth(
+        self,
+        distilled_parameters,
+        execution_options or NO_OPTIONS,
+    )
+  File "<repo>\.venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 534, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        self, distilled_params, execution_options
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "<repo>\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1714, in _execute_clauseelement
+    ret = self._execute_context(
+        dialect,
+    ...<9 lines>...
+        param_dict=param_dict,
+    )
+  File "<repo>\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1868, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "<repo>\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1996, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "<repo>\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2354, in _handle_dbapi_exception
+    raise exc_info[1].with_traceback(exc_info[2])
+  File "<repo>\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1977, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "<repo>\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 1192, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+OverflowError: Python int too large to convert to SQLite INTEGER
+2026-11-11 09:48:27,018 | INFO    | app.rag.store            | Chroma 不可用，自动降级 SQLite+NumPy：No module named 'chromadb'
+2026-11-11 09:48:27,019 | INFO    | app.rag.store            | 向量后端：SQLite+NumPy
+2026-11-11 09:48:49,360 | INFO    | app.pipeline.ingest      | 全库向量重算完成：451 块 / 1024 维 / 22367ms
+2026-11-11 09:49:01,330 | INFO    | app.db.session           | 数据库就绪：<repo>\data\sciagent.db
+2026-11-11 09:49:01,332 | INFO    | app.rag.store            | Chroma 不可用，自动降级 SQLite+NumPy：No module named 'chromadb'
+2026-11-11 09:49:01,332 | INFO    | app.rag.store            | 向量后端：SQLite+NumPy
+2026-11-11 09:49:01,334 | INFO    | app.main                 | SciAgent 启动完成：{'llm_route': '见 /api/system/info', 'vector_backend': 'sqlite', 'data_dir': '<repo>\\data', 'official_pdfs': 39}
+2026-11-11 09:49:16,592 | INFO    | app.agents.graph         | 编排引擎：LangGraph
+2026-11-11 09:49:18,074 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1454ms tokens=406
+2026-11-11 09:49:19,459 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1384ms tokens=214
+2026-11-11 09:49:19,499 | DEBUG   | jieba                    | Building prefix dict from the default dictionary ...
+2026-11-11 09:49:19,500 | DEBUG   | jieba                    | Loading model from cache <user>\AppData\Local\Temp\jieba.cache
+2026-11-11 09:49:20,324 | DEBUG   | jieba                    | Loading model cost 0.824 seconds.
+2026-11-11 09:49:20,324 | DEBUG   | jieba                    | Prefix dict has been built successfully.
+2026-11-11 09:49:21,376 | INFO    | app.rag.hybrid           | rerank 生效：16→8 条，耗时 323ms，top1=0.987
+2026-11-11 09:49:23,948 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=2570ms tokens=1664
+2026-11-11 09:49:33,038 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=9088ms tokens=2150
+2026-11-11 09:49:35,221 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=2182ms tokens=879
+2026-11-11 09:49:37,239 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1943ms tokens=583
+2026-11-11 09:49:38,630 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1390ms tokens=212
+2026-11-11 09:49:39,393 | INFO    | app.rag.hybrid           | rerank 生效：16→8 条，耗时 353ms，top1=0.950
+2026-11-11 09:49:52,882 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=13488ms tokens=3269
+2026-11-11 09:50:04,862 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=11977ms tokens=2683
+2026-11-11 09:50:08,717 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=3853ms tokens=1119
+2026-11-11 09:50:10,511 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1707ms tokens=568
+2026-11-11 09:50:11,952 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1439ms tokens=216
+2026-11-11 09:50:12,690 | INFO    | app.rag.hybrid           | rerank 生效：16→8 条，耗时 326ms，top1=0.999
+2026-11-11 09:50:14,647 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1955ms tokens=1896
+2026-11-11 09:50:25,830 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=11181ms tokens=2547
+2026-11-11 09:50:27,987 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=2156ms tokens=944
+2026-11-11 09:51:48,313 | INFO    | app.db.session           | 数据库就绪：<repo>\data\sciagent.db
+2026-11-11 09:51:48,315 | INFO    | app.rag.store            | Chroma 不可用，自动降级 SQLite+NumPy：No module named 'chromadb'
+2026-11-11 09:51:48,315 | INFO    | app.rag.store            | 向量后端：SQLite+NumPy
+2026-11-11 09:51:48,316 | INFO    | app.main                 | SciAgent 启动完成：{'llm_route': '见 /api/system/info', 'vector_backend': 'sqlite', 'data_dir': '<repo>\\data', 'official_pdfs': 39}
+2026-11-11 09:51:58,148 | INFO    | app.agents.graph         | 编排引擎：LangGraph
+2026-11-11 09:52:00,418 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=2250ms tokens=693
+2026-11-11 09:52:01,571 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1151ms tokens=195
+2026-11-11 09:52:01,608 | DEBUG   | jieba                    | Building prefix dict from the default dictionary ...
+2026-11-11 09:52:01,609 | DEBUG   | jieba                    | Loading model from cache <user>\AppData\Local\Temp\jieba.cache
+2026-11-11 09:52:02,406 | DEBUG   | jieba                    | Loading model cost 0.797 seconds.
+2026-11-11 09:52:02,406 | DEBUG   | jieba                    | Prefix dict has been built successfully.
+2026-11-11 09:52:03,485 | INFO    | app.rag.hybrid           | rerank 生效：16→8 条，耗时 331ms，top1=0.983
+2026-11-11 09:52:05,602 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=2115ms tokens=1827
+2026-11-11 09:52:13,737 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=8133ms tokens=1975
+2026-11-11 09:52:19,145 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=5406ms tokens=1339
+2026-11-11 09:52:20,637 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1418ms tokens=651
+2026-11-11 09:52:21,647 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1009ms tokens=154
+2026-11-11 09:52:22,422 | INFO    | app.rag.hybrid           | rerank 生效：16→8 条，耗时 403ms，top1=0.894
+2026-11-11 09:52:23,670 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1247ms tokens=1672
+2026-11-11 09:52:27,376 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=3703ms tokens=1323
+2026-11-11 09:52:29,815 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=2438ms tokens=968
+2026-11-11 09:52:32,032 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=2134ms tokens=731
+2026-11-11 09:52:33,239 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1206ms tokens=217
+2026-11-11 09:52:34,077 | INFO    | app.rag.hybrid           | rerank 生效：16→8 条，耗时 447ms，top1=1.000
+2026-11-11 09:52:36,827 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=2748ms tokens=2018
+2026-11-11 09:52:45,640 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=8812ms tokens=2284
+2026-11-11 09:52:50,112 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=4471ms tokens=1211
+2026-11-11 09:53:23,355 | INFO    | app.db.session           | 数据库就绪：<repo>\data\sciagent.db
+2026-11-11 09:53:23,358 | INFO    | app.rag.store            | Chroma 不可用，自动降级 SQLite+NumPy：No module named 'chromadb'
+2026-11-11 09:53:23,358 | INFO    | app.rag.store            | 向量后端：SQLite+NumPy
+2026-11-11 09:53:23,360 | INFO    | app.main                 | SciAgent 启动完成：{'llm_route': '见 /api/system/info', 'vector_backend': 'sqlite', 'data_dir': '<repo>\\data', 'official_pdfs': 39}
+2026-11-11 09:53:35,085 | INFO    | app.agents.graph         | 编排引擎：LangGraph
+2026-11-11 09:53:36,637 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1532ms tokens=597
+2026-11-11 09:53:38,021 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1382ms tokens=215
+2026-11-11 09:53:38,060 | DEBUG   | jieba                    | Building prefix dict from the default dictionary ...
+2026-11-11 09:53:38,061 | DEBUG   | jieba                    | Loading model from cache <user>\AppData\Local\Temp\jieba.cache
+2026-11-11 09:53:38,871 | DEBUG   | jieba                    | Loading model cost 0.811 seconds.
+2026-11-11 09:53:38,872 | DEBUG   | jieba                    | Prefix dict has been built successfully.
+2026-11-11 09:53:40,025 | INFO    | app.rag.hybrid           | rerank 生效：16→8 条，耗时 478ms，top1=0.986
+2026-11-11 09:53:41,394 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1365ms tokens=2235
+2026-11-11 09:53:44,965 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=3568ms tokens=1206
+2026-11-11 09:53:47,279 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=2313ms tokens=843
+2026-11-11 09:53:49,245 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1893ms tokens=757
+2026-11-11 09:53:50,552 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1305ms tokens=221
+2026-11-11 09:53:51,348 | INFO    | app.rag.hybrid           | rerank 生效：16→8 条，耗时 353ms，top1=1.000
+2026-11-11 09:53:53,541 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=2190ms tokens=2709
+2026-11-11 09:54:07,340 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=13797ms tokens=3106
+2026-11-11 09:54:09,369 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=2028ms tokens=879
+2026-11-11 09:54:27,314 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1826ms tokens=732
+2026-11-11 09:54:28,265 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=949ms tokens=158
+2026-11-11 09:54:29,036 | INFO    | app.rag.hybrid           | rerank 生效：16→8 条，耗时 338ms，top1=0.999
+2026-11-11 09:54:31,049 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=2010ms tokens=2321
+2026-11-11 09:54:43,430 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=12379ms tokens=2482
+2026-11-11 09:54:46,903 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=3472ms tokens=1101
+2026-11-11 09:55:11,153 | INFO    | app.db.session           | 数据库就绪：<repo>\data\sciagent.db
+2026-11-11 09:55:11,155 | INFO    | app.rag.store            | Chroma 不可用，自动降级 SQLite+NumPy：No module named 'chromadb'
+2026-11-11 09:55:11,155 | INFO    | app.rag.store            | 向量后端：SQLite+NumPy
+2026-11-11 09:55:11,156 | INFO    | app.main                 | SciAgent 启动完成：{'llm_route': '见 /api/system/info', 'vector_backend': 'sqlite', 'data_dir': '<repo>\\data', 'official_pdfs': 39}
+2026-11-11 09:55:21,294 | INFO    | app.agents.graph         | 编排引擎：LangGraph
+2026-11-11 09:55:23,318 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=2006ms tokens=706
+2026-11-11 09:55:24,248 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=927ms tokens=151
+2026-11-11 09:55:24,280 | DEBUG   | jieba                    | Building prefix dict from the default dictionary ...
+2026-11-11 09:55:24,281 | DEBUG   | jieba                    | Loading model from cache <user>\AppData\Local\Temp\jieba.cache
+2026-11-11 09:55:25,140 | DEBUG   | jieba                    | Loading model cost 0.859 seconds.
+2026-11-11 09:55:25,140 | DEBUG   | jieba                    | Prefix dict has been built successfully.
+2026-11-11 09:55:26,248 | INFO    | app.rag.hybrid           | rerank 生效：16→8 条，耗时 346ms，top1=0.999
+2026-11-11 09:55:27,501 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1247ms tokens=2346
+2026-11-11 09:55:34,890 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=7386ms tokens=1780
+2026-11-11 09:55:36,517 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1626ms tokens=736
+2026-11-11 09:55:37,859 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1263ms tokens=633
+2026-11-11 09:55:39,337 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1476ms tokens=212
+2026-11-11 09:55:40,168 | INFO    | app.rag.hybrid           | rerank 生效：16→8 条，耗时 377ms，top1=0.756
+2026-11-11 09:55:43,588 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=3416ms tokens=3298
+2026-11-11 09:55:44,950 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1360ms tokens=217
+2026-11-11 09:55:45,881 | INFO    | app.rag.hybrid           | rerank 生效：16→8 条，耗时 402ms，top1=0.739
+2026-11-11 09:55:50,369 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=4486ms tokens=2970
+2026-11-11 09:55:55,839 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=5468ms tokens=1692
+2026-11-11 09:55:56,819 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=979ms tokens=777
+2026-11-11 09:55:58,327 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1422ms tokens=691
+2026-11-11 09:55:59,699 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1371ms tokens=206
+2026-11-11 09:56:00,452 | INFO    | app.rag.hybrid           | rerank 生效：16→8 条，耗时 358ms，top1=0.759
+2026-11-11 09:56:01,937 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1482ms tokens=2661
+2026-11-11 09:56:08,801 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=6862ms tokens=2052
+2026-11-11 09:56:11,052 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=2250ms tokens=965
+2026-11-11 09:56:13,161 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=2036ms tokens=761
+2026-11-11 09:56:14,765 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1602ms tokens=223
+2026-11-11 09:56:15,526 | INFO    | app.rag.hybrid           | rerank 生效：16→8 条，耗时 331ms，top1=0.976
+2026-11-11 09:56:17,690 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=2161ms tokens=3191
+2026-11-11 09:56:29,241 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=11549ms tokens=2771
+2026-11-11 09:56:32,568 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=3325ms tokens=1060
+2026-11-11 09:56:45,950 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1953ms tokens=715
+2026-11-11 09:56:47,071 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1120ms tokens=172
+2026-11-11 09:56:47,840 | INFO    | app.rag.hybrid           | rerank 生效：16→8 条，耗时 347ms，top1=0.982
+2026-11-11 09:56:49,402 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1559ms tokens=2477
+2026-11-11 09:56:55,931 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=6527ms tokens=1878
+2026-11-11 09:56:59,561 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=3629ms tokens=1142

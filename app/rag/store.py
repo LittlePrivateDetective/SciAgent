@@ -70,6 +70,10 @@ class SQLiteVectorStore:
         """向量已随 chunk 写入 SQLite，这里仅需让缓存失效。"""
         self._cache.clear()
 
+    def reset(self) -> None:
+        """换 embedding 模型后清空内存缓存，避免旧维度/旧语义向量残留。"""
+        self._cache.clear()
+
 
 class ChromaVectorStore:
     name = "chroma"
@@ -102,6 +106,14 @@ class ChromaVectorStore:
             embeddings=[it["embedding"] for it in items],
             metadatas=[{"doc_id": it["doc_id"], "page": it["page"]} for it in items],
             documents=[it["text"][:2000] for it in items],
+        )
+
+    def reset(self) -> None:
+        """整体重建集合：换模型时旧向量维度/语义都不兼容，直接销毁重建最干净。"""
+        name = self._col.name
+        self._client.delete_collection(name)
+        self._col = self._client.get_or_create_collection(
+            name=name, metadata={"hnsw:space": "cosine"}
         )
 
 

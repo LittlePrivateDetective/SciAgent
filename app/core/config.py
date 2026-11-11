@@ -48,6 +48,13 @@ class Settings(BaseSettings):
     emb_dim: int = 1024
     emb_local_model: str = "BAAI/bge-small-zh-v1.5"
 
+    # ---------- 重排（Rerank）----------
+    # auto=有 key 就调重排服务、失败自动退回本地规则重排；api=强制调；none=只用本地规则
+    rerank_provider: str = "auto"
+    rerank_url: str = ""
+    rerank_api_key: str = ""
+    rerank_model: str = "qwen3.7-text-rerank"
+
     # ---------- 向量库 ----------
     vector_backend: str = "auto"
     chroma_dir: str = "./data/chroma"

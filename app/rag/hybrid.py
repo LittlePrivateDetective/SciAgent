@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import math
 import re
+import time
 from dataclasses import dataclass
 
 import numpy as np
@@ -62,6 +63,8 @@ class Hit:
     score: float
     dense_score: float = 0.0
     sparse_score: float = 0.0
+    idx: int = 0
+    stitched: bool = False
 
     @property
     def anchor(self) -> str:
@@ -80,6 +83,7 @@ class Hit:
             "kind": self.kind,
             "text": self.text,
             "score": round(self.score, 4),
+            "stitched": self.stitched,
         }
 
 
@@ -209,6 +213,7 @@ def search(
                 score=float(fused[i]),
                 dense_score=float(dense[i]),
                 sparse_score=float(sparse[i]),
+                idx=int(c.idx),
             )
         )
 
@@ -225,11 +230,109 @@ def search(
     return deduped[:top_k]
 
 
+def _stitch(hits: list[Hit], top_n: int = 4, window: int = 1) -> None:
+    """邻块拼接（母块扩展）：把命中块的同页前后相邻块并进来。
+
+    为什么必须做：切块是按 600 字机械切的，一句关键结论经常被切成两半。
+    实测 "We trained the base models for a tot|al of 100,000 steps" 就被切开，
+    模型只拿到前半句，于是回答"证据被截断"——明明是检索到了，却答不出来。
+    并进邻块后同一处结论完整可见，且仍以主块的 bbox 作锚点，页码不漂移。
+    """
+    if not hits:
+        return
+    with SessionLocal() as db:
+        for h in hits[:top_n]:
+            rows = db.execute(
+                select(Chunk.idx, Chunk.text)
+                .where(
+                    Chunk.doc_id == h.doc_id,
+                    Chunk.page == h.page,
+                    Chunk.idx.between(h.idx - window, h.idx + window),
+                )
+                .order_by(Chunk.idx)
+            ).all()
+            if len(rows) <= 1:
+                continue
+            # 主块必须排在最前：命中块才是与问题最相关的部分，
+            # 放到中间会被下游的字符截断切掉（实测 "100,000 steps" 就这样丢了）。
+            main = [t for i, t in rows if i == h.idx]
+            prev = [t for i, t in rows if i < h.idx][::-1]
+            nxt = [t for i, t in rows if i > h.idx]
+            merged = " ".join(
+                (t or "").strip() for t in (main + prev + nxt) if t
+            ).strip()
+            if len(merged) > len(h.text):
+                h.text = merged
+                h.stitched = True
+
+
+def _api_rerank(query: str, hits: list[Hit], top_k: int) -> list[Hit] | None:
+    """调用重排模型（DashScope text-rerank 协议）。
+
+    为什么要专门的 rerank：向量/BM25 都是"粗筛"，对比阅读和数值类问题经常
+    把正确的段落排到第 4~6 位；重排模型是 cross-encoder，query 和文档一起进
+    模型打分，精度显著更高。实测「训练用了多少块 GPU」把含 8×P100 的段落
+    从第 4 位提到第 1 位（0.95 vs 0.35）。
+
+    失败一律返回 None，由调用方退回本地规则重排——演示现场绝不能因为外部
+    服务抖动而整条链路不可用。
+    """
+    if settings.rerank_provider.lower() == "none" or not hits:
+        return None
+    key = settings.rerank_api_key or settings.emb_api_key or settings.llm_api_key
+    if not key or not settings.rerank_url:
+        return None
+
+    body = {
+        "model": settings.rerank_model,
+        "input": {"query": query[:1000], "documents": [h.text[:1500] for h in hits]},
+        "parameters": {"return_documents": False, "top_n": min(top_k, len(hits))},
+    }
+    t0 = time.time()
+    try:
+        import httpx
+
+        resp = httpx.post(
+            settings.rerank_url,
+            headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+            json=body,
+            timeout=25,
+        )
+        resp.raise_for_status()
+        results = (resp.json().get("output") or {}).get("results") or []
+        if not results:
+            return None
+        out: list[Hit] = []
+        for r in results:
+            idx = int(r.get("index", -1))
+            if 0 <= idx < len(hits):
+                h = hits[idx]
+                h.score = float(r.get("relevance_score", 0.0))
+                out.append(h)
+        if not out:
+            return None
+        log.info(
+            "rerank 生效：%d→%d 条，耗时 %dms，top1=%.3f",
+            len(hits), len(out), int((time.time() - t0) * 1000), out[0].score,
+        )
+        return out
+    except Exception as exc:  # noqa: BLE001 远程重排失败必须静默降级
+        log.warning("重排服务不可用，退回本地规则重排：%s", exc)
+        return None
+
+
 def search_with_rerank(query: str, doc_ids: list[str] | None = None, top_k: int | None = None) -> list[Hit]:
-    """召回后可选重排。无重排服务时，用「关键词覆盖率 + 位置先验」做本地重排。"""
-    hits = search(query, doc_ids, top_k=max((top_k or settings.top_k) * 2, 12))
+    """召回 → 重排。优先用重排模型，不可用时用「关键词覆盖率 + 位置先验」兜底。"""
+    top_k = top_k or settings.top_k
+    hits = search(query, doc_ids, top_k=max(top_k * 2, 12))
     if not hits:
         return []
+
+    remote = _api_rerank(query, hits, top_k)
+    if remote:
+        final = remote[:top_k]
+        _stitch(final)
+        return final
 
     q_tokens = set(tokenize(query))
     max_sparse = max((h.sparse_score for h in hits), default=0.0) or 1.0
@@ -246,4 +349,6 @@ def search_with_rerank(query: str, doc_ids: list[str] | None = None, top_k: int 
     reranked = sorted(hits, key=local_score, reverse=True)
     for h in reranked:
         h.score = local_score(h)
-    return reranked[: (top_k or settings.top_k)]
+    out = reranked[:top_k]
+    _stitch(out)
+    return out

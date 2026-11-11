@@ -38,6 +38,15 @@ def system_info(db: Session = Depends(get_db)):
         "vector_backend": get_store().name,
         "ocr": ocr_available(),
         "embedding": {"provider": settings.emb_provider, "model": settings.emb_model, "dim": settings.emb_dim},
+        "rerank": {
+            "provider": settings.rerank_provider,
+            "model": settings.rerank_model,
+            "enabled": bool(
+                (settings.rerank_api_key or settings.emb_api_key or settings.llm_api_key)
+                and settings.rerank_url
+                and settings.rerank_provider.lower() != "none"
+            ),
+        },
         "counts": {
             "documents": db.scalar(select(func.count(Document.id))) or 0,
             "chunks": db.scalar(select(func.count(Chunk.id))) or 0,
@@ -49,6 +58,14 @@ def system_info(db: Session = Depends(get_db)):
 
 
 # ---------------- 文档 ----------------
+@router.post("/system/reembed")
+def system_reembed():
+    """换 embedding 模型后重算全库向量（不重新解析 PDF）。"""
+    from app.pipeline.ingest import reembed_all
+
+    return reembed_all()
+
+
 @router.post("/documents/upload")
 async def upload_document(
     file: UploadFile = File(...),
