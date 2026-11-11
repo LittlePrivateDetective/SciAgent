@@ -85,6 +85,11 @@
           </el-radio-group>
           <template v-if="centerView === 'reader'">
             <el-button size="small" text @click="toggleTree">章节树</el-button>
+            <!-- 悬停翻译（官方 1.3.3.1）：默认关。开着的时候鼠标每停一句就打一次模型，
+                 随手划过整页会连发十几次请求，所以必须是显式开关而不是默认行为。 -->
+            <el-switch v-model="hover.on" size="small" active-text="悬停译"
+                       class="hover-switch" @change="saveHoverPref"
+                       title="鼠标在正文上停留 0.4 秒，自动翻译所在整句"></el-switch>
             <el-button size="small" text :disabled="page<=1" @click="goPage(page-1)">上一页</el-button>
             <span class="pager">{{ page }} / {{ pageCount }}</span>
             <el-button size="small" text :disabled="page>=pageCount" @click="goPage(page+1)">下一页</el-button>
@@ -97,6 +102,9 @@
             <el-button size="small" text @click="translateAll" :loading="bi.job.running">
               {{ bi.job.running ? `翻译中 ${bi.job.done}/${bi.job.total}` : '整篇翻译' }}
             </el-button>
+            <!-- 整篇译文的可读性输出（官方 1.3.3.2）：已译段落拼成 Markdown，可预览可下载 -->
+            <el-button size="small" text :loading="zh.loading" @click="openZh"
+                       title="把已缓存的译文导出成 Markdown">导出中译</el-button>
           </template>
           <template v-else-if="centerView === 'write'">
             <span class="pager" style="margin-right:6px">References 只取自库内真实文献</span>
@@ -138,6 +146,8 @@
               <span v-for="(w,i) in tl.words" :key="i"
                     class="tw" :class="{ cite: w.cite, refhit: w.refhit }"
                     :style="w.style"
+                    @mouseenter="onWordEnter(w, i, $event)"
+                    @mouseleave="onWordLeave"
                     @click="onWordClick(w, $event)">{{ w.t + ' ' }}</span>
             </div>
           </div>
@@ -611,10 +621,62 @@
       <el-button text size="small" @click="citePop.visible = false">×</el-button>
     </div>
     <div class="cite-pop-text">{{ citePop.text }}</div>
+    <!-- 反向跳转（官方 1.3.2）：从参考文献条目跳回正文引用它的地方。
+         同一段里连引多次只列一行，用「×N」标次数。 -->
+    <div class="cite-pop-cites" v-if="citePop.occ">
+      <div class="cite-pop-sub">正文引用 {{ citePop.occ }} 处 · 点一处跳回去</div>
+      <div v-for="(h,i) in citePop.cites.slice(0,4)" :key="i"
+           class="cite-pop-hit" @click="jumpToCite(h)"
+           :title="h.context">
+        <span class="cph-page">p{{ h.page }}</span>
+        <span class="cph-txt">{{ h.sentence || h.context }}</span>
+        <span class="cph-n" v-if="h.count > 1">×{{ h.count }}</span>
+      </div>
+    </div>
     <div class="cite-pop-foot">
       <el-button text size="small" @click="openRefEntry(citePop)">跳到该条并高亮</el-button>
     </div>
   </div>
+
+  <!-- 悬停翻译浮层（官方 1.3.3.1）：跟着光标，永不拦截鼠标事件。
+       pointer-events:none 是必须的——否则鼠标移进浮层就会触发词的 mouseleave，
+       浮层闪一下又消失，来回抖动。 -->
+  <div v-if="hover.visible" class="hover-tip" :style="hover.style">
+    <div class="hover-tip-zh" v-if="hover.zh">{{ hover.zh }}</div>
+    <div class="hover-tip-load" v-else>翻译中…</div>
+    <div class="hover-tip-src">{{ hover.src.length > 90 ? hover.src.slice(0, 90) + '…' : hover.src }}</div>
+  </div>
+
+  <!-- 中文译本预览与下载（官方 1.3.3.2）：只读缓存，不重新调模型 -->
+  <el-drawer v-model="zh.visible" size="680px" :with-header="false">
+    <div class="disc-head">
+      <div>
+        <div class="disc-title">中文译本</div>
+        <div class="disc-sub">
+          {{ zh.title }} · {{ zh.translated }}/{{ zh.total }} 段已译（{{ Math.round(zh.ratio * 100) }}%）
+        </div>
+      </div>
+      <div class="en-head-actions">
+        <el-button v-if="zh.translated" size="small" text @click="downloadZh">下载 Markdown</el-button>
+        <el-button size="small" text :loading="zh.loading" @click="loadZh">刷新</el-button>
+        <el-button text @click="zh.visible = false">关闭</el-button>
+      </div>
+    </div>
+    <div class="disc-meta" v-if="zh.translated">
+      {{ zh.chars }} 字符 · 公式/代码原样保留 {{ zh.verbatim }} 段 · 未译 {{ zh.missing }} 段
+    </div>
+    <div class="disc-hint" v-if="zh.missing">
+      未译段落保留英文原文，并带一条 HTML 注释说明原因。滚到对应页或点「整篇翻译」后可补全。
+    </div>
+    <div v-if="zh.loading" class="en-progress"><el-progress :percentage="100" :indeterminate="true" /></div>
+    <div v-else-if="!zh.translated" class="empty big">
+      这篇还没有任何译文。先在「对照」视图往下滚两页，或点「整篇翻译」，再回来导出。
+    </div>
+    <template v-else>
+      <div class="en-preview" v-html="zhHtml"></div>
+      <div class="zh-more" v-if="zh.truncated">预览只显示前 6000 字符，完整内容点「下载 Markdown」</div>
+    </template>
+  </el-drawer>
 </div>
 
 <script src="/static/app.js"></script>

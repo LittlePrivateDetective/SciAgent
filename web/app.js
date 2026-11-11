@@ -110,12 +110,20 @@ const app = createApp({
       highlights: [],
       // 页内文本层：words 里每项带预处理好的 style，避免每帧现算 200+ 个词的定位。
       // scale 由图片实际渲染宽度换算，文本层内部一律按 PDF 原始 pt 布局。
-      tl: { words: [], loaded: false, scale: 1, W: 0, H: 0, page: 0, zhLoading: false },
+      tl: { words: [], sents: [], loaded: false, scale: 1, W: 0, H: 0, page: 0, zhLoading: false },
       refIndex: {},   // 引用编号 → {index,page,bbox,text}
       // 写作 Copilot：模型只写论述 + [n]，References 条目全部由服务端从库内元数据拼出
       wr: { idea: "", loading: false, result: null, error: "" },
       sel: { visible: false, loading: false, src: "", zh: "", title: "划词翻译", style: {}, truncated: false, dragging: false, x: 0, y: 0 },
-      citePop: { visible: false, index: 0, page: 1, bbox: null, text: "", style: {}, x: 0, y: 0 },
+      citePop: { visible: false, index: 0, page: 1, bbox: null, text: "", style: {}, x: 0, y: 0, cites: [], occ: 0 },
+      // 悬停翻译（官方 1.3.3.1）：默认关，打开后鼠标停 0.4 秒译整句。
+      // cache 是为了"同一句反复悬停不重复请求"——一页读下来常见句子会被来回扫。
+      hover: { on: false, visible: false, loading: false, src: "", zh: "", style: {}, timer: null, cache: {} },
+      // 中文译本（官方 1.3.3.2）：读 translations 缓存拼 Markdown，可预览可下载
+      zh: {
+        visible: false, loading: false, markdown: "", chars: 0, total: 0,
+        translated: 0, missing: 0, verbatim: 0, ratio: 0, title: "", docId: "", truncated: false,
+      },
       messages: [],
       question: "",
       mode: "qa",
@@ -176,8 +184,18 @@ const app = createApp({
     enHtml() {
       return mdToHtml(this.en.text || "");
     },
+    zhHtml() {
+      return mdToHtml(this.zh.markdown || "");
+    },
   },
   mounted() {
+    // 悬停翻译是"高频花钱"的功能，偏好必须跨会话记住：
+    // 否则每次刷新都回到关闭，用户每次都要重新打开
+    try {
+      this.hover.on = localStorage.getItem("sciagent.hoverTrans") === "1";
+    } catch (e) {
+      this.hover.on = false;
+    }
     this.loadInfo();
     this.loadDocs();
     document.addEventListener("click", (e) => {
@@ -592,11 +610,11 @@ const app = createApp({
     async loadTextLayer() {
       const doc = this.activeDoc;
       if (!doc) {
-        this.tl = { words: [], loaded: false, scale: 1, W: 0, H: 0, page: 0 };
+        this.tl = { words: [], sents: [], loaded: false, scale: 1, W: 0, H: 0, page: 0 };
         return;
       }
       const page = this.page;
-      this.tl = { words: [], loaded: false, scale: this.tl.scale || 1, W: 0, H: 0, page, zhLoading: false };
+      this.tl = { words: [], sents: [], loaded: false, scale: this.tl.scale || 1, W: 0, H: 0, page, zhLoading: false };
       try {
         const r = await fetch(`/api/documents/${doc.id}/page/${page}/text`).then((x) => x.json());
         // 快速翻页时旧请求可能后到：页码或文献对不上就丢弃，否则会出现"第 5 页的
@@ -605,6 +623,9 @@ const app = createApp({
         this.tl.W = r.width || 612;
         this.tl.H = r.height || 792;
         this.tl.words = (r.words || []).map((w) => this.makeWord(w));
+        // 悬停翻译要的是"整句"，不是单个词。句子在这里一次性切好，
+        // 悬停时只做一次数组取值——否则每次 mouseenter 都要重扫 200 个词。
+        this.tl.sents = this.buildSentences(this.tl.words);
         this.tl.loaded = true;
         this.$nextTick(() => this.syncTextScale());
       } catch (e) {
@@ -639,6 +660,11 @@ const app = createApp({
           height: h + "px",
           fontSize: h + "px",
           lineHeight: h + "px",
+          // 竖排文字（arXiv 侧边水印、页边竖排书名）的词框高度是正常行高的十几倍，
+          // 会盖在正文词上面：鼠标停在正文上，命中的却是水印，悬停译出
+          // "arXiv:2310.06825v1 [cs.CL] 2023年10月10日"（实测如此）。
+          // 这类文字没有阅读价值，让指针穿透即可，不影响正文的选中与悬停。
+          ...(h > 40 ? { pointerEvents: "none" } : {}),
         },
       };
     },
@@ -672,8 +698,209 @@ const app = createApp({
         style: {},
         x: 0,
         y: 0,
+        cites: [],
+        occ: 0,
       };
+      // 反查"正文哪里引用了它"，与这次正跳并行：正跳是本地几何计算，很快；
+      // 反查要扫全文，慢了就慢在列表上，不该拖住跳转。
+      this.loadCites(e.index);
       await this.jump({ page: e.page, bbox: e.bbox, doc_id: this.activeDocId, text: e.text });
+    },
+
+    /** 第 n 条参考文献被正文哪些地方引用（官方 1.3.2 的「从 References 跳回去」）。 */
+    async loadCites(index) {
+      if (!this.activeDoc) return;
+      const docId = this.activeDoc.id;
+      try {
+        const r = await fetch(`/api/documents/${docId}/references/${index}/cites`).then((x) => x.json());
+        // 请求返回时用户可能已经点了别的条目：只认当前条目的结果，否则列表会串号
+        if (!this.citePop.visible || this.citePop.index !== index) return;
+        this.citePop.cites = r.hits || [];
+        this.citePop.occ = r.occurrences || 0;
+      } catch (e) {
+        // 反查失败不影响正向跳转，保持静默：浮层里少一块，不等于功能坏了
+      }
+    },
+
+    async jumpToCite(hit) {
+      this.citePop.visible = false;
+      const bbox = Array.isArray(hit.bbox) && hit.bbox.length === 4 ? hit.bbox : null;
+      if (!bbox) {
+        ElementPlus.ElMessage.warning("这条引用没有可用的坐标，已跳到对应页");
+        this.goPage(hit.page);
+        return;
+      }
+      await this.jump({
+        page: hit.page,
+        bbox,
+        doc_id: this.activeDocId,
+        text: hit.sentence || hit.context || "",
+        // 带 focus 才会按句高亮；不带就只能按 bbox 内所有词逐行画
+        focus: hit.sentence ? [hit.sentence] : null,
+      });
+    },
+
+    /* ---------------- 悬停翻译（官方 1.3.3.1） ---------------- */
+
+    saveHoverPref(v) {
+      try {
+        localStorage.setItem("sciagent.hoverTrans", v ? "1" : "0");
+      } catch (e) {
+        /* 隐私模式下 localStorage 会抛异常，功能不该因此失效 */
+      }
+      if (!v) this.hideHover(true);
+    },
+
+    /**
+     * 按顺序把词拼成句子，并给每个词回填句子号。
+     *
+     * 为什么在前端切而不是后端：句子只服务于悬停，和检索、锚点无关；
+     * 放在这里就不用改文本层接口，也不会让"页码/坐标"这套契约多一个字段。
+     */
+    buildSentences(words) {
+      const sents = [];
+      // 这些缩写后面跟句点时不是句子结束，切错了译文会缺主语
+      const ABBR = /(?:e\.g|i\.e|et al|fig|eq|tab|sec|ref|vs|no|cf|approx|resp|dr|prof)\.$/i;
+      // 节标题是天然的句子边界：作者列表用逗号分隔、整段没有句号，
+      // 不切的话"作者行 + Abstract + 第一句"会粘成一大段，悬停作者名就译出几百字
+      const HEADS = /^(Abstract|Introduction|Related\s+Work|Background|Methods?|Experiments?|Results?|Discussion|Conclusions?|References|Appendix|Acknowledg\w*)$/i;
+      let cur = [];
+      let buf = "";
+      const flush = () => {
+        if (!cur.length) return;
+        sents.push({ text: buf.trim(), idx: cur.slice() });
+        cur = [];
+        buf = "";
+      };
+      words.forEach((w, i) => {
+        if (cur.length && buf.length > 30 && HEADS.test(w.t)) flush();
+        cur.push(i);
+        buf += (buf ? " " : "") + w.t;
+        const ends = /[.?!]$/.test(w.t) && !ABBR.test(w.t);
+        // 240 字符封顶：超长"句子"多半是作者列表、表格行或断句失败的整段，
+        // 一次送去翻译既慢又贵，译出来也不准
+        if (ends || buf.length > 240) flush();
+      });
+      flush();
+      sents.forEach((s, si) => s.idx.forEach((i) => { words[i].si = si; }));
+      return sents;
+    },
+
+    onWordEnter(w, i, ev) {
+      if (!this.hover.on || this.sel.visible || this.sel.dragging) return;
+      // 角标是"点击跳转"的目标，鼠标扫过时弹译文会挡住点击
+      if (w.cite) return;
+      const sents = this.tl.sents || [];
+      const sent = w.si != null ? sents[w.si] : null;
+      if (!sent || !sent.text || sent.text.length < 8) return;
+
+      clearTimeout(this.hover.timer);
+      // 380ms 是实测手感的上限：再短会在移动鼠标时连环触发，
+      // 再长用户会以为没反应
+      this.hover.timer = setTimeout(
+        () => this.translateHover(sent.text, ev.clientX, ev.clientY),
+        380
+      );
+    },
+
+    onWordLeave() {
+      clearTimeout(this.hover.timer);
+      // 不立刻隐藏：移到相邻词上会先 leave 再 enter，立刻隐藏会闪一下
+      this.hover.timer = setTimeout(() => this.hideHover(), 260);
+    },
+
+    async translateHover(text, cx, cy) {
+      const key = text.slice(0, 160);
+      if (this.hover.cache[key]) {
+        this.showHover(text, this.hover.cache[key], cx, cy);
+        return;
+      }
+      this.showHover(text, "", cx, cy, true);
+      try {
+        const r = await fetch("/api/translate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text }),
+        }).then((x) => x.json());
+        const out = r.text || r.zh || "";
+        if (!r.ok || !out) {
+          this.hideHover(true);
+          return;
+        }
+        const keys = Object.keys(this.hover.cache);
+        if (keys.length > 240) this.hover.cache = {}; // 简单上限，长会话不涨内存
+        this.hover.cache[key] = out;
+        // 只有在还悬停着同一句时才更新，否则会把上一句的译文贴到新句子上
+        if (this.hover.visible && this.hover.src === text) {
+          this.hover.zh = out;
+          this.hover.loading = false;
+        }
+      } catch (e) {
+        this.hideHover(true);
+      }
+    },
+
+    showHover(src, zh, cx, cy, loading) {
+      const W = 340;
+      let left = cx + 16;
+      let top = cy + 20;
+      // 贴边翻转：右侧放不下就放光标左边，下方放不下就放上方
+      if (left + W > window.innerWidth - 12) left = Math.max(10, cx - W - 16);
+      if (top + 170 > window.innerHeight - 12) top = Math.max(10, cy - 160);
+      this.hover.visible = true;
+      this.hover.src = src;
+      this.hover.zh = zh;
+      this.hover.loading = !!loading;
+      this.hover.style = { left: left + "px", top: top + "px" };
+    },
+
+    hideHover(force) {
+      clearTimeout(this.hover.timer);
+      if (force || !this.hover.loading) {
+        this.hover.visible = false;
+        this.hover.loading = false;
+      }
+    },
+
+    /* ---------------- 中文译本导出（官方 1.3.3.2） ---------------- */
+
+    async openZh() {
+      if (!this.activeDoc) return;
+      this.zh.visible = true;
+      await this.loadZh();
+    },
+
+    async loadZh() {
+      const doc = this.activeDoc;
+      if (!doc || this.zh.loading) return;
+      this.zh.loading = true;
+      try {
+        const r = await fetch(`/api/documents/${doc.id}/translate-zh?preview=6000`).then((x) => x.json());
+        if (!r.ok) throw new Error(r.detail || r.error || "导出失败");
+        Object.assign(this.zh, {
+          docId: doc.id,
+          title: r.title || doc.title || doc.filename,
+          markdown: r.preview || "",
+          chars: r.chars || 0,
+          total: r.total || 0,
+          translated: r.translated || 0,
+          missing: r.missing || 0,
+          verbatim: r.verbatim || 0,
+          ratio: r.ratio || 0,
+          truncated: !!r.truncated,
+        });
+      } catch (e) {
+        ElementPlus.ElMessage.error(e.message || "导出失败，稍后重试");
+      } finally {
+        this.zh.loading = false;
+      }
+    },
+
+    downloadZh() {
+      if (!this.zh.docId) return;
+      // 走浏览器下载而不是前端拼 Blob：服务端每次重新拼，
+      // 拿到的永远是最新覆盖率的版本（库里的译文随时在增加）
+      window.open(`/api/documents/${this.zh.docId}/translate-zh.md`, "_blank", "noopener");
     },
 
     /* ---------------- 划词翻译 ---------------- */

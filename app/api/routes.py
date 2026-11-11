@@ -35,6 +35,7 @@ from app.rag.bilingual import (
     build_segments,
     cached_ratio,
     en_status,
+    export_zh,
     job_status,
     start_en_job,
     start_job,
@@ -403,6 +404,113 @@ def get_reference_entries(doc_id: str, db: Session = Depends(get_db)):
     return {"total": len(entries), "entries": [entries[k] for k in sorted(entries)]}
 
 
+# ---------------- References → 正文反向跳转（官方 1.3.2 第 2 点后半） ----------------
+_RE_CITE_GROUP = re.compile(r"\[(\d{1,3}(?:\s*[,;\-–—]\s*\d{1,3})*)\]")
+
+
+def _cite_indices(group: str) -> set[int]:
+    """把 `1` / `1, 2` / `4-6` / `7–9` 展开成编号集合。
+
+    学术论文这三种写法混着用，只认 `[n]` 会漏掉大半引用。
+    含 0 的组整组丢弃：正文里的 `[0, 1]` 是数学区间，不是文献编号，
+    否则查第 1 条会把所有区间都算成引用（实测论文里这种写法不少）。
+    """
+    out: set[int] = set()
+    for part in re.split(r"\s*[,;]\s*", group):
+        m = re.match(r"^(\d{1,3})\s*[-–—]\s*(\d{1,3})$", part.strip())
+        if m:
+            a, b = int(m.group(1)), int(m.group(2))
+            if 0 < a <= b <= 300:
+                out.update(range(a, b + 1))
+            continue
+        if part.strip().isdigit():
+            out.add(int(part))
+    return set() if 0 in out else out
+
+
+_ABBR_TAIL = re.compile(r"(?:e\.g|i\.e|et al|fig|eq|tab|sec|ref|vs|no|cf|approx|resp)\.$", re.I)
+
+
+def _hit_sentence(text: str, s: int, e: int) -> tuple[str, str]:
+    """取 `[n]` 命中处的整句与一小段上下文。
+
+    句子边界是"`. ? !` 后跟空白"，不能只找 `". "`：PDF 抽出的文本经常是
+    `benchmarks.\\nMistral ...`，句号后面是换行，只认空格会把两段并成一句
+    （实测返回的句子包含了上一句的 `[20]`，跳回去高亮就偏了）。
+    常见缩写（e.g. / et al. / Fig.）的句点不算边界。
+    """
+    lo = 0
+    for m in re.finditer(r"[.?!](?=\s)", text[:s]):
+        if _ABBR_TAIL.search(text[: m.end()]):
+            continue
+        lo = m.end()
+    hi = len(text)
+    for m in re.finditer(r"[.?!](?=\s)", text[e:]):
+        hi = e + m.end()
+        break
+    sent = " ".join(text[lo:hi].split())
+    ctx = " ".join(text[max(0, s - 70) : min(len(text), e + 70)].split())
+    return sent[:320], ctx[:220]
+
+
+def _bbox_list(raw) -> list[float]:
+    try:
+        vals = [float(v) for v in str(raw).split(",")]
+    except (TypeError, ValueError):
+        return []
+    return vals if len(vals) == 4 else []
+
+
+@router.get("/documents/{doc_id}/references/{index}/cites")
+def reference_cites(doc_id: str, index: int, limit: int = Query(12, ge=1, le=50),
+                    db: Session = Depends(get_db)):
+    """第 n 条参考文献被正文哪些地方引用（`[11]` → 跳回原文）。
+
+    与「正文角标 → References」互为反方向；官方要求「还可以从 References
+    快速跳回原来的位置」。同一段里多次引用只返回一条，用 `count` 记次数，
+    否则一段里连引 3 次会在列表里刷出 3 行一模一样的条目。
+    """
+    if not db.get(Document, doc_id):
+        raise HTTPException(404, "文档不存在")
+    rows = db.scalars(
+        select(Chunk)
+        .where(Chunk.doc_id == doc_id, Chunk.kind != "reference")
+        .order_by(Chunk.page, Chunk.idx)
+    ).all()
+
+    hits: list[dict] = []
+    total_count = 0
+    for c in rows:
+        text = c.text or ""
+        if not text or "[" not in text:
+            continue
+        first = None
+        matched = 0
+        for m in _RE_CITE_GROUP.finditer(text):
+            if index in _cite_indices(m.group(1)):
+                matched += 1
+                if first is None:
+                    first = m
+        if first is None:
+            continue
+        total_count += matched
+        sent, ctx = _hit_sentence(text, first.start(), first.end())
+        hits.append({
+            "page": c.page,
+            "bbox": _bbox_list(c.bbox),
+            "chunk_id": c.id,
+            "section": c.section_path or "",
+            "sentence": sent,
+            "context": ctx,
+            "count": matched,
+        })
+        if len(hits) >= limit:
+            break
+
+    return {"ok": True, "index": index, "total": len(hits),
+            "occurrences": total_count, "hits": hits}
+
+
 @router.get("/documents/{doc_id}/refs")
 def get_references(doc_id: str, db: Session = Depends(get_db)):
     if not db.get(Document, doc_id):
@@ -534,6 +642,45 @@ def download_translate_en(doc_id: str):
         content=path.read_text(encoding="utf-8"),
         media_type="text/markdown; charset=utf-8",
         headers={"Content-Disposition": f'attachment; filename="{doc_id}_en.md"'},
+    )
+
+
+# ---------------- 整篇中文译本导出（官方 1.3.3.2） ----------------
+@router.get("/documents/{doc_id}/translate-zh")
+def get_translate_zh(doc_id: str, preview: int = Query(6000, ge=0, le=60000),
+                     db: Session = Depends(get_db)):
+    """中文译本预览：从已缓存的译文拼 Markdown，不调用模型。
+
+    `preview` 控制返回多少字符，默认 6000——整本书的译本可能有几十万字符，
+    一次性塞给浏览器没有意义，下载接口拿全文即可。
+    """
+    out = export_zh(db, doc_id)
+    if not out.get("ok"):
+        raise HTTPException(400, out.get("error") or "导出失败")
+    md = out.get("markdown") or ""
+    return {
+        **{k: v for k, v in out.items() if k != "markdown"},
+        "preview": md[:preview] if preview else "",
+        "truncated": bool(preview) and len(md) > preview,
+    }
+
+
+@router.get("/documents/{doc_id}/translate-zh.md")
+def download_translate_zh(doc_id: str, db: Session = Depends(get_db)):
+    """下载中文译本 Markdown。
+
+    每次请求都重新拼一遍：拼接是纯本地操作（毫秒级），而库里的译文随时在增加，
+    落成固定文件反而会出现"昨天导出的比今天少"这种没人说得清的差异。
+    """
+    out = export_zh(db, doc_id)
+    if not out.get("ok"):
+        raise HTTPException(400, out.get("error") or "导出失败")
+    if not out.get("translated"):
+        raise HTTPException(400, "这篇还没有任何译文，请先在「对照」视图阅读或点「整篇翻译」")
+    return Response(
+        content=out["markdown"],
+        media_type="text/markdown; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="{doc_id}_zh.md"'},
     )
 
 

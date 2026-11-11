@@ -196,7 +196,7 @@ def _translate_batch(texts: list[str], to: str = "zh") -> list[str]:
     return [_clean_zh(x) for x in arr]
 
 
-def _save(db: Session, doc_id: str, pairs: list[tuple[Chunk, str]]) -> int:
+def _save(db: Session, doc_id: str, pairs: list[tuple[Chunk, str]], model: str = "") -> int:
     if not pairs:
         return 0
     for chunk, zh in pairs:
@@ -206,11 +206,45 @@ def _save(db: Session, doc_id: str, pairs: list[tuple[Chunk, str]]) -> int:
                 doc_id=doc_id,
                 page=chunk.page,
                 zh=zh,
-                model=settings.trans_model,
+                model=model or settings.trans_model,
             )
         )
     db.commit()
     return len(pairs)
+
+
+_RE_MATH = re.compile(
+    r"\\begin\{|\\end\{|\\(?:frac|sum|prod|int|partial|nabla|alpha|beta|gamma|delta|theta|lambda"
+    r"|sigma|omega|mathbf|mathrm|mathbb|mathcal|text|cdot|times|leq|geq|approx|left|right|hat|bar)\b"
+)
+_RE_CODE = re.compile(
+    r"(?:^\s*(?:def|class|import|from|return|for|while|if|elif|else|with|try|except)\b)"
+    r"|(?:\bself\.\w+)|(?:^\s*[{}();]+\s*$)|(?:\w+\s*=\s*\w+\()",
+    re.M,
+)
+
+
+def keep_verbatim(kind: str, text: str) -> bool:
+    """这一段是否原样保留、不送翻译（官方 1.3.3.2.c：代码和公式保留英文）。
+
+    不能只看 `kind`：PDF 里的多行公式和代码块经常被归到 text，
+    而正文里偶尔出现一个行内 `$\\alpha$` 又不该整段跳过。
+    判据用"字母密度 + 结构特征"：公式与代码的英文字母占比明显低于自然语言
+    （正文约 0.8，公式约 0.5，纯数字表格不会命中 LaTeX 结构所以不受影响）。
+    """
+    if kind in {"reference", "formula"}:
+        return True
+    t = (text or "").strip()
+    if len(t) < 12:
+        return False
+    letters = sum(1 for ch in t if ch.isalpha())
+    ratio = letters / len(t)
+    if _RE_MATH.search(t) and (t.count("$") >= 2 or t.count("\\") >= 3) and ratio < 0.62:
+        return True
+    lines = [ln for ln in t.splitlines() if ln.strip()]
+    if len(lines) >= 3 and len(_RE_CODE.findall(t)) >= 3 and ratio < 0.78:
+        return True
+    return False
 
 
 def translate_pages(db: Session, doc_id: str, page_from: int, page_to: int) -> int:
@@ -231,9 +265,24 @@ def translate_pages(db: Session, doc_id: str, page_from: int, page_to: int) -> i
         ).all()
     }
     # 参考文献条目整段是作者名/期刊缩写，机翻只会更乱，直接跳过
-    todo = [(c, prev) for c, prev in _with_prev(db, chunks) if c.id not in done and c.kind != "reference"]
+    pending = [(c, prev) for c, prev in _with_prev(db, chunks) if c.id not in done and c.kind != "reference"]
+    # 公式/代码原样入库（zh = 原文）而不是跳过：跳过的话对照视图右侧会空一块、
+    # 导出还得再开一条"缺失"分支；原样写进去，三处看到的内容是一致的。
+    verbatim: list[tuple[Chunk, str]] = []
+    todo: list[tuple[Chunk, Chunk | None]] = []
+    for c, prev in pending:
+        txt = _strip_carry(prev, c.text).strip()
+        if not txt:
+            continue
+        if keep_verbatim(c.kind, txt):
+            verbatim.append((c, txt))
+        else:
+            todo.append((c, prev))
+    if verbatim:
+        _save(db, doc_id, verbatim, model="verbatim")
+        log.info("跳过翻译并原样保留 %d 段公式/代码", len(verbatim))
     if not todo:
-        return 0
+        return len(verbatim)
 
     step = max(1, settings.trans_batch)
     batches = [todo[i : i + step] for i in range(0, len(todo), step)]
@@ -261,7 +310,105 @@ def translate_pages(db: Session, doc_id: str, page_from: int, page_to: int) -> i
                 one = _translate_batch([t])
                 out.append(one[0] if one else "")
         total += _save(db, doc_id, [(c, zh) for (c, _), zh in zip(batch, out) if zh])
-    return total
+    return total + len(verbatim)
+
+
+def export_zh(db: Session, doc_id: str) -> dict:
+    """把已缓存的中文译文拼成一篇 Markdown（官方 1.3.3.2 的"输出可读性"）。
+
+    只读 translations 表、**不调用模型**：
+    - 用户在对照视图里滚过的页都已落库，导出是 0 成本、秒出；
+    - 重复点导出不会重复烧额度，也不用等几分钟。
+
+    结构刻意与「中译英」的导出对齐（`{doc_id}_en.md`），两份可以对着看：
+    标题 → 作者/年份/覆盖率 → 按章节分节 → 正文 → References 原文。
+    """
+    import json as _json
+
+    doc = db.get(Document, doc_id)
+    if not doc:
+        return {"ok": False, "error": "文档不存在"}
+
+    chunks = list(
+        db.scalars(
+            select(Chunk).where(Chunk.doc_id == doc_id).order_by(Chunk.page, Chunk.idx)
+        ).all()
+    )
+    if not chunks:
+        return {"ok": False, "error": "这篇还没有解析出正文"}
+
+    zh_map = {
+        t.chunk_id: (t.zh or "")
+        for t in db.scalars(select(Translation).where(Translation.doc_id == doc_id)).all()
+    }
+
+    body_chunks = [c for c in chunks if c.kind != "reference"]
+    total = len(body_chunks)
+    translated = sum(1 for c in body_chunks if zh_map.get(c.id))
+
+    try:
+        authors = _json.loads(doc.authors or "[]")
+    except Exception:  # noqa: BLE001
+        authors = []
+
+    head = [f"# {doc.title or doc.filename}", ""]
+    meta = [", ".join(authors[:6])] if authors else []
+    if doc.year:
+        meta.append(str(doc.year))
+    pct = round(translated / total * 100) if total else 0
+    meta.append(f"中文译本 · {translated}/{total} 段已译（{pct}%）")
+    head += [" · ".join([m for m in meta if m]), "", "---", ""]
+
+    body: list[str] = []
+    cur_sec = None
+    verbatim = 0
+    missing = 0
+    for c in body_chunks:
+        sec = (c.section_path or "").split(">")[-1].strip()
+        if sec and sec != cur_sec and len(sec) < 60:
+            body += [f"## {sec}", ""]
+            cur_sec = sec
+        src = (c.text or "").strip()
+        if not src:
+            continue
+        if keep_verbatim(c.kind, src):
+            # 公式/代码放进围栏块：Markdown 会把 `$...$` 当数学渲染，
+            # 原样围起来才能保证读者看到的就是原文
+            verbatim += 1
+            body += ["```", src, "```", ""]
+            continue
+        zh = zh_map.get(c.id, "")
+        if not zh:
+            # 未译段落保留原文而不是留空：宁可中英混排，也不能让内容凭空消失。
+            # 用 HTML 注释说明原因，渲染时不可见、源码里可查。
+            missing += 1
+            body += [src, "", "<!-- 未译：滚到这一页触发翻译，或点「整篇翻译」，即可导出完整译本 -->", ""]
+        else:
+            body += [zh, ""]
+
+    refs = [c.text.strip() for c in chunks if c.kind == "reference" and (c.text or "").strip()]
+    if refs:
+        body += ["## References（原文保留，不翻译）", ""] + [f"- {r}" for r in refs]
+
+    text = "\n".join(head + body).strip() + "\n"
+    exp = Path(settings.db_path).parent / "exports"
+    exp.mkdir(parents=True, exist_ok=True)
+    path = exp / f"{doc_id}_zh.md"
+    path.write_text(text, encoding="utf-8")
+
+    return {
+        "ok": True,
+        "doc_id": doc_id,
+        "title": doc.title or doc.filename,
+        "markdown": text,
+        "chars": len(text),
+        "total": total,
+        "translated": translated,
+        "missing": missing,
+        "verbatim": verbatim,
+        "ratio": round(translated / total, 3) if total else 0.0,
+        "path": str(path),
+    }
 
 
 # ---------------------------------------------------------------- 整篇翻译任务

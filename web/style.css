@@ -479,7 +479,9 @@ body.is-dragging, body.is-dragging * { user-select: none !important; }
 
 /* 参考文献详情浮层：点正文 [11] 后出现，内容与高亮同时到位 */
 .cite-pop {
-  position: fixed; right: 24px; bottom: 96px; z-index: 3000; width: 380px;
+  position: fixed; right: 24px; bottom: 96px; z-index: 3000; width: 400px;
+  /* 加了「正文引用 N 处」列表后会变高，屏幕矮时必须自己滚，不能顶出视口 */
+  max-height: calc(100vh - 140px); overflow-y: auto;
   background: #fff; border: 1px solid var(--line); border-radius: 10px;
   box-shadow: 0 10px 28px rgba(20, 30, 60, .18); padding: 10px 12px;
 }
@@ -672,3 +674,45 @@ body.is-dragging, body.is-dragging * { user-select: none !important; }
   border-radius: 5px; padding: 3px 8px; line-height: 1.2;
 }
 .admin-link:hover { background: #eaf0ff; border-color: #bfd0ff; }
+
+/* ---------- 悬停翻译（官方 1.3.3.1） ---------- */
+.hover-switch { margin: 0 6px 0 2px; }
+.hover-switch .el-switch__label { font-size: 11.5px; }
+
+/* pointer-events:none 不能省：否则鼠标移进浮层会触发词的 mouseleave，
+   浮层闪一下就消失，来回抖动 */
+.hover-tip {
+  position: fixed; z-index: 3100; width: 340px; pointer-events: none;
+  background: #fff; border: 1px solid var(--line); border-radius: 9px;
+  box-shadow: 0 10px 26px rgba(20, 30, 60, .16); padding: 8px 11px;
+}
+.hover-tip-zh { font-size: 12.5px; line-height: 1.68; color: #1c1f26; }
+.hover-tip-load { font-size: 12px; color: #9aa4b2; }
+.hover-tip-src {
+  font-size: 10.5px; color: #98a2b1; line-height: 1.5; margin-top: 5px;
+  border-left: 2px solid #dbe3f5; padding-left: 6px;
+}
+
+/* ---------- 引用浮层：正文引用列表（官方 1.3.2 反向跳转） ---------- */
+.cite-pop-cites {
+  margin-top: 8px; border-top: 1px dashed var(--line); padding-top: 7px;
+  max-height: 190px; overflow-y: auto;
+}
+.cite-pop-sub { font-size: 10.5px; color: var(--muted); margin-bottom: 5px; }
+.cite-pop-hit {
+  display: flex; align-items: baseline; gap: 6px; padding: 4px 6px;
+  border-radius: 5px; cursor: pointer;
+}
+.cite-pop-hit:hover { background: #f3f7ff; }
+.cph-page {
+  flex: none; font-size: 10px; color: var(--brand); background: #eef2fe;
+  border-radius: 3px; padding: 0 4px; font-variant-numeric: tabular-nums;
+}
+.cph-txt {
+  flex: 1; min-width: 0; font-size: 11px; color: #4b5361; line-height: 1.5;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.cph-n { flex: none; font-size: 10px; color: #854f0b; }
+
+/* ---------- 中文译本抽屉（官方 1.3.3.2） ---------- */
+.zh-more { font-size: 11px; color: #9aa4b2; text-align: center; padding: 8px 0 2px; }
