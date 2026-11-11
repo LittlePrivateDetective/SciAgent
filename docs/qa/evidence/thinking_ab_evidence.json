@@ -1,0 +1,2042 @@
+{
+ "A1": {
+  "question": "Transformer 的编码器和解码器各由多少层相同的层堆叠而成？",
+  "cat": "fact",
+  "items": [
+   {
+    "doc": "1706.03762v1_img.pdf",
+    "page": 3,
+    "text": "Figure 1: The Transformer - model architecture.",
+    "kind": "figure"
+   },
+   {
+    "doc": "1706.03762v1.pdf",
+    "page": 2,
+    "text": "The encoder is composed of a stack of N = 6 identical layers. Each layer has two sub-layers. The ﬁrst is a multi-head self-attention mechanism, and the second is a simple, position- wise fully connected feed-forward network. We employ a residual connection around each of the two sub-layers, followed by layer normalization [1]. That is, the output of each sub-layer is LayerNorm(x + Sublayer(x)), where Sublayer(x) is the function implemented by the sub-layer itself. To facilitate these residual connections, all sub-layers in the model, as well as the embedding layers, produce outputs of dimension dmodel = 512.",
+    "kind": "text"
+   },
+   {
+    "doc": "1706.03762v1.pdf",
+    "page": 2,
+    "text": "Encoder:\nThe decoder is also composed of a stack of N = 6 identical layers. In addition to the two sub-layers in each encoder layer, the decoder inserts a third sub-layer, which performs multi-head attention over the output of the encoder stack. Similar to the encoder, we employ residual connections\nDecoder:\n2",
+    "kind": "text"
+   },
+   {
+    "doc": "1706.03762v1.pdf",
+    "page": 2,
+    "text": "The Transformer follows this overall architecture using stacked self-attention and point-wise, fully connected layers for both the encoder and decoder, shown in the left and right halves of Figure 1, respectively.",
+    "kind": "text"
+   },
+   {
+    "doc": "1706.03762v1.pdf",
+    "page": 10,
+    "text": "9\nIn this work, we presented the Transformer, the ﬁrst sequence transduction model based entirely on attention, replacing the recurrent layers most commonly used in encoder-decoder architectures with multi-headed self-attention.",
+    "kind": "text"
+   },
+   {
+    "doc": "1706.03762v1.pdf",
+    "page": 4,
+    "text": "The Transformer uses multi-head attention in three different ways:\n• In the encoder-decoder attention layers, the queries come from the previous decoder layer, and the memory keys and values come from the output of the encoder. This allows every\n4",
+    "kind": "text"
+   },
+   {
+    "doc": "1706.03762v1.pdf",
+    "page": 3,
+    "text": "Figure 1: The Transformer - model architecture.",
+    "kind": "figure"
+   },
+   {
+    "doc": "1706.03762v1.pdf",
+    "page": 1,
+    "text": "The dominant sequence transduction models are based on complex recurrent or convolutional neural networks in an encoder-decoder conﬁguration. The best performing models also connect the encoder and decoder through an attention mechanism. We propose a new simple network architecture, the Transformer, based solely on attention mechanisms, dispensing with recurrence and convolutions entirely. Experiments on two machine translation tasks show these models to be superior in quality while being more parallelizable and requiring signiﬁcantly less time to train. Our model achieves 28.4 BLEU on the WMT 2014 English- to-German translation task, improving over the existing best results, including ensembles by over 2 BLEU. On the WMT 2014 English-to-French translation task, our model establishes a new single-model state-of-the-art BLEU score of 41.0 after training for 3.5 days on eight GPUs, a small",
+    "kind": "text"
+   },
+   {
+    "doc": "1706.03762v1_img.pdf",
+    "page": 3,
+    "text": "or position $i$ can depend only on the known outputs at positions less than $i$.\nAn attention function can be described as mapping a query and a set of key-value pairs to an output, where the query, keys, values, and output are all vectors. The output is computed as a weighted sum of the values, where the weight assigned to each value is computed by a compatibility function of the query with the corresponding key.",
+    "kind": "text"
+   }
+  ]
+ },
+ "A2": {
+  "question": "BERT 使用了哪两个无监督预训练任务？",
+  "cat": "fact",
+  "items": [
+   {
+    "doc": "N19-1423.pdf",
+    "page": 4,
+    "text": "3.1\nPre-training BERT Unlike Peters et al. (2018a) and Radford et al. (2018), we do not use traditional left-to-right or right-to-left language models to pre-train BERT. Instead, we pre-train BERT using two unsuper- vised tasks, described in this section. This step is presented in the left part of Figure 1.\nTask #1: Masked LM\nIntuitively, it is reason- able to believe that a deep bidirectional model is strictly more powerful than either a left-to-right model or the shallow concatenation of a left-to- right and a right-to-left model.",
+    "kind": "text"
+   },
+   {
+    "doc": "N19-1423.pdf",
+    "page": 3,
+    "text": "NSP\nMask LM\nMask LM\nC\nT1\nTN\nT1’\nTM’\nT[SEP]\n...\n...\nBERT\nE1\nEN\nE1’\nEM’\nE[SEP]\n...\n...\nE[CLS]\n...\n...\nTok N\nTok 1\nTok 1\nTokM\n[SEP]\n[CLS]\nMasked Sentence A\nMasked Sentence B\nUnlabeled Sentence A and B Pair\nPre-training\nSQuAD\nMNLI\nNER\nStart/End Span\nC\nT1\nTN\nT1’\nTM’\nT[SEP]\n...\n...\nBERT\nBERT\nE1\nEN\nE1’\nEM’\nE[SEP]\n...\n...\nE[CLS]\n...\n...\nTok 1\nTok N\nTok 1\nTokM\n[SEP]\n[CLS]\nQuestion\nParagraph\nQuestion Answer Pair\nFine-Tuning",
+    "kind": "text"
+   },
+   {
+    "doc": "N19-1423.pdf",
+    "page": 1,
+    "text": "Transformers. BERT alleviates the previously mentioned unidi- rectionality constraint by using a “masked lan- guage model” (MLM) pre-training objective, in- spired by the Cloze task (Taylor, 1953).",
+    "kind": "text"
+   },
+   {
+    "doc": "N19-1423.pdf",
+    "page": 2,
+    "text": "• We demonstrate the importance of bidirectional pre-training for language representations. Un- like Radford et al. (2018), which uses unidirec- tional language models for pre-training, BERT uses masked language models to enable pre- trained deep bidirectional representations. This is also in contrast to Peters et al. (2018a), which uses a shallow concatenation of independently trained left-to-right and right-to-left LMs.",
+    "kind": "text"
+   },
+   {
+    "doc": "N19-1423.pdf",
+    "page": 1,
+    "text": "We introduce a new language representa- tion model called BERT, which stands for Bidirectional Encoder Representations from Transformers. Unlike recent language repre- sentation models (Peters et al., 2018a; Rad- ford et al., 2018), BERT is designed to pre- train deep bidirectional representations from unlabeled text by jointly conditioning on both left and right context in all layers. As a re- sult, the pre-trained BERT model can be ﬁne- tuned with just one additional output layer to create state-of-the-art models for a wide range of tasks, such as question answering and language inference, without substantial task- speciﬁc architecture modiﬁcations.",
+    "kind": "text"
+   },
+   {
+    "doc": "N19-1423.pdf",
+    "page": 14,
+    "text": "• GPT is trained on the BooksCorpus (800M words); BERT is trained on the BooksCor- pus (800M words) and Wikipedia (2,500M words).\n• GPT uses a sentence separator ([SEP]) and classiﬁer token ([CLS]) which are only in- troduced at ﬁne-tuning time; BERT learns\n[SEP], [CLS] and sentence A/B embed- dings during pre-training.\n• GPT was trained for 1M steps with a batch size of 32,000 words; BERT was trained for 1M steps with a batch size of 128,000 words.",
+    "kind": "text"
+   },
+   {
+    "doc": "N19-1423.pdf",
+    "page": 3,
+    "text": "We introduce BERT and its detailed implementa- tion in this section. There are two steps in our framework: pre-training and ﬁne-tuning.\nDur- ing pre-training, the model is trained on unlabeled data over different pre-training tasks.",
+    "kind": "text"
+   },
+   {
+    "doc": "UnderstandingDeepLearning_02_09_26_C.pdf",
+    "page": 486,
+    "text": "BERT: pre-training of deep bidirec- tional transformers for language understand- ing.",
+    "kind": "reference"
+   },
+   {
+    "doc": "N19-1423.pdf",
+    "page": 4,
+    "text": "Unfortunately, standard conditional language models can only be trained left-to-right or right-to-left, since bidirec- tional conditioning would allow each word to in- directly “see itself”, and the model could trivially predict the target word in a multi-layered context.\nformer is often referred to as a “Transformer encoder” while the left-context-only version is referred to as a “Transformer decoder” since it can be used for text generation.\n4174",
+    "kind": "text"
+   },
+   {
+    "doc": "N19-1423.pdf",
+    "page": 3,
+    "text": "Figure 1: Overall pre-training and ﬁne-tuning procedures for BERT. Apart from output layers, the same architec- tures are used in both pre-training and ﬁne-tuning. The same pre-trained model parameters are used to initialize models for different down-stream tasks. During ﬁne-tuning, all parameters are ﬁne-tuned. [CLS] is a special symbol added in front of every input example, and [SEP] is a special separator token (e.g. separating ques-",
+    "kind": "figure"
+   },
+   {
+    "doc": "N19-1423.pdf",
+    "page": 1,
+    "text": "from\nThe masked language model randomly masks some of the tokens from the input, and the objective is to predict the original vocabulary id of the masked\nProceedings of NAACL-HLT 2019, pages 4171–4186 Minneapolis, Minnesota, June 2 - June 7, 2019. c⃝2019 Association for Computational Linguistics",
+    "kind": "text"
+   }
+  ]
+ },
+ "A3": {
+  "question": "Mistral 7B 的上下文窗口长度是多少？",
+  "cat": "fact",
+  "items": [
+   {
+    "doc": "2310.06825v1.pdf",
+    "page": 1,
+    "text": "We introduce Mistral 7B, a 7–billion-parameter language model engineered for superior performance and efficiency. Mistral 7B outperforms the best open 13B model (Llama 2) across all evaluated benchmarks, and the best released 34B model (Llama 1) in reasoning, mathematics, and code generation. Our model leverages grouped-query attention (GQA) for faster inference, coupled with sliding window attention (SWA) to effectively handle sequences of arbitrary length with a reduced inference cost. We also provide a model fine-tuned to follow instructions, Mistral 7B – Instruct, that surpasses Llama 2 13B – chat model both on human and automated benchmarks. Our models are released under the Apache 2.0 license. Code: https://github.com/mistralai/mistral-src Webpage: https://mistral.ai/news/announcing-mistral-7b/",
+    "kind": "text"
+   },
+   {
+    "doc": "2310.06825v1.pdf",
+    "page": 2,
+    "text": "ing language models that can be used in a wide range of real-world applications.\nMistral 7B is based on a transformer architecture [27]. The main parameters of the architecture are summarized in Table 1. Compared to Llama, it introduces a few changes that we summarize below.\nParameter\nValue dim\n4096 n_layers\n32 head_dim",
+    "kind": "text"
+   },
+   {
+    "doc": "2310.06825v1.pdf",
+    "page": 1,
+    "text": "Mistral 7B leverages grouped-query attention (GQA) [1], and sliding window attention (SWA) [6, 3]. GQA significantly accelerates the inference speed, and also reduces the memory requirement during decoding, allowing for higher batch sizes hence higher throughput, a crucial factor for real-time applications. In addition, SWA is designed to handle longer sequences more effectively at a reduced computational cost, thereby alleviating a common limitation in LLMs. These attention mechanisms collectively contribute to the enhanced performance and efficiency of Mistral 7B.",
+    "kind": "text"
+   },
+   {
+    "doc": "2310.06825v1.pdf",
+    "page": 1,
+    "text": "Mistral 7B\nAlbert Q. Jiang, Alexandre Sablayrolles, Arthur Mensch, Chris Bamford, Devendra Singh Chaplot, Diego de las Casas, Florian Bressand, Gianna Lengyel, Guillaume Lample, Lucile Saulnier, Lélio Renard Lavaud, Marie-Anne Lachaux, Pierre Stock, Teven Le Scao, Thibaut Lavril, Thomas Wang, Timothée Lacroix, William El Sayed\narXiv:2310.06825v1 [cs.CL] 10 Oct 2023",
+    "kind": "text"
+   },
+   {
+    "doc": "2406.14491v2.pdf",
+    "page": 10,
+    "text": "Albert Q Jiang, Alexandre Sablayrolles, Arthur Men- sch, Chris Bamford, Devendra Singh Chaplot, Diego de las Casas, Florian Bressand, Gianna Lengyel, Guil- laume Lample, Lucile Saulnier, et al. 2023. Mistral 7b. arXiv preprint arXiv:2310.06825.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2412.15115v2.pdf",
+    "page": 22,
+    "text": "Albert Q. Jiang, Alexandre Sablayrolles, Arthur Mensch, Chris Bamford, Devendra Singh Chaplot, Diego de Las Casas, Florian Bressand, Gianna Lengyel, Guillaume Lample, Lucile Saulnier, L´elio Renard Lavaud, Marie-Anne Lachaux, Pierre Stock, Teven Le Scao, Thibaut Lavril, Thomas Wang, Timoth´ee Lacroix, and William El Sayed. Mistral 7B. CoRR, abs/2310.06825, 2023a.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2310.06825v1.pdf",
+    "page": 4,
+    "text": ".2%\n20.8%\n75.3% 83.0% 80.0% 55.5% 28.8%\nMistral 7B\n69.9%\n30.5%\n47.5% 13.1%\n52.2%\nSize and Efficiency. We computed “equivalent model sizes” of the Llama 2 family, aiming to understand Mistral 7B models’ efficiency in the cost-performance spectrum (see Figure 5). When evaluated on reasoning, comprehension, and STEM reasoning (specifically MMLU), Mistral 7B mirrored performance that one might expect from a Llama 2 model with more than 3x its size. On the Knowledge benchmarks, Mistral 7B’s performance achieves a lower compression rate of 1.9x, which is likely due to its limited parameter count that restricts the amount of knowledge it can store.",
+    "kind": "text"
+   },
+   {
+    "doc": "2310.06825v1.pdf",
+    "page": 2,
+    "text": "Mistral 7B takes a significant step in balancing the goals of getting high performance while keeping large language models efficient. Through our work, our aim is to help the community create more affordable, efficient, and high-performing language models that can be used in a wide range of real-world applications.",
+    "kind": "text"
+   },
+   {
+    "doc": "2310.06825v1.pdf",
+    "page": 1,
+    "text": "In the rapidly evolving domain of Natural Language Processing (NLP), the race towards higher model performance often necessitates an escalation in model size. However, this scaling tends to increase computational costs and inference latency, thereby raising barriers to deployment in practical, real-world scenarios. In this context, the search for balanced models delivering both high-level performance and efficiency becomes critically essential. Our model, Mistral 7B, demonstrates that a carefully designed language model can deliver high performance while maintaining an efficient inference. Mistral 7B outperforms the previous best 13B model (Llama 2, [26]) across all tested benchmarks, and surpasses the best 34B model (LLaMa 34B, [25]) in mathematics and code generation. Furthermore, Mistral 7B approaches the coding performance of Code-Llama 7B [20], without sacrificing performance on non",
+    "kind": "text"
+   },
+   {
+    "doc": "2310.06825v1.pdf",
+    "page": 2,
+    "text": "Sliding Window Attention. SWA exploits the stacked layers of a trans- former to attend information beyond the window size W. The hidden state in position i of the layer k, hi, attends to all hidden states from the previous layer with positions between i −W and i. Recursively, hi can access tokens from the input layer at a distance of up to W × k tokens, as illustrated in Figure 1. At the last layer, using a window size of W = 4096, we have a theoretical attention span of approximately 131K tokens. In practice, for a sequence length of 16K and W = 4096, changes made to FlashAttention [11] and xFormers [18] yield a 2x speed improvement over a vanilla attention baseline.",
+    "kind": "text"
+   }
+  ]
+ },
+ "A4": {
+  "question": "LLaMA-65B 训练时使用了多少张 GPU、训练了多长时间？",
+  "cat": "fact",
+  "items": [
+   {
+    "doc": "333078981_693988129081760_4712707815225756708_n.pdf",
+    "page": 4,
+    "text": "\n57.2\n79.2\n73.0\n74.8\n52.7\n56.4\n80.0\n57.8\n82.8\n76.0\n58.6\n84.2\n60.2\n77.0\n78.9\n56.0\nreduce the memory usage of the model by using model and sequence parallelism, as described by Korthikanti et al. (2022). Moreover, we also over- lap the computation of activations and the commu- nication between GPUs over the network (due to all_reduce operations) as much as possible. When training a 65B-parameter model, our code processes around 380 tokens/sec/GPU on 2048 A100 GPU with 80GB of RAM. This means that training over our dataset containing 1.4T tokens takes approximately 21 days.",
+    "kind": "text"
+   },
+   {
+    "doc": "333078981_693988129081760_4712707815225756708_n.pdf",
+    "page": 11,
+    "text": "GPU Power\nGPU Type\nconsumption\nOPT-175B\nA100-80GB\n400W\nBLOOM-175B\nA100-80GB\n400W\nLLaMA-7B\nA100-80GB\n400W\nLLaMA-13B\nA100-80GB\n400W\nLLaMA-33B\nA100-80GB\n400W\nLLaMA-65B\nA100-80GB\n400W\nTotal power\nCarbon emitted\nGPU-hours\nconsumption\n(tCO2eq)\n809,472\n356 MWh\n137\n1,082,880\n475 MWh\n183\n82,432",
+    "kind": "text"
+   },
+   {
+    "doc": "333078981_693988129081760_4712707815225756708_n.pdf",
+    "page": 1,
+    "text": "The focus of this work is to train a series of language models that achieve the best possible per- formance at various inference budgets, by training on more tokens than what is typically used. The resulting models, called LLaMA, ranges from 7B to 65B parameters with competitive performance compared to the best existing LLMs. For instance, LLaMA-13B outperforms GPT-3 on most bench- marks, despite being 10× smaller. We believe that this model will help democratize the access and study of LLMs, since it can be run on a single GPU. At the higher-end of the scale, our 65B-parameter model is also competitive with the best large lan- guage models such as Chinchilla or PaLM-540B.",
+    "kind": "text"
+   },
+   {
+    "doc": "2307.09288v2.pdf",
+    "page": 7,
+    "text": "6\nTime (GPU hours)\nPower Consumption (W)\nCarbon Emitted (tCO2eq)\n31.22 13B\n7B\n184320\n400\n62.44 34B\n368640\n400\nLlama 2\n153.90 70B\n1038336\n350\n291.42 Total\n1720320\n400\n3311616\n539.00",
+    "kind": "text"
+   },
+   {
+    "doc": "333078981_693988129081760_4712707815225756708_n.pdf",
+    "page": 3,
+    "text": "Figure 1: Training loss over train tokens for the 7B, 13B, 33B, and 65 models. LLaMA-33B and LLaMA- 65B were trained on 1.4T tokens. The smaller models were trained on 1.0T tokens. All models are trained with a batch size of 4M tokens.",
+    "kind": "figure"
+   },
+   {
+    "doc": "2305.14314v1.pdf",
+    "page": 1,
+    "text": "Finetuning large language models (LLMs) is a highly effective way to improve their performance, [40, 62, 43, 61, 59, 37] and to add desirable or remove undesirable behaviors [43, 2, 4]. However, finetuning very large models is prohibitively expensive; regular 16-bit finetuning of a LLaMA 65B parameter model [57] requires more than 780 GB of GPU memory. While recent quantization methods can reduce the memory footprint of LLMs [14, 13, 18, 66], such techniques only work for inference and break down during training [65].",
+    "kind": "text"
+   },
+   {
+    "doc": "333078981_693988129081760_4712707815225756708_n.pdf",
+    "page": 1,
+    "text": "We introduce LLaMA, a collection of founda- tion language models ranging from 7B to 65B parameters. We train our models on trillions of tokens, and show that it is possible to train state-of-the-art models using publicly available datasets exclusively,\nwithout resorting to proprietary and inaccessible datasets.\nIn particular, LLaMA-13B outperforms GPT-3 (175B) on most benchmarks, and LLaMA-65B is competitive with the best models, Chinchilla- 70B and PaLM-540B. We release all our models to the research community1.",
+    "kind": "text"
+   },
+   {
+    "doc": "333078981_693988129081760_4712707815225756708_n.pdf",
+    "page": 3,
+    "text": "LLaMA 65B\n1.9\n1.8\n1.7\n1.6\n1.5\n0\n200\n400\n600\n800\n1000 1200 1400\nBillion of tokens\nsteps, and vary the learning rate and batch size with the size of the model (see Table 2 for details).",
+    "kind": "text"
+   },
+   {
+    "doc": "333078981_693988129081760_4712707815225756708_n.pdf",
+    "page": 4,
+    "text": "Following previous work (Brown et al., 2020), we consider zero-shot and few-shot tasks, and report results on a total of 20 benchmarks:\n• Zero-shot. We provide a textual description of the task and a test example. The model either provides an answer using open-ended generation, or ranks the proposed answers.\n• Few-shot. We provide a few examples of the task (between 1 and 64) and a test example. The model takes this text as input and gener- ates the answer or ranks different options.",
+    "kind": "text"
+   },
+   {
+    "doc": "333078981_693988129081760_4712707815225756708_n.pdf",
+    "page": 11,
+    "text": "14\n135,168",
+    "kind": "text"
+   },
+   {
+    "doc": "333078981_693988129081760_4712707815225756708_n.pdf",
+    "page": 1,
+    "text": "Unlike Chinchilla, PaLM, or GPT-3, we only use publicly available data, making our work com- patible with open-sourcing, while most existing models rely on data which is either not publicly available or undocumented (e.g. “Books – 2TB” or “Social media conversations”). There exist some exceptions, notably OPT (Zhang et al., 2022), GPT-NeoX (Black et al., 2022), BLOOM (Scao et al., 2022) and GLM (Zeng et al., 2022), but none that are competitive with PaLM-62B or Chinchilla.",
+    "kind": "text"
+   }
+  ]
+ },
+ "A5": {
+  "question": "ELECTRA 的判别器要预测什么？",
+  "cat": "fact",
+  "items": [
+   {
+    "doc": "1910.10683v4.pdf",
+    "page": 59,
+    "text": "Electra: Pre-training text encoders as discriminators rather than generators.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2212.04356v1.pdf",
+    "page": 28,
+    "text": "Robust Speech Recognition via Large-Scale Weak Supervision",
+    "kind": "reference"
+   },
+   {
+    "doc": "2212.04356v1.pdf",
+    "page": 27,
+    "text": "Robust Speech Recognition via Large-Scale Weak Supervision",
+    "kind": "reference"
+   },
+   {
+    "doc": "2212.04356v1.pdf",
+    "page": 28,
+    "text": "Condition on prior text rate",
+    "kind": "reference"
+   },
+   {
+    "doc": "2212.04356v1.pdf",
+    "page": 26,
+    "text": "Table 16. Long-form English transcription WER (%)",
+    "kind": "reference"
+   },
+   {
+    "doc": "2212.04356v1.pdf",
+    "page": 27,
+    "text": "Figure 11. Training dataset statistics",
+    "kind": "reference"
+   },
+   {
+    "doc": "2212.04356v1.pdf",
+    "page": 27,
+    "text": "17% Multilingual Speech Recognition",
+    "kind": "reference"
+   },
+   {
+    "doc": "2212.04356v1.pdf",
+    "page": 28,
+    "text": "undanese\n7\nUzbek\n4\nMalagasy\n2\nBashkir\n1\nTurkmen 1\n1\n10\n100\n1K\n10K\nHours of audio\nHyperparameter\nUpdates\nBatch Size\nWarmup Updates\nMax grad norm\nOptimizer\nβ1\nβ2\nϵ\nWeight Decay\nWeight Init\nLearning Rate Schedule\n28\nValue\n1048576\n256\n2048\n1.0\nAdamW\n0.9\n0.98\n10−6\n0.1\nGaussian Fan-In\nLinear Decay\n10×",
+    "kind": "text"
+   },
+   {
+    "doc": "1910.10683v4.pdf",
+    "page": 59,
+    "text": "arXiv preprint arXiv:2003.10555, 2020.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2212.04356v1.pdf",
+    "page": 27,
+    "text": "Multilingual Speech Recognition",
+    "kind": "reference"
+   }
+  ]
+ },
+ "A6": {
+  "question": "DeepSeek-V3 的总参数量和激活参数量分别是多少？",
+  "cat": "fact",
+  "items": [
+   {
+    "doc": "2412.19437v1.pdf",
+    "page": 35,
+    "text": "In this paper, we introduce DeepSeek-V3, a large MoE language model with 671B total pa- rameters and 37B activated parameters, trained on 14.8T tokens. In addition to the MLA and DeepSeekMoE architectures, it also pioneers an auxiliary-loss-free strategy for load balancing and sets a multi-token prediction training objective for stronger performance. The training of DeepSeek-V3 is cost-effective due to the support of FP8 training and meticulous engineering op- timizations. The post-training also makes a success in distilling the reasoning capability from the DeepSeek-R1 series of models. Comprehensive evaluations demonstrate that DeepSeek-V3 has emerged as the strongest open-source model currently available, and achieves performance com- parable to leading closed-source models like GPT-4o and Claude-3.5-Sonnet. Despite its strong performance, it also maintains economical training costs. ",
+    "kind": "text"
+   },
+   {
+    "doc": "2412.19437v1.pdf",
+    "page": 1,
+    "text": "We present DeepSeek-V3, a strong Mixture-of-Experts (MoE) language model with 671B total parameters with 37B activated for each token. To achieve efficient inference and cost-effective training, DeepSeek-V3 adopts Multi-head Latent Attention (MLA) and DeepSeekMoE architec- tures, which were thoroughly validated in DeepSeek-V2. Furthermore, DeepSeek-V3 pioneers an auxiliary-loss-free strategy for load balancing and sets a multi-token prediction training objective for stronger performance. We pre-train DeepSeek-V3 on 14.8 trillion diverse and high-quality tokens, followed by Supervised Fine-Tuning and Reinforcement Learning stages to fully harness its capabilities. Comprehensive evaluations reveal that DeepSeek-V3 outperforms other open-source models and achieves performance comparable to leading closed-source models. Despite its excellent performance, DeepSeek-V3 requires only 2.788M H800",
+    "kind": "text"
+   },
+   {
+    "doc": "2412.19437v1.pdf",
+    "page": 22,
+    "text": "ℎto 64. We substitute all FFNs except for the first three layers with MoE layers. Each MoE layer consists of 1 shared expert and 256 routed experts, where the intermediate hidden dimension of each expert is 2048. Among the routed experts, 8 experts will be activated for each token, and each token will be ensured to be sent to at most 4 nodes. The multi-token prediction depth 𝐷is set to 1, i.e., besides the exact next token, each token will predict one additional token. As DeepSeek-V2, DeepSeek-V3 also employs additional RMSNorm layers after the compressed latent vectors, and multiplies additional scaling factors at the width bottlenecks. Under this configuration, DeepSeek-V3 comprises 671B total parameters, of which 37B are activated for each token.",
+    "kind": "text"
+   },
+   {
+    "doc": "2412.19437v1.pdf",
+    "page": 26,
+    "text": "Due to our efficient architectures and comprehensive engineering optimizations, DeepSeek- V3 achieves extremely high training efficiency. Under our training framework and infrastruc- tures, training DeepSeek-V3 on each trillion tokens requires only 180K H800 GPU hours, which is much cheaper than training 72B or 405B dense models.\nSmall MoE\nBenchmark (Metric)\n# Shots\nBaseline\n# Activated Params (Inference)\n-\n2.4B\n# Total Params (Inference)\n-\n15.7B\n# Training Tokens\n-\n1.33T\n0.729\nPile-test (BPB)\n-\nBBH (EM)\n3-shot\n39.0\nMMLU (EM)\n5-shot\n50.0\nDROP (F1)\n1-shot\n39.2\n56.9\nTriviaQA (EM)\n5-shot\n22.7\nNaturalQuestions (EM)\n5-shot",
+    "kind": "text"
+   },
+   {
+    "doc": "2412.19437v1.pdf",
+    "page": 26,
+    "text": "25\nFrom a more detailed perspective, we compare DeepSeek-V3-Base with the other open-source base models individually. (1) Compared with DeepSeek-V2-Base, due to the improvements in our model architecture, the scale-up of the model size and training tokens, and the enhancement of data quality, DeepSeek-V3-Base achieves significantly better performance as expected. (2) Compared with Qwen2.5 72B Base, the state-of-the-art Chinese open-source model, with only half of the activated parameters, DeepSeek-V3-Base also demonstrates remarkable advantages, especially on English, multilingual, code, and math benchmarks. As for Chinese benchmarks, except for CMMLU, a Chinese multi-subject multiple-choice task, DeepSeek-V3-Base also shows better performance than Qwen2.5 72B. (3) Compared with LLaMA-3.1 405B Base, the largest open-source model with 11 times the activated parameters, DeepSeek-V3-Base al",
+    "kind": "text"
+   },
+   {
+    "doc": "2412.19437v1.pdf",
+    "page": 1,
+    "text": "DeepSeek-V3 Technical Report\nDeepSeek-AI\nresearch@deepseek.com",
+    "kind": "text"
+   },
+   {
+    "doc": "2412.19437v1.pdf",
+    "page": 6,
+    "text": "The basic architecture of DeepSeek-V3 is still within the Transformer (Vaswani et al., 2017) framework. For efficient inference and economical training, DeepSeek-V3 also adopts MLA and DeepSeekMoE, which have been thoroughly validated by DeepSeek-V2. Compared with DeepSeek-V2, an exception is that we additionally introduce an auxiliary-loss-free load balancing\n6",
+    "kind": "text"
+   },
+   {
+    "doc": "2412.19437v1.pdf",
+    "page": 4,
+    "text": "With a forward-looking perspective, we consistently strive for strong model performance and economical costs. Therefore, in terms of architecture, DeepSeek-V3 still adopts Multi-head Latent Attention (MLA) (DeepSeek-AI, 2024c) for efficient inference and DeepSeekMoE (Dai et al., 2024) for cost-effective training. These two architectures have been validated in DeepSeek- V2 (DeepSeek-AI, 2024c), demonstrating their capability to maintain robust model performance while achieving efficient training and inference. Beyond the basic architecture, we implement two additional strategies to further enhance the model capabilities. Firstly, DeepSeek-V3 pi- oneers an auxiliary-loss-free strategy (Wang et al., 2024a) for load balancing, with the aim of minimizing the adverse impact on model performance that arises from the effort to encourage load balancing. Secondly, DeepSeek-V3 employs a multi-token",
+    "kind": "text"
+   },
+   {
+    "doc": "2412.19437v1.pdf",
+    "page": 35,
+    "text": "While acknowledging its strong performance and cost-effectiveness, we also recognize that DeepSeek-V3 has some limitations, especially on the deployment. Firstly, to ensure efficient inference, the recommended deployment unit for DeepSeek-V3 is relatively large, which might pose a burden for small-sized teams. Secondly, although our deployment strategy for DeepSeek- V3 has achieved an end-to-end generation speed of more than two times that of DeepSeek-V2, there still remains potential for further enhancement. Fortunately, these limitations are expected to be naturally addressed with the development of more advanced hardware.",
+    "kind": "text"
+   },
+   {
+    "doc": "2412.19437v1.pdf",
+    "page": 1,
+    "text": "The model checkpoints are available at https://github.com/deepseek-ai/DeepSeek-V3.\nDeepSeek-V3\nDeepSeek-V2.5\nQwen2.5-72B-Inst\n100\n90.2\n80.0\n80\n78.3\n78.0\n75.9\n74.7\n74.6\n73.8\n73.3\n72.6\n71.6\nAccuracy / Percentile (%)\n66.2\n65.0\n59.1\n60\n51.1\n49.9\n49.0\n41.3\n40\n20\n0\nMMLU-Pro\nGPQA-Diamond\nMATH 500\n(EM)\n(Pass@1)\n(EM)\nLlama-3.1-405B-Inst\nGPT-4o-0513\nClaude-3.5-Sonnet-1022\n51.6\n50.8\n42.0\n39.2\n38.8\n35.6\n25.3\n24.8\n24.5\n23.8\n23.6\n23.3\n23.3\n22.6\n20.3\n16.7\n16.0\n9.3\nAIME 2024\nCodeforces\nSWE-bench Verified\n(Pass@1)\n(Percentile)\n(Resolved)",
+    "kind": "text"
+   },
+   {
+    "doc": "2412.19437v1.pdf",
+    "page": 22,
+    "text": "Training Hyper-Parameters.\nWe employ the AdamW optimizer (Loshchilov and Hutter, 2017) with hyper-parameters set to 𝛽1 = 0.9, 𝛽2 = 0.95, and weight_decay = 0.1. We set the maximum sequence length to 4K during pre-training, and pre-train DeepSeek-V3 on 14.8T tokens. As for\n22",
+    "kind": "text"
+   }
+  ]
+ },
+ "A7": {
+  "question": "Qwen2.5 支持多少种语言？",
+  "cat": "fact",
+  "items": [
+   {
+    "doc": "2412.15115v2.pdf",
+    "page": 1,
+    "text": "To handle diverse and varied use cases effectively, we present Qwen2.5 LLM series in rich configurations. The open-weight offerings include base models and instruction-tuned models in sizes of 0.5B, 1.5B, 3B, 7B, 14B, 32B, and 72B parameters. Quantized versions of the instruction-tuned models are also provided. Over 100 models can be accessed from Hugging Face Hub, ModelScope, and Kaggle. In addition, for hosted solutions, the proprietary models currently include two mixture-of-experts (MoE) variants: Qwen2.5- Turbo and Qwen2.5-Plus, both available from Alibaba Cloud Model Studio. Qwen2.5 has demonstrated top-tier performance on a wide range of benchmarks eval- uating language understanding, reasoning, mathematics, coding, human preference alignment, etc. Specifically, the open-weight flagship Qwen2.5-72B-Instruct outperforms a number of open and proprietary models and demonstrates compe",
+    "kind": "text"
+   },
+   {
+    "doc": "2412.15115v2.pdf",
+    "page": 14,
+    "text": "We compare the performance of Qwen2.5-Instruct models against several leading language models, including GPT-4, Claude3.5-sonnet, Qwen2, and Llama-3.1, across both English and Chinese languages. Our analysis focuses on model size and its impact on performance, as well as how our latest Qwen2.5 series compares to previous iterations and competing models. For smaller models, we observe that the Qwen2.5-0.5B model achieves performance that is on par with or even surpasses the Qwen2-1.5B model. This indicates that the Qwen2.5 series has optimized parameter usage, enabling mid-sized models to achieve similar performance levels to larger models from the previous generation. The Qwen2.5-3B model demonstrates performance that is comparable to the Qwen2-7B model. Notably, the Qwen2.5-32B model exhibits a remarkable improvement over the Qwen2-72B model. Our flagship model, Qwen2.5-72B, further nar",
+    "kind": "text"
+   },
+   {
+    "doc": "2412.15115v2.pdf",
+    "page": 15,
+    "text": "Qwen2.5 exhibits competitive performance in instruction following, multilingual knowledge, and mathe- matical reasoning, aligning well with models of comparable size. Although it shows notable improve- ments in capturing cultural nuances relative to its predecessor, Qwen2, there remains potential for further\nrefinement in this domain.",
+    "kind": "text"
+   },
+   {
+    "doc": "2412.15115v2.pdf",
+    "page": 18,
+    "text": "t Length (# Tokens)\n17\n3.2x\n4.3x\n2.4x\n3.1x\n1.7x\n1.4x\n4x\n5.6x\n2.9x\n4.1x\n2.3x\n1.7x\nQwen2.5 represents a significant advancement in large language models (LLMs), with enhanced pre- training on 18 trillion tokens and sophisticated post-training techniques, including supervised fine-tuning and multi-stage reinforcement learning. These improvements boost human preference alignment, long text generation, and structural data analysis, making Qwen2.5 highly effective for instruction-following tasks. Available in various configurations, Qwen2.5 offers both open-weight from 0.5B to 72B parameters and proprietary models including cost-effective MoE variants like Qwen2.5-Turbo and Qwen2.5-Plus. Empirical evaluations show that Qwen2.5-72B-Instruct matches the performance of the state-of-the-art Llama-3-405B-Instruct, despite being six times smaller. Qwen2.5 also serves as a foundation for specialized ",
+    "kind": "text"
+   },
+   {
+    "doc": "2412.15115v2.pdf",
+    "page": 1,
+    "text": "2025-01-06\nQwen2.5 Technical Report\nQwen Team\nhttps://huggingface.co/Qwen https://modelscope.cn/organization/qwen https://github.com/QwenLM/Qwen2.5",
+    "kind": "text"
+   },
+   {
+    "doc": "2412.19437v1.pdf",
+    "page": 41,
+    "text": "Qwen. Qwen2.5: A party of foundation models, 2024b. URL https://qwenlm.github.io/b log/qwen2.5.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2501.12948v2.pdf",
+    "page": 83,
+    "text": "Qwen. Qwen2.5: A party of foundation models, 2024b. URL https://qwenlm.github.io/b log/qwen2.5.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2412.15115v2.pdf",
+    "page": 2,
+    "text": "Recently, we release the details of our latest version of the Qwen series, Qwen2.5. In terms of the open- weight part, we release pre-trained and instruction-tuned models of 7 sizes, including 0.5B, 1.5B, 3B, 7B, 14B, 32B, and 72B, and we provide not only the original models in bfloat16 precision but also the quantized models in different precisions. Specifically, the flagship model Qwen2.5-72B-Instruct demonstrates competitive performance against the state-of-the-art open-weight model, Llama-3-405B-Instruct, which is around 5 times larger. Additionally, we also release the proprietary models of Mixture-of-Experts (MoE, Lepikhin et al., 2020; Fedus et al., 2022; Zoph et al., 2022), namely Qwen2.5-Turbo and Qwen2.5-Plus1, which performs competitively against GPT-4o-mini and GPT-4o respectively.",
+    "kind": "text"
+   },
+   {
+    "doc": "2412.15115v2.pdf",
+    "page": 1,
+    "text": "Math\nMBPP\nBBH\nMMLU\nQwen2.5-72B\nQwen2-72B\nQwen1.5-72B\n18T\n3T\n7T\ntokens",
+    "kind": "text"
+   },
+   {
+    "doc": "2412.15115v2.pdf",
+    "page": 14,
+    "text": "To comprehensively evaluate the multilingual capabilities of instruction-tuned models, we followed P-MMEval (Zhang et al., 2024) and extended several benchmarks as follows: (1) IFEval (Multilingual): We expanded the IFEval benchmark, originally in English, to include multilingual examples. To ensure language neutrality, we removed instances that contained language-specific content (e.g., ”start with letter A”). (2) Knowledge Utilization: to assess the knowledge utilization abilities of the Qwen2.5 series models across multiple languages, we employed five MMLU-like benchmarks (multiple-choice format). These benchmarks include: AMMLU (Arabic), JMMLU (Japanese), KMMLU (Korean), IndoMMLU (Indonesian), and TurkishMMLU (Turkish). Additionally, we evaluated the models’ performance on the translated version of the MMLU benchmark (okapi MMLU), which has been adapted",
+    "kind": "text"
+   },
+   {
+    "doc": "2412.15115v2.pdf",
+    "page": 15,
+    "text": "The reward model serves as the cornerstone for guiding RL processes, and thus we conduct a separate evaluation of the reward model used in the Qwen2.5 series. Our assessment benchmarks encompass Reward Bench (Lambert et al., 2024), RMB (Zhou et al., 2024), PPE (Frick et al., 2024b), and an internally collected out-of-domain Chinese human preference benchmark (Human-Preference-Chinese) to provide a comprehensive analysis. For comparison, we included baseline models such as Nemotron-4-340B- Reward (Adler et al., 2024), Llama-3.1-Nemotron-70B-Reward (Wang et al., 2024c), and Athene-RM- 70B (Frick et al., 2024a). The results are shown in Table 15. Overall, our findings indicate that Llama-3.1- Nemotron-70B-Reward excels on the Reward Bench, while Athene-RM-70B performs best on the RMB benchmark. The Qwen2.5-RM-72B, leads in both the PPE and Human-Preference-Chinese evaluations, ranking secon",
+    "kind": "text"
+   }
+  ]
+ },
+ "A8": {
+  "question": "GPT 论文中使用的优化器是什么，学习率如何调度？",
+  "cat": "fact",
+  "items": [
+   {
+    "doc": "2005.14165v4.pdf",
+    "page": 43,
+    "text": "To train all versions of GPT-3, we use Adam with β1 = 0.9, β2 = 0.95, and ϵ = 10−8, we clip the global norm of the gradient at 1.0, and we use cosine decay for learning rate down to 10% of its value, over 260 billion tokens (after 260 billion tokens, training continues at 10% of the original learning rate). There is a linear LR warmup over the ﬁrst 375 million tokens. We also gradually increase the batch size linearly from a small value (32k tokens) to the full value over the ﬁrst 4-12 billion tokens of training, depending on the model size. Data are sampled without replacement during training (until an epoch boundary is reached) to minimize overﬁtting. All models use weight decay of 0.1 to provide a small amount of regularization [LH17].",
+    "kind": "text"
+   },
+   {
+    "doc": "2305.13048v2.pdf",
+    "page": 5,
+    "text": "For training, we use the standard Adam optimizer without weight decay, use bfloat16 precision, and train with a context length of 1024 tokens. Fur- ther details on hyperparameters are in Appendix G. Diverting from standard practice for transformers, we apply exponential decay to our learning rate. We also incorporate the auxiliary loss introduced by PaLM (Chowdhery et al., 2022), supplement- ing the standard cross-entropy loss function. This auxiliary loss encourages the softmax normalizer to approximate zero closely. As for the learning rate schedule, it remains constant for the initial iterations, and subsequently decays exponentially.",
+    "kind": "text"
+   },
+   {
+    "doc": "2001.08361v1.pdf",
+    "page": 7,
+    "text": "Training Procedures Unless otherwise noted, we train models with the Adam optimizer [KB14] for a ﬁxed 2.5 × 105 steps with a batch size of 512 sequences of 1024 tokens. Due to memory constraints, our largest models (more than 1B parameters) were trained with Adafactor [SS18]. We experimented with a variety of learning rates and schedules, as discussed in Appendix D.6. We found that results at convergence were largely independent of learning rate schedule. Unless otherwise noted, all training runs included in our data used a learning rate schedule with a 3000 step linear warmup followed by a cosine decay to zero.",
+    "kind": "text"
+   },
+   {
+    "doc": "2106.09685v2.pdf",
+    "page": 19,
+    "text": "We train all of our GPT-2 models using AdamW (Loshchilov & Hutter, 2017) with a linear learning rate schedule for 5 epochs. We use the batch size, learning rate, and beam search beam size described in Li & Liang (2021). Accordingly, we also tune the above hyperparameters for LoRA. We report the mean over 3 random seeds; the result for each run is taken from the best epoch. The hyperparameters used for LoRA in GPT-2 are listed in Table 11. For those used for other baselines, see Li & Liang",
+    "kind": "reference"
+   },
+   {
+    "doc": "language_understanding_paper.pdf",
+    "page": 5,
+    "text": "Our model largely follows the original transformer work [62]. We trained a 12-layer decoder-only transformer with masked self-attention heads (768 dimensional states and 12 attention heads). For the position-wise feed-forward networks, we used 3072 dimensional inner states. We used the Adam optimization scheme [27] with a max learning rate of 2.5e-4. The learning rate was increased linearly from zero over the ﬁrst 2000 updates and annealed to 0 using a cosine schedule. We train for 100 epochs on minibatches of 64 randomly sampled, contiguous sequences of 512 tokens. Since layernorm [2] is used extensively throughout the model, a simple weight initialization of N(0, 0.02) was sufﬁcient. We used a bytepair encoding (BPE) vocabulary with 40,000 merges [53] and residual, embedding, and attention dropouts with a rate of 0.1 for regularization. We also employed a modiﬁed version of L2 regulari",
+    "kind": "text"
+   },
+   {
+    "doc": "333078981_693988129081760_4712707815225756708_n.pdf",
+    "page": 3,
+    "text": "We remove the absolute positional embeddings, and instead, add rotary positional embeddings (RoPE), introduced by Su et al. (2021), at each layer of the network. The details of the hyper-parameters for our dif- ferent models are given in Table 2.\nOptimizer Our models are trained using the AdamW opti- mizer (Loshchilov and Hutter, 2017), with the fol- lowing hyper-parameters: β1 = 0.9, β2 = 0.95. We use a cosine learning rate schedule, such that the final learning rate is equal to 10% of the maxi- mal learning rate. We use a weight decay of 0.1 and gradient clipping of 1.0. We use 2, 000 warmup",
+    "kind": "text"
+   },
+   {
+    "doc": "2107.03374v2.pdf",
+    "page": 4,
+    "text": "We train Codex using the same learning rate as the corre- sponding GPT model, with a 175 step linear warmup and cosine learning rate decay. We train for a total of 100 billion tokens, using the Adam optimizer with β1 = 0.9, β2 = 0.95, ϵ = 10−8, and a weight decay coefﬁcient of 0.1.",
+    "kind": "text"
+   },
+   {
+    "doc": "2106.09685v2.pdf",
+    "page": 19,
+    "text": "For all GPT-3 experiments, we train using AdamW (Loshchilov & Hutter, 2017) for 2 epochs with a batch size of 128 samples and a weight decay factor of 0.1. We use a sequence length of 384 for",
+    "kind": "reference"
+   },
+   {
+    "doc": "2005.14165v4.pdf",
+    "page": 43,
+    "text": "During training we always train on sequences of the full nctx = 2048 token context window, packing multiple documents into a single sequence when documents are shorter than 2048, in order to increase computational efﬁciency. Sequences with multiple documents are not masked in any special way but instead documents within a sequence are delimited with a special end of text token, giving the language model the information necessary to infer that context separated by the end of text token is unrelated. This allows for efﬁcient training without need for any special sequence-speciﬁc masking.",
+    "kind": "text"
+   },
+   {
+    "doc": "2001.08361v1.pdf",
+    "page": 7,
+    "text": "2.2",
+    "kind": "text"
+   }
+  ]
+ },
+ "B1": {
+  "question": "Transformer base 模型的 d_model、注意力头数 h、层数分别是多少？",
+  "cat": "number",
+  "items": [
+   {
+    "doc": "1706.03762v1_img.pdf",
+    "page": 9,
+    "text": "8\n| | $N$ | $d_{\\text{model}}$ | $d_{\\text{ff}}$ | $h$ | $d_k$ | $d_v$ | $P_{drop}$ | $\\epsilon_{ls}$ | train steps | PPL (dev) | BLEU (dev) | params $\\times 10^6$ | |---|---|---|---|---|---|---|---|---|---|---|---|---| | base | 6 | 512 | 1024 | 8 | 64 | 64 | 0.1 | 0.1 | 100K | 4.92 | 25.8 | 65 | | (A) | | | | 1 | 512 | 512 | | | | 5.29 | 24.9 | 65 | | | | | | 4 | 128 | 128 | | | | 5.00 | 25.5 | 65 | | | | | | 16 | 32 | 32 | | | | 4.91 | 25.8 | 65 | | | | | | 32 | 16 | 16 | | | | 5.01 | 25.4 | 65 | | (B) | | | | | 16 | | | | | 5.16 | 25.1 | 58 | | | | | | | 32 | | | | | 5.01 | 25.4 | 60 | | (C) | 2 | | | | | | | | | 6.11 | 23.7 | 36 | | | 4 | | | | | | | | | 5.19 | 25.3 | 50 | | | 8 | | | | | | | | | 4.88 | 25.5 | 80 | | | | 256 | | | 32 | 32 | | | | 5.75 | 24.5 | 28 | | | | 1024 | | | 128 | 128 | | | | 4.66 | 26.0 | 168 | | | | | 1024 | | | | | | | 5.12 | 25.4 | 53 | | | | | 4096 | | | ",
+    "kind": "text"
+   },
+   {
+    "doc": "N19-1423.pdf",
+    "page": 3,
+    "text": "BERT’s model architec- ture is a multi-layer bidirectional Transformer en- coder based on the original implementation de- scribed in Vaswani et al. (2017) and released in the tensor2tensor library.1 Because the use of Transformers has become common and our im- plementation is almost identical to the original, we will omit an exhaustive background descrip- tion of the model architecture and refer readers to Vaswani et al. (2017) as well as excellent guides such as “The Annotated Transformer.”2 In this work, we denote the number of layers (i.e., Transformer blocks) as L, the hidden size as H, and the number of self-attention heads as A.3 We primarily report results on two model sizes: BERTBASE (L=12, H=768, A=12, Total Param- eters=110M) and BERTLARGE (L=24, H=1024, A=16, Total Parameters=340M). BERTBASE was chosen to have the same model size as OpenAI GPT for comparison purposes. Critical",
+    "kind": "text"
+   },
+   {
+    "doc": "1706.03762v1.pdf",
+    "page": 2,
+    "text": "The encoder is composed of a stack of N = 6 identical layers. Each layer has two sub-layers. The ﬁrst is a multi-head self-attention mechanism, and the second is a simple, position- wise fully connected feed-forward network. We employ a residual connection around each of the two sub-layers, followed by layer normalization [1]. That is, the output of each sub-layer is LayerNorm(x + Sublayer(x)), where Sublayer(x) is the function implemented by the sub-layer itself. To facilitate these residual connections, all sub-layers in the model, as well as the embedding layers, produce outputs of dimension dmodel = 512.",
+    "kind": "text"
+   },
+   {
+    "doc": "2101.03961v3.pdf",
+    "page": 23,
+    "text": "Switch Transformers\nModel\nParameters\nFLOPs/seq\ndmodel\nT5-Base\n0.2B\n124B\n768\n0.7B\n425B\n1024\nT5-Large\nT5-XXL\n11B\n6.3T\n4096\nSwitch-Base\n7B\n124B\n768\n26B\n425B\n1024\nSwitch-Large\nSwitch-XXL\n395B\n6.3T\n4096\nSwitch-C\n1571B\n890B\n2080\nModel\nExpert Freq.\nNum. Layers\nNum Experts\nT5-Base\n–\n12\n–\nT5-Large\n–\n24\n–\nT5-XXL\n–\n24\n–\nSwitch-Base\n1/2\n12\n128\n1/2\n24\n128\nSwitch-Large\nSwitch-XXL\n1/2\n24\n64\nSwitch-C\n1\n15\n2048\nFFNGEGLU\ndff\ndkv\nNum. Heads\n✓\n2048\n64\n12\n✓\n2816\n64\n16\n✓\n10240\n64\n64\n✓\n2048\n64\n12\n✓\n2816\n64\n16\n✓\n10240\n64\n64\n6144\n64\n32\nNeg. Log Perp. @250k\nNeg. Log Perp. @ 500k\n-1.599\n-1.556\n-1.402\n-1.350\n-1.147\n-1.095\n-1.370\n-1.306\n-1.248\n-1.177\n-1.086\n-1.008\n-1.096\n-1.043",
+    "kind": "text"
+   },
+   {
+    "doc": "1706.03762v1.pdf",
+    "page": 2,
+    "text": "Encoder:\nThe decoder is also composed of a stack of N = 6 identical layers. In addition to the two sub-layers in each encoder layer, the decoder inserts a third sub-layer, which performs multi-head attention over the output of the encoder stack. Similar to the encoder, we employ residual connections\nDecoder:\n2",
+    "kind": "text"
+   },
+   {
+    "doc": "1706.03762v1.pdf",
+    "page": 1,
+    "text": "The dominant sequence transduction models are based on complex recurrent or convolutional neural networks in an encoder-decoder conﬁguration. The best performing models also connect the encoder and decoder through an attention mechanism. We propose a new simple network architecture, the Transformer, based solely on attention mechanisms, dispensing with recurrence and convolutions entirely. Experiments on two machine translation tasks show these models to be superior in quality while being more parallelizable and requiring signiﬁcantly less time to train. Our model achieves 28.4 BLEU on the WMT 2014 English- to-German translation task, improving over the existing best results, including ensembles by over 2 BLEU. On the WMT 2014 English-to-French translation task, our model establishes a new single-model state-of-the-art BLEU score of 41.0 after training for 3.5 days on eight GPUs, a small",
+    "kind": "text"
+   },
+   {
+    "doc": "1706.03762v1.pdf",
+    "page": 9,
+    "text": "Table 3: Variations on the Transformer architecture. Unlisted hyperparameter values are identical to those of the base model. All metrics are on the English-to-German translation development set, newstest2013. Listed perplexities are per-wordpiece, according to our byte-pair encoding, and should",
+    "kind": "table"
+   },
+   {
+    "doc": "1706.03762v1.pdf",
+    "page": 8,
+    "text": "7\nModel\nEN-DE\nByteNet [16]\n23.75 Deep-Att + PosUnk [35]\nGNMT + RL [34]\n24.6\nConvS2S [9]\n25.16\nMoE [29]\n26.03\nDeep-Att + PosUnk Ensemble [35]\nGNMT + RL Ensemble [34]\n26.30\nConvS2S Ensemble [9]\n26.36\nTransformer (base model)\n27.3\n28.4\nTransformer (big)\nBLEU\nTraining Cost (FLOPs)\nEN-FR\nEN-DE\nEN-FR\n1.0 · 1020\n39.2\n2.3 · 1019\n1.4 · 1020\n39.92\n9.6 · 1018\n1.5 · 1020\n40.46\n2.0 · 1019\n1.2 · 1020\n40.56\n8.0 · 1020\n40.4\n1.8 · 1020\n1.1 · 1021\n41.16\n7.7 · 1019\n1.2 · 1021\n41.29\n3.3 · 1018\n38.1\n2.3 · 1019\n41.0",
+    "kind": "text"
+   },
+   {
+    "doc": "1706.03762v1_img.pdf",
+    "page": 9,
+    "text": "Table 4: The Transformer generalizes well to English constituency parsing (Results are on Section 23 of WSJ)",
+    "kind": "table"
+   },
+   {
+    "doc": "N19-1423.pdf",
+    "page": 3,
+    "text": "1https://github.com/tensorﬂow/tensor2tensor 2http://nlp.seas.harvard.edu/2018/04/03/attention.html 3In all cases we set the feed-forward/ﬁlter size to be 4H, i.e., 3072 for the H = 768 and 4096 for the H = 1024. 4We note that in the literature the bidirectional Trans-",
+    "kind": "text"
+   }
+  ]
+ },
+ "B2": {
+  "question": "Mistral 7B 的滑动窗口大小 W 是多少？",
+  "cat": "number",
+  "items": [
+   {
+    "doc": "2310.06825v1.pdf",
+    "page": 2,
+    "text": "ing language models that can be used in a wide range of real-world applications.\nMistral 7B is based on a transformer architecture [27]. The main parameters of the architecture are summarized in Table 1. Compared to Llama, it introduces a few changes that we summarize below.\nParameter\nValue dim\n4096 n_layers\n32 head_dim",
+    "kind": "text"
+   },
+   {
+    "doc": "2310.06825v1.pdf",
+    "page": 1,
+    "text": "We introduce Mistral 7B, a 7–billion-parameter language model engineered for superior performance and efficiency. Mistral 7B outperforms the best open 13B model (Llama 2) across all evaluated benchmarks, and the best released 34B model (Llama 1) in reasoning, mathematics, and code generation. Our model leverages grouped-query attention (GQA) for faster inference, coupled with sliding window attention (SWA) to effectively handle sequences of arbitrary length with a reduced inference cost. We also provide a model fine-tuned to follow instructions, Mistral 7B – Instruct, that surpasses Llama 2 13B – chat model both on human and automated benchmarks. Our models are released under the Apache 2.0 license. Code: https://github.com/mistralai/mistral-src Webpage: https://mistral.ai/news/announcing-mistral-7b/",
+    "kind": "text"
+   },
+   {
+    "doc": "2310.06825v1.pdf",
+    "page": 1,
+    "text": "Mistral 7B leverages grouped-query attention (GQA) [1], and sliding window attention (SWA) [6, 3]. GQA significantly accelerates the inference speed, and also reduces the memory requirement during decoding, allowing for higher batch sizes hence higher throughput, a crucial factor for real-time applications. In addition, SWA is designed to handle longer sequences more effectively at a reduced computational cost, thereby alleviating a common limitation in LLMs. These attention mechanisms collectively contribute to the enhanced performance and efficiency of Mistral 7B.",
+    "kind": "text"
+   },
+   {
+    "doc": "2406.14491v2.pdf",
+    "page": 10,
+    "text": "Albert Q Jiang, Alexandre Sablayrolles, Arthur Men- sch, Chris Bamford, Devendra Singh Chaplot, Diego de las Casas, Florian Bressand, Gianna Lengyel, Guil- laume Lample, Lucile Saulnier, et al. 2023. Mistral 7b. arXiv preprint arXiv:2310.06825.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2412.15115v2.pdf",
+    "page": 22,
+    "text": "Albert Q. Jiang, Alexandre Sablayrolles, Arthur Mensch, Chris Bamford, Devendra Singh Chaplot, Diego de Las Casas, Florian Bressand, Gianna Lengyel, Guillaume Lample, Lucile Saulnier, L´elio Renard Lavaud, Marie-Anne Lachaux, Pierre Stock, Teven Le Scao, Thibaut Lavril, Thomas Wang, Timoth´ee Lacroix, and William El Sayed. Mistral 7B. CoRR, abs/2310.06825, 2023a.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2406.14491v2.pdf",
+    "page": 15,
+    "text": "Mistral-7B-v0.1 Computing infrastructure",
+    "kind": "reference"
+   },
+   {
+    "doc": "2310.06825v1.pdf",
+    "page": 1,
+    "text": "Mistral 7B\nAlbert Q. Jiang, Alexandre Sablayrolles, Arthur Mensch, Chris Bamford, Devendra Singh Chaplot, Diego de las Casas, Florian Bressand, Gianna Lengyel, Guillaume Lample, Lucile Saulnier, Lélio Renard Lavaud, Marie-Anne Lachaux, Pierre Stock, Teven Le Scao, Thibaut Lavril, Thomas Wang, Timothée Lacroix, William El Sayed\narXiv:2310.06825v1 [cs.CL] 10 Oct 2023",
+    "kind": "text"
+   },
+   {
+    "doc": "2412.19437v1.pdf",
+    "page": 39,
+    "text": "A. Q. Jiang, A. Sablayrolles, A. Mensch, C. Bamford, D. S. Chaplot, D. d. l. Casas, F. Bressand, G. Lengyel, G. Lample, L. Saulnier, et al. Mistral 7b. arXiv preprint arXiv:2310.06825, 2023.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2310.06825v1.pdf",
+    "page": 2,
+    "text": "Sliding Window Attention. SWA exploits the stacked layers of a trans- former to attend information beyond the window size W. The hidden state in position i of the layer k, hi, attends to all hidden states from the previous layer with positions between i −W and i. Recursively, hi can access tokens from the input layer at a distance of up to W × k tokens, as illustrated in Figure 1. At the last layer, using a window size of W = 4096, we have a theoretical attention span of approximately 131K tokens. In practice, for a sequence length of 16K and W = 4096, changes made to FlashAttention [11] and xFormers [18] yield a 2x speed improvement over a vanilla attention baseline.",
+    "kind": "text"
+   },
+   {
+    "doc": "2310.06825v1.pdf",
+    "page": 1,
+    "text": "In the rapidly evolving domain of Natural Language Processing (NLP), the race towards higher model performance often necessitates an escalation in model size. However, this scaling tends to increase computational costs and inference latency, thereby raising barriers to deployment in practical, real-world scenarios. In this context, the search for balanced models delivering both high-level performance and efficiency becomes critically essential. Our model, Mistral 7B, demonstrates that a carefully designed language model can deliver high performance while maintaining an efficient inference. Mistral 7B outperforms the previous best 13B model (Llama 2, [26]) across all tested benchmarks, and surpasses the best 34B model (LLaMa 34B, [25]) in mathematics and code generation. Furthermore, Mistral 7B approaches the coding performance of Code-Llama 7B [20], without sacrificing performance on non",
+    "kind": "text"
+   }
+  ]
+ },
+ "B3": {
+  "question": "BERT-base 的层数、隐藏层维度、注意力头数分别是多少？",
+  "cat": "number",
+  "items": [
+   {
+    "doc": "N19-1423.pdf",
+    "page": 3,
+    "text": "BERT’s model architec- ture is a multi-layer bidirectional Transformer en- coder based on the original implementation de- scribed in Vaswani et al. (2017) and released in the tensor2tensor library.1 Because the use of Transformers has become common and our im- plementation is almost identical to the original, we will omit an exhaustive background descrip- tion of the model architecture and refer readers to Vaswani et al. (2017) as well as excellent guides such as “The Annotated Transformer.”2 In this work, we denote the number of layers (i.e., Transformer blocks) as L, the hidden size as H, and the number of self-attention heads as A.3 We primarily report results on two model sizes: BERTBASE (L=12, H=768, A=12, Total Param- eters=110M) and BERTLARGE (L=24, H=1024, A=16, Total Parameters=340M). BERTBASE was chosen to have the same model size as OpenAI GPT for comparison purposes. Critical",
+    "kind": "text"
+   },
+   {
+    "doc": "UnderstandingDeepLearning_02_09_26_C.pdf",
+    "page": 233,
+    "text": "BERT is an encoder model that uses a vocabulary of 30,000 tokens. Input tokens are converted to 1024-dimensional word embeddings and passed through 24 transformer layers. Each contains a self-attention mechanism with 16 heads. The queries, keys, and values for each head are of dimension 64 (i.e., the matrices Ωvh, Ωqh, Ωkh are 64×1024). The dimension of the single hidden layer in the fully connected networks is 4096. The total number of parameters is ∼340 million. When BERT was introduced, this was considered large, but it is now much smaller than state-of-the-art models.",
+    "kind": "text"
+   },
+   {
+    "doc": "N19-1423.pdf",
+    "page": 9,
+    "text": "1024\n768\n12\n3.99\n84.4\n86.7\n93.3 24 1024\n16\n3.54\n85.7\n86.9\n16\n3.23\n86.6\n87.8\n93.7\nAblation over BERT model size. #L = the number of layers; #H = hidden size; #A = number of at- tention heads. “LM (ppl)” is the masked LM perplexity of held-out training data.\n4179\nSystem\nDev F1 Test F1 ELMo (Peters et al., 2018a)\n92.2 CVT (Clark et al., 2018)\n95.7\n92.6 CSE (Akbik et al., 2018)\n-\n93.1 Fine-tuning approach BERTLARGE\n-\n92.8 BERTBASE\n96.6\n92.4 Feature-based approach (BERTBASE) Embeddings\n96.4\n- Second-to-Last Hidden\n91.0\n- Last Hidden\n95.6\n- Weighted Sum Last Four Hidden\n94.9\n- Concat Last Four Hidden\n95.9\n- Weighted Sum All 12 Layers\n96.1\n95.5\n-",
+    "kind": "text"
+   },
+   {
+    "doc": "N19-1423.pdf",
+    "page": 8,
+    "text": "Results on selected GLUE tasks are shown in Table 6. In this table, we report the average Dev Set accuracy from 5 random restarts of ﬁne-tuning. We can see that larger models lead to a strict ac- curacy improvement across all four datasets, even for MRPC which only has 3,600 labeled train- ing examples, and is substantially different from the pre-training tasks. It is also perhaps surpris- ing that we are able to achieve such signiﬁcant improvements on top of models which are al- ready quite large relative to the existing literature. For example, the largest Transformer explored in Vaswani et al. (2017) is (L=6, H=1024, A=16) with 100M parameters for the encoder, and the largest Transformer we have found in the literature is (L=64, H=512, A=2) with 235M parameters (Al-Rfou et al., 2018). By contrast, BERTBASE contains 110M parameters and BERTLARGE con- tains 340M parameters.",
+    "kind": "text"
+   },
+   {
+    "doc": "2005.14165v4.pdf",
+    "page": 46,
+    "text": "3.82E+02\n3.30E+22\n11,000\n1,000\nBERT-Base\n1.89E+00\n1.64E+20\n109\n250\nBERT-Large\n6.16E+00\n5.33E+20\n355\n250\nRoBERTa-Base\n1.74E+01\n1.50E+21\n125\n2,000\nRoBERTa-Large\n4.93E+01\n4.26E+21\n355\n2,000\nGPT-3 Small\n2.60E+00\n2.25E+20\n125\n300\nGPT-3 Medium\n7.42E+00\n6.41E+20\n356\n300\nGPT-3 Large\n1.58E+01\n1.37E+21\n760\n300\nGPT-3 XL\n2.75E+01\n2.38E+21\n1,320\n300\nGPT-3 2.7B\n5.52E+01\n4.77E+21\n2,650\n300\nGPT-3 6.7B\n1.39E+02\n1.20E+22\n6,660\n300\nGPT-3 13B\n2.68E+02\n2.31E+22\n12,850\n300\nGPT-3 175B\n3.64E+03\n3.14E+23\n174,600\n300\nFwd-pass ﬂops per active param per token\nFrac of params active for each token\nFlops per param per token\nMult for bwd pass\n3\n3\n1\n0.5\n3\n3\n1\n0.5\n3\n3\n1\n0.5\n3\n3\n1\n0.5\n3\n3\n1\n0.5\n6\n3\n2\n1.0\n6\n3\n2\n1.0\n6\n3\n2\n1.0\n6",
+    "kind": "text"
+   },
+   {
+    "doc": "2010.11929v2.pdf",
+    "page": 5,
+    "text": "Published as a conference paper at ICLR 2021\nHidden size D\nModel\nParams ViT-Base\nLayers\nMLP size\nHeads\n86M ViT-Large\n12\n768\n3072\n12\n307M ViT-Huge\n24\n1024\n4096\n16\n32\n1280\n5120\n16\n632M",
+    "kind": "text"
+   },
+   {
+    "doc": "UnderstandingDeepLearning_02_09_26_C.pdf",
+    "page": 486,
+    "text": "BERT: pre-training of deep bidirec- tional transformers for language understand- ing.",
+    "kind": "reference"
+   },
+   {
+    "doc": "1910.10683v4.pdf",
+    "page": 59,
+    "text": "BERT: Pre- training of deep bidirectional transformers for language understanding. arXiv preprint arXiv:1810.04805, 2018.",
+    "kind": "reference"
+   },
+   {
+    "doc": "N19-1423.pdf",
+    "page": 3,
+    "text": "1https://github.com/tensorﬂow/tensor2tensor 2http://nlp.seas.harvard.edu/2018/04/03/attention.html 3In all cases we set the feed-forward/ﬁlter size to be 4H, i.e., 3072 for the H = 768 and 4096 for the H = 1024. 4We note that in the literature the bidirectional Trans-",
+    "kind": "text"
+   },
+   {
+    "doc": "UnderstandingDeepLearning_02_09_26_C.pdf",
+    "page": 233,
+    "text": "During pre- training, the parameters of the transformer architecture are learned using self-supervision from a large corpus of text. The goal here is for the model to learn general information about the statistics of language. In the fine-tuning stage, the resulting network is adapted to solve a particular task using a smaller body of labelled training data.\nEncoder models like BERT exploit transfer learning (section 9.3.6).\nDraft: please send errata to udlbookmail@gmail.com.",
+    "kind": "text"
+   },
+   {
+    "doc": "N19-1423.pdf",
+    "page": 9,
+    "text": "Table 7: CoNLL-2003 Named Entity Recognition re- sults. Hyperparameters were selected using the Dev set. The reported Dev and Test scores are averaged over 5 random restarts using those hyperparameters.",
+    "kind": "table"
+   }
+  ]
+ },
+ "B4": {
+  "question": "LLaMA 2 的最大上下文长度是多少？",
+  "cat": "number",
+  "items": [
+   {
+    "doc": "2307.09288v2.pdf",
+    "page": 47,
+    "text": "We expand the context window for Llama 2 from 2048 tokens to 4096 tokens. The longer context window enables models to process more information, which is particularly useful for supporting longer histories in chat applications, various summarization tasks, and understanding longer documents. Table 16 compares the performance of 2k and 4k context pretraining on long-context benchmarks. Both models are trained for 150B tokens, keeping the same architecture and hyperparameters as a baseline, varying only the context length. We observe improvement on SCROLLS (Shaham et al., 2022), where the average input length is 3.5k, and no performance degradation on SQUAD (Rajpurkar et al., 2018). Table 17 shows that the longer context model retains strong performance on various general-purpose tasks.",
+    "kind": "text"
+   },
+   {
+    "doc": "2307.09288v2.pdf",
+    "page": 6,
+    "text": " online data\nLlama 2\n34B\n70B\n✗\n2k\n1.0T\n✗\n2k\n1.0T\n✗\n2k\n1.4T\n✗\n2k\n1.4T\n✗\n4k\n2.0T\n✗\n4k\n2.0T\n✓",
+    "kind": "text"
+   },
+   {
+    "doc": "2307.09288v2.pdf",
+    "page": 6,
+    "text": "ta\nLlama 2\n34B\n70B\n✗\n2k\n1.0T\n✗\n2k\n1.0T\n✗\n2k\n1.4T\n✗\n2k\n1.4T\n✗\n4k\n2.0T\n✗\n4k\n2.0T\n✓\n4k\n2.0T\n✓",
+    "kind": "text"
+   },
+   {
+    "doc": "2307.09288v2.pdf",
+    "page": 6,
+    "text": "f publicly available online data\nLlama 2\n34B\n70B\n✗\n2k\n1.0T\n✗\n2k\n1.0T\n✗\n2k\n1.4T\n✗\n2k\n1.4T\n✗",
+    "kind": "text"
+   },
+   {
+    "doc": "2307.09288v2.pdf",
+    "page": 6,
+    "text": " available online data\nLlama 2\n34B\n70B\n✗\n2k\n1.0T\n✗\n2k\n1.0T\n✗\n2k\n1.4T\n✗\n2k\n1.4T\n✗\n4k\n2.0T\n✗",
+    "kind": "text"
+   },
+   {
+    "doc": "2307.09288v2.pdf",
+    "page": 6,
+    "text": " new mix of publicly available online data\nLlama 2\n34B\n70B\n✗\n2k\n1.0T\n✗\n2k\n1.0T\n✗\n2k\n1.4T\n✗",
+    "kind": "text"
+   },
+   {
+    "doc": "2307.09288v2.pdf",
+    "page": 6,
+    "text": "7B\n13B\nSee Touvron et al. (2023)\nLlama 1\n33B\n65B\n7B\n13B\nA new mix of publicly available online data\nLlama 2\n34B\n70B",
+    "kind": "text"
+   },
+   {
+    "doc": "2307.09288v2.pdf",
+    "page": 4,
+    "text": "3\nWe are releasing the following models to the general public for research and commercial use‡:\n1. Llama 2, an updated version of Llama 1, trained on a new mix of publicly available data. We also increased the size of the pretraining corpus by 40%, doubled the context length of the model, and adopted grouped-query attention (Ainslie et al., 2023). We are releasing variants of Llama 2 with 7B, 13B, and 70B parameters. We have also trained 34B variants, which we report on in this paper but are not releasing.§",
+    "kind": "text"
+   },
+   {
+    "doc": "2307.09288v2.pdf",
+    "page": 47,
+    "text": "Context Length.",
+    "kind": "text"
+   },
+   {
+    "doc": "2307.09288v2.pdf",
+    "page": 6,
+    "text": "1.5 × 10−4",
+    "kind": "formula"
+   },
+   {
+    "doc": "2307.09288v2.pdf",
+    "page": 6,
+    "text": "1.5 × 10−4",
+    "kind": "formula"
+   }
+  ]
+ },
+ "B5": {
+  "question": "GPT-3 使用了多少训练 token？",
+  "cat": "number",
+  "items": [
+   {
+    "doc": "2005.14165v4.pdf",
+    "page": 43,
+    "text": "To train all versions of GPT-3, we use Adam with β1 = 0.9, β2 = 0.95, and ϵ = 10−8, we clip the global norm of the gradient at 1.0, and we use cosine decay for learning rate down to 10% of its value, over 260 billion tokens (after 260 billion tokens, training continues at 10% of the original learning rate). There is a linear LR warmup over the ﬁrst 375 million tokens. We also gradually increase the batch size linearly from a small value (32k tokens) to the full value over the ﬁrst 4-12 billion tokens of training, depending on the model size. Data are sampled without replacement during training (until an epoch boundary is reached) to minimize overﬁtting. All models use weight decay of 0.1 to provide a small amount of regularization [LH17].",
+    "kind": "text"
+   },
+   {
+    "doc": "2005.14165v4.pdf",
+    "page": 9,
+    "text": "Table 2.2: Datasets used to train GPT-3. “Weight in training mix” refers to the fraction of examples during training that are drawn from a given dataset, which we intentionally do not make proportional to the size of the dataset. As a result, when we train for 300 billion tokens, some datasets are seen up to 3.4 times during training while other datasets",
+    "kind": "table"
+   },
+   {
+    "doc": "2005.14165v4.pdf",
+    "page": 8,
+    "text": "Table 2.1: Sizes, architectures, and learning hyper-parameters (batch size in tokens and learning rate) of the models which we trained. All models were trained for a total of 300 billion tokens.",
+    "kind": "table"
+   },
+   {
+    "doc": "2210.02414v2.pdf",
+    "page": 8,
+    "text": "7\nPublished as a conference paper at ICLR 2023\n16\n46 GPT-3 175B (5-shot)\nGLM-130B 0-shot GLM-130B 1-shot GLM-130B 3-shot GPT-3 0-shot GPT-3 1-shot GPT-3 3-shot PaLM 0-shot\nGLM-130B (5-shot)\n0-shot 1-shot 3-shot\n14\n12\n42\nGPT-3 2.6B\n1.83 GPT-3 6.7B -0.06\n0.60\n0.71\n10\n5.40 GPT-3 13B\n2.93\n8\n38\n7.95 GPT-3 175B 4.35 11.34 13.18\n1.77\n5.43\n6\n4\n34\nBLOOM 176B (5-shot)\nPaLM 540B 8.05 37.77\n-\n2\n0\n30\nGLM-130B 13.31 14.91 15.12\n1011\n108\n109\n1010\n50\n100\n150\n200\n250\n300\n350\n400\nEffective Parameter Count\nTrained Tokens (Billion)",
+    "kind": "text"
+   },
+   {
+    "doc": "2210.02414v2.pdf",
+    "page": 8,
+    "text": "GLM-130B’s few-shot (5-shot) performance on MMLU approaches GPT-3 (43.9) after viewing about 300B tokens in Figure 6. It continues moving up as the training proceeds, achieving an accuracy of 44.8 when the training has to end (i.e., viewing 400B tokens in total). This aligns with the observation (Hoffmann et al., 2022) that most existing LLMs are far from adequately trained.\n5.3\nBEYOND THE IMITATION GAME BENCHMARK (BIG-BENCH)",
+    "kind": "text"
+   },
+   {
+    "doc": "2005.14165v4.pdf",
+    "page": 46,
+    "text": "3.82E+02\n3.30E+22\n11,000\n1,000\nBERT-Base\n1.89E+00\n1.64E+20\n109\n250\nBERT-Large\n6.16E+00\n5.33E+20\n355\n250\nRoBERTa-Base\n1.74E+01\n1.50E+21\n125\n2,000\nRoBERTa-Large\n4.93E+01\n4.26E+21\n355\n2,000\nGPT-3 Small\n2.60E+00\n2.25E+20\n125\n300\nGPT-3 Medium\n7.42E+00\n6.41E+20\n356\n300\nGPT-3 Large\n1.58E+01\n1.37E+21\n760\n300\nGPT-3 XL\n2.75E+01\n2.38E+21\n1,320\n300\nGPT-3 2.7B\n5.52E+01\n4.77E+21\n2,650\n300\nGPT-3 6.7B\n1.39E+02\n1.20E+22\n6,660\n300\nGPT-3 13B\n2.68E+02\n2.31E+22\n12,850\n300\nGPT-3 175B\n3.64E+03\n3.14E+23\n174,600\n300\nFwd-pass ﬂops per active param per token\nFrac of params active for each token\nFlops per param per token\nMult for bwd pass\n3\n3\n1\n0.5\n3\n3\n1\n0.5\n3\n3\n1\n0.5\n3\n3\n1\n0.5\n3\n3\n1\n0.5\n6\n3\n2\n1.0\n6\n3\n2\n1.0\n6\n3\n2\n1.0\n6",
+    "kind": "text"
+   },
+   {
+    "doc": "2005.14165v4.pdf",
+    "page": 31,
+    "text": "GPT-3 operates in a somewhat different regime. On the one hand, the dataset and model size are about two orders of magnitude larger than those used for GPT-2, and include a large amount of Common Crawl, creating increased potential for contamination and memorization. On the other hand, precisely due to the large amount of data, even GPT-3 175B does not overﬁt its training set by a signiﬁcant amount, measured relative to a held-out validation set with which it was deduplicated (Figure 4.1). Thus, we expect that contamination is likely to be frequent, but that its effects may not be as large as feared.",
+    "kind": "text"
+   },
+   {
+    "doc": "2005.14165v4.pdf",
+    "page": 9,
+    "text": "Figure 2.2: Total compute used during training. Based on the analysis in Scaling Laws For Neural Language Models [KMH+20] we train much larger models on many fewer tokens than is typical. As a consequence, although GPT-3 3B is almost 10x larger than RoBERTa-Large (355M params), both models took roughly 50 petaﬂop/s-days of compute during pre-training. Methodology for these calculations can be found in Appendix D.",
+    "kind": "figure"
+   },
+   {
+    "doc": "2005.14165v4.pdf",
+    "page": 43,
+    "text": "During training we always train on sequences of the full nctx = 2048 token context window, packing multiple documents into a single sequence when documents are shorter than 2048, in order to increase computational efﬁciency. Sequences with multiple documents are not masked in any special way but instead documents within a sequence are delimited with a special end of text token, giving the language model the information necessary to infer that context separated by the end of text token is unrelated. This allows for efﬁcient training without need for any special sequence-speciﬁc masking.",
+    "kind": "text"
+   },
+   {
+    "doc": "2005.14165v4.pdf",
+    "page": 9,
+    "text": "chs elapsed when training for 300B tokens\n60%\n0.44\n22%\n2.9\n8%\n1.9\n8%\n0.43\n3%\n3.4\nare seen less than once.",
+    "kind": "text"
+   },
+   {
+    "doc": "2005.14165v4.pdf",
+    "page": 8,
+    "text": "64\n0.5M\n16\n64\n0.5M\n16\n96\n0.5M\n24\n128\n1M\n32\n80\n1M\n32\n128\n2M\n40\n128\n2M\n96\n128\n3.2M\nWe use the same model and architecture as GPT-2 [RWC+19], including the modiﬁed initialization, pre-normalization, and reversible tokenization described therein, with the exception that we use alternating dense and locally banded sparse attention patterns in the layers of the transformer, similar to the Sparse Transformer [CGRS19]. To study the dependence of ML performance on model size, we train 8 different sizes of model, ranging over three orders of magnitude from 125 million parameters to 175 billion parameters, with the last being the model we call GPT-3. Previous work [KMH+20] suggests that with enough training data, scaling of validation loss should be approximately a smooth power law as a function of size; training models of many different sizes allows us to test this hypothesis both for validation l",
+    "kind": "text"
+   }
+  ]
+ },
+ "B6": {
+  "question": "Transformer 训练时 warmup 步数是多少？",
+  "cat": "number",
+  "items": [
+   {
+    "doc": "1706.03762v1_img.pdf",
+    "page": 7,
+    "text": "We used the Adam optimizer [18] with $\\beta_1 = 0.9, \\beta_2 = 0.98$ and $\\epsilon = 10^{-9}$. We varied the learning rate over the course of training, according to the formula:\n$$lrate = d_{model}^{-0.5} \\cdot \\min(step\\_num^{-0.5}, step\\_num \\cdot warmup\\_steps^{-1.5}) \\tag{3}$$\nThis corresponds to increasing the learning rate linearly for the first $warmup\\_steps$ training steps, and decreasing it thereafter proportionally to the inverse square root of the step number. We used $warmup\\_steps = 4000$.",
+    "kind": "text"
+   },
+   {
+    "doc": "2002.04745v2.pdf",
+    "page": 7,
+    "text": "We train the Post-LN Transformer using the learning rate warm-up stage as the baseline. In both IWSLT14 De-En task and WMT14 En-De task, we set the number of the warm-up stage to be 4000 following Vaswani et al. (2017) and then use the inverse square root learning rate scheduler. For all",
+    "kind": "text"
+   },
+   {
+    "doc": "1706.03762v1.pdf",
+    "page": 7,
+    "text": "time was 1.0 seconds, and the models were trained for 300,000 steps or 3.5 days.\nmodel · min(step_num−0.5, step_num · warmup_steps−1.5)\n(3)\nThis corresponds to increasing the learning rate linearly for the ﬁrst warmup_steps training steps, and decreasing it thereafter proportionally to the inverse square root of the step number. We used warmup_steps = 4000.",
+    "kind": "text"
+   },
+   {
+    "doc": "2001.08361v1.pdf",
+    "page": 7,
+    "text": "Training Procedures Unless otherwise noted, we train models with the Adam optimizer [KB14] for a ﬁxed 2.5 × 105 steps with a batch size of 512 sequences of 1024 tokens. Due to memory constraints, our largest models (more than 1B parameters) were trained with Adafactor [SS18]. We experimented with a variety of learning rates and schedules, as discussed in Appendix D.6. We found that results at convergence were largely independent of learning rate schedule. Unless otherwise noted, all training runs included in our data used a learning rate schedule with a 3000 step linear warmup followed by a cosine decay to zero.",
+    "kind": "text"
+   },
+   {
+    "doc": "2010.11929v2.pdf",
+    "page": 13,
+    "text": "Table 3: Hyperparameters for training. All models are trained with a batch size of 4096 and learn- ing rate warmup of 10k steps. For ImageNet we found it beneﬁcial to additionally apply gradient",
+    "kind": "reference"
+   },
+   {
+    "doc": "2002.04745v2.pdf",
+    "page": 4,
+    "text": "Second, we can see that the optimization process is sensitive to the value of Twarmup, which means Twarmup is an important hyper-parameter in training the Post-LN Transformer. For example, when setting Twarmup = 500, the learned models with Adam achieve only 31.16 and 2.77 in term of BLEU",
+    "kind": "text"
+   },
+   {
+    "doc": "2407.21783v3.pdf",
+    "page": 7,
+    "text": "budgets between 6 × 1018 FLOPs and 1022 FLOPs. At each compute budget, we pre-train models ranging in size between 40M and 16B parameters, using a subset of model sizes at each compute budget. In these training runs, we use a cosine learning rate schedule with a linear warmup for 2,000 training steps. The peak",
+    "kind": "text"
+   },
+   {
+    "doc": "2305.13048v2.pdf",
+    "page": 19,
+    "text": "10\n9\n8\nLoss\n7\n6\n5\n4\n0\n10000\n20000\nStep\nBaseline Small Init Emb\n30000\n40000\n50000\nModel\n169M\n430M\nInit LR\n0.0006\n0.0004\nWarmup Mini-Epochs\n361\n411\nEnd LR\n0.00001\n0.00001\n1.5B\n3B\n7B\n14B\n0.0003\n0.00015\n0.00015\n0.0001\n443\n451\n465\n544\n0.00001\n0.00001\n0.00001\n0.000007",
+    "kind": "text"
+   },
+   {
+    "doc": "1706.03762v1_img.pdf",
+    "page": 7,
+    "text": "We employ three types of regularization during training:\n**Residual Dropout** We apply dropout [30] to the output of each sub-layer, before it is added to the sub-layer input and normalized. In addition, we apply dropout to the sums of the embeddings and the positional encodings in both the encoder and decoder stacks. For the base model, we use a rate of $P_{drop} = 0.1$.",
+    "kind": "text"
+   },
+   {
+    "doc": "2002.04745v2.pdf",
+    "page": 7,
+    "text": "experiments above, we use the Adam optimizer and set the hyper-parameter β to be (0.9, 0.98). We set lrmax as same as the initial learning rates of the Pre-LN Transformer in each corresponding experiment. Since Liu et al. (2019a) sug- gests that the learning rate warm-up stage can be removed using RAdam, we try this optimizer on the IWSLT14 De-En task. We use linear learning rate decay suggested by Liu et al. (2019a) and keep all other hyper-parameters to be the same as in other experiments.",
+    "kind": "text"
+   },
+   {
+    "doc": "1706.03762v1.pdf",
+    "page": 7,
+    "text": "We employ three types of regularization during training:",
+    "kind": "text"
+   }
+  ]
+ },
+ "C1": {
+  "question": "BERT 和 GPT 的预训练目标有什么不同？",
+  "cat": "compare",
+  "items": [
+   {
+    "doc": "N19-1423.pdf",
+    "page": 4,
+    "text": "3.1\nPre-training BERT Unlike Peters et al. (2018a) and Radford et al. (2018), we do not use traditional left-to-right or right-to-left language models to pre-train BERT. Instead, we pre-train BERT using two unsuper- vised tasks, described in this section. This step is presented in the left part of Figure 1.\nTask #1: Masked LM\nIntuitively, it is reason- able to believe that a deep bidirectional model is strictly more powerful than either a left-to-right model or the shallow concatenation of a left-to- right and a right-to-left model.",
+    "kind": "text"
+   },
+   {
+    "doc": "N19-1423.pdf",
+    "page": 2,
+    "text": "• We demonstrate the importance of bidirectional pre-training for language representations. Un- like Radford et al. (2018), which uses unidirec- tional language models for pre-training, BERT uses masked language models to enable pre- trained deep bidirectional representations. This is also in contrast to Peters et al. (2018a), which uses a shallow concatenation of independently trained left-to-right and right-to-left LMs.",
+    "kind": "text"
+   },
+   {
+    "doc": "N19-1423.pdf",
+    "page": 14,
+    "text": "• GPT is trained on the BooksCorpus (800M words); BERT is trained on the BooksCor- pus (800M words) and Wikipedia (2,500M words).\n• GPT uses a sentence separator ([SEP]) and classiﬁer token ([CLS]) which are only in- troduced at ﬁne-tuning time; BERT learns\n[SEP], [CLS] and sentence A/B embed- dings during pre-training.\n• GPT was trained for 1M steps with a batch size of 32,000 words; BERT was trained for 1M steps with a batch size of 128,000 words.",
+    "kind": "text"
+   },
+   {
+    "doc": "N19-1423.pdf",
+    "page": 14,
+    "text": "A.4\nComparison of BERT, ELMo ,and OpenAI GPT Here we studies the differences in recent popular representation learning models including ELMo, OpenAI GPT and BERT. The comparisons be- tween the model architectures are shown visually in Figure 3. Note that in addition to the architec- ture differences, BERT and OpenAI GPT are ﬁne- tuning approaches, while ELMo is a feature-based approach. The most comparable existing pre-training method to BERT is OpenAI GPT, which trains a left-to-right Transformer LM on a large text cor- pus. In fact, many of the design decisions in BERT were intentionally made to make it as close to GPT as possible so that the two methods could be minimally compared. The core argument of this work is that the bi-directionality and the two pre- training tasks presented in Section 3.1 account for the majority of the empirical improvements, but we do note that there are se",
+    "kind": "text"
+   },
+   {
+    "doc": "N19-1423.pdf",
+    "page": 13,
+    "text": "Figure 3: Differences in pre-training model architectures. BERT uses a bidirectional Transformer. OpenAI GPT uses a left-to-right Transformer. ELMo uses the concatenation of independently trained left-to-right and right-to- left LSTMs to generate features for downstream tasks. Among the three, only BERT representations are jointly conditioned on both left and right context in all layers. In addition to the architecture differences, BERT and OpenAI GPT are ﬁne-tuning approaches, while ELMo is a feature-based approach.",
+    "kind": "figure"
+   },
+   {
+    "doc": "N19-1423.pdf",
+    "page": 1,
+    "text": "Transformers. BERT alleviates the previously mentioned unidi- rectionality constraint by using a “masked lan- guage model” (MLM) pre-training objective, in- spired by the Cloze task (Taylor, 1953).",
+    "kind": "text"
+   },
+   {
+    "doc": "N19-1423.pdf",
+    "page": 8,
+    "text": "No NSP: A bidirectional model which is trained using the “masked LM” (MLM) but without the “next sentence prediction” (NSP) task. LTR & No NSP: A left-context-only model which is trained using a standard Left-to-Right (LTR) LM, rather than an MLM. The left-only constraint was also applied at ﬁne-tuning, because removing it introduced a pre-train/ﬁne-tune mismatch that degraded downstream performance. Additionally, this model was pre-trained without the NSP task. This is directly comparable to OpenAI GPT, but using our larger training dataset, our input repre- sentation, and our ﬁne-tuning scheme.",
+    "kind": "text"
+   },
+   {
+    "doc": "N19-1423.pdf",
+    "page": 1,
+    "text": "We introduce a new language representa- tion model called BERT, which stands for Bidirectional Encoder Representations from Transformers. Unlike recent language repre- sentation models (Peters et al., 2018a; Rad- ford et al., 2018), BERT is designed to pre- train deep bidirectional representations from unlabeled text by jointly conditioning on both left and right context in all layers. As a re- sult, the pre-trained BERT model can be ﬁne- tuned with just one additional output layer to create state-of-the-art models for a wide range of tasks, such as question answering and language inference, without substantial task- speciﬁc architecture modiﬁcations.",
+    "kind": "text"
+   },
+   {
+    "doc": "N19-1423.pdf",
+    "page": 4,
+    "text": "Unfortunately, standard conditional language models can only be trained left-to-right or right-to-left, since bidirec- tional conditioning would allow each word to in- directly “see itself”, and the model could trivially predict the target word in a multi-layered context.\nformer is often referred to as a “Transformer encoder” while the left-context-only version is referred to as a “Transformer decoder” since it can be used for text generation.\n4174",
+    "kind": "text"
+   },
+   {
+    "doc": "N19-1423.pdf",
+    "page": 2,
+    "text": "• We show that pre-trained representations reduce the need for many heavily-engineered task- speciﬁc architectures. BERT is the ﬁrst ﬁne- tuning based representation model that achieves state-of-the-art performance on a large suite of sentence-level and token-level tasks, outper- forming many task-speciﬁc architectures.\n• BERT advances the state of the art for eleven NLP tasks.\nThe code and pre-trained mod- els are available at https://github.com/ google-research/bert.",
+    "kind": "text"
+   },
+   {
+    "doc": "N19-1423.pdf",
+    "page": 14,
+    "text": "• GPT used the same learning rate of 5e-5 for all ﬁne-tuning experiments; BERT chooses a task-speciﬁc ﬁne-tuning learning rate which performs the best on the development set.\n4184\nTo isolate the effect of these differences, we per- form ablation experiments in Section 5.1 which demonstrate that the majority of the improvements are in fact coming from the two pre-training tasks and the bidirectionality they enable.\nA.5",
+    "kind": "text"
+   }
+  ]
+ },
+ "C2": {
+  "question": "ELECTRA 与 BERT 在训练效率上的差异是什么？",
+  "cat": "compare",
+  "items": [
+   {
+    "doc": "N19-1423.pdf",
+    "page": 14,
+    "text": "• GPT is trained on the BooksCorpus (800M words); BERT is trained on the BooksCor- pus (800M words) and Wikipedia (2,500M words).\n• GPT uses a sentence separator ([SEP]) and classiﬁer token ([CLS]) which are only in- troduced at ﬁne-tuning time; BERT learns\n[SEP], [CLS] and sentence A/B embed- dings during pre-training.\n• GPT was trained for 1M steps with a batch size of 32,000 words; BERT was trained for 1M steps with a batch size of 128,000 words.",
+    "kind": "text"
+   },
+   {
+    "doc": "2205.14135v2.pdf",
+    "page": 7,
+    "text": "4.1\nFlashAttention yields the fastest single-node BERT training speed that we know of. We train a BERT-large [22] model with FlashAttention on Wikipedia. Table 1 compares our training time to the implementation from Nvidia that set the training speed record for MLPerf 1.1 [58]. Our implementation is 15% faster.\nBERT.",
+    "kind": "text"
+   },
+   {
+    "doc": "1910.10683v4.pdf",
+    "page": 59,
+    "text": "Electra: Pre-training text encoders as discriminators rather than generators.",
+    "kind": "reference"
+   },
+   {
+    "doc": "N19-1423.pdf",
+    "page": 13,
+    "text": "Figure 3: Differences in pre-training model architectures. BERT uses a bidirectional Transformer. OpenAI GPT uses a left-to-right Transformer. ELMo uses the concatenation of independently trained left-to-right and right-to- left LSTMs to generate features for downstream tasks. Among the three, only BERT representations are jointly conditioned on both left and right context in all layers. In addition to the architecture differences, BERT and OpenAI GPT are ﬁne-tuning approaches, while ELMo is a feature-based approach.",
+    "kind": "figure"
+   },
+   {
+    "doc": "N19-1423.pdf",
+    "page": 14,
+    "text": "• GPT used the same learning rate of 5e-5 for all ﬁne-tuning experiments; BERT chooses a task-speciﬁc ﬁne-tuning learning rate which performs the best on the development set.\n4184\nTo isolate the effect of these differences, we per- form ablation experiments in Section 5.1 which demonstrate that the majority of the improvements are in fact coming from the two pre-training tasks and the bidirectionality they enable.\nA.5",
+    "kind": "text"
+   },
+   {
+    "doc": "N19-1423.pdf",
+    "page": 4,
+    "text": "3.1\nPre-training BERT Unlike Peters et al. (2018a) and Radford et al. (2018), we do not use traditional left-to-right or right-to-left language models to pre-train BERT. Instead, we pre-train BERT using two unsuper- vised tasks, described in this section. This step is presented in the left part of Figure 1.\nTask #1: Masked LM\nIntuitively, it is reason- able to believe that a deep bidirectional model is strictly more powerful than either a left-to-right model or the shallow concatenation of a left-to- right and a right-to-left model.",
+    "kind": "text"
+   },
+   {
+    "doc": "N19-1423.pdf",
+    "page": 9,
+    "text": "Results are presented in Table 7. BERTLARGE performs competitively with state-of-the-art meth- ods. The best performing method concatenates the token representations from the top four hidden lay- ers of the pre-trained Transformer, which is only 0.3 F1 behind ﬁne-tuning the entire model. This demonstrates that BERT is effective for both ﬁne- tuning and feature-based approaches.",
+    "kind": "text"
+   },
+   {
+    "doc": "N19-1423.pdf",
+    "page": 1,
+    "text": "We introduce a new language representa- tion model called BERT, which stands for Bidirectional Encoder Representations from Transformers. Unlike recent language repre- sentation models (Peters et al., 2018a; Rad- ford et al., 2018), BERT is designed to pre- train deep bidirectional representations from unlabeled text by jointly conditioning on both left and right context in all layers. As a re- sult, the pre-trained BERT model can be ﬁne- tuned with just one additional output layer to create state-of-the-art models for a wide range of tasks, such as question answering and language inference, without substantial task- speciﬁc architecture modiﬁcations.",
+    "kind": "text"
+   },
+   {
+    "doc": "2205.14135v2.pdf",
+    "page": 7,
+    "text": "Table 1: Training time of BERT-large, starting from the same initialization provided by the MLPerf benchmark, to reach the target accuracy of 72.0% on masked language modeling. Averaged over 10 runs on 8×A100 GPUs.",
+    "kind": "table"
+   },
+   {
+    "doc": "1910.10683v4.pdf",
+    "page": 59,
+    "text": "arXiv preprint arXiv:2003.10555, 2020.",
+    "kind": "reference"
+   }
+  ]
+ },
+ "C3": {
+  "question": "Mistral 7B 与 LLaMA 2 13B 在基准测试上的表现差异？",
+  "cat": "compare",
+  "items": [
+   {
+    "doc": "2310.06825v1.pdf",
+    "page": 5,
+    "text": "Figure 5: Results on MMLU, commonsense reasoning, world knowledge and reading comprehension for Mistral 7B and Llama 2 (7B/13B/70B). Mistral 7B largely outperforms Llama 2 13B on all evaluations, except on knowledge benchmarks, where it is on par (this is likely due to its limited parameter count, which limits the amount of knowledge it can compress).",
+    "kind": "figure"
+   },
+   {
+    "doc": "2310.06825v1.pdf",
+    "page": 3,
+    "text": "Detailed results for Mistral 7B, Llama 2 7B/13B, and Code-Llama 7B are reported in Table 2. Figure 4\ncompares the performance of Mistral 7B with Llama 2 7B/13B, and Llama 1 34B4 in different categories. Mistral 7B surpasses Llama 2 13B across all metrics, and outperforms Llama 1 34B on most benchmarks. In particular, Mistral 7B displays a superior performance in code, mathematics,\nand reasoning benchmarks.\n4Since Llama 2 34B was not open-sourced, we report results for Llama 1 34B.\n3",
+    "kind": "text"
+   },
+   {
+    "doc": "2310.06825v1.pdf",
+    "page": 1,
+    "text": "We introduce Mistral 7B, a 7–billion-parameter language model engineered for superior performance and efficiency. Mistral 7B outperforms the best open 13B model (Llama 2) across all evaluated benchmarks, and the best released 34B model (Llama 1) in reasoning, mathematics, and code generation. Our model leverages grouped-query attention (GQA) for faster inference, coupled with sliding window attention (SWA) to effectively handle sequences of arbitrary length with a reduced inference cost. We also provide a model fine-tuned to follow instructions, Mistral 7B – Instruct, that surpasses Llama 2 13B – chat model both on human and automated benchmarks. Our models are released under the Apache 2.0 license. Code: https://github.com/mistralai/mistral-src Webpage: https://mistral.ai/news/announcing-mistral-7b/",
+    "kind": "text"
+   },
+   {
+    "doc": "2310.06825v1.pdf",
+    "page": 4,
+    "text": "Table 2: Comparison of Mistral 7B with Llama. Mistral 7B outperforms Llama 2 13B on all metrics, and approaches the code performance of Code-Llama 7B without sacrificing performance on non-code benchmarks.",
+    "kind": "table"
+   },
+   {
+    "doc": "2310.06825v1.pdf",
+    "page": 4,
+    "text": "Figure 4: Performance of Mistral 7B and different Llama models on a wide range of benchmarks. All models were re-evaluated on all metrics with our evaluation pipeline for accurate comparison. Mistral 7B significantly outperforms Llama 2 7B and Llama 2 13B on all benchmarks. It is also vastly superior to Llama 1 34B in mathematics, code generation, and reasoning benchmarks.",
+    "kind": "figure"
+   },
+   {
+    "doc": "2310.06825v1.pdf",
+    "page": 4,
+    "text": "Chatbot Arena ELO Rating\nModel\nMT Bench\nWizardLM 13B v1.2\n7.2 Mistral 7B Instruct\n1047\n6.84 +/- 0.07 Llama 2 13B Chat\n1031\n6.65 Vicuna 13B\n1012\n6.57 Llama 2 7B Chat\n1041\n6.27 Vicuna 7B\n985\n6.17 Alpaca 13B\n997\n4.53 Table 3: Comparison of Chat models. Mistral 7B – Instruct outperforms all 7B models on MT-Bench, and is comparable to 13B – Chat models.\n914",
+    "kind": "text"
+   },
+   {
+    "doc": "2310.06825v1.pdf",
+    "page": 1,
+    "text": "In the rapidly evolving domain of Natural Language Processing (NLP), the race towards higher model performance often necessitates an escalation in model size. However, this scaling tends to increase computational costs and inference latency, thereby raising barriers to deployment in practical, real-world scenarios. In this context, the search for balanced models delivering both high-level performance and efficiency becomes critically essential. Our model, Mistral 7B, demonstrates that a carefully designed language model can deliver high performance while maintaining an efficient inference. Mistral 7B outperforms the previous best 13B model (Llama 2, [26]) across all tested benchmarks, and surpasses the best 34B model (LLaMa 34B, [25]) in mathematics and code generation. Furthermore, Mistral 7B approaches the coding performance of Code-Llama 7B [20], without sacrificing performance on non",
+    "kind": "text"
+   },
+   {
+    "doc": "2310.06825v1.pdf",
+    "page": 4,
+    "text": "914\nIn this evaluation, participants were provided with a set of questions along with anonymous responses from two models and were asked to select their preferred response, as illustrated in Figure 6. As of October 6, 2023, the outputs generated by Mistral 7B were preferred 5020 times, compared to 4143\ntimes for Llama 2 13B.\n4",
+    "kind": "text"
+   },
+   {
+    "doc": "2310.06825v1.pdf",
+    "page": 5,
+    "text": "4\nThe ability to enforce guardrails when it comes to AI generation is important for front-facing appli- cations. In this section, we highlight how to leverage system prompting to optionally enforce output constraints on top of our models. Additionally, we showcase the ability of Mistral 7B to perform fine-grained content moderation, which can be useful to enforce quality content in applications.",
+    "kind": "text"
+   }
+  ]
+ },
+ "C4": {
+  "question": "LLaMA 2 相比 LLaMA 1 在上下文长度和训练数据上有哪些变化？",
+  "cat": "compare",
+  "items": [
+   {
+    "doc": "2307.09288v2.pdf",
+    "page": 5,
+    "text": "¶https://ai.meta.com/llama ‖https://github.com/facebookresearch/llama\n4\nTo create the new family of Llama 2 models, we began with the pretraining approach described in Touvron et al. (2023), using an optimized auto-regressive transformer, but made several changes to improve performance. Specifically, we performed more robust data cleaning, updated our data mixes, trained on 40% more total tokens, doubled the context length, and used grouped-query attention (GQA) to improve inference scalability for our larger models. Table 1 compares the attributes of the new Llama 2 models with the Llama 1 models.",
+    "kind": "text"
+   },
+   {
+    "doc": "2307.09288v2.pdf",
+    "page": 4,
+    "text": "3\nWe are releasing the following models to the general public for research and commercial use‡:\n1. Llama 2, an updated version of Llama 1, trained on a new mix of publicly available data. We also increased the size of the pretraining corpus by 40%, doubled the context length of the model, and adopted grouped-query attention (Ainslie et al., 2023). We are releasing variants of Llama 2 with 7B, 13B, and 70B parameters. We have also trained 34B variants, which we report on in this paper but are not releasing.§",
+    "kind": "text"
+   },
+   {
+    "doc": "2307.09288v2.pdf",
+    "page": 6,
+    "text": "7B\n13B\nSee Touvron et al. (2023)\nLlama 1\n33B\n65B\n7B\n13B\nA new mix of publicly available online data\nLlama 2\n34B\n70B",
+    "kind": "text"
+   },
+   {
+    "doc": "2307.09288v2.pdf",
+    "page": 6,
+    "text": "a 1\n33B\n65B\n7B\n13B\nA new mix of publicly available online data\nLlama 2\n34B\n70B\n✗\n2k\n1.0T\n✗",
+    "kind": "text"
+   },
+   {
+    "doc": "2307.09288v2.pdf",
+    "page": 6,
+    "text": " new mix of publicly available online data\nLlama 2\n34B\n70B\n✗\n2k\n1.0T\n✗\n2k\n1.0T\n✗\n2k\n1.4T\n✗",
+    "kind": "text"
+   },
+   {
+    "doc": "2307.09288v2.pdf",
+    "page": 6,
+    "text": "B\n7B\n13B\nA new mix of publicly available online data\nLlama 2\n34B\n70B\n✗\n2k\n1.0T\n✗\n2k\n1.0T\n✗",
+    "kind": "text"
+   },
+   {
+    "doc": "2307.09288v2.pdf",
+    "page": 6,
+    "text": "ta\nLlama 2\n34B\n70B\n✗\n2k\n1.0T\n✗\n2k\n1.0T\n✗\n2k\n1.4T\n✗\n2k\n1.4T\n✗\n4k\n2.0T\n✗\n4k\n2.0T\n✓\n4k\n2.0T\n✓",
+    "kind": "text"
+   },
+   {
+    "doc": "2307.09288v2.pdf",
+    "page": 6,
+    "text": " online data\nLlama 2\n34B\n70B\n✗\n2k\n1.0T\n✗\n2k\n1.0T\n✗\n2k\n1.4T\n✗\n2k\n1.4T\n✗\n4k\n2.0T\n✗\n4k\n2.0T\n✓",
+    "kind": "text"
+   },
+   {
+    "doc": "2307.09288v2.pdf",
+    "page": 5,
+    "text": "Our training corpus includes a new mix of data from publicly available sources, which does not include data from Meta’s products or services. We made an effort to remove data from certain sites known to contain a high volume of personal information about private individuals. We trained on 2 trillion tokens of data as this provides a good performance–cost trade-off, up-sampling the most factual sources in an effort to increase knowledge and dampen hallucinations.",
+    "kind": "text"
+   },
+   {
+    "doc": "2307.09288v2.pdf",
+    "page": 4,
+    "text": "2. Llama 2-Chat, a fine-tuned version of Llama 2 that is optimized for dialogue use cases. We release variants of this model with 7B, 13B, and 70B parameters as well.",
+    "kind": "text"
+   },
+   {
+    "doc": "2307.09288v2.pdf",
+    "page": 6,
+    "text": "✗",
+    "kind": "text"
+   }
+  ]
+ },
+ "C5": {
+  "question": "Qwen2.5 与 LLaMA 3 在训练数据规模或多语言能力上的差别？",
+  "cat": "compare",
+  "items": [
+   {
+    "doc": "2412.15115v2.pdf",
+    "page": 18,
+    "text": "t Length (# Tokens)\n17\n3.2x\n4.3x\n2.4x\n3.1x\n1.7x\n1.4x\n4x\n5.6x\n2.9x\n4.1x\n2.3x\n1.7x\nQwen2.5 represents a significant advancement in large language models (LLMs), with enhanced pre- training on 18 trillion tokens and sophisticated post-training techniques, including supervised fine-tuning and multi-stage reinforcement learning. These improvements boost human preference alignment, long text generation, and structural data analysis, making Qwen2.5 highly effective for instruction-following tasks. Available in various configurations, Qwen2.5 offers both open-weight from 0.5B to 72B parameters and proprietary models including cost-effective MoE variants like Qwen2.5-Turbo and Qwen2.5-Plus. Empirical evaluations show that Qwen2.5-72B-Instruct matches the performance of the state-of-the-art Llama-3-405B-Instruct, despite being six times smaller. Qwen2.5 also serves as a foundation for specialized ",
+    "kind": "text"
+   },
+   {
+    "doc": "2412.15115v2.pdf",
+    "page": 2,
+    "text": "Recently, we release the details of our latest version of the Qwen series, Qwen2.5. In terms of the open- weight part, we release pre-trained and instruction-tuned models of 7 sizes, including 0.5B, 1.5B, 3B, 7B, 14B, 32B, and 72B, and we provide not only the original models in bfloat16 precision but also the quantized models in different precisions. Specifically, the flagship model Qwen2.5-72B-Instruct demonstrates competitive performance against the state-of-the-art open-weight model, Llama-3-405B-Instruct, which is around 5 times larger. Additionally, we also release the proprietary models of Mixture-of-Experts (MoE, Lepikhin et al., 2020; Fedus et al., 2022; Zoph et al., 2022), namely Qwen2.5-Turbo and Qwen2.5-Plus1, which performs competitively against GPT-4o-mini and GPT-4o respectively.",
+    "kind": "text"
+   },
+   {
+    "doc": "2412.15115v2.pdf",
+    "page": 14,
+    "text": "We compare the performance of Qwen2.5-Instruct models against several leading language models, including GPT-4, Claude3.5-sonnet, Qwen2, and Llama-3.1, across both English and Chinese languages. Our analysis focuses on model size and its impact on performance, as well as how our latest Qwen2.5 series compares to previous iterations and competing models. For smaller models, we observe that the Qwen2.5-0.5B model achieves performance that is on par with or even surpasses the Qwen2-1.5B model. This indicates that the Qwen2.5 series has optimized parameter usage, enabling mid-sized models to achieve similar performance levels to larger models from the previous generation. The Qwen2.5-3B model demonstrates performance that is comparable to the Qwen2-7B model. Notably, the Qwen2.5-32B model exhibits a remarkable improvement over the Qwen2-72B model. Our flagship model, Qwen2.5-72B, further nar",
+    "kind": "text"
+   },
+   {
+    "doc": "2412.15115v2.pdf",
+    "page": 1,
+    "text": "To handle diverse and varied use cases effectively, we present Qwen2.5 LLM series in rich configurations. The open-weight offerings include base models and instruction-tuned models in sizes of 0.5B, 1.5B, 3B, 7B, 14B, 32B, and 72B parameters. Quantized versions of the instruction-tuned models are also provided. Over 100 models can be accessed from Hugging Face Hub, ModelScope, and Kaggle. In addition, for hosted solutions, the proprietary models currently include two mixture-of-experts (MoE) variants: Qwen2.5- Turbo and Qwen2.5-Plus, both available from Alibaba Cloud Model Studio. Qwen2.5 has demonstrated top-tier performance on a wide range of benchmarks eval- uating language understanding, reasoning, mathematics, coding, human preference alignment, etc. Specifically, the open-weight flagship Qwen2.5-72B-Instruct outperforms a number of open and proprietary models and demonstrates compe",
+    "kind": "text"
+   },
+   {
+    "doc": "2412.15115v2.pdf",
+    "page": 8,
+    "text": "We compare the base models of Qwen2.5-72B and Qwen2.5-Plus to other leading open-weight base models: Llama3-70B (Dubey et al., 2024), Llama3-405B (Dubey et al., 2024), Mixtrail-8x22B (Jiang et al., 2024a), and our previous 72B version, the Qwen2-72B (Yang et al., 2024a). The Qwen2.5-72B base model significantly outperforms its peers in the same category across a wide range of tasks. It achieves results comparable to Llama-3-405B while utilizing only one-fifth of the pa- rameters. Furthermore, when compared to its predecessor, Qwen2-72B, the Qwen2.5-72B shows marked improvements in nearly all benchmark evaluations, particularly excelling in general tasks, mathematics, and coding challenges. With significantly lower training and inference costs, Qwen2.5-Plus achieves very competitive performance results compared to Qwen2.5-72B and Llama3-405B, outperforming other baseline models on the Hel",
+    "kind": "text"
+   },
+   {
+    "doc": "2412.19437v1.pdf",
+    "page": 33,
+    "text": "Chinese Benchmarks.\nQwen and DeepSeek are two representative model series with robust support for both Chinese and English. On the factual benchmark Chinese SimpleQA, DeepSeek- V3 surpasses Qwen2.5-72B by 16.4 points, despite Qwen2.5 being trained on a larger corpus compromising 18T tokens, which are 20% more than the 14.8T tokens that DeepSeek-V3 is pre-trained on.",
+    "kind": "text"
+   },
+   {
+    "doc": "2412.15115v2.pdf",
+    "page": 2,
+    "text": "In this technical report, we introduce Qwen2.5, the result of our continuous endeavor to create better LLMs. Below, we show the key features of the latest version of Qwen:\n• Better in Size: Compared with Qwen2, in addition to 0.5B, 1.5B, 7B, and 72B models, Qwen2.5 brings back the 3B, 14B, and 32B models, which are more cost-effective for resource-limited scenarios and are under-represented in the current field of open foundation models. Qwen2.5- Turbo and Qwen2.5-Plus offer a great balance among accuracy, latency, and cost.",
+    "kind": "text"
+   },
+   {
+    "doc": "2501.12948v2.pdf",
+    "page": 83,
+    "text": "Qwen. Qwen2.5: A party of foundation models, 2024b. URL https://qwenlm.github.io/b log/qwen2.5.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2412.15115v2.pdf",
+    "page": 18,
+    "text": "In the future, we will focus on advancing robust foundational models. First, we will iteratively refine both base and instruction-tuned large language models (LLMs) by incorporating broader, more diverse, higher- quality data. Second, we will also continue to develop multimodal models. Our goal is to integrate various modalities into a unified framework. This will facilitate seamless, end-to-end information processing across textual, visual, and auditory domains. Third, we are committed to enhancing the reasoning capabilities of our models. This will be achieved through strategic scaling of inference compute resources. These efforts aim to push the boundaries of current technological limitations and contribute to the broader field of artificial intelligence.",
+    "kind": "text"
+   },
+   {
+    "doc": "2412.15115v2.pdf",
+    "page": 14,
+    "text": "To comprehensively evaluate the multilingual capabilities of instruction-tuned models, we followed P-MMEval (Zhang et al., 2024) and extended several benchmarks as follows: (1) IFEval (Multilingual): We expanded the IFEval benchmark, originally in English, to include multilingual examples. To ensure language neutrality, we removed instances that contained language-specific content (e.g., ”start with letter A”). (2) Knowledge Utilization: to assess the knowledge utilization abilities of the Qwen2.5 series models across multiple languages, we employed five MMLU-like benchmarks (multiple-choice format). These benchmarks include: AMMLU (Arabic), JMMLU (Japanese), KMMLU (Korean), IndoMMLU (Indonesian), and TurkishMMLU (Turkish). Additionally, we evaluated the models’ performance on the translated version of the MMLU benchmark (okapi MMLU), which has been adapted",
+    "kind": "text"
+   }
+  ]
+ },
+ "D1": {
+  "question": "Attention Is All You Need 这篇论文的第一作者邮箱是什么？",
+  "cat": "refuse",
+  "items": [
+   {
+    "doc": "2407.21783v3.pdf",
+    "page": 89,
+    "text": "Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez, Łukasz Kaiser, and Illia Polosukhin. Attention is all you need. Advances in Neural Information Processing Systems, 2017.",
+    "kind": "reference"
+   },
+   {
+    "doc": "1910.10683v4.pdf",
+    "page": 66,
+    "text": "Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez, Łukasz Kaiser, and Illia Polosukhin. Attention is all you need. In Advances in neural information processing systems, 2017.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2010.11929v2.pdf",
+    "page": 12,
+    "text": "Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez, Łukasz Kaiser, and Illia Polosukhin. Attention is all you need. In NIPS, 2017.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2106.09685v2.pdf",
+    "page": 16,
+    "text": "Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez, Łukasz Kaiser, and Illia Polosukhin. Attention is all you need. In Proceedings of the 31st In- ternational Conference on Neural Information Processing Systems, pp. 6000–6010, 2017.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2412.15115v2.pdf",
+    "page": 24,
+    "text": "Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez, Lukasz Kaiser, and Illia Polosukhin. Attention is all you need. In NIPS, pp. 5998–6008, 2017.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2210.02414v2.pdf",
+    "page": 18,
+    "text": "Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez, Łukasz Kaiser, and Illia Polosukhin. Attention is all you need. Advances in neural informa- tion processing systems, 30, 2017.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2305.13048v2.pdf",
+    "page": 13,
+    "text": "Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez, Łukasz Kaiser, and Illia Polosukhin. 2017. Attention is all you need. In Advances in Neural Information Pro- cessing Systems, volume 30. Curran Associates, Inc.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2310.06825v1.pdf",
+    "page": 9,
+    "text": "[27] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez, Łukasz Kaiser, and Illia Polosukhin. Attention is all you need. Advances in neural information processing systems, 30, 2017.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2407.21783v3.pdf",
+    "page": 89,
+    "text": "Bertie Vidgen, Adarsh Agrawal, Ahmed M Ahmed, Victor Akinwande, Namir Al-Nuaimi, Najla Alfaraj, Elie Alhajjar, Lora Aroyo, Trupti Bavalatti, Borhane Blili-Hamelin, et al. Introducing v0.5 of the ai safety benchmark from mlcommons. arXiv preprint arXiv:2404.12241, 2024.",
+    "kind": "reference"
+   },
+   {
+    "doc": "1910.10683v4.pdf",
+    "page": 66,
+    "text": "Elena Voita, Rico Sennrich, and Ivan Titov. The bottom-up evolution of representations in the transformer: A study with machine translation and language modeling objectives. arXiv preprint arXiv:1909.01380, 2019.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2010.11929v2.pdf",
+    "page": 12,
+    "text": "Huiyu Wang, Yukun Zhu, Bradley Green, Hartwig Adam, Alan Yuille, and Liang-Chieh Chen. Axial-deeplab: Stand-alone axial-attention for panoptic segmentation. In ECCV, 2020a.",
+    "kind": "reference"
+   }
+  ]
+ },
+ "D2": {
+  "question": "BERT 论文的作者们目前分别在哪个机构任职？",
+  "cat": "refuse",
+  "items": [
+   {
+    "doc": "N19-1423.pdf",
+    "page": 1,
+    "text": "We introduce a new language representa- tion model called BERT, which stands for Bidirectional Encoder Representations from Transformers. Unlike recent language repre- sentation models (Peters et al., 2018a; Rad- ford et al., 2018), BERT is designed to pre- train deep bidirectional representations from unlabeled text by jointly conditioning on both left and right context in all layers. As a re- sult, the pre-trained BERT model can be ﬁne- tuned with just one additional output layer to create state-of-the-art models for a wide range of tasks, such as question answering and language inference, without substantial task- speciﬁc architecture modiﬁcations.",
+    "kind": "text"
+   },
+   {
+    "doc": "2407.21783v3.pdf",
+    "page": 78,
+    "text": "Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. Bert: Pre-training of deep bidirectional transformers for language understanding. arXiv preprint arXiv:1810.04805, 2018.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2211.05100v4.pdf",
+    "page": 50,
+    "text": "Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. BERT: Pre-training of deep bidirectional transformers for language understanding. In Conference of the North American Chapter of the Association for Computational Linguistics, 2019.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2106.09685v2.pdf",
+    "page": 13,
+    "text": "Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding. arXiv:1810.04805 [cs], May 2019b. URL http://arxiv.org/abs/1810.04805. arXiv: 1810.04805.",
+    "kind": "reference"
+   },
+   {
+    "doc": "209_Emergent_Abilities_of_Larg.pdf",
+    "page": 13,
+    "text": "Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. BERT: Pre-training of deep bidirec- tional transformers for language understanding. NAACL, 2019. URL https://aclanthology.org/ N19-1423.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2103.00020v1.pdf",
+    "page": 28,
+    "text": "Devlin, J., Chang, M.-W., Lee, K., and Toutanova, K. Bert: Pre-training of deep bidirectional transformers for lan- guage understanding. arXiv preprint arXiv:1810.04805, 2018.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2010.11929v2.pdf",
+    "page": 10,
+    "text": "Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. BERT: Pre-training of deep bidirectional transformers for language understanding. In NAACL, 2019.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2201.11903v6.pdf",
+    "page": 11,
+    "text": "Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. 2019. BERT: Pre-training of deep bidirectional transformers for language understanding. NAACL.",
+    "kind": "reference"
+   },
+   {
+    "doc": "N19-1423.pdf",
+    "page": 1,
+    "text": "BERT is conceptually simple and empirically powerful.\nIt obtains new state-of-the-art re- sults on eleven natural language processing tasks, including pushing the GLUE score to 80.5% (7.7% point absolute improvement), MultiNLI accuracy to 86.7% (4.6% absolute improvement), SQuAD v1.1 question answer- ing Test F1 to 93.2 (1.5 point absolute im- provement) and SQuAD v2.0 Test F1 to 83.1 (5.1 point absolute improvement).",
+    "kind": "text"
+   },
+   {
+    "doc": "2407.21783v3.pdf",
+    "page": 78,
+    "text": "Aniket Didolkar, Anirudh Goyal, Nan Rosemary Ke, Siyuan Guo, Michal Valko, Timothy Lillicrap, Danilo Rezende, Yoshua Bengio, Michael Mozer, and Sanjeev Arora. Metacognitive capabilities of llms: An exploration in mathematical problem solving. arXiv preprint arXiv:2405.12205, 2024.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2211.05100v4.pdf",
+    "page": 50,
+    "text": "Jesse Dodge, Maarten Sap, Ana Marasovi´c, William Agnew, Gabriel Ilharco, Dirk Groen- eveld, Margaret Mitchell, and Matt Gardner. Documenting large webtext corpora: A case study on the colossal clean crawled corpus. In Conference on Empirical Methods in Natural Language Processing, 2021.",
+    "kind": "reference"
+   }
+  ]
+ },
+ "D3": {
+  "question": "Mistral 7B 训练总共用了多少张 A100 显卡？",
+  "cat": "refuse",
+  "items": [
+   {
+    "doc": "2406.14491v2.pdf",
+    "page": 15,
+    "text": "Mistral-7B-v0.1 Computing infrastructure",
+    "kind": "reference"
+   },
+   {
+    "doc": "2406.14491v2.pdf",
+    "page": 10,
+    "text": "Albert Q Jiang, Alexandre Sablayrolles, Arthur Men- sch, Chris Bamford, Devendra Singh Chaplot, Diego de las Casas, Florian Bressand, Gianna Lengyel, Guil- laume Lample, Lucile Saulnier, et al. 2023. Mistral 7b. arXiv preprint arXiv:2310.06825.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2407.21783v3.pdf",
+    "page": 80,
+    "text": "Albert Q Jiang, Alexandre Sablayrolles, Arthur Mensch, Chris Bamford, Devendra Singh Chaplot, Diego de las Casas, Florian Bressand, Gianna Lengyel, Guillaume Lample, Lucile Saulnier, Lélio Renard Lavaud, Marie-Anne Lachaux, Pierre Stock, Teven Le Scao, Thibaut Lavril, Thomas Wang, Timothée Lacroix, and William El Sayed. Mistral 7b. arXiv preprint arXiv:2310.06825, 2023.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2310.06825v1.pdf",
+    "page": 4,
+    "text": "To evaluate the generalization capabilities of Mistral 7B, we fine-tuned it on instruction datasets publicly available on the Hugging Face repository. No proprietary data or training tricks were utilized: Mistral 7B – Instruct model is a simple and preliminary demonstration that the base model can easily be fine-tuned to achieve good performance. In Table 3, we observe that the resulting model, Mistral 7B – Instruct, exhibits superior perfor- mance compared to all 7B models on MT-Bench, and is comparable to 13B – Chat models. An independent human evaluation was conducted on https://llmboxing.com/leaderboard.",
+    "kind": "text"
+   },
+   {
+    "doc": "2310.06825v1.pdf",
+    "page": 1,
+    "text": "We introduce Mistral 7B, a 7–billion-parameter language model engineered for superior performance and efficiency. Mistral 7B outperforms the best open 13B model (Llama 2) across all evaluated benchmarks, and the best released 34B model (Llama 1) in reasoning, mathematics, and code generation. Our model leverages grouped-query attention (GQA) for faster inference, coupled with sliding window attention (SWA) to effectively handle sequences of arbitrary length with a reduced inference cost. We also provide a model fine-tuned to follow instructions, Mistral 7B – Instruct, that surpasses Llama 2 13B – chat model both on human and automated benchmarks. Our models are released under the Apache 2.0 license. Code: https://github.com/mistralai/mistral-src Webpage: https://mistral.ai/news/announcing-mistral-7b/",
+    "kind": "text"
+   },
+   {
+    "doc": "2310.06825v1.pdf",
+    "page": 1,
+    "text": "Mistral 7B\nAlbert Q. Jiang, Alexandre Sablayrolles, Arthur Mensch, Chris Bamford, Devendra Singh Chaplot, Diego de las Casas, Florian Bressand, Gianna Lengyel, Guillaume Lample, Lucile Saulnier, Lélio Renard Lavaud, Marie-Anne Lachaux, Pierre Stock, Teven Le Scao, Thibaut Lavril, Thomas Wang, Timothée Lacroix, William El Sayed\narXiv:2310.06825v1 [cs.CL] 10 Oct 2023",
+    "kind": "text"
+   },
+   {
+    "doc": "2310.06825v1.pdf",
+    "page": 2,
+    "text": "Mistral 7B takes a significant step in balancing the goals of getting high performance while keeping large language models efficient. Through our work, our aim is to help the community create more affordable, efficient, and high-performing language models that can be used in a wide range of real-world applications.",
+    "kind": "text"
+   },
+   {
+    "doc": "2310.06825v1.pdf",
+    "page": 2,
+    "text": "Mistral 7B is released under the Apache 2.0 license. This release is accompanied by a reference\nimplementation1 facilitating easy deployment either locally or on cloud platforms such as AWS, GCP,\nor Azure using the vLLM [17] inference server and SkyPilot 2. Integration with Hugging Face 3 is also streamlined for easier integration. Moreover, Mistral 7B is crafted for ease of fine-tuning across a myriad of tasks. As a demonstration of its adaptability and superior performance, we present a chat model fine-tuned from Mistral 7B that significantly outperforms the Llama 2 13B – Chat model.",
+    "kind": "text"
+   },
+   {
+    "doc": "2406.14491v2.pdf",
+    "page": 15,
+    "text": "4 A100-80GB GPUs Run-time",
+    "kind": "reference"
+   },
+   {
+    "doc": "2406.14491v2.pdf",
+    "page": 10,
+    "text": "Albert Q Jiang, Alexandre Sablayrolles, Antoine Roux, Arthur Mensch, Blanche Savary, Chris Bam- ford, Devendra Singh Chaplot, Diego de las Casas, Emma Bou Hanna, Florian Bressand, et al. 2024a. Mixtral of experts. arXiv preprint arXiv:2401.04088.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2407.21783v3.pdf",
+    "page": 80,
+    "text": "Albert Q Jiang, Alexandre Sablayrolles, Antoine Roux, Arthur Mensch, Blanche Savary, Chris Bamford, Devendra Singh Chaplot, Diego de las Casas, Emma Bou Hanna, Florian Bressand, et al. Mixtral of experts. arXiv preprint arXiv:2401.04088, 2024.",
+    "kind": "reference"
+   }
+  ]
+ },
+ "D4": {
+  "question": "LLaMA 论文的致谢部分感谢了哪些具体的人？",
+  "cat": "refuse",
+  "items": [
+   {
+    "doc": "2307.09288v2.pdf",
+    "page": 47,
+    "text": "46\n• Armand Joulin, Edouard Grave, Guillaume Lample, and Timothee Lacroix, members of the original Llama team who helped get this work started.\n• Drew Hamlin, Chantal Mora, and Aran Mun, who gave us some design input on the figures in the paper.\n• Vijai Mohan for the discussions about RLHF that inspired our Figure 20, and his contribution to the internal demo.\n• Early reviewers of this paper, who helped us improve its quality, including Mike Lewis, Joelle Pineau, Laurens van der Maaten, Jason Weston, and Omer Levy.\nA.2",
+    "kind": "text"
+   },
+   {
+    "doc": "2407.21783v3.pdf",
+    "page": 73,
+    "text": "We also thank Aasish Pappu, Adebissy Tharinger, Adnan Aziz, Aisha Iqbal, Ajit Mathews, Albert Lin, Amar Budhiraja, Amit Nagpal, Andrew Or, Andrew Prasetyo Jo, Ankit Jain, Antonio Prado, Aran Mun, Armand Kok, Ashmitha Jeevaraj Shetty, Aya Ibrahim, Bardiya Sadeghi, Beibei Zhu, Bell Praditchai, Benjamin Muller, Botao Chen, Carmen Wang, Carolina Tsai, Cen Peng, Cen Zhao, Chana Greene, Changsheng Zhao, Chenguang Zhu, Chloé Bakalar, Christian Fuegen, Christophe Ropers, Christopher Luc, Dalton Flanagan, Damien Sereni, Dan Johnson, Daniel Haziza, Daniel Kim, David Kessel, Digant Desai, Divya Shah, Dong Li, Elisabeth Michaels, Elissa Jones, Emad El-Haraty, Emilien Garreau, Eric Alamillo, Eric Hambro, Erika Lal, Eugen Hotaj, Fabian Gloeckle, Fadli Basyari, Faith Eischen, Fei Kou, Ferdi Adeputra, Feryandi Nurdiantoro, Flaurencya Ciputra, Forest Zheng, Francisco Massa, Furn Techaletumpai, Gobinda Sa",
+    "kind": "text"
+   },
+   {
+    "doc": "2412.15115v2.pdf",
+    "page": 24,
+    "text": "Hugo Touvron, Thibaut Lavril, Gautier Izacard, Xavier Martinet, Marie-Anne Lachaux, Timoth´ee Lacroix, Baptiste Rozi`ere, Naman Goyal, Eric Hambro, Faisal Azhar, Aur´elien Rodriguez, Armand Joulin, Edouard Grave, and Guillaume Lample. LLaMA: Open and efficient foundation language models. CoRR, abs/2302.13971, 2023a.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2307.09288v2.pdf",
+    "page": 44,
+    "text": "Hugo Touvron, Thibaut Lavril, Gautier Izacard, Xavier Martinet, Marie-Anne Lachaux, Timothée Lacroix, Baptiste Rozière, Naman Goyal, Eric Hambro, Faisal Azhar, Aur’elien Rodriguez, Armand Joulin, Edouard Grave, and Guillaume Lample. Llama: Open and efficient foundation language models. arXiv preprint arXiv:2302.13971, 2023.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2407.21783v3.pdf",
+    "page": 73,
+    "text": "Acknowledgements We thank Mark Zuckerberg, Chris Cox, Ahmad Al-Dahle, Santosh Janardhan, Joelle Pineau, Yann LeCun, Aparna Ramani, Yee Jiun Song, and Ash Jhaveri for their invaluable support for Llama 3.",
+    "kind": "text"
+   },
+   {
+    "doc": "2407.21783v3.pdf",
+    "page": 89,
+    "text": "Hugo Touvron, Thibaut Lavril, Gautier Izacard, Xavier Martinet, Marie-Anne Lachaux, Timothée Lacroix, Baptiste Rozière, Naman Goyal, Eric Hambro, Faisal Azhar, Aurelien Rodriguez, Armand Joulin, Edouard Grave, and Guillaume Lample. Llama: Open and efficient foundation language models. arXiv preprint arXiv:2302.13971, 2023a.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2305.13048v2.pdf",
+    "page": 13,
+    "text": "Hugo Touvron, Thibaut Lavril, Gautier Izacard, Xavier Martinet, Marie-Anne Lachaux, Timothée Lacroix, Baptiste Rozière, Naman Goyal, Eric Hambro, Faisal Azhar, Aurelien Rodriguez, Armand Joulin, Edouard Grave, and Guillaume Lample. 2023. Llama: Open and efficient foundation language models.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2303.08774v6.pdf",
+    "page": 19,
+    "text": "[28] Hugo Touvron, Thibaut Lavril, Gautier Izacard, Xavier Martinet, Marie-Anne Lachaux, Timo- thée Lacroix, Baptiste Rozière, Naman Goyal, Eric Hambro, Faisal Azhar, et al. LLaMA: Open and efficient foundation language models. arXiv preprint arXiv:2302.13971, 2023.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2307.09288v2.pdf",
+    "page": 47,
+    "text": "We expand the context window for Llama 2 from 2048 tokens to 4096 tokens. The longer context window enables models to process more information, which is particularly useful for supporting longer histories in chat applications, various summarization tasks, and understanding longer documents. Table 16 compares the performance of 2k and 4k context pretraining on long-context benchmarks. Both models are trained for 150B tokens, keeping the same architecture and hyperparameters as a baseline, varying only the context length. We observe improvement on SCROLLS (Shaham et al., 2022), where the average input length is 3.5k, and no performance degradation on SQUAD (Rajpurkar et al., 2018). Table 17 shows that the longer context model retains strong performance on various general-purpose tasks.",
+    "kind": "text"
+   },
+   {
+    "doc": "2407.21783v3.pdf",
+    "page": 73,
+    "text": "73",
+    "kind": "text"
+   },
+   {
+    "doc": "2412.15115v2.pdf",
+    "page": 24,
+    "text": "Hugo Touvron, Louis Martin, Kevin Stone, Peter Albert, Amjad Almahairi, Yasmine Babaei, Nikolay Bashlykov, Soumya Batra, Prajjwal Bhargava, Shruti Bhosale, Dan Bikel, Lukas Blecher, Cristian Canton- Ferrer, Moya Chen, Guillem Cucurull, David Esiobu, Jude Fernandes, Jeremy Fu, Wenyin Fu, Brian Fuller, Cynthia Gao, Vedanuj Goswami, Naman Goyal, Anthony Hartshorn, Saghar Hosseini, Rui Hou, Hakan Inan, Marcin Kardas, Viktor Kerkez, Madian Khabsa, Isabel Kloumann, Artem Korenev, Punit Singh Koura, Marie-Anne Lachaux, Thibaut Lavril, Jenya Lee, Diana Liskovich, Yinghai Lu, Yuning Mao, Xavier Martinet, Todor Mihaylov, Pushkar Mishra, Igor Molybog, Yixin Nie, Andrew Poulton, Jeremy Reizenstein, Rashi Rungta, Kalyan Saladi, Alan Schelten, Ruan Silva, Eric Michael Smith, Ranjan Subramanian, Xiaoqing Ellen Tan, Binh Tang, Ross Taylor, Adina Williams, Jian Xiang Kuan, Puxin Xu, Zheng Yan, Iliyan Zar",
+    "kind": "reference"
+   }
+  ]
+ },
+ "D5": {
+  "question": "DeepSeek-V3 的商业授权费用是多少？",
+  "cat": "refuse",
+  "items": [
+   {
+    "doc": "2412.19437v1.pdf",
+    "page": 5,
+    "text": "otal in H800 GPU Hours\n2788K in USD\n2664K\n119K\n5K\n$5.328M\n$0.238M\n$0.01M\n$5.576M\nand generation length.\nWe evaluate DeepSeek-V3 on a comprehensive array of benchmarks. Despite its economical training costs, comprehensive evaluations reveal that DeepSeek-V3-Base has emerged as the strongest open-source base model currently available, especially in code and math. Its chat version also outperforms other open-source models and achieves performance comparable to leading closed-source models, including GPT-4o and Claude-3.5-Sonnet, on a series of standard and open-ended benchmarks.",
+    "kind": "text"
+   },
+   {
+    "doc": "2412.19437v1.pdf",
+    "page": 5,
+    "text": "Lastly, we emphasize again the economical training costs of DeepSeek-V3, summarized in Table 1, achieved through our optimized co-design of algorithms, frameworks, and hardware. During the pre-training stage, training DeepSeek-V3 on each trillion tokens requires only 180K H800 GPU hours, i.e., 3.7 days on our cluster with 2048 H800 GPUs. Consequently, our pre- training stage is completed in less than two months and costs 2664K GPU hours. Combined with 119K GPU hours for the context length extension and 5K GPU hours for post-training, DeepSeek-V3 costs only 2.788M GPU hours for its full training. Assuming the rental price of the H800 GPU is $2 per GPU hour, our total training costs amount to only $5.576M. Note that the aforementioned costs include only the official training of DeepSeek-V3, excluding the costs associated with prior research and ablation experiments on architectures, algori",
+    "kind": "text"
+   },
+   {
+    "doc": "2412.19437v1.pdf",
+    "page": 5,
+    "text": "Table 1 | Training costs of DeepSeek-V3, assuming the rental price of H800 is $2 per GPU hour.",
+    "kind": "table"
+   },
+   {
+    "doc": "2412.19437v1.pdf",
+    "page": 35,
+    "text": "In this paper, we introduce DeepSeek-V3, a large MoE language model with 671B total pa- rameters and 37B activated parameters, trained on 14.8T tokens. In addition to the MLA and DeepSeekMoE architectures, it also pioneers an auxiliary-loss-free strategy for load balancing and sets a multi-token prediction training objective for stronger performance. The training of DeepSeek-V3 is cost-effective due to the support of FP8 training and meticulous engineering op- timizations. The post-training also makes a success in distilling the reasoning capability from the DeepSeek-R1 series of models. Comprehensive evaluations demonstrate that DeepSeek-V3 has emerged as the strongest open-source model currently available, and achieves performance com- parable to leading closed-source models like GPT-4o and Claude-3.5-Sonnet. Despite its strong performance, it also maintains economical training costs. ",
+    "kind": "text"
+   },
+   {
+    "doc": "2412.19437v1.pdf",
+    "page": 1,
+    "text": "We present DeepSeek-V3, a strong Mixture-of-Experts (MoE) language model with 671B total parameters with 37B activated for each token. To achieve efficient inference and cost-effective training, DeepSeek-V3 adopts Multi-head Latent Attention (MLA) and DeepSeekMoE architec- tures, which were thoroughly validated in DeepSeek-V2. Furthermore, DeepSeek-V3 pioneers an auxiliary-loss-free strategy for load balancing and sets a multi-token prediction training objective for stronger performance. We pre-train DeepSeek-V3 on 14.8 trillion diverse and high-quality tokens, followed by Supervised Fine-Tuning and Reinforcement Learning stages to fully harness its capabilities. Comprehensive evaluations reveal that DeepSeek-V3 outperforms other open-source models and achieves performance comparable to leading closed-source models. Despite its excellent performance, DeepSeek-V3 requires only 2.788M H800",
+    "kind": "text"
+   },
+   {
+    "doc": "2412.19437v1.pdf",
+    "page": 26,
+    "text": "25\nFrom a more detailed perspective, we compare DeepSeek-V3-Base with the other open-source base models individually. (1) Compared with DeepSeek-V2-Base, due to the improvements in our model architecture, the scale-up of the model size and training tokens, and the enhancement of data quality, DeepSeek-V3-Base achieves significantly better performance as expected. (2) Compared with Qwen2.5 72B Base, the state-of-the-art Chinese open-source model, with only half of the activated parameters, DeepSeek-V3-Base also demonstrates remarkable advantages, especially on English, multilingual, code, and math benchmarks. As for Chinese benchmarks, except for CMMLU, a Chinese multi-subject multiple-choice task, DeepSeek-V3-Base also shows better performance than Qwen2.5 72B. (3) Compared with LLaMA-3.1 405B Base, the largest open-source model with 11 times the activated parameters, DeepSeek-V3-Base al",
+    "kind": "text"
+   },
+   {
+    "doc": "2412.19437v1.pdf",
+    "page": 4,
+    "text": "With a forward-looking perspective, we consistently strive for strong model performance and economical costs. Therefore, in terms of architecture, DeepSeek-V3 still adopts Multi-head Latent Attention (MLA) (DeepSeek-AI, 2024c) for efficient inference and DeepSeekMoE (Dai et al., 2024) for cost-effective training. These two architectures have been validated in DeepSeek- V2 (DeepSeek-AI, 2024c), demonstrating their capability to maintain robust model performance while achieving efficient training and inference. Beyond the basic architecture, we implement two additional strategies to further enhance the model capabilities. Firstly, DeepSeek-V3 pi- oneers an auxiliary-loss-free strategy (Wang et al., 2024a) for load balancing, with the aim of minimizing the adverse impact on model performance that arises from the effort to encourage load balancing. Secondly, DeepSeek-V3 employs a multi-token",
+    "kind": "text"
+   },
+   {
+    "doc": "2412.19437v1.pdf",
+    "page": 1,
+    "text": "DeepSeek-V3 Technical Report\nDeepSeek-AI\nresearch@deepseek.com",
+    "kind": "text"
+   },
+   {
+    "doc": "2412.19437v1.pdf",
+    "page": 5,
+    "text": "Our main contribution includes:",
+    "kind": "text"
+   }
+  ]
+ },
+ "E1": {
+  "question": "用 JSON 输出这篇论文的 {title, year, venue}，字段未知就留空串。",
+  "cat": "struct",
+  "items": [
+   {
+    "doc": "2210.02414v2.pdf",
+    "page": 15,
+    "text": "In Proceedings of the 2020 Conference on Empirical Methods in Natural Language Processing (EMNLP), pp. 1953–1967, 2020.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2211.05100v4.pdf",
+    "page": 47,
+    "text": "In Proceedings of the 55th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers), pages 861–872, Vancouver, Canada, July 2017. Association for Computational Linguistics. doi: 10.18653/v1/P17-1080. URL https://www.aclweb.org/anthology/ P17-1080.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2210.02414v2.pdf",
+    "page": 18,
+    "text": "Published as a conference paper at ICLR 2023",
+    "kind": "reference"
+   },
+   {
+    "doc": "2210.02414v2.pdf",
+    "page": 1,
+    "text": "Published as a conference paper at ICLR 2023",
+    "kind": "text"
+   },
+   {
+    "doc": "2210.02414v2.pdf",
+    "page": 12,
+    "text": "Published as a conference paper at ICLR 2023",
+    "kind": "reference"
+   },
+   {
+    "doc": "2210.02414v2.pdf",
+    "page": 14,
+    "text": "Published as a conference paper at ICLR 2023",
+    "kind": "reference"
+   },
+   {
+    "doc": "2210.02414v2.pdf",
+    "page": 19,
+    "text": "Published as a conference paper at ICLR 2023",
+    "kind": "reference"
+   },
+   {
+    "doc": "1910.10683v4.pdf",
+    "page": 1,
+    "text": "Journal of Machine Learning Research 21 (2020) 1-67\nSubmitted 1/20; Revised 6/20; Published 6/20",
+    "kind": "text"
+   },
+   {
+    "doc": "2210.02414v2.pdf",
+    "page": 15,
+    "text": "Deepak Narayanan, Amar Phanishayee, Kaiyu Shi, Xie Chen, and Matei Zaharia. Memory-efficient pipeline-parallel dnn training. In International Conference on Machine Learning, pp. 7937–7947. PMLR, 2021.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2211.05100v4.pdf",
+    "page": 47,
+    "text": "Emily M Bender, Timnit Gebru, Angelina McMillan-Major, and Shmargaret Shmitchell. On the dangers of stochastic parrots: Can language models be too big? In Proceedings of the 2021 ACM Conference on Fairness, Accountability, and Transparency, pages 610–623, 2021.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2210.02414v2.pdf",
+    "page": 18,
+    "text": "Alon Talmor, Jonathan Herzig, Nicholas Lourie, and Jonathan Berant. Commonsenseqa: A question answering challenge targeting commonsense knowledge. In Proceedings of the 2019 Conference of the North American Chapter of the Association for Computational Linguistics: Human Lan- guage Technologies, Volume 1 (Long and Short Papers), pp. 4149–4158, 2019.",
+    "kind": "reference"
+   }
+  ]
+ },
+ "E2": {
+  "question": "用 JSON 输出对比结果：{\"aspects\":[{\"name\":\"预训练目标\",\"bert\":\"…\",\"gpt\":\"…\"}]}",
+  "cat": "struct",
+  "items": [
+   {
+    "doc": "N19-1423.pdf",
+    "page": 14,
+    "text": "• GPT is trained on the BooksCorpus (800M words); BERT is trained on the BooksCor- pus (800M words) and Wikipedia (2,500M words).\n• GPT uses a sentence separator ([SEP]) and classiﬁer token ([CLS]) which are only in- troduced at ﬁne-tuning time; BERT learns\n[SEP], [CLS] and sentence A/B embed- dings during pre-training.\n• GPT was trained for 1M steps with a batch size of 32,000 words; BERT was trained for 1M steps with a batch size of 128,000 words.",
+    "kind": "text"
+   },
+   {
+    "doc": "N19-1423.pdf",
+    "page": 13,
+    "text": "Figure 3: Differences in pre-training model architectures. BERT uses a bidirectional Transformer. OpenAI GPT uses a left-to-right Transformer. ELMo uses the concatenation of independently trained left-to-right and right-to- left LSTMs to generate features for downstream tasks. Among the three, only BERT representations are jointly conditioned on both left and right context in all layers. In addition to the architecture differences, BERT and OpenAI GPT are ﬁne-tuning approaches, while ELMo is a feature-based approach.",
+    "kind": "figure"
+   },
+   {
+    "doc": "N19-1423.pdf",
+    "page": 14,
+    "text": "A.4\nComparison of BERT, ELMo ,and OpenAI GPT Here we studies the differences in recent popular representation learning models including ELMo, OpenAI GPT and BERT. The comparisons be- tween the model architectures are shown visually in Figure 3. Note that in addition to the architec- ture differences, BERT and OpenAI GPT are ﬁne- tuning approaches, while ELMo is a feature-based approach. The most comparable existing pre-training method to BERT is OpenAI GPT, which trains a left-to-right Transformer LM on a large text cor- pus. In fact, many of the design decisions in BERT were intentionally made to make it as close to GPT as possible so that the two methods could be minimally compared. The core argument of this work is that the bi-directionality and the two pre- training tasks presented in Section 3.1 account for the majority of the empirical improvements, but we do note that there are se",
+    "kind": "text"
+   },
+   {
+    "doc": "N19-1423.pdf",
+    "page": 6,
+    "text": "Both BERTBASE and BERTLARGE outperform all sys- tems on all tasks by a substantial margin, obtaining 4.5% and 7.0% respective average accuracy im- provement over the prior state of the art. Note that BERTBASE and OpenAI GPT are nearly identical in terms of model architecture apart from the at- tention masking. For the largest and most widely reported GLUE task, MNLI, BERT obtains a 4.6% absolute accuracy improvement. On the ofﬁcial GLUE leaderboard10, BERTLARGE obtains a score of 80.5, compared to OpenAI GPT, which obtains 72.8 as of the date of writing. We ﬁnd that BERTLARGE signiﬁcantly outper- forms BERTBASE across all tasks, especially those with very little training data. The effect of model size is explored more thoroughly in Section 5.2.",
+    "kind": "text"
+   },
+   {
+    "doc": "N19-1423.pdf",
+    "page": 6,
+    "text": "System\nMNLI-(m/mm)\nQQP\nQNLI\n392k\n363k\n108k\nPre-OpenAI SOTA\n80.6/80.1\n66.1\n82.3\nBiLSTM+ELMo+Attn\n76.4/76.1\n64.8\n79.8\nOpenAI GPT\n82.1/81.4\n70.3\n87.4\nBERTBASE\n84.6/83.4\n71.2\n90.5\n86.7/85.9\n72.1\n92.7\nBERTLARGE\nAverage\nSST-2\nCoLA\nSTS-B\nMRPC\nRTE\n67k\n8.5k\n5.7k\n3.5k\n2.5k\n-\n93.2\n35.0\n81.0\n86.0\n61.7\n74.0\n90.4\n36.0\n73.3\n84.9\n56.8\n71.0\n91.3\n45.4\n80.0\n82.3\n56.0\n75.1\n93.5\n52.1\n85.8\n88.9\n66.4\n79.6\n94.9\n60.5\n86.5\n89.3\n70.1\n82.1",
+    "kind": "text"
+   },
+   {
+    "doc": "N19-1423.pdf",
+    "page": 13,
+    "text": "BERT (Ours)\nOpenAI GPT\n...\n...\nT1\nT2\nT1\nT2\nTN\nTN\n...\n...\nTrm\nTrm\nTrm\nTrm\nTrm\nTrm\n...\n...\nTrm\nTrm\nTrm\nTrm\nTrm\nTrm\n...\nE1\nE2\nE2\nEN\nEN\nE1\n...\nELMo\n...\nT1\nT2\nTN\nLstm\nLstm\nLstm\nLstm\nLstm\nLstm\n...\n...\nLstm\nLstm\nLstm\nLstm\nLstm\nLstm\n...\n...\n...\nE1\nE2\nEN",
+    "kind": "text"
+   },
+   {
+    "doc": "N19-1423.pdf",
+    "page": 8,
+    "text": "No NSP: A bidirectional model which is trained using the “masked LM” (MLM) but without the “next sentence prediction” (NSP) task. LTR & No NSP: A left-context-only model which is trained using a standard Left-to-Right (LTR) LM, rather than an MLM. The left-only constraint was also applied at ﬁne-tuning, because removing it introduced a pre-train/ﬁne-tune mismatch that degraded downstream performance. Additionally, this model was pre-trained without the NSP task. This is directly comparable to OpenAI GPT, but using our larger training dataset, our input repre- sentation, and our ﬁne-tuning scheme.",
+    "kind": "text"
+   },
+   {
+    "doc": "N19-1423.pdf",
+    "page": 14,
+    "text": "• GPT used the same learning rate of 5e-5 for all ﬁne-tuning experiments; BERT chooses a task-speciﬁc ﬁne-tuning learning rate which performs the best on the development set.\n4184\nTo isolate the effect of these differences, we per- form ablation experiments in Section 5.1 which demonstrate that the majority of the improvements are in fact coming from the two pre-training tasks and the bidirectionality they enable.\nA.5",
+    "kind": "text"
+   },
+   {
+    "doc": "N19-1423.pdf",
+    "page": 13,
+    "text": "...\nLstm\nLstm\nLstm\nLstm\nLstm\nLstm\n...\n...\n...\nE1\nE2\nEN\nto converge. In Section C.1 we demonstrate that MLM does converge marginally slower than a left- to-right model (which predicts every token), but the empirical improvements of the MLM model far outweigh the increased training cost.",
+    "kind": "text"
+   }
+  ]
+ },
+ "E3": {
+  "question": "用 JSON 输出 {\"claims\":[{\"text\":\"…\",\"evidence\":[编号]}]}，claims 给 3 条。",
+  "cat": "struct",
+  "items": [
+   {
+    "doc": "2203.02155v1.pdf",
+    "page": 10,
+    "text": "In this section, we provide experimental evidence for our claims in Section 1, sorted into three parts: results on the API prompt distribution, results on public NLP datasets, and qualitative results.\n7Accessible here: https://github.com/openai/following-instructions-human-feedback.\n10",
+    "kind": "text"
+   },
+   {
+    "doc": "2501.12948v2.pdf",
+    "page": 67,
+    "text": "67",
+    "kind": "text"
+   },
+   {
+    "doc": "2210.02414v2.pdf",
+    "page": 38,
+    "text": "{{text}} => ||| {% for entity, type in zip(entities, entity_types) %}( {{entity}} ; argument type ; {{type}} ) {% endfor %}\n38",
+    "kind": "text"
+   },
+   {
+    "doc": "2203.02155v1.pdf",
+    "page": 32,
+    "text": "\"\"\" {text} \"\"\" I summarized the above as:",
+    "kind": "reference"
+   },
+   {
+    "doc": "2210.02414v2.pdf",
+    "page": 34,
+    "text": "In the following passage, an argument with the type \"{{query_arg}}\" is related to the event trigger \"{{trigger['text']}} ({{allowed_triggers[ trigger['event_type']]}})\":\n{{text}}\nThe argument should be (copy from the context if you find it; if not, do not generate): ||| {{filter_type(relations, query_arg) | join(\" \")}}\nC.2.3\nJOINT ENTITY AND RELATION EXTRACTION\nJoint entity and relation extraction aims to recognize named entities in a piece of text and judge the relationships between them.",
+    "kind": "text"
+   },
+   {
+    "doc": "2210.02414v2.pdf",
+    "page": 36,
+    "text": "Published as a conference paper at ICLR 2023\n(Relation Extraction, Prompt 1, KELM ONLY)\n{# kelm #} Can you figure out all knowledge triples regarding whole Wikidata properties from the sentence? List them in the shape of \"( X ; Y ; Z )\":\n{{text}} => ||| {{format_triple(relations, \"\") | join(\" \")}}\n(Knowledge Slot Filling, Prompt 1, KELM ONLY)\n{# kelm #} Given the entity \"{{entities[entity_idx]}}\" marked with \"[\" and \"]\" in the context:\n{{text}}",
+    "kind": "text"
+   },
+   {
+    "doc": "2210.02414v2.pdf",
+    "page": 33,
+    "text": "Published as a conference paper at ICLR 2023\n(Dialogue State Tracking, Prompt 0)\nRead the dialogues between \"[User]\" and \"[Agent]\",\n{{text}}\nidentify and extract the information related to the following categories (from top to down):\n- {{allowed_relations | join(\"\\n- \")}}\nin the form of \"( [User] ; Y ; Z )\": ||| {{format_triple(relations, allowed_relations) | join(\" \")}}\n(Slot Filling, Prompt 0)\nGiven the following dialogue:\n{{text}}",
+    "kind": "text"
+   },
+   {
+    "doc": "2210.02414v2.pdf",
+    "page": 33,
+    "text": "For the task of \"Event Extraction\", given a trigger one should extract its related arguments conditioned on a list of potential roles.\nGiven the following list of roles:\n- {{shuffle(allowed_arguments[trigger['event_type']].values()) | join(\"\\ n- \")}}\nextract related arguments of the trigger \"{{trigger['text']}} ({{ allowed_triggers[trigger['event_type']]}})\" in the following sentence:\n{{text}}\nExtractions: ||| {{format_triple(relations, \"\") | join(\" \")}}\n33",
+    "kind": "text"
+   }
+  ]
+ },
+ "E4": {
+  "question": "用 JSON 输出 {\"method\":\"…\",\"dataset\":\"…\",\"metric\":\"…\",\"value\":\"…\"}",
+  "cat": "struct",
+  "items": [
+   {
+    "doc": "2307.09288v2.pdf",
+    "page": 39,
+    "text": "Jwala Dhamala, Tony Sun, Varun Kumar, Satyapriya Krishna, Yada Pruksachatkun, Kai-Wei Chang, and Rahul Gupta. BOLD: Dataset and metrics for measuring biases in open-ended language generation. In Proceedings of the 2021 ACM conference on fairness, accountability, and transparency, pages 862–872, 2021.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2203.02155v1.pdf",
+    "page": 22,
+    "text": "Dhamala, J., Sun, T., Kumar, V., Krishna, S., Pruksachatkun, Y., Chang, K.-W., and Gupta, R. (2021). Bold: Dataset and metrics for measuring biases in open-ended language generation. In Proceedings of the 2021 ACM Conference on Fairness, Accountability, and Transparency, pages 862–872.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2107.03374v2.pdf",
+    "page": 2,
+    "text": "In this section, we discuss the details of our evaluation framework. We begin by deﬁning the pass@k metric, and explain its advantages over standard match-based metrics. Next, we describe the dataset of hand-written problems, called “HumanEval,” which we created in order to bench- mark our models. Finally, we discuss the sandbox environ- ment we used to safely execute model-generated code.",
+    "kind": "text"
+   },
+   {
+    "doc": "2203.02155v1.pdf",
+    "page": 47,
+    "text": "• Evaluation metric is the f1 score from the sample to the target completion.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2203.02155v1.pdf",
+    "page": 46,
+    "text": "• Evaluation metric is the f1 score from the sample to the target completion.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2203.02155v1.pdf",
+    "page": 47,
+    "text": "• Evaluation metric is the f1 score from the sample to the target completion.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2203.02155v1.pdf",
+    "page": 44,
+    "text": "In this section we describe the prompting structure, as well as other dataset features such as number of validation examples and performance metric, for each automatic evaluation task. These are shown in Table 14-25.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2203.02155v1.pdf",
+    "page": 49,
+    "text": "• Translations are evaluated using the BLEU metric.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2307.09288v2.pdf",
+    "page": 39,
+    "text": "Emily Dinan, Gavin Abercrombie, A Stevie Bergman, Shannon Spruit, Dirk Hovy, Y-Lan Boureau, and Verena Rieser. Anticipating safety issues in e2e conversational ai: Framework and tooling. arXiv preprint arXiv:2107.03451, 2021.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2203.02155v1.pdf",
+    "page": 22,
+    "text": "Dinan, E., Fan, A., Williams, A., Urbanek, J., Kiela, D., and Weston, J. (2019a). Queens are powerful too: Mitigating gender bias in dialogue generation. arXiv preprint arXiv:1911.03842.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2107.03374v2.pdf",
+    "page": 2,
+    "text": "Generative models for code are predominantly benchmarked by matching samples against a reference solution, where the match can be exact or fuzzy (as in BLEU score). How- ever, recent work has surfaced deﬁciencies in match-based metrics for code. For instance, Ren et al. (2020) ﬁnds that BLEU has problems capturing semantic features speciﬁc to code, and suggests several semantic modiﬁcations to the score.",
+    "kind": "text"
+   }
+  ]
+ },
+ "E5": {
+  "question": "用 JSON 输出 {\"missing\":[\"…\"]}：说明要完整回答还缺哪些信息，没有就空数组。",
+  "cat": "struct",
+  "items": [
+   {
+    "doc": "1706.03762v1.pdf",
+    "page": 15,
+    "text": ".\n<EOS>\n,\nthis\nmy\nis\nin\nare\nwhat\nwe\n<pad>\nmissing\nopinion\n15",
+    "kind": "text"
+   },
+   {
+    "doc": "1706.03762v1.pdf",
+    "page": 14,
+    "text": ".\n<EOS>\n,\nthis\nmy\nis\nin\nare\nwhat\nwe\n<pad>\nmissing\nopinion\n14",
+    "kind": "text"
+   },
+   {
+    "doc": "2201.11903v6.pdf",
+    "page": 17,
+    "text": "missing error)\n62B Model Output\nQuestion\n540B Model Output",
+    "kind": "text"
+   },
+   {
+    "doc": "2203.02155v1.pdf",
+    "page": 27,
+    "text": "You are a very serious professor, and you check papers to see if they contain missing citations. Given the text, say whether it is missing an important citation (YES/NO) and which sentence(s) require citing.",
+    "kind": "reference"
+   },
+   {
+    "doc": "UnderstandingDeepLearning_02_09_26_C.pdf",
+    "page": 496,
+    "text": "A key element missing from",
+    "kind": "reference"
+   },
+   {
+    "doc": "2406.14491v2.pdf",
+    "page": 16,
+    "text": "Free-form Completion OPT: ✓COT: ✗",
+    "kind": "reference"
+   },
+   {
+    "doc": "2203.02155v1.pdf",
+    "page": 47,
+    "text": "SquadV2 (Stanford Question Answering Dataset) Prompt format (the number of question / answer pairs is variable)",
+    "kind": "reference"
+   },
+   {
+    "doc": "2201.11903v6.pdf",
+    "page": 16,
+    "text": "One step missing",
+    "kind": "text"
+   },
+   {
+    "doc": "2201.11903v6.pdf",
+    "page": 17,
+    "text": "Each school has sent 2 teams, each with 5 players. This means each school has sent 2 * 5 = 10 players. Each school has also sent 2 coaches. This means each school has sent 10 + 2 = 12 people. There are 4 schools, so in total all of the schools have sent 4 * 12 = 48 people. The answer is 48. (Correct)",
+    "kind": "reference"
+   }
+  ]
+ },
+ "E6": {
+  "question": "用 JSON 输出 {\"steps\":[{\"step\":1,\"action\":\"…\",\"input\":\"…\"}]}，最多 4 步。",
+  "cat": "struct",
+  "items": [
+   {
+    "doc": "2303.08774v6.pdf",
+    "page": 12,
+    "text": "[Redacted: generates steps and chem- ical scheme]",
+    "kind": "text"
+   },
+   {
+    "doc": "2205.14135v2.pdf",
+    "page": 18,
+    "text": "contains all the steps.",
+    "kind": "text"
+   },
+   {
+    "doc": "2305.13048v2.pdf",
+    "page": 29,
+    "text": "Tell me the steps to cook.",
+    "kind": "reference"
+   },
+   {
+    "doc": "2407.21783v3.pdf",
+    "page": 25,
+    "text": "• Multi-step tool use: We follow a similar protocol and first generate synthetic data to teach the model basic multi-step tool use capabilities. To do this, we first prompt Llama 3 to generate user prompts that require at least two tool calls, that can be the same or different tools from our core set. Then, conditioned on these prompts, we few-shot prompt Llama 3 to generate a solution consisting of interleaved reasoning steps and tool calls, similar to ReAct (Yao et al., 2022). See Figure 10 for an example of Llama 3 performing a task involving multi-step tool usage.",
+    "kind": "text"
+   },
+   {
+    "doc": "2406.14491v2.pdf",
+    "page": 15,
+    "text": "<QUE> {instruction} Let’s think step by step. <ANS> {CoT} Therefore, the answer is {response} </END>",
+    "kind": "reference"
+   },
+   {
+    "doc": "2406.14491v2.pdf",
+    "page": 15,
+    "text": "- {option1} - {option2} Let’s think step by step. <ANS> {CoT} Therefore, the answer is {response} </END>",
+    "kind": "reference"
+   },
+   {
+    "doc": "2501.12948v2.pdf",
+    "page": 24,
+    "text": "In addition, we employ few-shot prompting for DeepSeek-V3 to generate responses to simple math problems, such as \"1 + 1 = ?\", ensuring that the outputs remain concise and appropriately structured. We provide the prompt for a simple math problem in Listing 3.\nListing 3 | Prompt for generating chain-of-thought for simple math problem.\n## Question How much is 5+4?\n24",
+    "kind": "text"
+   },
+   {
+    "doc": "2201.11903v6.pdf",
+    "page": 2,
+    "text": "Consider one’s own thought process when solving a complicated reasoning task such as a multi-step math word problem. It is typical to decompose the problem into intermediate steps and solve each before giving the ﬁnal answer: “After Jane gives 2 ﬂowers to her mom she has 10 . . . then after she gives 3 to her dad she will have 7 . . . so the answer is 7.” The goal of this paper is to endow language models with the ability to generate a similar chain of thought—a coherent series of intermediate reasoning steps that lead to the ﬁnal answer for a problem. We will show that sufﬁciently large\n2",
+    "kind": "text"
+   },
+   {
+    "doc": "2303.08774v6.pdf",
+    "page": 12,
+    "text": "Table 5: Expert Red Teaming: Example prompt and completions from various models.",
+    "kind": "table"
+   },
+   {
+    "doc": "2205.14135v2.pdf",
+    "page": 18,
+    "text": "Recall that given input sequences Q, K, V ∈R𝑁×𝑑, we want to compute the attention output O ∈R𝑁×𝑑:",
+    "kind": "reference"
+   },
+   {
+    "doc": "2305.13048v2.pdf",
+    "page": 29,
+    "text": "You will need a few ingredients such as pork belly, star anise, sugar, ginger, scallions and wine. Put all of these in a pot, cook on medium heat and simmer until the meat is tender. After that, remove the meat from the pot and reserve the sauce. Slice the meat and add some ginger slices into it, then boil until it’s almost done.",
+    "kind": "reference"
+   }
+  ]
+ }
+}
