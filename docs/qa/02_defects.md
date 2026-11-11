@@ -61,6 +61,9 @@
 
 ## 第四轮实测（2026-11-11 19:30–19:45，用户截图反馈：译文浮层挡字）
 
+| D-42 | **P1** | 扫描件页面上按住鼠标想选字，**整张页图被浏览器拖走**（ghost 影像跟着光标跑），用户以为"文档被我拖跑了"（用户截图 + 录屏描述）；同一页划词翻译不可用，界面只有一句「无文本层 · 不可用」，没有任何出路 | ① `<img>` 默认 `draggable=true`，`.pdf-page` 也没写 `-webkit-user-drag`；② 扫描件没有词级文本层（`get_text("words")` 返回空），划词天然不支持，但产品没给替代动作 | ① 页图 `draggable="false"` + `-webkit-user-drag:none; user-select:none`；② 新增 `POST /documents/{id}/page/{n}/translate`：按 `idx` 顺序取该页 chunk，走 `translate_pages` **逐段落库翻译**再拼回（与「对照」视图共用 `translations` 缓存，重复点秒出）；③ 提示条加「翻译本页」按钮，复用划词浮层展示（可拖可滚）；④ 提示条从 `page-frame` 内部移到阅读区外层——挂在页图内时它贴在整页图底部，页图高于视口就永远看不见（本轮实测踩到）；⑤ 左栏「扫描件」徽标补 `title`，说明"图片版 PDF、能检索能对照但页面上不能划词" | `tests/ui_scanned.py`：`draggable=false`、`webkitUserDrag=none`、提示条含「翻译本页」；点击后 **9/9 段译出 1429 字**、浮层标题「整页翻译 · p2」、拖动 (677,104)→(417,364)；`ui_textlayer` 增断言「有文本层的页不得出现扫描提示」；`ui_sel_drag` 仍 PASS |
+
+
 | 编号 | 分级 | 问题（实测证据） | 根因 | 改法 | 回归结果 |
 | --- | --- | --- | --- | --- | --- |
 | D-41 | **P1** | 划词译文浮层固定在选区左上角（实测 `left:463.2, top:226.7`），与选区矩形重叠 **6580 px²**，正好压住正在读的那一行；浮层是 `position:fixed` 的死卡片，**没有任何可抓取区域**，用户只能关掉才能继续读 | 落点由 `getBoundingClientRect()` 一次算死，没有拖拽实现；整块区域都让给了文本内容 | 浮层拆成「标题栏 + 内容区」：28px 标题栏兼作拖动手柄，`pointerdown` 记住按下点相对左上角的偏移，window 级 `pointermove` 跟手（鼠标甩出浮层也不丢帧），边界用 `offsetWidth/offsetHeight` 夹在视口内；拖动全程 `body.is-dragging{user-select:none}` 防止把正文一起刷蓝；内容区 `max-height:46vh` + 常驻细滚动条，长译文框内滚动而不是撑成一屏白块 | `tests/ui_sel_drag.py`：重叠 **6580 → 0**；位移 (−423.2, +420.3) 与鼠标位移**逐像素一致**（`grip_error 0.0px`）；拖动后整框仍在视口内、`dragging`/`bodyLock` 复位、头部 × 正常关闭；1157 字符长选区译出 374 字，框高 426.5px（视口 862）、`bodyClientH 397 ≤ 46vh`、可滚动、不越界 |

@@ -144,13 +144,17 @@ def run(url: str = BASE + "/", shot_dir: Path = OUT) -> dict:
             tws:tws.length,
             inside_ratio:+(inside/tws.length).toFixed(3),
             cites:document.querySelectorAll('.tw.cite').length,
+            // 有文本层的页不该出现「扫描图」提示条：它现在挂在阅读区外层（不随页图滚动），
+            // 一旦 v-if 条件写错就会常驻挡在正文下方
+            scanNote: !!document.querySelector('.tl-note'),
             refhit:document.querySelectorAll('.tw.cite.refhit').length,
             lastWord:{t:tws[tws.length-1].textContent, x:+last.left.toFixed(1), y:+last.top.toFixed(1)},
             scale:window.__sciagent.tl.scale
           };
         })()""")
         result["steps"].append({"geometry": geo})
-        aligned = abs(geo["dw"]) <= 2 and abs(geo["dh"]) <= 2 and geo["inside_ratio"] >= 0.98
+        aligned = (abs(geo["dw"]) <= 2 and abs(geo["dh"]) <= 2
+                   and geo["inside_ratio"] >= 0.98 and not geo["scanNote"])
         result["steps"].append({"align": "PASS" if aligned else "FAIL"})
 
         # 3) 划词翻译：程序化选中正文一句，再派发 mouseup

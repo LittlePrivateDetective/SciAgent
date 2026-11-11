@@ -16,7 +16,17 @@ from app.agents.graph import run as run_agent
 from app.core.config import settings
 from app.core.llm import gateway
 from app.core.logger import get_logger
-from app.db.models import AuditLog, Chunk, Citation, Document, Lesson, Section, Task, TrashEntry
+from app.db.models import (
+    AuditLog,
+    Chunk,
+    Citation,
+    Document,
+    Lesson,
+    Section,
+    Task,
+    Translation,
+    TrashEntry,
+)
 from app.db.session import get_db
 from app.parse.ocr import ocr_available
 from app.rag.bilingual import (
@@ -295,6 +305,53 @@ def get_page_text(doc_id: str, page: int, db: Session = Depends(get_db)):
         "height": height,
         "has_text_layer": bool(words),
         "words": words,
+    }
+
+
+@router.post("/documents/{doc_id}/page/{page}/translate")
+def translate_page_text(doc_id: str, page: int, db: Session = Depends(get_db)):
+    """扫描件整页翻译：页面上选不出字，就只能由服务端把该页文本整体送去译。
+
+    与 `/translate` 的分工：`/translate` 收前端提交的任意片段（划词用）；
+    这里前端手里根本没有文本——扫描件没有词级文本层，选取不到任何字符，
+    所以文本由服务端从库内 chunk 按段落顺序取。参考文献条目跳过：
+    保留原文更利于与页图逐条核对，也少占输出预算。
+    """
+    if not db.get(Document, doc_id):
+        raise HTTPException(404, "文档不存在")
+    rows = list(
+        db.scalars(
+            select(Chunk)
+            .where(Chunk.doc_id == doc_id, Chunk.page == page, Chunk.kind != "reference")
+            .order_by(Chunk.idx)
+        ).all()
+    )
+    rows = [c for c in rows if c.text and c.text.strip()]
+    if not rows:
+        return {"ok": False, "error": f"第 {page} 页没有可翻译的文本（可能是纯图表页）", "zh": ""}
+
+    # 逐段落库翻译，而不是把整页拼成一坨塞给模型：
+    # ① 一页常有 4000+ 字符，单次调用的输出预算装不下，末尾会被截；
+    # ② 分段后与「对照」视图共用 translations 缓存，那边译过这边直接秒出；
+    # ③ 并发分批由 translate_pages 负责，1 页 3 路并行约 5–8 秒。
+    translate_pages(db, doc_id, page, page)
+    zh_map = {
+        t.chunk_id: t.zh
+        for t in db.scalars(
+            select(Translation).where(Translation.chunk_id.in_([c.id for c in rows]))
+        ).all()
+    }
+    zh_list = [zh_map[c.id].strip() for c in rows if zh_map.get(c.id)]
+    if not zh_list:
+        return {"ok": False, "error": "翻译服务暂时不可用，请稍后重试", "zh": "", "page": page}
+    return {
+        "ok": True,
+        "page": page,
+        "segs": len(rows),
+        "translated": len(zh_list),
+        "missing": len(rows) - len(zh_list),
+        "en": "\n\n".join(c.text.strip() for c in rows),
+        "zh": "\n\n".join(zh_list),
     }
 
 

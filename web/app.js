@@ -62,11 +62,11 @@ const app = createApp({
       highlights: [],
       // 页内文本层：words 里每项带预处理好的 style，避免每帧现算 200+ 个词的定位。
       // scale 由图片实际渲染宽度换算，文本层内部一律按 PDF 原始 pt 布局。
-      tl: { words: [], loaded: false, scale: 1, W: 0, H: 0, page: 0 },
+      tl: { words: [], loaded: false, scale: 1, W: 0, H: 0, page: 0, zhLoading: false },
       refIndex: {},   // 引用编号 → {index,page,bbox,text}
       // 写作 Copilot：模型只写论述 + [n]，References 条目全部由服务端从库内元数据拼出
       wr: { idea: "", loading: false, result: null, error: "" },
-      sel: { visible: false, loading: false, src: "", zh: "", style: {}, truncated: false, dragging: false, x: 0, y: 0 },
+      sel: { visible: false, loading: false, src: "", zh: "", title: "划词翻译", style: {}, truncated: false, dragging: false, x: 0, y: 0 },
       citePop: { visible: false, index: 0, page: 1, bbox: null, text: "", style: {}, x: 0, y: 0 },
       messages: [],
       question: "",
@@ -263,7 +263,7 @@ const app = createApp({
         return;
       }
       const page = this.page;
-      this.tl = { words: [], loaded: false, scale: this.tl.scale || 1, W: 0, H: 0, page };
+      this.tl = { words: [], loaded: false, scale: this.tl.scale || 1, W: 0, H: 0, page, zhLoading: false };
       try {
         const r = await fetch(`/api/documents/${doc.id}/page/${page}/text`).then((x) => x.json());
         // 快速翻页时旧请求可能后到：页码或文献对不上就丢弃，否则会出现"第 5 页的
@@ -358,6 +358,7 @@ const app = createApp({
       this.sel = {
         visible: true,
         loading: false,
+        title: "划词翻译",
         src: txt,
         zh: "",
         truncated: false,
@@ -441,6 +442,43 @@ const app = createApp({
           this.sel.style = { left: left + "px", top: top + "px" };
         }
       });
+    },
+
+    // 扫描件整页翻译：页面没有词级文本层，划词走不通，改由服务端按段落顺序取该页
+    // chunk 文本送翻译。译文复用划词浮层展示（可拖动、可滚动），不另造一个弹窗。
+    async translatePage() {
+      const doc = this.activeDoc;
+      if (!doc || this.tl.zhLoading) return;
+      const page = this.page;
+      this.tl.zhLoading = true;
+      try {
+        const r = await fetch(`/api/documents/${doc.id}/page/${page}/translate`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: "{}",
+        }).then((x) => x.json());
+        if (!r.ok) {
+          ElementPlus.ElMessage.error(r.error || "整页翻译失败");
+          return;
+        }
+        this.sel = {
+          visible: true,
+          loading: false,
+          dragging: false,
+          title: `整页翻译 · p${page}`,
+          src: r.en || "",
+          zh: r.zh,
+          truncated: false,
+          style: { left: Math.max(8, (window.innerWidth - 320) / 2) + "px", top: "104px" },
+        };
+        // 少数段落模型会漏译；如实报数，别让用户以为整页都译完了
+        if (r.missing) ElementPlus.ElMessage.warning(`该页有 ${r.missing} 段未译出，可稍后重试`);
+        this.keepSelInView();
+      } catch (e) {
+        ElementPlus.ElMessage.error("整页翻译请求失败，请检查服务");
+      } finally {
+        this.tl.zhLoading = false;
+      }
     },
 
     onImgLoad(e) {

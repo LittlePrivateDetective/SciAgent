@@ -58,7 +58,8 @@
             <div class="doc-meta"
                  :title="`全文按语义切成 ${d.chunks} 个可定位片段。问答只在这些片段里找证据，点引用会跳回原文对应位置并高亮。`">
               {{ d.page_count }} 页 · {{ d.chunks }} 段
-              <span v-if="d.is_scanned" class="tag-warn">扫描件</span>
+              <span v-if="d.is_scanned" class="tag-warn"
+                    title="这份 PDF 是扫描/图片版：每页是一张图，没有可选择的文字。仍可检索、问答、对照翻译，但页面上不能划词；单页可用「翻译本页」。">扫描件</span>
               <span v-if="d.version>1" class="tag-warn">v{{ d.version }}</span>
             </div>
           </div>
@@ -116,7 +117,9 @@
                高亮框和文本层都用百分比相对它定位，才不会因为 .page-stage 的 padding
                或图片居中出现整体偏移（之前 .hl 直接挂在外层容器上，窄屏会偏 12px）。 -->
           <div class="page-frame">
-            <img :src="pageUrl" class="pdf-page" ref="pageImg" @load="onImgLoad" />
+            <!-- draggable=false 必须有：扫描件没有文本层，鼠标一拖浏览器就把整张页图
+                 当成可拖动图片拽走（ghost image 跟着光标跑），用户以为"文档被拖走了"。 -->
+            <img :src="pageUrl" class="pdf-page" ref="pageImg" draggable="false" @load="onImgLoad" />
             <div class="hl" v-for="(box,i) in highlights" :key="i" :style="box.style"
                  :title="box.text"></div>
             <!-- 透明文本层：视觉完全来自页图，这层只负责「可选、可点」。
@@ -130,13 +133,16 @@
                     :style="w.style"
                     @click="onWordClick(w, $event)">{{ w.t + ' ' }}</span>
             </div>
-            <!-- 扫描件没有文本层，如实告知而不是留一片死区 -->
-            <div class="tl-note" v-if="tl.loaded && !tl.words.length">
-              该页为扫描图，无文本层 · 划词翻译不可用
-            </div>
           </div>
         </div>
         <div v-else class="empty big">选择左侧文献开始阅读</div>
+        <!-- 提示条挂在滚动容器之外：挂在 page-frame 里会贴在整页图底部，
+             页图比视口高时它根本不在视口内，用户永远看不到这个入口（实测如此）。 -->
+        <div class="tl-note" v-if="activeDoc && tl.loaded && !tl.words.length">
+          <span class="tl-note-t">该页是扫描图，没有可划词的文字层</span>
+          <el-button size="small" type="primary" plain :loading="tl.zhLoading"
+                     @click="translatePage">翻译本页</el-button>
+        </div>
       </div>
 
       <!-- 中英对照：左原文右译文，任一侧滚动另一侧跟随 -->
@@ -389,9 +395,9 @@
        浮框默认停在选区上方，很容易压住正在读的那一行，所以标题栏兼作拖动手柄：
        pointerdown 起手、window 级 pointermove 跟手，拖到哪儿就停在哪儿，直到下一次划词。 -->
   <div v-if="sel.visible" class="sel-pop" :class="{ dragging: sel.dragging }" :style="sel.style">
-    <div class="sel-head" @pointerdown="startSelDrag" title="按住拖到不挡字的位置">
+    <div class="sel-head" @pointerdown="startSelDrag" :title="sel.title === '划词翻译' ? '按住拖到不挡字的位置' : sel.title">
       <span class="sel-grip"></span>
-      <span class="sel-head-t">划词翻译</span>
+      <span class="sel-head-t">{{ sel.title }}</span>
       <button type="button" class="sel-x" title="关闭"
               @pointerdown.stop @click="sel.visible = false">×</button>
     </div>
@@ -402,7 +408,7 @@
         <div class="sel-src">{{ sel.src.length > 110 ? sel.src.slice(0, 110) + '…' : sel.src }}</div>
         <div class="sel-zh">{{ sel.zh }}</div>
         <div class="sel-foot">
-          <span v-if="sel.truncated">选区过长，仅译前 4000 字符</span>
+          <span v-if="sel.truncated">文本较长，仅译前 4000 字符</span>
           <span v-else class="sel-tip">拖动标题栏可移开</span>
         </div>
       </template>
