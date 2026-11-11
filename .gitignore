@@ -30,3 +30,7 @@ docs/qa/evidence/_profile*
 docs/qa/evidence/_cdp_*
 docs/qa/evidence/_p*
 docs/qa/evidence/_qa_ui_check.js
+
+# 技术文档的 HTML 是 PDF 的中间产物，由 scripts/build_doc.py 生成
+# 提交物是 .md（源）与 .pdf（成稿），HTML 不进仓库
+docs/技术文档.html
