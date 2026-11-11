@@ -1,0 +1,67 @@
+name: CI
+
+# 只跑"不依赖外部服务"的部分：单元测试 + 全量语法检查。
+# 端到端用例（tests/qa_suite.py 等）需要真实 PDF 库、模型 Key 与本机浏览器，
+# 属于发布前手动执行的交付流程，不放进每次提交的 CI，否则一个绿勾只是噪音。
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: 安装最小依赖
+        # 刻意不装 chromadb / langgraph / uvicorn：
+        # 单元测试走不到它们，装了只会让 CI 从 40 秒变成 3 分钟。
+        # 缺 chromadb 时向量库自动降级，缺 langgraph 时编排自动降级——
+        # 这两条降级路径本来就该被 CI 顺带验证。
+        run: |
+          python -m pip install -U pip
+          pip install fastapi pydantic pydantic-settings sqlalchemy \
+                      PyMuPDF numpy httpx jieba networkx PyYAML python-multipart pytest
+
+      - name: 单元测试
+        run: python -m pytest tests/unit -q
+
+      - name: 全量语法检查
+        run: python -m compileall -q app scripts tests
+
+      - name: 装配冒烟（确认降级路径可用）
+        run: |
+          python - <<'PY'
+          import app.main as m
+          from app.agents.graph import _lg
+          from app.rag.store import get_store
+          print("接口数:", len(m.app.openapi()["paths"]))
+          print("编排引擎:", "langgraph" if _lg() else "builtin（未装 langgraph）")
+          print("向量后端:", get_store().name)
+          PY
+
+  secret-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 禁止 .env 与密钥进仓库
+        run: |
+          set -e
+          if git ls-files | grep -E '(^|/)\.env$'; then
+            echo "::error::仓库里出现了 .env"; exit 1
+          fi
+          if git grep -nIE 'sk-[A-Za-z0-9]{25,}|gho_[A-Za-z0-9]{20,}' -- . ; then
+            echo "::error::疑似真实密钥"; exit 1
+          fi
+          echo "未发现明文密钥 ✓"

@@ -1,5 +1,8 @@
 # SciAgent · 科研智能体
 
+[![CI](https://github.com/LittlePrivateDetective/SciAgent/actions/workflows/ci.yml/badge.svg)](https://github.com/LittlePrivateDetective/SciAgent/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/LittlePrivateDetective/SciAgent)](https://github.com/LittlePrivateDetective/SciAgent/releases)
+
 > 第九届传智杯「AI 大模型创新应用挑战赛」参赛作品（个人赛 · B 组）
 > 作者：章璞　参赛编号：**2133148**　广东海洋大学 · 自动化 · 本科（2023 级）
 >
