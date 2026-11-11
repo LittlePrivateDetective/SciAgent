@@ -150,7 +150,7 @@ const app = createApp({
         ElementPlus.ElMessage.error(r.error || "上传失败");
         return;
       }
-      ElementPlus.ElMessage.success(`入库成功：${r.chunks} 个检索块，用时 ${r.elapsed_ms}ms`);
+      ElementPlus.ElMessage.success(`入库成功：切成 ${r.chunks} 段原文，用时 ${r.elapsed_ms}ms`);
       this.loadDocs();
       this.loadInfo();
     },

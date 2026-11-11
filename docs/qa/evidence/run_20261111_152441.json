@@ -1,0 +1,55 @@
+{
+  "run_id": "20261111_152441",
+  "base": "http://127.0.0.1:8013",
+  "timestamp": "2026-11-11T15:24:49.789283",
+  "summary": {
+    "total": 3,
+    "pass": 3,
+    "fail": 0,
+    "blocked": 0
+  },
+  "results": [
+    {
+      "id": "B06",
+      "group": "ui",
+      "point": "b-3 中英双向同步滚动 (7%)",
+      "steps": "无头浏览器 iframe 注入滚动，读取两侧 scrollTop 与顶部段落序号",
+      "expected": "双向跟随且顶部段落序号一致",
+      "actual": "双栏渲染 OK，已加载段落=5\n英文滚动 700 -&gt; 中文 141\n中文滚动 1300 -&gt; 英文 298 =&gt; 1559\n顶部段落序号 英文=7 中文=7\nRESULT: PASS 双向联动生效且按段落对齐",
+      "status": "PASS",
+      "elapsed_s": 2.3,
+      "evidence": {
+        "dom_length": 6466,
+        "raw": "双栏渲染 OK，已加载段落=5\n英文滚动 700 -&gt; 中文 141\n中文滚动 1300 -&gt; 英文 298 =&gt; 1559\n顶部段落序号 英文=7 中文=7\nRESULT: PASS 双向联动生效且按段落对齐"
+      }
+    },
+    {
+      "id": "B07",
+      "group": "ui",
+      "point": "b-3 引用一键跳转 (7%)",
+      "steps": "点击答案里的锚点徽章，检查阅读器页码与高亮框",
+      "expected": "页码正确切换且 bbox 覆盖层出现",
+      "actual": "img.src=/api/documents/dca501d1039dc/page/3.png?dpi=130&amp;t=1794381886362\n高亮框数量=1 页码显示=3 / 15\nRESULT: PASS 锚点一键跳到 p3 且绘制 bbox 高亮",
+      "status": "PASS",
+      "elapsed_s": 2.3,
+      "evidence": {
+        "dom_length": 6479,
+        "raw": "img.src=/api/documents/dca501d1039dc/page/3.png?dpi=130&amp;t=1794381886362\n高亮框数量=1 页码显示=3 / 15\nRESULT: PASS 锚点一键跳到 p3 且绘制 bbox 高亮"
+      }
+    },
+    {
+      "id": "C05",
+      "group": "perf",
+      "point": "c-3 20+ 图谱渲染帧率",
+      "steps": "浏览器加载图谱并测量首帧与交互帧间隔",
+      "expected": "节点 >20 且首帧 <3s",
+      "actual": "图谱节点=37 首帧耗时=264ms canvas=998x672\n1s 内 rAF 回调=2（无头虚拟时钟，仅参考）\nRESULT: PASS 20+ 节点图谱渲染，首帧 264ms",
+      "status": "PASS",
+      "elapsed_s": 3.2,
+      "evidence": {
+        "dom_length": 6441,
+        "raw": "图谱节点=37 首帧耗时=264ms canvas=998x672\n1s 内 rAF 回调=2（无头虚拟时钟，仅参考）\nRESULT: PASS 20+ 节点图谱渲染，首帧 264ms"
+      }
+    }
+  ]
+}

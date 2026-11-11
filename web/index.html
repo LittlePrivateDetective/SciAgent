@@ -25,7 +25,7 @@
       </el-tag>
       <el-tag size="small" effect="plain">向量库 {{ info.vector_backend || '-' }}</el-tag>
       <el-tag size="small" effect="plain">文献 {{ info.counts ? info.counts.documents : 0 }}</el-tag>
-      <el-tag size="small" effect="plain">块 {{ info.counts ? info.counts.chunks : 0 }}</el-tag>
+      <el-tag size="small" effect="plain" title="全部文献解析后可定位的原文片段总数">片段 {{ info.counts ? info.counts.chunks : 0 }}</el-tag>
     </div>
   </header>
 
@@ -55,8 +55,9 @@
           <el-checkbox v-model="d._sel" @change="syncSelection"></el-checkbox>
           <div class="doc-main" @click="openDoc(d)">
             <div class="doc-title" :title="d.title || d.filename">{{ d.title || d.filename }}</div>
-            <div class="doc-meta">
-              {{ d.page_count }}页 · {{ d.chunks }}块
+            <div class="doc-meta"
+                 :title="`全文按语义切成 ${d.chunks} 个可定位片段。问答只在这些片段里找证据，点引用会跳回原文对应位置并高亮。`">
+              {{ d.page_count }} 页 · {{ d.chunks }} 段
               <span v-if="d.is_scanned" class="tag-warn">扫描件</span>
               <span v-if="d.version>1" class="tag-warn">v{{ d.version }}</span>
             </div>
@@ -292,8 +293,9 @@
     <div v-for="t in trash.items" :key="t.doc_id" class="trash-item">
       <div class="trash-main">
         <div class="doc-title">{{ t.title || t.filename }}</div>
-        <div class="doc-meta">
-          {{ t.page_count }} 页 · {{ t.chunk_count }} 块 · {{ t.deleted_at }} · {{ t.reason }}
+        <div class="doc-meta"
+             :title="`删除时该文献被切成 ${t.chunk_count} 个原文片段，全部随文档移入回收站；恢复后会原样回来。`">
+          {{ t.page_count }} 页 · {{ t.chunk_count }} 段 · {{ t.deleted_at }} · {{ t.reason }}
         </div>
       </div>
       <el-button size="small" type="primary" plain :disabled="!t.restorable"
