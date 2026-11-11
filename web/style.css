@@ -158,9 +158,19 @@ body {
      只剩下一个幽灵影像跟着光标，看起来像"文档被拖跑了"。 */
   -webkit-user-drag: none; user-select: none;
 }
+/* 句级高亮：一行一个框，像用荧光笔划过一样贴着文字。
+   不加边框——边框会把相邻行之间的 1px 缝隙描成网格，反而更"块"；
+   用半透明黄 + 底部一条深一点的线，视觉上仍是"划过"而不是"盖住"。 */
 .hl {
-  position: absolute; background: var(--hl); border: 1px solid #f0b429;
-  border-radius: 2px; pointer-events: none; transition: all .2s; z-index: 1;
+  position: absolute; background: rgba(255, 214, 64, .42);
+  border-radius: 2px; pointer-events: none; transition: opacity .2s; z-index: 1;
+  box-shadow: inset 0 -1px 0 rgba(240, 170, 30, .55);
+}
+/* 扫描件没有词级文本层，只能给出区块级范围：虚线 + 更淡，明确表示"这是近似" */
+.hl.approx {
+  background: rgba(255, 214, 64, .18);
+  border: 1px dashed rgba(240, 170, 30, .8);
+  box-shadow: none;
 }
 
 /* 右栏：对话 */
@@ -648,3 +658,9 @@ body.is-dragging, body.is-dragging * { user-select: none !important; }
 .en-preview hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
 .en-preview::-webkit-scrollbar { width: 8px; }
 .en-preview::-webkit-scrollbar-thumb { background: #d3dbec; border-radius: 4px; border: 2px solid #fff; }
+
+/* 证据列表里的「关键句」标记：说明这一条已经定位到具体句子，点击只会高亮那一句 */
+.evid-focus {
+  flex: none; font-size: 10px; color: #854f0b; background: #faeeda;
+  border-radius: 3px; padding: 0 4px; line-height: 15px; cursor: help;
+}

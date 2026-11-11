@@ -124,8 +124,10 @@
             <!-- draggable=false 必须有：扫描件没有文本层，鼠标一拖浏览器就把整张页图
                  当成可拖动图片拽走（ghost image 跟着光标跑），用户以为"文档被拖走了"。 -->
             <img :src="pageUrl" class="pdf-page" ref="pageImg" draggable="false" @load="onImgLoad" />
+            <!-- 句级高亮：一句一组的多个小框（贴行），而不是把整段涂成一个大矩形。
+                 approx=true 表示没有词级文本层（扫描件），只能退回区块级范围，用虚线区分。 -->
             <div class="hl" v-for="(box,i) in highlights" :key="i" :style="box.style"
-                 :title="box.text"></div>
+                 :class="{ approx: box.approx }" :title="box.text"></div>
             <!-- 透明文本层：视觉完全来自页图，这层只负责「可选、可点」。
                  容器必须显式给宽高（pt），否则绝对定位的子元素不撑开父级，
                  容器会是 0×0，几何校验和某些浏览器的选择行为都会出问题。 -->
@@ -327,14 +329,16 @@
             <div v-if="m.evidence && m.evidence.length" class="evid">
               <div class="evid-title">
                 <span>原文证据 · {{ m.evidence.length }} 条</span>
-                <span class="evid-hint">点条目跳到原文高亮</span>
+                <span class="evid-hint">点条目跳到原文，只高亮支撑该结论的原句</span>
               </div>
               <div class="evid-list">
                 <div v-for="(e,j) in m.evidence" :key="j" class="evid-item" @click="jump(e)">
                   <span class="evid-idx">[{{ j+1 }}]</span>
                   <span class="evid-page">p{{ e.page }}</span>
                   <span class="evid-doc" :title="e.doc_name + ' 第' + e.page + '页'">{{ e.doc_name }}</span>
-                  <span class="evid-txt">{{ e.text.slice(0,90) }}</span>
+                  <span class="evid-txt">{{ (e.focus && e.focus[0]) || e.text.slice(0,90) }}</span>
+                  <span class="evid-focus" v-if="e.focus && e.focus.length"
+                        :title="'已定位到支撑这句结论的原句，点击只高亮该句'">关键句</span>
                 </div>
               </div>
             </div>

@@ -30,6 +30,7 @@ from app.db.models import (
 )
 from app.db.session import get_db
 from app.parse.ocr import ocr_available
+from app.rag.focus import annotate_focus
 from app.rag.bilingual import (
     build_segments,
     cached_ratio,
@@ -556,7 +557,11 @@ def chat(body: ChatIn, db: Session = Depends(get_db)):
             "evidence": [],
             "verify": {},
         }
-    return run_agent(body.question.strip(), body.doc_ids, mode=body.mode)
+    res = run_agent(body.question.strip(), body.doc_ids, mode=body.mode)
+    # 句级定位：chunk 往往是一整段，直接把 bbox 画成大矩形既挡字也看不出重点，
+    # 这里按问题与答案挑出真正作答的句子，前端据此画成贴行的小框。
+    annotate_focus(res.get("evidence") or [], body.question.strip(), res.get("answer") or "")
+    return res
 
 
 @router.get("/tasks")
@@ -843,6 +848,7 @@ def chat_stream(body: StreamIn, db: Session = Depends(get_db)):
                 yield emit("token", text=piece)
             answer = "".join(buf).strip()
             rendered = attach_anchors(answer, evidence)
+            annotate_focus(evidence, q, answer)
             v = verify_answer(rendered, evidence, q)
             yield emit("thinking", stage="verify",
                        text=f"引用校验 {v.get('valid')}/{v.get('total')} 命中",

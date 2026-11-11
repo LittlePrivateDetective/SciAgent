@@ -56,6 +56,45 @@ function mdToHtml(md) {
   );
 }
 
+/* ---------- 句级精确高亮：用词级文本层把一句话还原成"贴着行"的几个小框 ---------- */
+
+// 词形归一：只比字母数字。原文里 "state-of-the-art," 与检索文本里
+// "state-of-the-art" 必须归一成同一个 token，否则整句对不上。
+function normTok(s) {
+  return String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, "");
+}
+
+/**
+ * 把命中词下标按"行"聚成矩形。
+ * words: [{x, y, w, h}]（PDF pt），idxs: 升序的命中下标。
+ * 同一行（y 中心相差不超过 0.6 行高）且词间距不大时并成一个框；
+ * 间距过大就断开——否则一句话跨栏/跨表格时会把中间无关内容一起涂黄。
+ */
+function lineRects(words, idxs) {
+  const rects = [];
+  let cur = null;
+  for (const i of idxs) {
+    const w = words[i];
+    if (!w) continue;
+    if (cur) {
+      const sameLine = Math.abs(w.y + w.h / 2 - cur.yc) <= Math.max(2.5, cur.h * 0.6);
+      const gap = w.x - cur.x1;
+      if (sameLine && gap <= Math.max(10, cur.h * 1.1)) {
+        cur.x1 = Math.max(cur.x1, w.x + w.w);
+        cur.y0 = Math.min(cur.y0, w.y);
+        cur.y1 = Math.max(cur.y1, w.y + w.h);
+        continue;
+      }
+    }
+    if (cur) rects.push(cur);
+    cur = { x0: w.x, x1: w.x + w.w, y0: w.y, y1: w.y + w.h, yc: w.y + w.h / 2, h: w.h };
+  }
+  if (cur) rects.push(cur);
+  return rects
+    .filter((r) => r.x1 - r.x0 > 1 && r.y1 - r.y0 > 1)
+    .map((r) => ({ x: r.x0, y: r.y0, w: r.x1 - r.x0, h: r.y1 - r.y0 }));
+}
+
 const app = createApp({
   data() {
     return {
@@ -150,7 +189,19 @@ const app = createApp({
       const el = e.target.closest(".anchor");
       if (!el) return;
       const [x0, y0, x1, y1] = el.dataset.bbox.split(",").map(Number);
-      this.jump({ page: Number(el.dataset.page), bbox: [x0, y0, x1, y1], doc_id: this.activeDocId });
+      const page = Number(el.dataset.page);
+      const bbox = [x0, y0, x1, y1];
+      // 锚点字符串里只有页码和坐标，没有文献 id。原先直接用「当前打开的文献」，
+      // 于是点 Transformer 论文的 p7 ▸ 会跳到正在读的 ViT 第 7 页同一块坐标上——
+      // 高亮跑到完全无关的段落，用户截图反馈的"高亮明显错了"就是这个。
+      const ev = this.evidenceAt(page, bbox);
+      this.jump({
+        page,
+        bbox,
+        doc_id: ev ? ev.doc_id : this.activeDocId,
+        text: ev ? ev.text : "",
+        focus: ev ? ev.focus : null,
+      });
     });
     // 点空白处收起划词翻译浮层（浮层自身点击不冒泡到这里）
     document.addEventListener("mousedown", (e) => {
@@ -573,6 +624,11 @@ const app = createApp({
       const idx = m ? Number(m[1]) : 0;
       return {
         t,
+        // 数值坐标留给"句级精确高亮"用：几何计算不能反复去 parse "12.3px" 字符串
+        x,
+        y,
+        w: Math.max(ww, 1),
+        h,
         cite: !!idx,
         refIndex: idx,
         refhit: !!idx && !!this.refIndex[idx],
@@ -768,10 +824,130 @@ const app = createApp({
     },
 
     onImgLoad(e) {
-      // 已存在的高亮在换页后需要按新尺寸重算
-      this.highlights = this.highlights.map((h) => ({ ...h, style: this.boxStyle(h.bbox) }));
+      // 已存在的高亮在换页/缩放后需要按新尺寸重算
+      this.highlights = this.highlights.map((h) => ({
+        ...h,
+        style: h.pt ? this.rectStyle(h.pt) : this.boxStyle(h.bbox),
+      }));
       // 文本层按 pt 布局，缩放比例只能等图片真正渲染出来才知道
       this.syncTextScale();
+    },
+
+    /** pt 矩形 → 相对页面的百分比（高亮层与页图同尺寸，用百分比就不怕缩放） */
+    rectStyle(pt) {
+      const meta = this.pageSizes[this.page];
+      if (!meta || !pt) return { display: "none" };
+      return {
+        left: (pt.x / meta.width) * 100 + "%",
+        top: (pt.y / meta.height) * 100 + "%",
+        width: (pt.w / meta.width) * 100 + "%",
+        height: (pt.h / meta.height) * 100 + "%",
+      };
+    },
+
+    /**
+     * 计算一次证据点击该画哪些框。
+     *
+     * 目标：句级精确。旧实现直接拿 chunk 的 bbox 画一个矩形——chunk 通常就是一整段
+     * （实测 bbox 高 94pt ≈ 7 行），于是整块正文被涂黄，既挡字也看不出重点。
+     * 现在用页面的词级文本层：把关键句的每个词找出来，按行聚成小框，
+     * 句首从行中间开始、句尾到该行最后一个词为止。
+     *
+     * 退化顺序：关键句 → 整段文字 → chunk bbox（扫描件无文本层时才走最后这步）。
+     */
+    buildHighlights(ev) {
+      const arr = Array.isArray(ev.bbox) ? ev.bbox : String(ev.bbox || "").split(",").map(Number);
+      const bbox = arr.length === 4 && arr.every((v) => Number.isFinite(v)) ? arr : null;
+      const text = ev.text || "";
+      const words = this.tl.page === this.page && this.tl.words.length ? this.tl.words : [];
+
+      let rects = [];
+      if (bbox && words.length) {
+        const spans = ev.focus && ev.focus.length ? ev.focus : (text ? [text] : []);
+        // 没有文字（正文里的 p7 ▸ 锚点只带坐标）时，退一步按"bbox 内的所有词"
+        // 逐行画：虽然还是整段，但至少是贴着行的多条，不会糊成一块。
+        rects = spans.length
+          ? this.textRects(words, bbox, spans)
+          : this.areaRects(words, bbox);
+        // 文字对不上（版本不同、连字符断词太多）时再退一步：仍按 bbox 内的词逐行画，
+        // 只要页面有词级坐标，就绝不拿一个大矩形糊上去。
+        if (!rects.length) rects = this.areaRects(words, bbox);
+      }
+      if (!rects.length) {
+        // 无文本层（扫描件）或文字对不上：退回整块 bbox，但标 approx，
+        // 用虚线边框如实表示"这是区块级范围，不是句子级"。
+        return bbox
+          ? [{ bbox, pt: null, approx: true, text, style: this.boxStyle(bbox) }]
+          : [];
+      }
+      return rects.map((pt) => ({ pt, bbox: null, approx: false, text, style: this.rectStyle(pt) }));
+    },
+
+    /**
+     * bbox 内所有词 → 逐行矩形。用于没有文字内容的定位（正文锚点 p7 ▸、
+     * 或证据文本与页面版本对不上），保证"至少是逐行"而不是一整块。
+     */
+    areaRects(words, bbox) {
+      const [x0, y0, x1, y1] = bbox;
+      const pad = 2;
+      const idx = [];
+      for (let i = 0; i < words.length; i++) {
+        const w = words[i];
+        const cx = w.x + w.w / 2;
+        const cy = w.y + w.h / 2;
+        if (cx < x0 - pad || cx > x1 + pad || cy < y0 - pad || cy > y1 + pad) continue;
+        idx.push(i);
+      }
+      if (idx.length < 3) return [];
+      return lineRects(words, idx);
+    },
+
+    /**
+     * 在一页的词级文本层里定位若干句子，返回每行一个的矩形（pt）。
+     * 只在 chunk bbox 范围内找词：同一句话在摘要和正文里可能都出现，
+     * 不限定范围会标到另一处去。
+     */
+    textRects(words, bbox, spans) {
+      const [x0, y0, x1, y1] = bbox;
+      const pad = 2;
+      const inside = [];
+      for (const w of words) {
+        const cx = w.x + w.w / 2;
+        const cy = w.y + w.h / 2;
+        if (cx < x0 - pad || cx > x1 + pad || cy < y0 - pad || cy > y1 + pad) continue;
+        const tok = normTok(w.t);
+        if (!tok) continue;
+        inside.push({ ...w, tok });
+      }
+      if (inside.length < 3) return [];
+
+      const out = [];
+      const seen = new Set();
+      for (const span of spans) {
+        const toks = String(span || "").toLowerCase().split(/\s+/).map(normTok).filter(Boolean);
+        if (!toks.length) continue;
+
+        // 贪心顺序对齐，允许跳过页面上没对上的词（连字符断词、"e.g." 被拆开等）。
+        // 不回退匹配位置，避免一个高频词把整句拖到别处。
+        const hit = [];
+        let pi = 0;
+        for (const t of toks) {
+          const lim = Math.min(inside.length, pi + 40);
+          for (let k = pi; k < lim; k++) {
+            if (inside[k].tok === t) { hit.push(k); pi = k + 1; break; }
+          }
+        }
+        // 命中太少说明这段文字并不在这块区域（或版本不一致），宁可不画也不乱画
+        if (hit.length < Math.min(4, Math.max(2, Math.floor(toks.length * 0.3)))) continue;
+
+        for (const r of lineRects(inside, hit)) {
+          const key = [Math.round(r.x), Math.round(r.y), Math.round(r.w), Math.round(r.h)].join(",");
+          if (seen.has(key)) continue;
+          seen.add(key);
+          out.push(r);
+        }
+      }
+      return out;
     },
 
     boxStyle(bbox) {
@@ -791,26 +967,43 @@ const app = createApp({
       };
     },
 
+    /** 用「页码 + 坐标」回查这次回答里的证据，拿到它属于哪篇文献、原文是哪几句。 */
+    evidenceAt(page, bbox) {
+      const near = (a, b) => Math.abs(a - b) <= 2;
+      for (const m of this.messages) {
+        for (const e of m.evidence || []) {
+          if (e.page !== page || !Array.isArray(e.bbox) || e.bbox.length !== 4) continue;
+          if (near(e.bbox[0], bbox[0]) && near(e.bbox[1], bbox[1])
+              && near(e.bbox[2], bbox[2]) && near(e.bbox[3], bbox[3])) return e;
+        }
+      }
+      return null;
+    },
+
     async jump(ev) {
       if (ev.doc_id && (!this.activeDoc || this.activeDoc.id !== ev.doc_id)) {
         const d = this.docs.find((x) => x.id === ev.doc_id);
         if (d) await this.openDoc(d);
       }
       this.page = ev.page;
-      // 跳页不走 goPage，这里要自己把文本层换成目标页，否则会残留上一页的文字
-      if (this.tl.page !== this.page) this.loadTextLayer();
+      // 跳页不走 goPage，这里要自己把文本层换成目标页，否则会残留上一页的文字。
+      // 必须 await：句级高亮要用这一页的词级坐标，文本层没到位就只能退回大矩形。
+      if (this.tl.page !== this.page || !this.tl.loaded) await this.loadTextLayer();
       await nextTick();
-      this.highlights = [{ bbox: ev.bbox, text: ev.text || "", style: this.boxStyle(ev.bbox) }];
+      this.highlights = this.buildHighlights(ev);
       // 必须滚到"高亮框"而不是滚整个阅读区：参考文献条目常在页面底部，
       // 只让阅读区进入视口的话目标仍在视野外，用户会以为跳转失败了（实测如此）。
       // 这里用 rect 差值直接算滚动量，不依赖 offsetParent 与 scrollIntoView 的实现差异。
       await nextTick();
       const stage = document.querySelector(".page-stage");
-      const hl = stage && stage.querySelector(".hl");
-      if (stage && hl) {
+      const boxes = stage ? Array.from(stage.querySelectorAll(".hl")) : [];
+      if (stage && boxes.length) {
         const sr = stage.getBoundingClientRect();
-        const hr = hl.getBoundingClientRect();
-        const delta = hr.top - sr.top - (stage.clientHeight - hr.height) / 2;
+        const rects = boxes.map((b) => b.getBoundingClientRect());
+        const top = Math.min(...rects.map((r) => r.top));
+        const bottom = Math.max(...rects.map((r) => r.bottom));
+        // 一句话被拆成多行时，按整组的中心对齐；组高超过视口时留 24px 顶部余量
+        const delta = top - sr.top - Math.max(24, (stage.clientHeight - (bottom - top)) / 2);
         stage.scrollTo({ top: Math.max(0, stage.scrollTop + delta), behavior: "smooth" });
       }
     },
