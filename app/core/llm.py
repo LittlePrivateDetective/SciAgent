@@ -161,6 +161,10 @@ class LLMGateway:
         }
         if json_mode:
             payload["response_format"] = {"type": "json_object"}
+        # DashScope 兼容层认 enable_thinking。只在显式关掉时才发这个字段：
+        # 不认这个参数的供应商（或老模型）会直接 400，默认不发就不改变原有行为。
+        if not bool(settings.llm_thinking):
+            payload["enable_thinking"] = False
 
         resp = self.client.post(
             f"{settings.llm_base_url.rstrip('/')}/chat/completions",
@@ -242,6 +246,8 @@ class LLMGateway:
                 "temperature": settings.llm_temperature,
                 "stream": True,
             }
+            if not bool(settings.llm_thinking):
+                payload["enable_thinking"] = False
             headers = {"Authorization": f"Bearer {settings.llm_api_key}"}
 
         try:

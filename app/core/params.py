@@ -108,6 +108,9 @@ P: list[Param] = [
     Param("llm_route", "model", "路由策略", "enum",
           "auto=有 key 走云端、否则本地/模拟；cloud=强制云端；local=强制本地 Ollama",
           options=("auto", "cloud", "local")),
+    Param("llm_thinking", "model", "模型先思考再答", "bool",
+          "关掉后同题 2.3s → 1.4s，答案更短、结论不变；复杂推理题会略降。"
+          "只有云端模型认这个开关，本地 Ollama 不受影响"),
     Param("llm_mock", "model", "强制模拟模式", "bool",
           "打开后完全不调模型，用固定文案占位。演示网络不稳时用，答辩前记得关", advanced=True),
 

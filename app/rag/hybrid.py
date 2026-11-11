@@ -539,12 +539,68 @@ def _ensure_mentioned_docs(hits: list[Hit], query: str, top_k: int) -> list[Hit]
     return out
 
 
+# 缓存"被文本版盖住的扫描版"，60 秒失效：入库后不用重启也能生效
+_SHADOW: dict = {"at": 0.0, "ids": set()}
+
+
+def _norm_title(t: str) -> str:
+    return re.sub(r"[^a-z0-9\u4e00-\u9fa5]+", "", (t or "").lower())[:80]
+
+
+def _shadowed_scan_ids() -> set[str]:
+    """同一篇论文同时存在文本版和扫描版时，返回扫描版的 doc_id。
+
+    实测起因（2026-11-12）：库里同时有 `1706.03762v1.pdf`（文本层 36854 字）和
+    `1706.03762v1_img.pdf`（纯图片，靠 OCR 出文本）。问"多头注意力的计算复杂度"
+    时，向量检索挑中了扫描版——OCR 只出段落、把 Table 1 整张丢了，于是证据里
+    只剩"与单一全维单头注意力的计算成本相似"，没有 `O(n²·d)`。模型照着残缺证据
+    作答，看起来像"答不出来"，其实是证据被残缺版本占了位置。
+
+    判据用标题归一化后相等（两版标题一字不差），不依赖文件名里的 `_img` 后缀。
+    """
+    now = time.time()
+    if now - _SHADOW["at"] < 60:
+        return _SHADOW["ids"]
+    ids: set[str] = set()
+    try:
+        with SessionLocal() as db:
+            rows = db.execute(select(Document.id, Document.title, Document.is_scanned)).all()
+        with_text = {_norm_title(t) for _, t, scanned in rows if not scanned and _norm_title(t)}
+        ids = {doc_id for doc_id, t, scanned in rows
+               if scanned and _norm_title(t) in with_text}
+    except Exception:  # noqa: BLE001 去重失败就退回原始结果，不影响检索主流程
+        log.debug("扫描版去重查询失败", exc_info=True)
+    _SHADOW.update({"at": now, "ids": ids})
+    return ids
+
+
+def _drop_shadowed_scans(hits: list[Hit], doc_ids: list[str] | None) -> list[Hit]:
+    """把被文本版盖住的扫描版命中剔掉。
+
+    两种情况下不动：用户显式只勾了扫描版（他就想看那一份），或者剔完一条不剩
+    （库里只有扫描版，此时它是唯一证据来源）。
+    """
+    shadow = _shadowed_scan_ids()
+    if not shadow:
+        return hits
+    if doc_ids and set(doc_ids) <= shadow:
+        return hits
+    kept = [h for h in hits if h.doc_id not in shadow]
+    if not kept:
+        return hits
+    if len(kept) < len(hits):
+        log.debug("检索剔除扫描版重复文献 %d 条（同标题已有文本版）", len(hits) - len(kept))
+    return kept
+
+
 def search_with_rerank(query: str, doc_ids: list[str] | None = None, top_k: int | None = None) -> list[Hit]:
     """召回 → 重排。优先用重排模型，不可用时用「关键词覆盖率 + 位置先验」兜底。"""
     top_k = top_k or settings.top_k
     hits = search(query, doc_ids, top_k=max(top_k * 2, 12))
     if not hits:
         return []
+
+    hits = _drop_shadowed_scans(hits, doc_ids)
 
     remote = _api_rerank(query, hits, top_k)
     if remote:

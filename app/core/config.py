@@ -58,6 +58,10 @@ class Settings(BaseSettings):
     ollama_base_url: str = "http://127.0.0.1:11434"
     ollama_model: str = "qwen2.5:3b"
     llm_route: str = "auto"
+    # 是否让云端推理模型"先想再答"。开着答案更稳，但思维链本身要几百 token、
+    # 几秒钟；关掉后同一道题 2.3s → 1.4s，答案更短但结论不变（实测见
+    # docs/主模型切换测试.md）。默认 1 保持原行为，只有显式设 0 才发这个参数。
+    llm_thinking: int = 1
 
     # ---------- 向量化 ----------
     emb_provider: str = "hash"
