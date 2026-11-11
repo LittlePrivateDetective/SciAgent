@@ -22,7 +22,10 @@ function mdToHtml(md) {
       const cells = line.replace(/^\||\|$/g, "").split("|").map((c) => c.trim());
       if (cells.every((c) => /^:?-{2,}:?$/.test(c))) continue; // 分隔行
       if (!inTable) {
-        html += '<table class="md-table"><thead><tr>' +
+        // 表格必须包一层可横向滚动的容器：右栏只有 360px，6 列表格若按
+        // width:100% 挤压，每列只剩 50 多像素，中文会被挤成"一字一行"
+        // （实测截图把 1706.03762v1_img.pdf 竖排成一列字符）。
+        html += '<div class="md-table-wrap"><table class="md-table"><thead><tr>' +
           cells.map((c) => `<th>${c}</th>`).join("") + "</tr></thead><tbody>";
         inTable = true;
       } else {
@@ -30,11 +33,11 @@ function mdToHtml(md) {
       }
       continue;
     }
-    if (inTable) { html += "</tbody></table>"; inTable = false; }
+    if (inTable) { html += "</tbody></table></div>"; inTable = false; }
     if (!line) { html += "<br>"; continue; }
     html += line.replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/`(.+?)`/g, "<code>$1</code>") + "<br>";
   }
-  if (inTable) html += "</tbody></table>";
+  if (inTable) html += "</tbody></table></div>";
 
   // 锚点做成可点击徽章：[p3@120,480,468,512]
   return html.replace(

@@ -44,21 +44,75 @@ body {
   background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
   display: flex; flex-direction: column; overflow: hidden;
 }
+/* ---------- 面板头部：三个面板共用一套控件标尺 ----------
+ * QA 实测（tests/ui_layout_check.py）：.chat-tools 原本没有任何样式，
+ * 下拉框/按钮组/流式开关按 inline 基线排列，中心线极差 3.25px
+ * （下拉与开关 75.88，按钮组 79.13）——肉眼就是"全部文献和问答没对齐"。
+ * 统一改成 flex + align-items:center 后，三者中心线必须完全一致。
+ */
 .panel-head {
-  height: 38px; display: flex; align-items: center; justify-content: space-between;
-  padding: 0 10px; border-bottom: 1px solid var(--line); font-weight: 500;
+  height: 44px; display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; padding: 0 12px; border-bottom: 1px solid var(--line);
+  font-weight: 500; flex: none;
 }
-.panel-head small { color: var(--muted); font-weight: 400; margin-left: 6px; }
+.panel-head > span:first-child {
+  flex: none; max-width: 60%;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.panel-head small {
+  color: var(--muted); font-weight: 400; margin-left: 6px; font-size: 11.5px;
+}
+
+/* 工具栏：中栏翻页与右栏模式切换共用同一套对齐规则 */
+.viewer-tools, .chat-tools {
+  display: flex; align-items: center; gap: 6px; flex: 0 0 auto;
+}
+.viewer-tools .el-radio-group,
+.viewer-tools .el-button,
+.chat-tools .el-radio-group,
+.chat-tools .el-switch { flex: none; }
+
+/* 右栏 380px 内要塞下标题+下拉+两段切换+开关，宽度必须卡死，
+ * 否则 select 会被 flex 压缩、文字截成"全部文…" */
+.chat-tools .scope-select { width: 88px; flex: none; }
+.chat-tools .el-radio-button__inner { padding: 0 9px; }
+.chat-tools .stream-switch { margin-left: 0; }
+/* 头部控件统一 24px 视觉高度（Element small 默认值），
+ * 用行高而不是 padding 撑，避免 select 与按钮组各自算高 */
+.panel-head .el-select__wrapper,
+.panel-head .el-radio-button__inner,
+.panel-head .el-button--small { min-height: 24px; }
+
+/* 页码：等宽数字 + 固定宽度，翻到 10/15 时不会左右跳 */
+.pager {
+  font-size: 12px; color: var(--muted); padding: 0 6px;
+  font-variant-numeric: tabular-nums; text-align: center; min-width: 52px;
+}
 
 /* 左栏 */
 .upload-area { padding: 10px; border-bottom: 1px solid var(--line); }
 .doc-list { overflow-y: auto; padding: 6px; flex: 1; }
 .doc-item {
-  display: flex; align-items: center; gap: 6px; padding: 7px 6px;
+  /* 顶部对齐：标题最多两行，若垂直居中，复选框会飘到第二行旁边
+   * （截图实测 "Understanding Deep Learning" 那行就是这样）。
+   * 复选框与删除按钮都对齐到第一行标题。 */
+  display: flex; align-items: flex-start; gap: 7px; padding: 7px 6px;
   border-radius: 8px; border: 1px solid transparent;
 }
+.doc-item .el-checkbox { flex: none; margin-top: 1px; height: auto; }
 .doc-item:hover { background: #f7f8fa; }
 .doc-item.active { background: #eef2fe; border-color: #c9d6f8; }
+/* 删除按钮常驻会让 37 篇文献每一行都挂一个红字，视觉噪音太大。
+ * 改成 hover 才淡入，键盘可达（focus-visible）时也显示。 */
+.doc-item .doc-del {
+  flex: none; opacity: 0; transition: opacity .15s;
+  padding: 1px 5px; min-height: 19px; font-size: 11px; margin-top: 1px;
+}
+.doc-item:hover .doc-del,
+.doc-item .doc-del:focus-visible { opacity: 1; }
+@media (hover: none) {
+  .doc-item .doc-del { opacity: .55; }  /* 触屏没有 hover，保持常显但压低 */
+}
 .doc-main { flex: 1; min-width: 0; cursor: pointer; }
 .doc-title {
   font-size: 12.5px; line-height: 1.35; overflow: hidden;
@@ -74,8 +128,6 @@ body {
 .empty a { display: block; color: var(--brand); text-decoration: none; margin-top: 6px; }
 
 /* 中栏：阅读器 */
-.viewer-tools { display: flex; align-items: center; gap: 2px; }
-.pager { font-size: 12px; color: var(--muted); padding: 0 6px; }
 .viewer-wrap { flex: 1; display: flex; overflow: hidden; }
 .tree {
   width: 210px; border-right: 1px solid var(--line); overflow-y: auto; padding: 6px 0;
@@ -115,9 +167,19 @@ body {
 .msg.user .bubble { background: #eef2fe; border-color: #c9d6f8; }
 .bubble.loading { color: var(--muted); }
 .md code { background: #eef0f3; padding: 0 3px; border-radius: 3px; font-size: 12px; }
-.md-table { border-collapse: collapse; width: 100%; margin: 6px 0; font-size: 12px; }
-.md-table th, .md-table td { border: 1px solid var(--line); padding: 4px 6px; text-align: left; }
-.md-table th { background: #f7f8fa; font-weight: 500; }
+/* 表格：自然宽度 + 横向滚动，绝不在窄栏里把中文挤成一字一行 */
+.md-table-wrap {
+  overflow-x: auto; margin: 6px 0; border-radius: 6px;
+  border: 1px solid var(--line);
+}
+.md-table {
+  border-collapse: collapse; width: max-content; min-width: 100%; font-size: 12px;
+}
+.md-table th, .md-table td {
+  border: 1px solid var(--line); padding: 4px 9px;
+  text-align: left; white-space: normal; min-width: 64px; vertical-align: top;
+}
+.md-table th { background: #f7f8fa; font-weight: 500; white-space: nowrap; }
 .anchor {
   display: inline-block; background: #fff7e6; border: 1px solid #f0b429;
   color: #92400e; border-radius: 4px; padding: 0 4px; font-size: 11px;
@@ -132,15 +194,40 @@ body {
   border-radius: 4px; padding: 1px 5px;
 }
 .evid { margin-top: 8px; border-top: 1px dashed var(--line); padding-top: 6px; }
-.evid-title { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+.evid-title {
+  font-size: 11px; color: var(--muted); margin-bottom: 4px;
+  display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
+}
+.evid-hint { font-size: 10.5px; color: #a7aebb; flex: none; }
+/* 10 条证据全部展开会把整屏占满，给个限高让回答本身留在视野里 */
+.evid-list { max-height: 196px; overflow-y: auto; }
 .evid-item {
-  display: flex; gap: 4px; font-size: 11px; padding: 3px 4px; border-radius: 5px;
+  display: flex; align-items: baseline; gap: 6px;
+  font-size: 11px; padding: 3px 4px; border-radius: 5px;
   cursor: pointer; color: #374151;
 }
 .evid-item:hover { background: #f7f8fa; }
-.evid-idx { color: var(--brand); }
-.evid-doc { color: var(--muted); white-space: nowrap; }
-.evid-txt { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* 序号徽标曾经会被 flex 压缩，[10] 被拆成「1」「0」两行——必须不可压缩 */
+.evid-idx {
+  flex: none; white-space: nowrap; color: var(--brand);
+  font-variant-numeric: tabular-nums;
+}
+/* 页码单独成列且不可压缩：文档名再怎么截，"第几页"必须一眼可见 */
+.evid-page {
+  flex: none; white-space: nowrap; color: #6b7280;
+  font-variant-numeric: tabular-nums;
+}
+/* 文档名固定占比：原来 flex-basis:auto 会和摘要按内容比例抢宽度，
+ * 实测被压到只剩 "1706.03…"，v1 与 v1_img 两篇根本分不出来 */
+.evid-doc {
+  flex: 0 0 40%; min-width: 0;
+  color: var(--muted); white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+}
+.evid-txt {
+  flex: 1 1 0; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 .ask-bar { display: flex; gap: 6px; padding: 8px; border-top: 1px solid var(--line); }
 
 /* 去重弹窗 */
@@ -150,7 +237,19 @@ body {
 .dup-reason { font-size: 11.5px; color: var(--muted); margin-top: 3px; }
 
 @media (max-width: 1280px) {
-  .layout { grid-template-columns: 220px 1fr 320px; }
+  /* 右栏 320px 时头部塞不下「标题 + 88px 下拉 + 87px 切换 + 64px 开关」，
+   * 实测标题被压到 33px 会截断成「智能…」。放宽到 360px 后一行放得下。 */
+  .layout { grid-template-columns: 220px 1fr 360px; }
+}
+
+@media (max-width: 1100px) {
+  /* 再窄就让右栏头部换行：标题独占一行，工具栏右对齐，绝不压缩文字 */
+  .panel.right .panel-head {
+    height: auto; min-height: 44px; flex-wrap: wrap;
+    padding: 7px 12px; row-gap: 5px;
+  }
+  .panel.right .panel-head > span:first-child { max-width: 100%; }
+  .chat-tools { width: 100%; justify-content: flex-end; }
 }
 
 /* ---------- 引用图谱 ---------- */
@@ -246,3 +345,26 @@ body {
   gap: 10px; padding: 8px 4px; border-bottom: 1px solid var(--line);
 }
 .trash-main { flex: 1; min-width: 0; }
+
+/* ---------- 右栏空状态：样本问题做成可点卡片 ----------
+ * 原来是「试试点这个：」+ 一串 a 标签，长问题换行后参差不齐、也没有可点的边界。
+ */
+.chat-empty { padding: 18px 6px; text-align: left; }
+.chat-empty-tip {
+  font-size: 11.5px; color: #9aa4b2; letter-spacing: .3px;
+  padding: 0 4px 8px; border-bottom: 1px dashed var(--line); margin-bottom: 8px;
+}
+.sample-q {
+  display: block; width: 100%; text-align: left; cursor: pointer;
+  font: inherit; font-size: 12.5px; line-height: 1.5; color: #2f3a4d;
+  background: #fbfcfe; border: 1px solid var(--line); border-radius: 8px;
+  /* 悬挂缩进：换行后与第一行正文左边缘对齐，而不是顶到 ▸ 下方 */
+  padding: 7px 9px 7px 21px; text-indent: -12px;
+  margin-bottom: 6px; transition: all .15s;
+}
+.sample-q:hover {
+  background: #f2f6ff; border-color: #bfd0f5; color: var(--brand);
+  transform: translateX(2px);
+}
+.sample-q::before { content: "▸ "; color: #b9c2d0; }
+.sample-q:hover::before { color: var(--brand); }

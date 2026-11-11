@@ -1,0 +1,26 @@
+{
+  "viewport": {
+    "w": 1254,
+    "h": 762
+  },
+  "rightHead": null,
+  "tools": null,
+  "title": null,
+  "select": null,
+  "selectInner": null,
+  "radioGroup": null,
+  "radioBtns": [],
+  "radioInners": [],
+  "sw": null,
+  "swLabel": null,
+  "ask": null,
+  "sendBtn": null,
+  "input": null,
+  "rowCenterSpread": null,
+  "overflowPx": null,
+  "heights": {
+    "select": null,
+    "radioGroup": null,
+    "sw": null
+  }
+}

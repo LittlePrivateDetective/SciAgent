@@ -61,7 +61,7 @@
               <span v-if="d.version>1" class="tag-warn">v{{ d.version }}</span>
             </div>
           </div>
-          <el-button text size="small" type="danger" @click.stop="removeDoc(d)">删</el-button>
+          <el-button text size="small" type="danger" class="doc-del" @click.stop="removeDoc(d)">删</el-button>
         </div>
       </div>
     </aside>
@@ -199,22 +199,24 @@
       <div class="panel-head">
         <span>智能问答</span>
         <div class="chat-tools">
-          <el-select v-model="scope" size="small" style="width:96px">
+          <el-select v-model="scope" size="small" class="scope-select">
             <el-option label="当前文献" value="doc" :disabled="!activeDoc"></el-option>
             <el-option label="全部文献" value="all"></el-option>
           </el-select>
-          <el-radio-group v-model="mode" size="small">
+          <el-radio-group v-model="mode" size="small" class="mode-group">
             <el-radio-button label="qa">问答</el-radio-button>
             <el-radio-button label="compare">对比</el-radio-button>
           </el-radio-group>
-          <el-switch v-model="streamMode" size="small" active-text="流式" style="margin-left:6px"></el-switch>
+          <el-switch v-model="streamMode" size="small" active-text="流式" class="stream-switch"></el-switch>
         </div>
       </div>
 
       <div class="chat-list" ref="chatList">
-        <div v-if="!messages.length" class="empty">
-          试试点这个：<br>
-          <a v-for="(q,i) in samples" :key="i" href="#" @click.prevent="ask(q)">· {{ q }}</a>
+        <div v-if="!messages.length" class="empty chat-empty">
+          <div class="chat-empty-tip">试试点这个 · 直接从官方测试集里取的问题</div>
+          <button v-for="(q,i) in samples" :key="i" class="sample-q" @click="ask(q)">
+            {{ q }}
+          </button>
         </div>
         <div v-for="(m,i) in messages" :key="i" class="msg" :class="m.role">
           <div class="bubble">
@@ -232,11 +234,17 @@
               <span v-for="(t,j) in m.trace" :key="j" class="step">{{ t.agent }}</span>
             </div>
             <div v-if="m.evidence && m.evidence.length" class="evid">
-              <div class="evid-title">原文证据（点击跳转高亮）</div>
-              <div v-for="(e,j) in m.evidence" :key="j" class="evid-item" @click="jump(e)">
-                <span class="evid-idx">[{{ j+1 }}]</span>
-                <span class="evid-doc">{{ e.doc_name }} p{{ e.page }}</span>
-                <span class="evid-txt">{{ e.text.slice(0,90) }}</span>
+              <div class="evid-title">
+                <span>原文证据 · {{ m.evidence.length }} 条</span>
+                <span class="evid-hint">点条目跳到原文高亮</span>
+              </div>
+              <div class="evid-list">
+                <div v-for="(e,j) in m.evidence" :key="j" class="evid-item" @click="jump(e)">
+                  <span class="evid-idx">[{{ j+1 }}]</span>
+                  <span class="evid-page">p{{ e.page }}</span>
+                  <span class="evid-doc" :title="e.doc_name + ' 第' + e.page + '页'">{{ e.doc_name }}</span>
+                  <span class="evid-txt">{{ e.text.slice(0,90) }}</span>
+                </div>
               </div>
             </div>
           </div>

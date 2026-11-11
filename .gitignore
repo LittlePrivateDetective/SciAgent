@@ -21,13 +21,9 @@ data/_qa_tmp/
 data/_qa_clean/
 
 # 浏览器自动化 profile 与截图缓存：只是临时缓存，不是证据本体
-docs/qa/evidence/_profile_*/
-docs/qa/evidence/_cdp_*/
-docs/qa/evidence/_p_*/
-docs/qa/evidence/_qa_*/
-docs/qa/evidence/_profile*/
-docs/qa/evidence/_p4/
-docs/qa/evidence/_p_dump/
-docs/qa/evidence/_p_chk*/
-docs/qa/evidence/_p_ui/
+# 用不带斜杠的前缀通配：带斜杠只能匹配"已存在的目录"，
+# 新增工具产生的路径在 git 眼里还无法判定类型，就会漏掉。
+docs/qa/evidence/_profile*
+docs/qa/evidence/_cdp_*
+docs/qa/evidence/_p*
 docs/qa/evidence/_qa_ui_check.js
