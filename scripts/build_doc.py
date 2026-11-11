@@ -95,8 +95,8 @@ body {
   margin-top: 5mm;
 }
 .cover-meta {
-  margin: 42mm auto 0 auto;
-  width: 138mm;
+  margin: 30mm auto 0 auto;
+  width: 140mm;
   border-top: 0.6pt solid #cbd5e1;
   padding-top: 5mm;
   font-family: "Microsoft YaHei", sans-serif;
