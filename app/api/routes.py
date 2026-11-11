@@ -1190,3 +1190,24 @@ def discover_feedback(body: DiscoverFeedbackIn, db: Session = Depends(get_db)):
 @router.get("/discover/feedback")
 def discover_feedback_stats(db: Session = Depends(get_db)):
     return discover_mod.feedback_stats(db)
+
+
+@router.get("/discover/watch")
+def discover_watch_status():
+    """论文定期追踪的状态 + 最近一次扫出来的新论文（官方 1.4.2）。
+
+    返回的是"上次扫描的结果快照"，不等同于实时推荐：实时推荐走
+    `/discover/recommend`（会现场查 arXiv，慢）。这里是给界面挂在
+    「发现」页上做背景提示用的，打开页面不该触发一次新的外网请求。
+    """
+    from app.research import watcher
+
+    return watcher.status()
+
+
+@router.post("/discover/watch/run")
+def discover_watch_run():
+    """立刻扫一次。带 60 秒冷却，避免连点把 arXiv 与模型都刷爆。"""
+    from app.research import watcher
+
+    return watcher.run_once(manual=True)

@@ -72,6 +72,14 @@ async def _startup() -> None:
     except Exception:  # noqa: BLE001 保活起不来不能挡住服务
         log.warning("保活循环启动失败", exc_info=True)
 
+    # 论文定期追踪（官方 1.4.2）：默认关，后台「论文追踪」组打开后按间隔扫 arXiv
+    try:
+        from app.research import watcher
+
+        watcher.start()
+    except Exception:  # noqa: BLE001 追踪起不来同样不能挡住服务
+        log.warning("论文追踪循环启动失败", exc_info=True)
+
 
 @app.on_event("shutdown")
 async def _shutdown() -> None:
@@ -79,6 +87,12 @@ async def _shutdown() -> None:
         from app.core import keepalive
 
         await keepalive.stop()
+    except Exception:  # noqa: BLE001
+        pass
+    try:
+        from app.research import watcher
+
+        await watcher.stop()
     except Exception:  # noqa: BLE001
         pass
 

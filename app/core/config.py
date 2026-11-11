@@ -96,6 +96,13 @@ class Settings(BaseSettings):
     keepalive_warm_model: int = 1      # 本地路由下预热 Ollama
     keepalive_warm_cloud: int = 0      # 云端预热会产生 token 费用，默认关
 
+    # ---------- 论文追踪（官方 1.4.2 定期刷新）----------
+    # 默认关：开启后会周期调 arXiv 与逐篇生成推荐理由，没配 key 的机器只会刷错误日志。
+    # 演示时在后台打开，或 .env 里 DISCOVER_WATCH_ENABLED=1。
+    discover_watch_enabled: int = 0
+    discover_watch_interval: int = 21600   # 6 小时扫一次
+    discover_watch_days: int = 7           # 只看最近 N 天提交的新论文
+
     # ---------- 服务 ----------
     port: int = 8000
     data_dir: str = "./data"

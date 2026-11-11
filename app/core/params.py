@@ -35,6 +35,7 @@ GROUPS: list[dict] = [
     {"key": "task", "label": "场景模型", "desc": "翻译 / 写作 / 视觉各自可单独指定模型"},
     {"key": "rag", "label": "检索与索引", "desc": "召回、重排、分块与向量化；部分改动要重建索引"},
     {"key": "service", "label": "服务与安全", "desc": "上传上限、日志级别、演示令牌与端口"},
+    {"key": "track", "label": "论文追踪", "desc": "定期扫 arXiv 新论文；默认关闭，演示时在后台打开"},
 ]
 
 SCOPES = {
@@ -185,6 +186,17 @@ P: list[Param] = [
           "只省掉首次 TLS 握手（100–300ms），默认关", advanced=True),
     Param("port", "service", "服务端口", "int",
           "改完要重启进程才生效；容器里注意同步改端口映射", 1024, 65535, 1, "", "restart"),
+
+    # ---------------- 论文追踪 ----------------
+    Param("discover_watch_enabled", "track", "定期追踪新论文", "bool",
+          "开着时按下面的间隔扫 arXiv，把符合库内主题的新论文攒成推荐列表。"
+          "每轮会调 arXiv 一次 + 逐篇生成中文理由，没配 key 的机器建议关"),
+    Param("discover_watch_interval", "track", "追踪间隔", "int",
+          "秒。默认 21600（6 小时）。改完下一轮调度就按新间隔走，不用重启",
+          300, 259200, 300, "秒"),
+    Param("discover_watch_days", "track", "只看最近几天", "int",
+          "arXiv 的 submittedDate 窗口。设 7 表示只推最近一周提交的论文；"
+          "调大能多推一些，但命中率会下降", 7, 365, 1, "天"),
 ]
 
 BY_KEY: dict[str, Param] = {p.key: p for p in P}
