@@ -1,0 +1,112 @@
+{
+ "run_at": "2026-11-11T23:55:47",
+ "levels": [
+  512,
+  1024,
+  2048,
+  4096,
+  8192
+ ],
+ "rows": [
+  {
+   "ttft_ms": 642.0,
+   "total_ms": 871.4,
+   "in_tokens": 414,
+   "out_tokens": 16,
+   "text": "8888888888888888",
+   "model": "local",
+   "level": 512,
+   "chars": 545
+  },
+  {
+   "ttft_ms": 394.0,
+   "total_ms": 434.1,
+   "in_tokens": 393,
+   "out_tokens": 3,
+   "text": "检索增强生成",
+   "model": "cloud-fast",
+   "level": 512,
+   "chars": 545
+  },
+  {
+   "ttft_ms": 510.0,
+   "total_ms": 736.6,
+   "in_tokens": 782,
+   "out_tokens": 16,
+   "text": "8888888888888888",
+   "model": "local",
+   "level": 1024,
+   "chars": 1058
+  },
+  {
+   "ttft_ms": 436.1,
+   "total_ms": 479.4,
+   "in_tokens": 761,
+   "out_tokens": 3,
+   "text": "检索增强生成",
+   "model": "cloud-fast",
+   "level": 1024,
+   "chars": 1058
+  },
+  {
+   "ttft_ms": 912.3,
+   "total_ms": 1147.3,
+   "in_tokens": 1511,
+   "out_tokens": 16,
+   "text": "8888888888888888",
+   "model": "local",
+   "level": 2048,
+   "chars": 2082
+  },
+  {
+   "ttft_ms": 427.4,
+   "total_ms": 457.1,
+   "in_tokens": 1490,
+   "out_tokens": 1,
+   "text": "检索",
+   "model": "cloud-fast",
+   "level": 2048,
+   "chars": 2082
+  },
+  {
+   "ttft_ms": 1709.4,
+   "total_ms": 1944.2,
+   "in_tokens": 2969,
+   "out_tokens": 16,
+   "text": "8888888888888888",
+   "model": "local",
+   "level": 4096,
+   "chars": 4130
+  },
+  {
+   "ttft_ms": 437.5,
+   "total_ms": 466.0,
+   "in_tokens": 2948,
+   "out_tokens": 1,
+   "text": "检索",
+   "model": "cloud-fast",
+   "level": 4096,
+   "chars": 4130
+  },
+  {
+   "ttft_ms": 3599.6,
+   "total_ms": 3845.1,
+   "in_tokens": 5890,
+   "out_tokens": 16,
+   "text": "8888888888888888",
+   "model": "local",
+   "level": 8192,
+   "chars": 8226
+  },
+  {
+   "ttft_ms": 763.2,
+   "total_ms": 815.7,
+   "in_tokens": 5869,
+   "out_tokens": 3,
+   "text": "检索增强生成",
+   "model": "cloud-fast",
+   "level": 8192,
+   "chars": 8226
+  }
+ ]
+}

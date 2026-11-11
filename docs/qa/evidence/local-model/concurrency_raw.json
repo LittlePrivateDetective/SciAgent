@@ -1,0 +1,33 @@
+{
+ "run_at": "2026-11-11T23:49:34",
+ "workers": 4,
+ "requests": 8,
+ "models": {
+  "local": {
+   "label": "本地 qwen2.5:3b（RTX 2060 6GB）",
+   "ok": 8,
+   "failed": 0,
+   "wall_s": 12.03,
+   "wall_baseline_s": 12.84,
+   "req_p50_ms": 5380,
+   "req_max_ms": 7019,
+   "out_tokens": 750,
+   "throughput_tok_s": 62.3,
+   "errors": [],
+   "speedup": 1.07
+  },
+  "cloud-fast": {
+   "label": "云端 qwen-flash",
+   "ok": 8,
+   "failed": 0,
+   "wall_s": 3.32,
+   "wall_baseline_s": 10.8,
+   "req_p50_ms": 1385,
+   "req_max_ms": 3124,
+   "out_tokens": 1133,
+   "throughput_tok_s": 341.6,
+   "errors": [],
+   "speedup": 3.25
+  }
+ }
+}

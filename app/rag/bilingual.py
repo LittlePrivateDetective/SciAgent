@@ -134,7 +134,7 @@ _SYS = (
 _SYS_EN = (
     "你是学术论文翻译。输入是一个 JSON 数组，每个元素是一段中文；"
     "请逐段译成可直接用于投稿的规范学术英文，输出 JSON：{\"out\": [\"First translated paragraph\", ...]}。\n"
-    "Rules://n"
+    "Rules:\n"
     "1. The number of output items must equal the input exactly — no merging, no splitting;\n"
     "2. Write formal academic English (third person, no colloquial or machine-translated phrasing);\n"
     "3. Use the standard English term for each technical term and keep it consistent across the batch; "
@@ -144,6 +144,21 @@ _SYS_EN = (
     "6. Do not omit, summarize, or add content that is not in the source;\n"
     "7. Mind English grammar details: article agreement with numbers (\"an 11-millisecond delay\", "
     "\"a 11-point gain\" is wrong), consistent tense, and singular/plural agreement."
+)
+
+# 本地小模型（3B 级）用精简提示词。
+# 实测：完整 _SYS_EN 有 700 余字符、7 条规则，qwen2.5:3b 处理不了，直接陷入复读，
+# Ollama 抛 500 "prediction aborted, token repeat limit reached"，重试三次全挂；
+# 换成 3 句话的短指令后 0.3 秒正常出结果。这不是"模型不行"，是提示词没为它适配。
+_SYS_LITE = (
+    "你是学术翻译。输入是 JSON 数组，逐段译成中文，输出同样长度的 JSON："
+    '{"out": ["..."]}。术语用通行译法，保留公式、数字与 [n] 角标，不要增删内容。'
+)
+_SYS_EN_LITE = (
+    "You are an academic translator. Input is a JSON array of Chinese paragraphs. "
+    "Translate each into formal academic English, return JSON "
+    '{"out": ["..."]} with exactly the same number of items. '
+    "Keep formulas, numbers and [n] markers unchanged, and leave no Chinese characters."
 )
 
 # 模型偶尔会把输入序号带进译文（"[1] Mistral 7B 采用…"）
@@ -166,10 +181,15 @@ def _translate_batch(texts: list[str], to: str = "zh") -> list[str]:
 
     chars = sum(len(t) for t in texts)
     budget = min(7000 if to == "en" else 6000, 400 + int(chars * 1.5))
+    # 本地路由换精简提示词：3B 级模型扛不住云端那版长指令（见 _SYS_LITE 注释）
+    if gateway.route() == "local":
+        sys_prompt = _SYS_EN_LITE if to == "en" else _SYS_LITE
+    else:
+        sys_prompt = _SYS_EN if to == "en" else _SYS
     try:
         obj = gateway.chat_json(
             [
-                {"role": "system", "content": _SYS_EN if to == "en" else _SYS},
+                {"role": "system", "content": sys_prompt},
                 {"role": "user", "content": _json.dumps(texts, ensure_ascii=False)},
             ],
             temperature=0.1,
