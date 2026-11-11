@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SciAgent · 控制台</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/element-plus@2.7.6/dist/index.css" />
+  <link rel="stylesheet" href="/static/admin.css" />
+  <script src="https://cdn.jsdelivr.net/npm/vue@3.4.31/dist/vue.global.prod.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/element-plus@2.7.6/dist/index.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/element-plus@2.7.6/dist/locale/zh-cn.min.js"></script>
+</head>
+<body>
+<div id="app" v-cloak>
+  <!-- 登录门：口令只发给服务端校验，前端不存、不比较 -->
+  <div class="login-wrap" v-if="authReady && !authed">
+    <div class="login-card">
+      <div class="login-brand">
+        <span class="logo">Sci</span>
+        <div>
+          <div class="login-title">SciAgent 控制台</div>
+          <div class="login-sub">参数 / 运行时 / 审计</div>
+        </div>
+      </div>
+      <template v-if="authEnabled">
+        <div class="login-hint">请输入后台口令</div>
+        <el-input v-model="pwd" type="password" show-password size="large"
+                  placeholder="后台口令" @keyup.enter="doLogin"></el-input>
+        <div class="login-err" v-if="authError">{{ authError }}</div>
+        <el-button type="primary" size="large" class="login-btn"
+                   :loading="loggingIn" @click="doLogin">进入控制台</el-button>
+        <div class="login-foot">口令由服务端 ADMIN_PASSWORD 配置，输错 8 次锁定 10 分钟</div>
+      </template>
+      <template v-else>
+        <div class="login-hint">服务端未配置 ADMIN_PASSWORD，后台处于免登录状态</div>
+        <el-button type="primary" size="large" class="login-btn" @click="checkSession">进入控制台</el-button>
+        <div class="login-foot">仅建议在本机开发时这样用；部署到服务器请设置该环境变量</div>
+      </template>
+    </div>
+  </div>
+
+  <div class="shell" v-if="authed">
+    <!-- 左：导航 -->
+    <aside class="side">
+      <div class="side-brand">
+        <span class="logo">Sci</span>
+        <div>
+          <div class="name">SciAgent 控制台</div>
+          <div class="sub">参数 / 运行时 / 审计</div>
+        </div>
+      </div>
+      <nav class="side-nav">
+        <button v-for="n in navs" :key="n.key" class="nav-item"
+                :class="{ on: view === n.key }" @click="view = n.key">
+          <span class="nav-label">{{ n.label }}</span>
+          <span class="nav-count" v-if="n.count !== undefined">{{ n.count }}</span>
+        </button>
+      </nav>
+      <div class="side-foot">
+        <a href="/" class="back">← 返回工作台</a>
+        <button class="logout" @click="logout">退出登录</button>
+        <div class="hint" v-if="dirtyKeys.length">有 {{ dirtyKeys.length }} 项未保存</div>
+        <div class="hint" v-else>所有修改已保存</div>
+      </div>
+    </aside>
+
+    <!-- 右：内容 -->
+    <main class="main">
+      <header class="bar">
+        <div class="bar-left">
+          <h1>{{ viewTitle }}</h1>
+          <span class="bar-sub" v-if="view === 'params'">
+            共 {{ params.length }} 项 · 已覆盖 {{ meta.overridden }} 项
+          </span>
+          <span class="bar-sub" v-else-if="view === 'overview'">
+            进程启动于 {{ overview.runtime.started_at || '-' }}
+          </span>
+          <span class="bar-sub" v-else>关键写操作的审计记录</span>
+        </div>
+        <div class="bar-right">
+          <el-tag size="small" :type="overview.llm && overview.llm.mock ? 'warning' : 'success'" effect="plain">
+            {{ overview.llm ? (overview.llm.mock ? '模型未配置（模拟）' : overview.llm.model) : '加载中' }}
+          </el-tag>
+          <el-tag size="small" effect="plain">向量库 {{ overview.vector ? overview.vector.backend : '-' }}</el-tag>
+          <el-button size="small" :loading="loading" @click="reload">刷新</el-button>
+        </div>
+      </header>
+
+      <!-- ---------------- 概览 ---------------- -->
+      <section v-show="view === 'overview'" class="content">
+        <div class="cards">
+          <div class="card stat">
+            <div class="stat-label">文献 / 片段</div>
+            <div class="stat-value">{{ counts.documents }} <small>/ {{ counts.chunks }}</small></div>
+            <div class="stat-foot">{{ corpus.chars ? corpus.chars.toLocaleString() : 0 }} 字 · 平均 {{ corpus.avg_chars_per_chunk }} 字/段</div>
+          </div>
+          <div class="card stat">
+            <div class="stat-label">存储占用</div>
+            <div class="stat-value">{{ storage.db_mb }} <small>MB 数据库</small></div>
+            <div class="stat-foot">PDF {{ storage.pdf_mb }} MB · 向量 {{ storage.chroma_mb }} MB</div>
+          </div>
+          <div class="card stat">
+            <div class="stat-label">运行时</div>
+            <div class="stat-value">{{ uptimeText }}</div>
+            <div class="stat-foot">Python {{ runtime.python }} · PID {{ runtime.pid }} · RSS {{ runtime.rss_mb || '-' }} MB</div>
+          </div>
+          <div class="card stat">
+            <div class="stat-label">参数覆盖</div>
+            <div class="stat-value">{{ counts.overrides }} <small>项</small></div>
+            <div class="stat-foot">其余沿用 .env / 默认值</div>
+          </div>
+        </div>
+
+        <div class="grid2">
+          <div class="card">
+            <div class="card-head">
+              <span>模型与检索</span>
+              <el-button size="small" text @click="openTest">连通性自测</el-button>
+            </div>
+            <div class="kv">
+              <div class="k">路由</div>
+              <div class="v">{{ llm.route }} <span class="tag" v-if="llm.mock">模拟</span></div>
+              <div class="k">模型</div><div class="v">{{ llm.model || '-' }}</div>
+              <div class="k">接口地址</div><div class="v mono">{{ llm.base_url || '-' }}</div>
+              <div class="k">向量化</div><div class="v">{{ embedding.provider }} · {{ embedding.model }} · {{ embedding.dim }} 维</div>
+              <div class="k">重排</div><div class="v">{{ rerank.provider }} · {{ rerank.model || '-' }} · {{ rerank.url_set ? '已配地址' : '未配地址' }}</div>
+              <div class="k">本地模型</div>
+              <div class="v">
+                {{ ollama.enabled ? (ollama.reachable === null ? '探测中' : (ollama.reachable ? '可连通' : '不可达')) : '未启用' }}
+                <span v-if="ollama.latency_ms !== null && ollama.latency_ms !== undefined" class="tag">{{ ollama.latency_ms }}ms</span>
+                <span v-if="ollama.error" class="tag warn">{{ ollama.error }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <span>最近操作</span>
+              <el-button size="small" text @click="view = 'audit'">全部</el-button>
+            </div>
+            <div class="audit">
+              <div v-for="(a, i) in overview.audit" :key="i" class="audit-row">
+                <span class="audit-act" :class="a.action">{{ a.action }}</span>
+                <span class="audit-detail">{{ a.detail || a.doc_id || '-' }}</span>
+                <span class="audit-time">{{ a.at }}</span>
+              </div>
+              <div v-if="!overview.audit || !overview.audit.length" class="empty">暂无记录</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><span>参数生效方式</span></div>
+          <div class="legend">
+            <div class="legend-item"><span class="badge ok">立即生效</span>下一次请求就用新值，无需重启</div>
+            <div class="legend-item"><span class="badge info">仅影响之后入库</span>已入库文献的分块不受影响</div>
+            <div class="legend-item"><span class="badge warn">需重建索引</span>要跑一次重新向量化，否则检索与新配置不一致</div>
+            <div class="legend-item"><span class="badge warn">需重启进程</span>端口等进程级配置，保存后重启才生效</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------------- 参数 ---------------- -->
+      <section v-show="view === 'params'" class="content">
+        <div class="toolbar">
+          <el-input v-model="q" placeholder="搜索参数名 / 说明 / 键名，如 温度、top_k、超时" clearable class="search"></el-input>
+          <el-switch v-model="showAdvanced" active-text="显示高级项"></el-switch>
+          <el-select v-model="groupFilter" size="small" class="gsel">
+            <el-option value="" label="全部模块"></el-option>
+            <el-option v-for="g in groups" :key="g.key" :value="g.key" :label="g.label"></el-option>
+          </el-select>
+          <div class="spacer"></div>
+          <el-button size="small" :disabled="!dirtyKeys.length" @click="discard">放弃修改</el-button>
+          <el-button size="small" type="primary" :loading="saving" :disabled="!dirtyKeys.length" @click="save">
+            保存{{ dirtyKeys.length ? ` (${dirtyKeys.length})` : '' }}
+          </el-button>
+        </div>
+
+        <div v-for="g in visibleGroups" :key="g.key" class="group">
+          <div class="group-head">
+            <div>
+              <div class="group-title">{{ g.label }}</div>
+              <div class="group-desc">{{ g.desc }}</div>
+            </div>
+            <el-button size="small" text title="回到启动时 .env 里的值" @click="resetGroup(g.key)">本组恢复默认</el-button>
+          </div>
+
+          <div class="rows">
+            <div v-for="p in g.items" :key="p.key" class="row" :class="{ dirty: isDirty(p), bad: errors[p.key] }">
+              <div class="row-label">
+                <div class="row-title">
+                  {{ p.label }}
+                  <span class="badge" :class="p.scope === 'hot' ? 'ok' : (p.scope === 'nextdoc' ? 'info' : 'warn')">
+                    {{ p.scope_label }}
+                  </span>
+                  <span class="badge ghost" :class="p.source">{{ sourceLabel(p.source) }}</span>
+                </div>
+                <div class="row-desc">{{ p.desc }}</div>
+                <div class="row-err" v-if="errors[p.key]">{{ errors[p.key] }}</div>
+              </div>
+
+              <div class="row-ctrl">
+                <el-switch v-if="p.kind === 'bool'" v-model="form[p.key]"></el-switch>
+                <el-select v-else-if="p.kind === 'enum'" v-model="form[p.key]" size="small" class="ctrl">
+                  <el-option v-for="o in p.options" :key="o" :value="o" :label="o"></el-option>
+                </el-select>
+                <el-input v-else-if="p.kind === 'secret'" v-model="form[p.key]" size="small" type="password"
+                          show-password class="ctrl"
+                          :placeholder="p.is_set ? `已配置 ${p.masked || '••••'}，留空表示不修改` : (p.placeholder || '未配置')"></el-input>
+                <el-input v-else-if="p.kind === 'str'" v-model="form[p.key]" size="small" class="ctrl"
+                          :placeholder="p.placeholder || ''"></el-input>
+                <template v-else>
+                  <el-input-number v-model="form[p.key]" size="small" class="num"
+                                   :min="p.min" :max="p.max" :step="p.step || 1"
+                                   :precision="p.kind === 'float' ? 2 : 0"
+                                   controls-position="right"></el-input-number>
+                  <span class="unit" v-if="p.unit">{{ p.unit }}</span>
+                </template>
+                <el-button size="small" text class="row-reset" title="回到启动时 .env 里的值" @click="resetOne(p)">恢复默认</el-button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card io">
+          <div class="card-head"><span>配置导入导出</span></div>
+          <div class="io-body">
+            <div class="io-hint">
+              导出只包含后台覆盖项，密钥不回传、也不导出（迁移后需重新填写）。
+              导入走与保存相同的校验，任何一项不合法则整批拒绝。
+            </div>
+            <div class="io-actions">
+              <el-button size="small" @click="exportCfg">导出 JSON</el-button>
+              <el-button size="small" @click="importVisible = true">导入 JSON</el-button>
+              <el-button size="small" type="danger" plain @click="resetAll">全部恢复默认</el-button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------------- 审计 ---------------- -->
+      <section v-show="view === 'audit'" class="content">
+        <div class="card">
+          <el-table :data="auditItems" size="small" style="width:100%">
+            <el-table-column prop="at" label="时间" width="170"></el-table-column>
+            <el-table-column prop="action" label="动作" width="140"></el-table-column>
+            <el-table-column prop="actor" label="操作者" width="110"></el-table-column>
+            <el-table-column prop="detail" label="详情"></el-table-column>
+          </el-table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- 模型连通性自测 -->
+  <el-drawer v-model="test.visible" size="520px" :with-header="false">
+    <div class="test-head">
+      <div>
+        <div class="test-title">模型连通性自测</div>
+        <div class="test-sub">用当前保存的配置真实打一次模型，验证 key / 地址 / 模型名是否可用</div>
+      </div>
+      <el-button text @click="test.visible = false">关闭</el-button>
+    </div>
+    <el-input v-model="test.prompt" type="textarea" :rows="3" placeholder="测试提示词"></el-input>
+    <div class="test-row">
+      <span class="test-lbl">最大输出</span>
+      <el-input-number v-model="test.maxTokens" size="small" :min="32" :max="2048" :step="64"
+                       controls-position="right" style="width:132px"></el-input-number>
+      <span class="hint">推理型模型要给足预算，64 token 会被思维链吃光</span>
+    </div>
+    <div class="test-row">
+      <el-button type="primary" size="small" :loading="test.running" @click="runTest">发起测试</el-button>
+      <span class="hint" v-if="test.result">
+        路由 {{ test.result.route }} · {{ test.result.ms }}ms
+        <span v-if="test.result.mock" class="tag warn">模拟回复</span>
+      </span>
+    </div>
+    <el-alert v-if="test.result && !test.result.ok" type="error" :closable="false"
+              :title="test.result.error || '未返回内容'"></el-alert>
+    <div v-if="test.result && test.result.ok" class="test-out">
+      <div class="test-meta">
+        model {{ test.result.model }} · 输出 {{ test.result.completion_tokens || '-' }} token
+      </div>
+      <pre>{{ test.result.preview }}</pre>
+    </div>
+    <div v-if="test.raw" class="test-raw-wrap">
+      <div class="test-meta">本次实际使用的配置</div>
+      <pre class="test-raw">{{ test.raw }}</pre>
+    </div>
+  </el-drawer>
+
+  <!-- 导入 -->
+  <el-dialog v-model="importVisible" title="导入参数配置" width="560px">
+    <el-input v-model="importText" type="textarea" :rows="10" placeholder='粘贴导出得到的 JSON，形如 {"top_k": 8, "hybrid_alpha": 0.5}'></el-input>
+    <div class="io-hint">只接受已知参数键；非法值会整批拒绝并给出原因。</div>
+    <template #footer>
+      <el-button size="small" @click="importVisible = false">取消</el-button>
+      <el-button size="small" type="primary" :loading="importing" @click="doImport">导入</el-button>
+    </template>
+  </el-dialog>
+</div>
+<script src="/static/admin.js"></script>
+</body>
+</html>

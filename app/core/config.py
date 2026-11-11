@@ -27,7 +27,9 @@ class Settings(BaseSettings):
     llm_temperature: float = 0.2
     llm_max_tokens: int = 2048
     llm_timeout: int = 90
-    llm_mock: int = 1
+    # 默认关闭：没有 key 时 gateway.route() 本身就会退回 mock，不需要这个开关兜底。
+    # 而它默认开着会让"后台恢复默认"顺手把真实调用切成模拟回复，是个隐蔽的坑。
+    llm_mock: int = 0
 
     # ---------- 翻译模型（中英对照阅读专用）----------
     # 单独配一个**非推理**模型：主模型若带思维链，逐段翻译会被推理过程吃掉
@@ -89,6 +91,8 @@ class Settings(BaseSettings):
     max_upload_mb: int = 120
     log_level: str = "INFO"
     demo_access_token: str = ""
+    # 后台控制台口令：只从环境变量读，不进数据库、不回显。留空 = 不鉴权（仅本机开发）
+    admin_password: str = ""
 
     # ---------- 派生路径 ----------
     @property

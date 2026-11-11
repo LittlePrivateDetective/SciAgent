@@ -26,6 +26,7 @@
       <el-tag size="small" effect="plain">向量库 {{ info.vector_backend || '-' }}</el-tag>
       <el-tag size="small" effect="plain">文献 {{ info.counts ? info.counts.documents : 0 }}</el-tag>
       <el-tag size="small" effect="plain" title="全部文献解析后可定位的原文片段总数">片段 {{ info.counts ? info.counts.chunks : 0 }}</el-tag>
+      <a class="admin-link" href="/admin" target="_blank" rel="noopener" title="参数中心：模型 / 检索 / 分块 / 服务配置">控制台</a>
     </div>
   </header>
 

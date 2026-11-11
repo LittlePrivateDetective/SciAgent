@@ -10,6 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
+from app.api.admin import router as admin_router
 from app.api.routes import router
 from app.core.config import BASE_DIR, settings
 from app.core.logger import get_logger, setup_logging
@@ -34,6 +35,7 @@ app.add_middleware(
 )
 
 app.include_router(router)
+app.include_router(admin_router)
 
 WEB_DIR = BASE_DIR / "web"
 
@@ -42,6 +44,16 @@ WEB_DIR = BASE_DIR / "web"
 def _startup() -> None:
     settings.ensure_dirs()
     init_db()
+    # 后台改过的参数存在 app_settings 表里，启动时回灌——否则重启一次全部失效，
+    # 而界面上还显示"已保存"，是最容易踩的坑
+    try:
+        from app.core.params import load_overrides
+        from app.db.session import SessionLocal
+
+        with SessionLocal() as db:
+            load_overrides(db)
+    except Exception:  # noqa: BLE001 参数加载失败不能挡住服务启动
+        log.warning("后台参数回灌失败，本次以 .env / 默认值启动", exc_info=True)
     store = get_store()
     info = {
         "llm_route": "见 /api/system/info",
@@ -65,7 +77,16 @@ def index():
     return {"message": "前端未构建，请访问 /docs 使用 API"}
 
 
-# 静态资源（app.js / style.css / vendor）
+@app.get("/admin")
+def admin_page():
+    """后台控制台。独立单页，不依赖主界面的构建链。"""
+    page = WEB_DIR / "admin.html"
+    if page.exists():
+        return FileResponse(page)
+    return {"message": "后台页面未找到"}
+
+
+# 静态资源（app.js / style.css / admin.js 等）
 if WEB_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(WEB_DIR)), name="static")
 

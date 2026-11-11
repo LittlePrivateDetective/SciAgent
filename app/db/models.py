@@ -284,3 +284,19 @@ class RecommendFeedback(Base):
     reason: Mapped[str] = mapped_column(String(320), default="")  # 当时的推荐理由，便于复盘
     actor: Mapped[str] = mapped_column(String(64), default="")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, index=True)
+
+
+class AppSetting(Base):
+    """后台参数覆盖：只在「后台改过的项」里存一行，没改过的继续用 .env / 默认值。
+
+    为什么不直接改写 .env：.env 是部署时的单一事实来源，运行时改它会让
+    "文件里的值"和"进程里的值"长期不一致，回滚时没人说得清哪个在生效。
+    这里把运行期覆盖单独存表，界面上能明确标出"来源：后台 / .env / 默认"。
+    """
+
+    __tablename__ = "app_settings"
+
+    key: Mapped[str] = mapped_column(String(64), primary_key=True)
+    value: Mapped[str] = mapped_column(Text, default="")      # JSON 编码，保留类型
+    actor: Mapped[str] = mapped_column(String(64), default="")
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, index=True)

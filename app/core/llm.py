@@ -74,6 +74,19 @@ class LLMGateway:
             self._client = httpx.Client(timeout=settings.llm_timeout)
         return self._client
 
+    def reset(self) -> None:
+        """丢弃缓存的 httpx 客户端。
+
+        连接池里存的是**建池时的超时**，后台把 llm_timeout 从 90 改成 30 后，
+        不重建的话实际还在用 90 秒——配置生效了，行为没变，最难查。
+        """
+        try:
+            if self._client is not None:
+                self._client.close()
+        except Exception:  # noqa: BLE001
+            pass
+        self._client = None
+
     def route(self) -> str:
         """决定本次走 cloud / local / mock。"""
         if settings.llm_route == "local" and settings.ollama_enabled:

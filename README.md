@@ -34,6 +34,7 @@ SciAgent 让模型**只能引用检索到的 chunk**，服务端把 chunk 换成
 | 中英对照 | ✅ | 双栏双向联动滚动（按段落锚点对齐）、按页懒翻译 + 落库缓存、`#bi` 深链 |
 | 中译英（中→英） | ✅ | 划词/片段**自动判方向**（中文→英文、英文→中文）；整篇中译英按 ~1200 字分批、3 路并发，产出 Markdown 可预览可下载，标题同步翻译（官方 1.6.4） |
 | 论文发现与推荐 | ✅ | 标题/关键词搜 arXiv → 下载 PDF → 走**同一条入库流水线**；参考文献按**正文被引次数**排序补全；新论文推荐带中文理由 + GitHub 标记 + 赞/踩反馈（官方 1.4） |
+| 后台参数中心 | ✅ | `/admin` 独立控制台，**口令登录**（`ADMIN_PASSWORD`，会话 12h、错 8 次锁 10 分钟）；**37 项参数**分 5 组，每项标生效方式（立即 / 仅之后入库 / 需重建索引 / 需重启）、来源（后台覆盖 / .env / 默认）与范围校验；密钥只回掩码；整批校验不留中间态；改动写审计；内置模型连通性自测与运行概览 |
 | 外部工具链 | ✅ | Function Calling 选工具 → arXiv / GitHub / Crossref 真实 API；重试 → 降级 → 如实标注 |
 | 学术图表 | ✅ | CSV 实验表格无损转 Mermaid xychart / TikZ(pgfplots) |
 | Future Work 对撞 | ✅ | 候选句抽取 → 4-gram 语义去重 → 与库内后续论文关键词对撞 |
@@ -138,6 +139,11 @@ tests/         qa_suite 回归台 / qa_report 报告 / browser_cdp 浏览器驱�
 | POST | `/api/discover/references/import` | 批量补全（后台任务），配 `/api/discover/jobs/{id}` 轮询 |
 | GET | `/api/discover/recommend` | 新论文推荐：TF-IDF 兴趣画像 + 中文理由 + GitHub 标记 |
 | GET/POST | `/api/discover/feedback` | 赞 / 踩 / 点开反馈（影响下次推荐排序） |
+| GET | `/api/admin/params` | 参数定义 + 当前值 + 来源（密钥只给掩码） |
+| PUT | `/api/admin/params` | 保存参数（整批校验，返回需重启 / 需重建索引项） |
+| POST | `/api/admin/params/reset` | 恢复到启动时的 .env 值（不碰密钥明文） |
+| GET | `/api/admin/overview` | 语料规模、存储、模型与向量库状态、运行时、审计 |
+| POST | `/api/admin/test-model` | 真实调用一次模型，回报耗时 / token / 空回复诊断 |
 | POST | `/api/write/outline` | 写作 Copilot：idea → 四段框架 + 无幻觉 References |
 | GET/POST | `/api/documents/{id}/bilingual[/translate]` | 中英对照段落 / 按需翻译 |
 | POST | `/api/chat/stream` | SSE 流式问答（thinking / token / done 事件） |
@@ -156,6 +162,8 @@ tests/         qa_suite 回归台 / qa_report 报告 / browser_cdp 浏览器驱�
 ```
 
 交付物见 `docs/qa/`：测试用例总表、缺陷与修复记录、最终回归报告、逐项自评、可复现交付说明。
+
+后台与部署：`docs/后台控制台.md`（参数中心怎么用）、`docs/部署对比-本地vs云端.md`（两条路的成本/延迟/显存/合规取舍）。
 
 ## 批量脚本
 

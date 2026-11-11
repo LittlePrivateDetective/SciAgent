@@ -664,3 +664,11 @@ body.is-dragging, body.is-dragging * { user-select: none !important; }
   flex: none; font-size: 10px; color: #854f0b; background: #faeeda;
   border-radius: 3px; padding: 0 4px; line-height: 15px; cursor: help;
 }
+
+/* 顶栏「控制台」入口：弱化成文字链接，避免和右侧聊天区的按钮抢注意力 */
+.admin-link {
+  font-size: 11.5px; color: var(--brand); text-decoration: none;
+  border: 1px solid #d7e0f5; background: #f6f9ff;
+  border-radius: 5px; padding: 3px 8px; line-height: 1.2;
+}
+.admin-link:hover { background: #eaf0ff; border-color: #bfd0ff; }

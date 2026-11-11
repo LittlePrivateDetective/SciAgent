@@ -1,0 +1,233 @@
+/* 控制台样式：与主界面同一套色板，信息密度优先，不做装饰性动效 */
+:root {
+  --bg: #f5f6f8;
+  --panel: #ffffff;
+  --line: #e6e8ee;
+  --line-soft: #eef0f5;
+  --text: #1c1f26;
+  --muted: #6b7280;
+  --brand: #2f5bd7;
+  --brand-soft: #eef2fe;
+  --ok: #0f6e56;
+  --warn: #854f0b;
+  --danger: #a32d2d;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font-family: -apple-system, "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+  font-size: 13px;
+}
+[v-cloak] { display: none; }
+.mono { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 11.5px; }
+
+.shell { display: flex; min-height: 100vh; }
+
+/* ---------- 左侧导航 ---------- */
+.side {
+  width: 212px; flex: none; background: var(--panel);
+  border-right: 1px solid var(--line); display: flex; flex-direction: column;
+  position: sticky; top: 0; height: 100vh;
+}
+.side-brand { display: flex; align-items: center; gap: 9px; padding: 16px 14px 14px; }
+.logo {
+  width: 28px; height: 28px; border-radius: 8px; flex: none;
+  background: linear-gradient(135deg, #2f5bd7, #4b7bff); color: #fff;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 12px; letter-spacing: .2px;
+}
+.side-brand .name { font-size: 13px; font-weight: 600; }
+.side-brand .sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+.side-nav { display: flex; flex-direction: column; gap: 2px; padding: 6px; }
+.nav-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  border: 0; background: transparent; text-align: left; cursor: pointer;
+  padding: 8px 10px; border-radius: 8px; font-size: 12.5px; color: #3b4453;
+  font-family: inherit;
+}
+.nav-item:hover { background: #f4f6fb; }
+.nav-item.on { background: var(--brand-soft); color: var(--brand); font-weight: 600; }
+.nav-count {
+  font-size: 10.5px; color: var(--muted); background: #f1f3f8;
+  border-radius: 9px; padding: 0 6px; line-height: 16px;
+}
+.nav-item.on .nav-count { background: #dfe7ff; color: var(--brand); }
+
+.side-foot { margin-top: auto; padding: 12px 14px 16px; border-top: 1px solid var(--line-soft); }
+.side-foot .back { font-size: 12px; color: var(--brand); text-decoration: none; }
+.side-foot .hint { font-size: 11px; color: var(--muted); margin-top: 8px; }
+
+/* ---------- 顶栏 ---------- */
+.main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.bar {
+  height: 54px; flex: none; display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; padding: 0 18px; background: var(--panel); border-bottom: 1px solid var(--line);
+  position: sticky; top: 0; z-index: 5;
+}
+.bar-left { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+.bar-left h1 { font-size: 14px; font-weight: 600; margin: 0; }
+.bar-sub { font-size: 11.5px; color: var(--muted); }
+.bar-right { display: flex; align-items: center; gap: 8px; }
+
+.content { padding: 16px 18px 32px; display: flex; flex-direction: column; gap: 14px; }
+
+/* ---------- 卡片 ---------- */
+.card {
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: 10px; padding: 14px 16px;
+}
+.card-head {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 12.5px; font-weight: 600; margin-bottom: 10px;
+}
+.cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.stat .stat-label { font-size: 11.5px; color: var(--muted); }
+.stat .stat-value { font-size: 22px; font-weight: 600; margin: 6px 0 4px; letter-spacing: -.2px; }
+.stat .stat-value small { font-size: 12px; font-weight: 400; color: var(--muted); }
+.stat .stat-foot { font-size: 11px; color: #8a93a3; }
+
+/* minmax(0,…) 不能省：fr 轨道默认以 min-content 为下限，审计卡里一行
+   不换行的操作详情曾把第二列撑到 2731px（容器只有 1326），左卡被挤成 129px、
+   标题竖排成一个字一行。 */
+.grid2 { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 12px; }
+.grid2 > .card { min-width: 0; }
+
+/* 键值表 */
+.kv { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 7px 10px; font-size: 12px; }
+.kv .k { color: var(--muted); }
+.kv .v { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.tag {
+  font-size: 10.5px; color: #5b6474; background: #f1f3f8;
+  border-radius: 4px; padding: 0 5px; margin-left: 4px; line-height: 16px;
+}
+.tag.warn { color: var(--warn); background: #faeeda; }
+
+/* 审计 */
+.audit-row {
+  display: flex; align-items: baseline; gap: 8px;
+  padding: 5px 0; border-bottom: 1px dashed var(--line-soft); font-size: 11.5px;
+}
+.audit-row:last-child { border-bottom: 0; }
+.audit-act {
+  flex: none; color: var(--brand); background: var(--brand-soft);
+  border-radius: 4px; padding: 0 5px; font-size: 10.5px;
+}
+.audit-act.params_update, .audit-act.params_import { color: #0f6e56; background: #e1f5ee; }
+.audit-act.params_reset { color: var(--warn); background: #faeeda; }
+.audit-act.delete, .audit-act.trash { color: var(--danger); background: #fdeaea; }
+.audit-detail { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #4b5361; }
+.audit-time { flex: none; color: #9aa4b2; font-size: 10.5px; }
+.empty { font-size: 12px; color: var(--muted); padding: 10px 0; }
+
+/* 生效方式图例 */
+.legend { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 20px; font-size: 11.5px; color: #4b5361; }
+.legend-item { display: flex; align-items: baseline; gap: 8px; }
+
+/* ---------- 徽标 ---------- */
+.badge {
+  font-size: 10px; line-height: 16px; padding: 0 5px; border-radius: 4px;
+  vertical-align: 1px; margin-left: 4px; white-space: nowrap;
+}
+.badge.ok { color: var(--ok); background: #e1f5ee; }
+.badge.info { color: #185fa5; background: #e6f1fb; }
+.badge.warn { color: var(--warn); background: #faeeda; }
+.badge.ghost { border: 1px solid var(--line); background: transparent; color: #8a93a3; }
+.badge.ghost.db { border-color: #c9d6ff; color: var(--brand); }
+.badge.ghost.env { border-color: #bfe3d6; color: var(--ok); }
+
+/* ---------- 参数区 ---------- */
+.toolbar {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: 10px; padding: 10px 12px;
+}
+.toolbar .search { max-width: 320px; }
+.toolbar .gsel { width: 132px; }
+.toolbar .spacer { flex: 1; }
+
+.group { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.group-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 12px 16px; border-bottom: 1px solid var(--line-soft); background: #fbfcfe;
+}
+.group-title { font-size: 12.5px; font-weight: 600; }
+.group-desc { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+.rows { display: flex; flex-direction: column; }
+.row {
+  display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px;
+  padding: 11px 16px; border-bottom: 1px solid var(--line-soft);
+  border-left: 3px solid transparent;
+}
+.row:last-child { border-bottom: 0; }
+.row:hover { background: #fcfdff; }
+.row.dirty { border-left-color: var(--brand); background: #f8faff; }
+.row.bad { border-left-color: var(--danger); background: #fffafa; }
+.row-title { font-size: 12.5px; color: #23272f; font-weight: 500; }
+.row-desc { font-size: 11px; color: var(--muted); line-height: 1.6; margin-top: 3px; }
+.row-err { font-size: 11px; color: var(--danger); margin-top: 4px; }
+/* 控件吃满整列；「恢复默认」绝对定位浮在说明行右侧，鼠标悬停才出现——
+   否则它要占 56px，URL 输入框就只剩 240px，一眼看不全地址 */
+.row-ctrl { position: relative; display: flex; align-items: center; gap: 6px; }
+/* 输入框吃掉整列宽度（URL 很长，168px 会截成 https://dashscope.aliyuncs.co…），
+   恢复默认按钮靠右固定，不参与压缩 */
+.row-ctrl .ctrl { flex: 1 1 auto; width: auto; min-width: 0; }
+.row-ctrl .num { width: 132px; flex: none; }
+.row-ctrl .unit { font-size: 11px; color: var(--muted); }
+.row-reset { position: absolute; right: 0; top: -24px; opacity: 0; transition: opacity .15s; font-size: 11px; }
+.row:hover .row-reset { opacity: 1; }
+
+/* ---------- 导入导出 ---------- */
+.io-body { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.io-hint { font-size: 11px; color: var(--muted); line-height: 1.6; max-width: 620px; }
+.io-actions { display: flex; gap: 8px; flex: none; }
+
+/* ---------- 自测抽屉 ---------- */
+.test-head {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--line); margin-bottom: 12px;
+}
+.test-title { font-size: 14px; font-weight: 600; }
+.test-sub { font-size: 11.5px; color: var(--muted); margin-top: 3px; }
+.test-row { display: flex; align-items: center; gap: 10px; margin: 12px 0; }
+.test-out { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; background: #fbfcff; }
+.test-meta { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+.test-out pre { margin: 0; font-size: 12px; line-height: 1.7; white-space: pre-wrap; word-break: break-word; }
+.test-raw-wrap { margin-top: 14px; }
+.test-raw {
+  background: #f6f8fc; border-radius: 8px; padding: 10px 12px; margin: 0;
+  font-size: 11px; color: #4b5361; overflow: auto; max-height: 220px;
+}
+
+@media (max-width: 1100px) {
+  .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .grid2 { grid-template-columns: 1fr; }
+  .row { grid-template-columns: minmax(0, 1fr) 260px; }
+}
+.test-lbl { font-size: 11.5px; color: var(--muted); flex: none; }
+
+/* ---------- 登录门 ---------- */
+.login-wrap {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(1200px 600px at 50% -10%, #eaf0ff 0%, var(--bg) 60%);
+  padding: 24px;
+}
+.login-card {
+  width: 360px; background: var(--panel); border: 1px solid var(--line);
+  border-radius: 14px; padding: 22px; box-shadow: 0 10px 40px rgba(20, 30, 60, .08);
+}
+.login-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+.login-title { font-size: 15px; font-weight: 600; }
+.login-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.login-hint { font-size: 12px; color: #4b5361; margin-bottom: 8px; }
+.login-err { font-size: 11.5px; color: var(--danger); margin-top: 8px; min-height: 16px; }
+.login-btn { width: 100%; margin-top: 12px; }
+.login-foot { font-size: 10.5px; color: #9aa4b2; margin-top: 12px; line-height: 1.6; }
+
+.logout {
+  display: block; margin-top: 8px; border: 0; background: transparent; padding: 0;
+  font-size: 12px; color: var(--muted); cursor: pointer; font-family: inherit;
+}
+.logout:hover { color: var(--danger); }
