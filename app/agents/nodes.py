@@ -235,26 +235,39 @@ def node_answer(state: dict) -> dict:
         and len({e["doc_id"] for e in evidence}) > 1
     )
     tpl = COMPARE_PROMPT if is_compare else ANSWER_PROMPT
+    msgs = [
+        {
+            "role": "system",
+            "content": SYSTEM_CONTRACT.format(role="科研写作助手" if not is_compare else "对比分析师"),
+        },
+        {
+            "role": "user",
+            "content": render(
+                tpl,
+                evidence=_evidence_block(evidence, query=state["goal"]),
+                question=state["goal"],
+            ),
+        },
+    ]
 
     try:
-        data = gateway.chat_json(
-            [
-                {"role": "system", "content": SYSTEM_CONTRACT.format(role="科研写作助手" if not is_compare else "对比分析师")},
-                {
-                    "role": "user",
-                    "content": render(
-                        tpl,
-                        evidence=_evidence_block(evidence, query=state["goal"]),
-                        question=state["goal"],
-                    ),
-                },
-            ],
-            temperature=0.2,
-        )
+        data = gateway.chat_json(msgs, temperature=0.2, max_tokens=4096 if is_compare else None)
     except LLMError as exc:
         data = {"answer": f"作答失败：{exc}", "confidence": "low", "missing": ""}
 
-    answer = data.get("answer") or data.get("_raw") or ""
+    answer = (data.get("answer") or data.get("_raw") or "").strip()
+    # 对比模式要输出表格，推理模型的思维 token 会把默认预算吃光，
+    # 结果 content 为空。这里再放大预算重试一次，仍为空才报错。
+    if not answer:
+        try:
+            data = gateway.chat_json(msgs, temperature=0.2, max_tokens=4096)
+            answer = (data.get("answer") or data.get("_raw") or "").strip()
+            _step(state, "writer", "retry_empty", note="首次返回空内容，已放大输出预算重试")
+        except LLMError as exc:
+            log.warning("空回答重试失败：%s", exc)
+    if not answer:
+        answer = "模型未返回有效内容（可能触发输出长度限制）。请把问题拆小后重试。"
+
     state["answer"] = answer
     state["confidence"] = data.get("confidence", "medium")
     state["missing"] = data.get("missing", "")
@@ -379,6 +392,10 @@ def finalize(state: dict) -> dict:
     """拼装最终返回：正文 + 引用表；另存一份带坐标锚点的版本供导出核验。"""
     body = state.get("answer", "")
     evidence = state.get("evidence") or []
+    # 以最终要展示的正文重算一次校验：审稿节点可能改写过答案，
+    # 若沿用草稿的指标，页面上会出现"数字与看到的答案对不上"。
+    if evidence:
+        state["verify"] = verify(body, evidence, state.get("goal", ""))
     table = citation_table(evidence)
     state["answer_rendered"] = body + table
     # 导出用的"可核验版"：每个 [1] 后面直接跟 [p7@x0,y0,x1,y1]，拿到 PDF 里能精准定位

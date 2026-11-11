@@ -119,6 +119,17 @@ def resolve_duplicate(body: DupResolve, db: Session = Depends(get_db)):
     return result
 
 
+@router.get("/documents/{doc_id}/diff")
+def document_diff(doc_id: str, other_id: str, db: Session = Depends(get_db)):
+    """版本差异：以 other_id 为旧版、doc_id 为新版，返回章节/句子级差异。"""
+    from app.rag.version_diff import diff_docs
+
+    for did in (doc_id, other_id):
+        if not db.get(Document, did):
+            raise HTTPException(404, f"文档不存在：{did}")
+    return diff_docs(db, other_id, doc_id)
+
+
 @router.get("/documents")
 def list_documents(db: Session = Depends(get_db)):
     docs = list(db.scalars(select(Document).order_by(Document.created_at.desc())).all())

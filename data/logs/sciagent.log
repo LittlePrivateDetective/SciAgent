@@ -362,3 +362,136 @@ OverflowError: Python int too large to convert to SQLite INTEGER
 2026-11-11 09:56:49,402 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1559ms tokens=2477
 2026-11-11 09:56:55,931 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=6527ms tokens=1878
 2026-11-11 09:56:59,561 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=3629ms tokens=1142
+2026-11-11 09:57:49,835 | INFO    | app.db.session           | 数据库就绪：<repo>\data\sciagent.db
+2026-11-11 09:57:49,837 | INFO    | app.rag.store            | Chroma 不可用，自动降级 SQLite+NumPy：No module named 'chromadb'
+2026-11-11 09:57:49,838 | INFO    | app.rag.store            | 向量后端：SQLite+NumPy
+2026-11-11 09:57:49,839 | INFO    | app.main                 | SciAgent 启动完成：{'llm_route': '见 /api/system/info', 'vector_backend': 'sqlite', 'data_dir': '<repo>\\data', 'official_pdfs': 39}
+2026-11-11 09:57:59,821 | INFO    | app.agents.graph         | 编排引擎：LangGraph
+2026-11-11 09:58:01,753 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1915ms tokens=736
+2026-11-11 09:58:03,327 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1572ms tokens=221
+2026-11-11 09:58:03,359 | DEBUG   | jieba                    | Building prefix dict from the default dictionary ...
+2026-11-11 09:58:03,359 | DEBUG   | jieba                    | Loading model from cache <user>\AppData\Local\Temp\jieba.cache
+2026-11-11 09:58:04,115 | DEBUG   | jieba                    | Loading model cost 0.756 seconds.
+2026-11-11 09:58:04,115 | DEBUG   | jieba                    | Prefix dict has been built successfully.
+2026-11-11 09:58:05,194 | INFO    | app.rag.hybrid           | rerank 生效：16→8 条，耗时 402ms，top1=0.997
+2026-11-11 09:58:06,625 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1412ms tokens=2781
+2026-11-11 09:58:08,921 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=2284ms tokens=1358
+2026-11-11 09:58:10,375 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1453ms tokens=752
+2026-11-11 09:58:12,439 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=2000ms tokens=751
+2026-11-11 09:58:13,713 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1272ms tokens=219
+2026-11-11 09:58:14,503 | INFO    | app.rag.hybrid           | rerank 生效：16→8 条，耗时 350ms，top1=0.719
+2026-11-11 09:58:15,863 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1340ms tokens=2393
+2026-11-11 09:58:17,225 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1351ms tokens=1007
+2026-11-11 09:58:18,734 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1508ms tokens=726
+2026-11-11 09:58:20,764 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1953ms tokens=788
+2026-11-11 09:58:22,110 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1345ms tokens=220
+2026-11-11 09:58:22,771 | INFO    | app.rag.hybrid           | rerank 生效：16→8 条，耗时 304ms，top1=0.975
+2026-11-11 09:58:24,430 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1650ms tokens=2138
+2026-11-11 09:58:28,941 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=4505ms tokens=1707
+2026-11-11 09:58:30,119 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1177ms tokens=700
+2026-11-11 09:58:31,403 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1206ms tokens=668
+2026-11-11 09:58:32,491 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1087ms tokens=173
+2026-11-11 09:58:33,215 | INFO    | app.rag.hybrid           | rerank 生效：16→8 条，耗时 363ms，top1=0.975
+2026-11-11 09:58:34,999 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1767ms tokens=3231
+2026-11-11 09:58:44,338 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=9325ms tokens=3151
+2026-11-11 09:58:46,008 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1669ms tokens=876
+2026-11-11 09:59:01,022 | INFO    | app.parse.structure      | 解析完成 <repo>\data\uploads\451de614_1706.03762v7.pdf：15 页 / 725 区块 / 30 标题 / 40 参考文献 / 扫描件=False
+2026-11-11 09:59:37,023 | INFO    | app.db.session           | 数据库就绪：<repo>\data\sciagent.db
+2026-11-11 09:59:37,025 | INFO    | app.rag.store            | Chroma 不可用，自动降级 SQLite+NumPy：No module named 'chromadb'
+2026-11-11 09:59:37,025 | INFO    | app.rag.store            | 向量后端：SQLite+NumPy
+2026-11-11 09:59:37,026 | INFO    | app.main                 | SciAgent 启动完成：{'llm_route': '见 /api/system/info', 'vector_backend': 'sqlite', 'data_dir': '<repo>\\data', 'official_pdfs': 39}
+2026-11-11 09:59:46,147 | INFO    | app.parse.structure      | 解析完成 <repo>\data\uploads\e9ab0f25_1706.03762v7.pdf：15 页 / 725 区块 / 30 标题 / 40 参考文献 / 扫描件=False
+2026-11-11 10:00:31,290 | INFO    | app.rag.store            | 向量后端：Chroma (<repo>\data\chroma)
+2026-11-11 10:00:56,782 | INFO    | app.pipeline.ingest      | 全库向量重算完成：451 块 / 1024 维 / 25492ms
+2026-11-11 10:01:22,336 | INFO    | app.db.session           | 数据库就绪：<repo>\data\sciagent.db
+2026-11-11 10:01:23,585 | INFO    | app.rag.store            | 向量后端：Chroma (<repo>\data\chroma)
+2026-11-11 10:01:23,586 | INFO    | app.main                 | SciAgent 启动完成：{'llm_route': '见 /api/system/info', 'vector_backend': 'chroma', 'data_dir': '<repo>\\data', 'official_pdfs': 39}
+2026-11-11 10:01:34,461 | INFO    | app.agents.graph         | 编排引擎：LangGraph
+2026-11-11 10:01:36,205 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1727ms tokens=708
+2026-11-11 10:01:37,518 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1312ms tokens=196
+2026-11-11 10:01:37,554 | DEBUG   | jieba                    | Building prefix dict from the default dictionary ...
+2026-11-11 10:01:37,554 | DEBUG   | jieba                    | Loading model from cache <user>\AppData\Local\Temp\jieba.cache
+2026-11-11 10:01:38,271 | DEBUG   | jieba                    | Loading model cost 0.717 seconds.
+2026-11-11 10:01:38,271 | DEBUG   | jieba                    | Prefix dict has been built successfully.
+2026-11-11 10:01:39,414 | INFO    | app.rag.hybrid           | rerank 生效：16→8 条，耗时 358ms，top1=0.998
+2026-11-11 10:01:41,251 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1822ms tokens=2727
+2026-11-11 10:01:48,820 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=7556ms tokens=2355
+2026-11-11 10:01:50,197 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1376ms tokens=824
+2026-11-11 10:01:52,164 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1909ms tokens=761
+2026-11-11 10:01:53,740 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1575ms tokens=222
+2026-11-11 10:01:54,491 | INFO    | app.rag.hybrid           | rerank 生效：16→8 条，耗时 325ms，top1=0.926
+2026-11-11 10:01:59,288 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=4782ms tokens=2717
+2026-11-11 10:02:07,760 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=8459ms tokens=2279
+2026-11-11 10:02:10,663 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=2902ms tokens=945
+2026-11-11 10:02:39,656 | INFO    | app.db.session           | 数据库就绪：<repo>\data\sciagent.db
+2026-11-11 10:02:40,883 | INFO    | app.rag.store            | 向量后端：Chroma (<repo>\data\chroma)
+2026-11-11 10:02:40,884 | INFO    | app.main                 | SciAgent 启动完成：{'llm_route': '见 /api/system/info', 'vector_backend': 'chroma', 'data_dir': '<repo>\\data', 'official_pdfs': 39}
+2026-11-11 10:02:51,080 | INFO    | app.agents.graph         | 编排引擎：LangGraph
+2026-11-11 10:02:53,115 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=2019ms tokens=763
+2026-11-11 10:02:54,653 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1536ms tokens=225
+2026-11-11 10:02:54,683 | DEBUG   | jieba                    | Building prefix dict from the default dictionary ...
+2026-11-11 10:02:54,684 | DEBUG   | jieba                    | Loading model from cache <user>\AppData\Local\Temp\jieba.cache
+2026-11-11 10:02:55,372 | DEBUG   | jieba                    | Loading model cost 0.688 seconds.
+2026-11-11 10:02:55,372 | DEBUG   | jieba                    | Prefix dict has been built successfully.
+2026-11-11 10:02:56,479 | INFO    | app.rag.hybrid           | rerank 生效：16→8 条，耗时 328ms，top1=0.710
+2026-11-11 10:02:59,815 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=3323ms tokens=2280
+2026-11-11 10:03:08,353 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=8526ms tokens=2313
+2026-11-11 10:03:10,690 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=2336ms tokens=905
+2026-11-11 10:03:12,664 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1900ms tokens=768
+2026-11-11 10:03:14,169 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1504ms tokens=219
+2026-11-11 10:03:14,882 | INFO    | app.rag.hybrid           | rerank 生效：16→8 条，耗时 332ms，top1=0.979
+2026-11-11 10:03:16,552 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1655ms tokens=2834
+2026-11-11 10:03:25,253 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=8688ms tokens=2526
+2026-11-11 10:03:26,289 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1035ms tokens=768
+2026-11-11 10:03:28,183 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1838ms tokens=761
+2026-11-11 10:03:29,589 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1404ms tokens=221
+2026-11-11 10:03:30,345 | INFO    | app.rag.hybrid           | rerank 生效：16→8 条，耗时 315ms，top1=0.680
+2026-11-11 10:03:44,763 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=14401ms tokens=4399
+2026-11-11 10:03:46,754 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1981ms tokens=1106
+2026-11-11 10:03:49,325 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=2570ms tokens=787
+2026-11-11 10:04:12,849 | INFO    | app.db.session           | 数据库就绪：<repo>\data\sciagent.db
+2026-11-11 10:04:14,128 | INFO    | app.rag.store            | 向量后端：Chroma (<repo>\data\chroma)
+2026-11-11 10:04:14,129 | INFO    | app.main                 | SciAgent 启动完成：{'llm_route': '见 /api/system/info', 'vector_backend': 'chroma', 'data_dir': '<repo>\\data', 'official_pdfs': 39}
+2026-11-11 10:04:24,787 | INFO    | app.agents.graph         | 编排引擎：LangGraph
+2026-11-11 10:04:26,916 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=2114ms tokens=527
+2026-11-11 10:04:28,272 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1355ms tokens=224
+2026-11-11 10:04:28,303 | DEBUG   | jieba                    | Building prefix dict from the default dictionary ...
+2026-11-11 10:04:28,303 | DEBUG   | jieba                    | Loading model from cache <user>\AppData\Local\Temp\jieba.cache
+2026-11-11 10:04:29,018 | DEBUG   | jieba                    | Loading model cost 0.715 seconds.
+2026-11-11 10:04:29,018 | DEBUG   | jieba                    | Prefix dict has been built successfully.
+2026-11-11 10:04:30,109 | INFO    | app.rag.hybrid           | rerank 生效：16→8 条，耗时 329ms，top1=0.942
+2026-11-11 10:04:53,816 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=23695ms tokens=5221
+2026-11-11 10:05:12,998 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=19173ms tokens=4891
+2026-11-11 10:05:15,250 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=2250ms tokens=934
+2026-11-11 10:05:23,524 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1381ms tokens=462
+2026-11-11 10:05:25,043 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1517ms tokens=212
+2026-11-11 10:05:25,823 | INFO    | app.rag.hybrid           | rerank 生效：16→8 条，耗时 323ms，top1=0.758
+2026-11-11 10:05:35,163 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=9321ms tokens=3464
+2026-11-11 10:06:01,166 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=25980ms tokens=5531
+2026-11-11 10:06:03,654 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=2486ms tokens=922
+2026-11-11 10:06:22,791 | INFO    | app.db.session           | 数据库就绪：<repo>\data\sciagent.db
+2026-11-11 10:06:24,570 | INFO    | app.rag.store            | 向量后端：Chroma (<repo>\data\chroma)
+2026-11-11 10:06:24,572 | INFO    | app.main                 | SciAgent 启动完成：{'llm_route': '见 /api/system/info', 'vector_backend': 'chroma', 'data_dir': '<repo>\\data', 'official_pdfs': 39}
+2026-11-11 10:06:33,135 | INFO    | app.agents.graph         | 编排引擎：LangGraph
+2026-11-11 10:06:35,462 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=2306ms tokens=524
+2026-11-11 10:06:36,957 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1494ms tokens=215
+2026-11-11 10:06:36,992 | DEBUG   | jieba                    | Building prefix dict from the default dictionary ...
+2026-11-11 10:06:36,993 | DEBUG   | jieba                    | Loading model from cache <user>\AppData\Local\Temp\jieba.cache
+2026-11-11 10:06:37,762 | DEBUG   | jieba                    | Loading model cost 0.769 seconds.
+2026-11-11 10:06:37,762 | DEBUG   | jieba                    | Prefix dict has been built successfully.
+2026-11-11 10:06:39,023 | INFO    | app.rag.hybrid           | rerank 生效：16→8 条，耗时 326ms，top1=0.897
+2026-11-11 10:06:56,327 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=17288ms tokens=4523
+2026-11-11 10:07:12,708 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=16370ms tokens=4394
+2026-11-11 10:07:15,123 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=2413ms tokens=937
+2026-11-11 10:07:16,982 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1767ms tokens=776
+2026-11-11 10:07:18,389 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1405ms tokens=205
+2026-11-11 10:07:19,186 | INFO    | app.rag.hybrid           | rerank 生效：16→8 条，耗时 320ms，top1=0.669
+2026-11-11 10:07:26,490 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=7281ms tokens=3411
+2026-11-11 10:07:37,346 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=10843ms tokens=2755
+2026-11-11 10:07:39,231 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1883ms tokens=890
+2026-11-11 10:07:50,386 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1151ms tokens=426
+2026-11-11 10:07:51,856 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1468ms tokens=221
+2026-11-11 10:07:52,592 | INFO    | app.rag.hybrid           | rerank 生效：16→8 条，耗时 331ms，top1=0.785
+2026-11-11 10:08:20,210 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=27604ms tokens=6020
+2026-11-11 10:08:26,932 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=6707ms tokens=1929
+2026-11-11 10:08:28,707 | INFO    | app.core.llm             | LLM route=cloud model=deepseek-v4.1-flash latency=1774ms tokens=785

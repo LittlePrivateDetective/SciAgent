@@ -23,6 +23,7 @@ from app.rag.dedup import content_hash, family_key, find_duplicates, simhash64
 from app.rag.embed import embed_texts, to_bytes
 from app.rag.hybrid import invalidate_cache
 from app.rag.store import get_store
+from app.rag.version_diff import diff_parsed_vs_doc
 
 log = get_logger(__name__)
 
@@ -111,6 +112,13 @@ def ingest(
     if not force and not replace_doc_id:
         dups = find_duplicates(db, text=full_text, arxiv_id=arxiv_id, title=title)
         if dups:
+            # 直接给出与"最相近旧版本"的差异报告：这正是官方用例想要的
+            # "检测重复 + 建议保留较新版本 + 版本差异"三件套
+            diff = {}
+            try:
+                diff = diff_parsed_vs_doc(db, parsed, dups[0].doc.id)
+            except Exception as exc:  # noqa: BLE001 差异算不出来不能挡住流程
+                log.warning("版本差异计算失败：%s", exc)
             return {
                 "ok": False,
                 "stage": "duplicate",
@@ -130,6 +138,7 @@ def ingest(
                 ],
                 "pending_file": str(path),
                 "temp_name": original_name,
+                "diff": diff,
             }
 
     # 3) 覆盖旧文档（先删后建）
@@ -174,32 +183,36 @@ def ingest(
 
     section_paths = build_section_paths(parsed.blocks)
     chunk_rows: list[Chunk] = []
-    store_items: list[dict] = []
 
     for i, c in enumerate(chunks):
-        row = Chunk(
-            doc_id=doc.id,
-            idx=i,
-            page=c["page"],
-            bbox=",".join(f"{v:g}" for v in c["bbox"]),
-            text=c["text"],
-            section_path=c.get("section_path", "")[:500],
-            kind=c.get("kind", "text"),
-            char_len=c["char_len"],
-            embedding=to_bytes(vectors[i]),
-        )
-        chunk_rows.append(row)
-        store_items.append(
-            {
-                "id": row.id if row.id else f"{doc.id}_{i}",
-                "doc_id": doc.id,
-                "page": c["page"],
-                "text": c["text"],
-                "embedding": vectors[i].tolist(),
-            }
+        chunk_rows.append(
+            Chunk(
+                doc_id=doc.id,
+                idx=i,
+                page=c["page"],
+                bbox=",".join(f"{v:g}" for v in c["bbox"]),
+                text=c["text"],
+                section_path=c.get("section_path", "")[:500],
+                kind=c.get("kind", "text"),
+                char_len=c["char_len"],
+                embedding=to_bytes(vectors[i]),
+            )
         )
 
     db.add_all(chunk_rows)
+    # 必须先 flush 拿到真实主键：Chroma 里的 id 必须和 SQLite 的 Chunk.id 完全一致，
+    # 否则向量库检索回来的 id 在 SQLite 里查不到正文，检索直接空转。
+    db.flush()
+    store_items = [
+        {
+            "id": row.id,
+            "doc_id": doc.id,
+            "page": row.page,
+            "text": row.text,
+            "embedding": vectors[i].tolist(),
+        }
+        for i, row in enumerate(chunk_rows)
+    ]
 
     for s in parsed.sections:
         db.add(
@@ -264,6 +277,10 @@ def delete_document(db: Session, doc_id: str) -> bool:
     db.delete(doc)
     db.commit()
     invalidate_cache()
+    try:
+        get_store().delete_by_doc(doc_id)
+    except Exception as exc:  # noqa: BLE001 向量库清理失败不影响主流程
+        log.warning("向量库清理失败：%s", exc)
     log.info("已删除文档 %s", doc_id)
     return True
 

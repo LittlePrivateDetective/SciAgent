@@ -74,6 +74,10 @@ class SQLiteVectorStore:
         """换 embedding 模型后清空内存缓存，避免旧维度/旧语义向量残留。"""
         self._cache.clear()
 
+    def delete_by_doc(self, doc_id: str) -> None:
+        """SQLite 的向量随 chunk 记录一起删除，这里只需失效缓存。"""
+        self._cache.clear()
+
 
 class ChromaVectorStore:
     name = "chroma"
@@ -115,6 +119,10 @@ class ChromaVectorStore:
         self._col = self._client.get_or_create_collection(
             name=name, metadata={"hnsw:space": "cosine"}
         )
+
+    def delete_by_doc(self, doc_id: str) -> None:
+        """删文档时同步清理向量，否则会留下"幽灵检索结果"。"""
+        self._col.delete(where={"doc_id": doc_id})
 
 
 _STORE = None

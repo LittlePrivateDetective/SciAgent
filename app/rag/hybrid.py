@@ -153,6 +153,54 @@ def invalidate_cache() -> None:
     _BM25_CACHE.clear()
 
 
+_STOP = {
+    "the", "a", "an", "of", "and", "or", "in", "on", "for", "to", "with", "is", "are", "was",
+    "what", "how", "which", "paper", "pdf", "版", "论文", "文献", "这篇", "那篇", "什么", "多少",
+}
+
+# 对比类问题必须跨文献取证，不能用"文献指认"把范围收窄到一篇
+_COMPARE_HINT = re.compile(
+    r"(对比|比较|相比|异同|区别|差异|演进|承袭|vs\.?|versus|compare|difference)",
+    re.IGNORECASE,
+)
+
+
+def _doc_boost_map(query: str) -> dict[str, float]:
+    """问题里点名了某篇文献时，给这篇的块加权。
+
+    典型场景："Layer Normalization 论文里 LN 放在残差之前还是之后？"
+    —— 库里同时有 Transformer 和 Layer Normalization 两篇，两篇都大量出现
+    "residual / layer normalization"，纯检索会把 Transformer 排前面。
+    这里用"问题词 ∩ 文献标题"判断用户到底在问哪篇，命中明显时给 1.45 倍加成。
+
+    两种必须放弃加权的情况（都是实测踩出来的）：
+    1. 用户在问"对比/异同"：这时证据必须横跨多篇，加权反而会把另一篇挤掉；
+    2. 多篇文献同时命中标题：说明用户没有特指某一篇。
+    """
+    if _COMPARE_HINT.search(query):
+        return {}
+    q = {t for t in tokenize(query) if len(t) > 2 and t not in _STOP}
+    if not q:
+        return {}
+    with SessionLocal() as db:
+        docs = db.execute(select(Document.id, Document.filename, Document.title)).all()
+    hits: dict[str, int] = {}
+    for did, fname, title in docs:
+        toks = {t for t in tokenize(f"{title or ''} {fname or ''}") if len(t) > 2 and t not in _STOP}
+        n = len(q & toks)
+        if n:
+            hits[did] = n
+    if not hits:
+        return {}
+    top = max(hits.values())
+    if top < 2:  # 只命中一个泛词（如 "transformer"）不足以判定，避免误伤
+        return {}
+    winners = [d for d, h in hits.items() if h == top]
+    if len(winners) > 1:  # 并列第一 → 用户没特指，别猜
+        return {}
+    return {d: (1.45 if h == top else 1.0) for d, h in hits.items()}
+
+
 # ---------------- 融合检索 ----------------
 def search(
     query: str,
@@ -173,6 +221,10 @@ def search(
 
     sparse = bm25.scores(tokenize(query))
 
+    # 先取块对象：后面既要按 doc 加权，也要回填命中信息，只查一次
+    chunks, names = _load_corpus(doc_ids)
+    by_id = {c.id: c for c in chunks}
+
     # 稠密路
     qvec = embed_query(query)
     dense_hits = dict(get_store().search(qvec, doc_ids, top_k=max(30, top_k * 3)))
@@ -188,12 +240,16 @@ def search(
     fused = alpha * rrf_ranks(dense) + (1 - alpha) * rrf_ranks(sparse)
     fused = fused * (1.0 + 0.15 * (dense > 0) * (sparse > 0))  # 两路同时命中给一点加成
 
+    # 用户点名了某篇文献 → 该文献整体加权
+    boosts = _doc_boost_map(query)
+    if boosts:
+        fused = fused * np.array(
+            [boosts.get(by_id[cid].doc_id, 1.0) if cid in by_id else 1.0 for cid in id_list]
+        )
+
     k = min(max(top_k * 3, 20), len(id_list))
     top_idx = np.argpartition(-fused, k - 1)[:k]
     top_idx = top_idx[np.argsort(-fused[top_idx])]
-
-    chunks, names = _load_corpus(doc_ids)
-    by_id = {c.id: c for c in chunks}
 
     hits: list[Hit] = []
     for i in top_idx[: top_k * 2]:
