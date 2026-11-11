@@ -37,7 +37,8 @@ SciAgent 让模型**只能引用检索到的 chunk**，服务端把 chunk 换成
 | 论文发现与推荐 | ✅ | 标题/关键词搜 arXiv → 下载 PDF → 走**同一条入库流水线**；参考文献按**正文被引次数**排序补全；新论文推荐带中文理由 + GitHub 标记 + 赞/踩反馈（官方 1.4） |
 | 后台参数中心 | ✅ | `/admin` 独立控制台，**口令登录**（`ADMIN_PASSWORD`，会话 12h、错 8 次锁 10 分钟）；**37 项参数**分 5 组，每项标生效方式（立即 / 仅之后入库 / 需重建索引 / 需重启）、来源（后台覆盖 / .env / 默认）与范围校验；密钥只回掩码；整批校验不留中间态；改动写审计；内置模型连通性自测与运行概览 |
 | 外部工具链 | ✅ | Function Calling 选工具 → arXiv / GitHub / Crossref 真实 API；重试 → 降级 → 如实标注 |
-| 学术图表 | ✅ | CSV 实验表格无损转 Mermaid xychart / TikZ(pgfplots) |
+| 学术图表 | ✅ | CSV 实验表格**无损**转 4 类图 × 5 种代码：柱状/折线/雷达/三线表 → Mermaid·TikZ(pgfplots)·Matplotlib·LaTeX·Markdown；原始数值逐格照搬（`41.0` 不会变成 `41`）；**自动生成 Figure Caption**（中英双版 + 核心趋势），模型写完把图注里每个数字回查原表，查不到的列出来（官方 1.6.3） |
+| 论文架构拓扑图 | ✅ | idea（可带上已生成的大纲）→ 一张分层架构图，**同时输出 Mermaid / Graphviz DOT / TikZ / Matplotlib 四种代码**。模型只产出节点与边，代码由渲染层生成——四种格式必然描述同一张图，且不会出现模型写错的 `\node` 语法；预览用 ECharts 自绘分层图，不依赖外部渲染器（官方 1.6.2） |
 | Future Work 对撞 | ✅ | 候选句抽取 → 4-gram 语义去重 → 与库内后续论文关键词对撞 |
 | 代码复现性 | ✅ | 正文抽 GitHub 仓库 → star/许可证/最后更新/归档状态加权分级 |
 | 流式输出 | ✅ | SSE token 级增量 + 思考过程时间线 + 完成事件带证据与校验 |
@@ -104,7 +105,7 @@ app/
 │              anchors 锚点校验 / dedup 内容去重
 ├── agents/    state 状态 / prompts 提示词 / nodes 七节点 / graph 编排
 ├── pipeline/  ingest 入库管线（解析→去重→切块→向量化→落库）
-├── tools/     external 外部 API 工具链 / chart CSV→Mermaid·TikZ
+├── tools/     external 外部 API 工具链 / chart CSV→五种图表代码+图注 / topology 架构图四格式
 ├── research/  future_work 提炼对撞 / reproducibility 复现性评估
 └── api/       routes 全部 HTTP 接口
 web/           Vue3 + Element Plus 单页（CDN，无构建链）
@@ -149,10 +150,11 @@ tests/         qa_suite 回归台 / qa_report 报告 / browser_cdp 浏览器驱�
 | GET | `/api/admin/overview` | 语料规模、存储、模型与向量库状态、运行时、审计 |
 | POST | `/api/admin/test-model` | 真实调用一次模型，回报耗时 / token / 空回复诊断 |
 | POST | `/api/write/outline` | 写作 Copilot：idea → 四段框架 + 无幻觉 References |
+| POST | `/api/write/topology` | idea（或大纲）→ 架构拓扑图，一次返回 Mermaid / DOT / TikZ / Matplotlib |
 | GET/POST | `/api/documents/{id}/bilingual[/translate]` | 中英对照段落 / 按需翻译 |
 | POST | `/api/chat/stream` | SSE 流式问答（thinking / token / done 事件） |
 | GET/POST | `/api/tools/*` | 工具健康检查、schema、显式调用、LLM Function Calling 决策 |
-| POST | `/api/tools/csv2chart` | CSV → Mermaid / TikZ |
+| POST | `/api/tools/csv2chart` | CSV → 柱状/折线/雷达/三线表 × Mermaid / TikZ / Matplotlib / LaTeX / Markdown + Figure Caption |
 | GET | `/api/research/future-work` | Future Work 提炼去重与后续论文对撞 |
 | GET | `/api/research/reproducibility` | 论文开源代码复现性评估 |
 | GET | `/api/documents/trash` · `/api/audit` | 回收站与关键写操作审计 |

@@ -8,6 +8,42 @@ const { createApp, reactive, nextTick } = Vue;
 // ECharts 实例放在组件外：它持有大量 DOM 引用，放进响应式对象会被深度代理拖慢
 let _chart = null;
 
+/* ---------- 写作助手的三种出图格式（官方 1.6.2 / 1.6.3） ----------
+ * 格式清单与后端 FORMATS 表一一对应；前端先按 kind 过滤，用户就不会选到
+ * "雷达图 + Mermaid" 这种后端一定拒绝的组合，省掉一次 400 往返。
+ */
+const TOPO_FMTS = [
+  { k: "mermaid", label: "Mermaid" },
+  { k: "dot", label: "Graphviz" },
+  { k: "tikz", label: "TikZ" },
+  { k: "matplotlib", label: "Matplotlib" },
+];
+const CHART_FMTS = {
+  bar: [
+    { k: "mermaid", label: "Mermaid" },
+    { k: "tikz", label: "TikZ" },
+    { k: "matplotlib", label: "Matplotlib" },
+  ],
+  line: [
+    { k: "mermaid", label: "Mermaid" },
+    { k: "tikz", label: "TikZ" },
+    { k: "matplotlib", label: "Matplotlib" },
+  ],
+  radar: [
+    { k: "tikz", label: "TikZ（polaraxis）" },
+    { k: "matplotlib", label: "Matplotlib" },
+  ],
+  table: [
+    { k: "latex", label: "LaTeX 三线表" },
+    { k: "markdown", label: "Markdown" },
+  ],
+};
+const EXT = { mermaid: "mmd", dot: "gv", tikz: "tex", matplotlib: "py", latex: "tex", markdown: "md" };
+
+// 架构图预览的 ECharts 实例。和引用图谱一样放在组件外：
+// 它持有 canvas 与大量内部对象，进响应式代理后每次 setOption 都会被深拷贝一遍。
+let _topoChart = null;
+
 /* ---------- 极简 Markdown 渲染（够用即止：表格 / 粗体 / 行内代码 / 换行） ---------- */
 function mdToHtml(md) {
   if (!md) return "";
@@ -113,7 +149,16 @@ const app = createApp({
       tl: { words: [], sents: [], loaded: false, scale: 1, W: 0, H: 0, page: 0, zhLoading: false },
       refIndex: {},   // 引用编号 → {index,page,bbox,text}
       // 写作 Copilot：模型只写论述 + [n]，References 条目全部由服务端从库内元数据拼出
-      wr: { idea: "", loading: false, result: null, error: "" },
+      wr: { idea: "", loading: false, result: null, error: "", tab: "outline" },
+      // 架构拓扑图（1.6.2）+ 数据图表与图注（1.6.3）：两块共用一套代码/预览布局
+      wv: {
+        idea: "",
+        tLoading: false, tError: "", topology: null, tFmt: "mermaid", svg: "",
+        csv: "",
+        cKind: "bar", cFmt: "mermaid", cTitle: "实验结果",
+        cLoading: false, cError: "", chart: null, chartSvg: "",
+        sampleCsv: "Model,BLEU,Params\nTransformer,28.4,65\nBERT,34.5,110\nGPT-3,41.0,175",
+      },
       sel: { visible: false, loading: false, src: "", zh: "", title: "划词翻译", style: {}, truncated: false, dragging: false, x: 0, y: 0 },
       citePop: { visible: false, index: 0, page: 1, bbox: null, text: "", style: {}, x: 0, y: 0, cites: [], occ: 0 },
       // 悬停翻译（官方 1.3.3.1）：默认关，打开后鼠标停 0.4 秒译整句。
@@ -187,8 +232,28 @@ const app = createApp({
     zhHtml() {
       return mdToHtml(this.zh.markdown || "");
     },
+    topoFmts() { return TOPO_FMTS; },
+    topoCode() {
+      const t = this.wv.topology;
+      return t && t.formats && t.formats[this.wv.tFmt] ? t.formats[this.wv.tFmt].code : "";
+    },
+    chartFmts() { return CHART_FMTS[this.wv.cKind] || CHART_FMTS.bar; },
+    chartFmtLabel() {
+      const f = this.chartFmts.find((x) => x.k === this.wv.cFmt);
+      return f ? f.label : "图表代码";
+    },
   },
   mounted() {
+    // Mermaid 用 startOnLoad:false —— 让它在切换 tab / 点生成时按需渲染，
+    // 否则页面一进来就去扫全站 DOM，白白多一次布局。
+    if (window.mermaid) {
+      window.mermaid.initialize({
+        startOnLoad: false,
+        theme: "neutral",
+        securityLevel: "loose",
+        flowchart: { htmlLabels: true, useMaxWidth: true, curve: "basis" },
+      });
+    }
     // 悬停翻译是"高频花钱"的功能，偏好必须跨会话记住：
     // 否则每次刷新都回到关闭，用户每次都要重新打开
     try {
@@ -231,6 +296,7 @@ const app = createApp({
     // 图谱在容器尺寸变化后必须重算布局，否则窗口一缩节点就叠在左上角
     window.addEventListener("resize", () => {
       if (this.centerView === "graph" && _chart) _chart.resize();
+      if (_topoChart) _topoChart.resize();
       this.syncTextScale();
     });
   },
@@ -1430,6 +1496,270 @@ const app = createApp({
       if (!d) return;
       this.centerView = "reader";
       await this.openDoc(d);
+    },
+
+    /* ---------------- 架构拓扑图（官方 1.6.2） ----------------
+     * 后端只回四个格式的代码字符串，这里负责"选格式 → 复制/下载 → Mermaid 预览"。
+     * 预览不做兜底渲染：mermaid 挂了就空白，代码仍然是好的，复制走即可。
+     */
+    async genTopology() {
+      // 框架页写过 idea 就直接沿用，省得在两个 tab 之间重敲一遍
+      const idea = (this.wv.idea || "").trim() || (this.wr.idea || "").trim();
+      if (idea.length < 2) {
+        ElementPlus.ElMessage.warning("先写一句你的研究思路");
+        return;
+      }
+      if (this.wv.tLoading) return;
+      this.wv.tLoading = true;
+      this.wv.tError = "";
+      const body = { idea };
+      // 已经生成过框架时，把章节带过去：架构图应该和刚写的大纲对得上，而不是另起一套
+      if (this.wr.result && this.wr.result.sections) {
+        body.outline = [this.wr.result.title || ""].concat(
+          this.wr.result.sections.map((s) => `${s.name}：${(s.text || "").slice(0, 180)}`)
+        ).join("\n");
+      }
+      try {
+        const r = await fetch("/api/write/topology", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        }).then((x) => x.json());
+        if (!r.ok) {
+          this.wv.tError = r.error || r.detail || "生成失败";
+          this.wv.topology = null;
+          ElementPlus.ElMessage.error(this.wv.tError);
+        } else {
+          this.wv.topology = r;
+          this.wv.tFmt = "mermaid";
+          await this.$nextTick();
+          this.renderTopoChart();
+        }
+      } catch (e) {
+        this.wv.tError = "请求失败，请检查服务是否在运行";
+        ElementPlus.ElMessage.error(this.wv.tError);
+      } finally {
+        this.wv.tLoading = false;
+      }
+    },
+
+    async pickTopoFmt(k) {
+      // 预览画的是"这张图的结构"，与当前选中的代码格式无关——四种格式本来就是同一张图
+      this.wv.tFmt = k;
+    },
+
+    /// 用 ECharts 自己画分层架构图：按 group 分行、行内均分。
+    /// 不用 Mermaid 渲染预览的原因：它的 dagre 布局把流水线拉成一根竖柱，
+    /// 在写作视图这 700px 宽的栏里缩到看不清；而 TikZ / DOT 的排版又需要外部工具。
+    renderTopoChart() {
+      const t = this.wv.topology;
+      const el = this.$refs.topoChart;
+      if (!t || !el || !window.echarts) return;
+
+      const byGroup = new Map(t.groups.map((g) => [g, []]));
+      t.nodes.forEach((n) => {
+        if (!byGroup.has(n.group)) byGroup.set(n.group, []);
+        byGroup.get(n.group).push(n);
+      });
+
+      const ROW_H = 122;
+      const COL_W = 252;   // 同层两个框之间要留出 ~84px，否则边标签会压在框上
+      const pos = {};
+      [...byGroup.values()].forEach((row, r) => {
+        row.forEach((n, i) => {
+          pos[n.id] = [i * COL_W - ((row.length - 1) * COL_W) / 2, r * ROW_H];
+        });
+      });
+
+      el.style.height = `${Math.max(260, t.groups.length * ROW_H + 30)}px`;
+      if (!_topoChart) _topoChart = window.echarts.init(el, null, { renderer: "canvas" });
+      _topoChart.resize();
+
+      // 节点类型 → 填充/描边，与 TikZ、Matplotlib 两套模板同一组配色
+      const PALETTE = {
+        input: ["#eef3fb", "#4a6fa5"],
+        module: ["#f6f7f9", "#5b6472"],
+        data: ["#eef7f0", "#3f7d52"],
+        output: ["#fbf3ee", "#a5703f"],
+        loss: ["#f7eef2", "#a04a63"],
+        tool: ["#f3f0fa", "#6b5aa5"],
+      };
+      const nameOf = {};
+      t.nodes.forEach((n) => { nameOf[n.id] = n.label; });
+
+      _topoChart.setOption({
+        animationDuration: 320,
+        tooltip: { show: false },
+        series: [{
+          type: "graph",
+          layout: "none",
+          roam: false,
+          symbol: "rect",   // roundRect 的圆角在 graph 系列里固定为半高，会变成胶囊形
+          edgeSymbol: ["none", "arrow"],
+          edgeSymbolSize: 9,
+          label: {
+            show: true, fontSize: 12, color: "#1f2430",
+            width: 162, overflow: "truncate", align: "center",
+          },
+          // 预览里不画边标签：写作视图只有 700px 宽，同层两框之间才 84px，
+          // 标签必然压到框上。动作语义在导出的四种代码里都保留着。
+          edgeLabel: { show: false },
+          itemStyle: { borderRadius: 6 },
+          lineStyle: { color: "#98a1b0", width: 1.1, curveness: 0 },
+          data: t.nodes.map((n) => {
+            const [fill, stroke] = PALETTE[n.kind] || PALETTE.module;
+            return {
+              name: n.label,
+              x: pos[n.id][0],
+              y: pos[n.id][1],
+              symbolSize: [168, 46],
+              itemStyle: { color: fill, borderColor: stroke, borderWidth: 1 },
+            };
+          }),
+          links: t.edges.map((e) => ({
+            source: nameOf[e.from],
+            target: nameOf[e.to],
+            edgeName: e.label || "",
+          })),
+        }],
+      }, true);
+    },
+
+    /* ---------------- 数据图表 + 图注（官方 1.6.3） ---------------- */
+    syncChartFmt() {
+      // 切到雷达/表格时，原来的 Mermaid 不可用，自动落到该类型的第一种格式
+      const list = CHART_FMTS[this.wv.cKind] || [];
+      if (!list.some((f) => f.k === this.wv.cFmt)) this.wv.cFmt = list[0] ? list[0].k : "latex";
+    },
+
+    onCsvFile(e) {
+      const f = e.target.files && e.target.files[0];
+      if (!f) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.wv.csv = String(reader.result || "").slice(0, 200000);
+        ElementPlus.ElMessage.success(`已读入 ${f.name}（${this.wv.csv.split("\n").length} 行）`);
+      };
+      reader.readAsText(f, "utf-8");
+      e.target.value = "";   // 清空才能再次选中同一个文件
+    },
+
+    async genChart() {
+      const csv = (this.wv.csv || "").trim();
+      if (!csv) {
+        ElementPlus.ElMessage.warning("先粘贴或选择一份 CSV");
+        return;
+      }
+      if (this.wv.cLoading) return;
+      this.wv.cLoading = true;
+      this.wv.cError = "";
+      try {
+        const r = await fetch("/api/tools/csv2chart", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            csv,
+            format: this.wv.cFmt,
+            kind: this.wv.cKind,
+            title: (this.wv.cTitle || "").trim() || "实验结果",
+            caption: true,
+          }),
+        }).then((x) => x.json());
+        if (!r.ok) {
+          this.wv.cError = r.error || r.detail || "生成失败";
+          this.wv.chart = null;
+          ElementPlus.ElMessage.error(this.wv.cError);
+        } else {
+          this.wv.chart = r;
+          this.wv.chartSvg = "";
+          if (r.format === "mermaid") await this.renderMermaid(r.code, "chart");
+        }
+      } catch (e) {
+        this.wv.cError = "请求失败，请检查服务是否在运行";
+        ElementPlus.ElMessage.error(this.wv.cError);
+      } finally {
+        this.wv.cLoading = false;
+      }
+    },
+
+    /* ---------------- 两个面板共用的工具 ---------------- */
+    async renderMermaid(code, target) {
+      const put = (svg) => {
+        if (target === "topo") this.wv.svg = svg;
+        else this.wv.chartSvg = svg;
+      };
+      if (!window.mermaid || !code) return put("");
+      try {
+        // render 的 id 必须唯一：复用同一个 id 时 mermaid 会拿到上一次的残留节点
+        const id = "mmd" + Math.random().toString(36).slice(2, 9);
+        const out = await window.mermaid.render(id, code);
+        put(out && out.svg ? out.svg : "");
+      } catch (err) {
+        // 语法错时 mermaid 会往 body 里塞一个错误图，这里顺手清掉，别让它出现在页面上
+        console.warn("Mermaid 渲染失败：", err);
+        document.querySelectorAll('[id^="dmmd"], .mermaid-error').forEach((n) => n.remove());
+        put("");
+      }
+    },
+
+    async copyText(text, label) {
+      if (!text) return;
+      try {
+        await navigator.clipboard.writeText(text);
+        ElementPlus.ElMessage.success(`${label || "内容"}已复制`);
+      } catch (e) {
+        // 非 https 或旧内核下 clipboard API 不可用，退回选中复制
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.cssText = "position:fixed;opacity:0;left:-9999px";
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+          document.execCommand("copy");
+          ElementPlus.ElMessage.success(`${label || "内容"}已复制`);
+        } catch (_) {
+          ElementPlus.ElMessage.error("复制失败，请手动选中代码");
+        }
+        document.body.removeChild(ta);
+      }
+    },
+
+    downloadText(text, name, fmt) {
+      if (!text) return;
+      const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `${name}.${EXT[fmt] || "txt"}`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+    },
+
+    fmtHint(fmt) {
+      return {
+        dot: "Graphviz：保存为 .gv，执行 dot -Tpdf architecture.gv -o architecture.pdf",
+        tikz: "TikZ：粘进 .tex 导言区加 tikz 宏包；中文标签用 ctex / XeLaTeX 编译",
+        matplotlib: "Matplotlib：保存为 .py，执行 python architecture.py 生成 PDF / PNG",
+        latex: "LaTeX 三线表：需要 booktabs 宏包，编号与数值均可再改",
+        markdown: "Markdown 表格：可直接贴进笔记、README 或综述初稿",
+        mermaid: "Mermaid：浏览器渲染失败时，代码仍可粘到 mermaid.live 查看",
+      }[fmt] || "复制代码到对应工具中使用";
+    },
+
+    /// Markdown 表格 → HTML 表格，用来在右侧给"表格"类型一个真实预览。
+    mdTableHtml(code) {
+      const lines = String(code || "").split("\n").filter((l) => l.trim().startsWith("|"));
+      if (lines.length < 2) return "";
+      const cells = (l) => l.trim().replace(/^\||\|$/g, "").split("|").map((c) => c.trim());
+      const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      const head = cells(lines[0]);
+      const body = lines.slice(2).map(cells);
+      const th = head.map((h) => `<th>${esc(h)}</th>`).join("");
+      const tr = body
+        .map((r) => `<tr>${r.map((c) => `<td>${esc(c)}</td>`).join("")}</tr>`)
+        .join("");
+      return `<table class="viz-table"><thead><tr>${th}</tr></thead><tbody>${tr}</tbody></table>`;
     },
 
     /* ---------------- 中英对照阅读 ----------------

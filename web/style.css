@@ -716,3 +716,119 @@ body.is-dragging, body.is-dragging * { user-select: none !important; }
 
 /* ---------- 中文译本抽屉（官方 1.3.3.2） ---------- */
 .zh-more { font-size: 11px; color: #9aa4b2; text-align: center; padding: 8px 0 2px; }
+
+/* ---------- 写作助手：架构图 / 数据图表（官方 1.6.2 / 1.6.3） ---------- */
+/* 三个 tab 放在写作视图顶部：1.6.1 框架 / 1.6.2 架构图 / 1.6.3 数据图表 */
+.wtabs {
+  flex: none; display: flex; align-items: center; gap: 2px;
+  padding: 0 12px; height: 34px; background: var(--panel);
+  border-bottom: 1px solid var(--line);
+}
+.wtab {
+  padding: 4px 11px; border-radius: 7px; font-size: 12px; color: var(--muted);
+  cursor: pointer; user-select: none; transition: background .15s, color .15s;
+}
+.wtab:hover { background: #f2f4f8; color: var(--text); }
+.wtab.on { background: #eaf0fe; color: var(--brand); font-weight: 600; }
+.wtabs-note { margin-left: auto; font-size: 11px; color: #a6adba; }
+
+/* 图表/架构图共用的左右两栏：左边代码，右边预览 */
+.viz-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.viz-title {
+  font-size: 13px; font-weight: 600; color: #1c2530; margin: 2px 0 8px;
+}
+/* 写作视图本身只占中间一栏（约 700px），左右分栏后每栏只剩 340px，
+   Mermaid 的 7 节点架构图会缩到看不清。这里改成上下堆叠，宽度全给一块。 */
+.viz-split {
+  display: grid; grid-template-columns: minmax(0, 1fr);
+  gap: 10px; align-items: start;
+}
+.viz-pane {
+  min-width: 0; background: var(--panel); border: 1px solid var(--line);
+  border-radius: 9px; overflow: hidden;
+}
+.viz-bar {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 5px 8px; background: #fafbfd; border-bottom: 1px solid var(--line);
+}
+.viz-bar-t { font-size: 11.5px; font-weight: 600; color: #4b5563; }
+.viz-note { font-size: 10.5px; color: #a6adba; }
+.viz-fmts { display: flex; gap: 2px; flex-wrap: wrap; }
+.viz-fmt {
+  padding: 2px 8px; border-radius: 6px; font-size: 11.5px; color: var(--muted);
+  cursor: pointer; user-select: none;
+}
+.viz-fmt:hover { background: #eef1f6; }
+.viz-fmt.on { background: #eaf0fe; color: var(--brand); font-weight: 600; }
+.viz-acts { display: flex; gap: 2px; align-items: center; }
+
+/* 代码块：等宽 + 可滚。高度封顶，长代码不把右侧预览顶出屏幕 */
+.viz-pre {
+  margin: 0; padding: 9px 11px; max-height: 340px; overflow: auto;
+  font-family: "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+  font-size: 11.5px; line-height: 1.6; color: #24303f;
+  background: #fcfcfe; tab-size: 2; white-space: pre;
+}
+.viz-pre::-webkit-scrollbar { width: 8px; height: 8px; }
+.viz-pre::-webkit-scrollbar-thumb { background: #d5d9e2; border-radius: 4px; }
+
+.viz-prev {
+  padding: 10px; min-height: 200px; max-height: 440px; overflow: auto;
+  display: flex; align-items: flex-start; justify-content: center;
+}
+/* 不让 mermaid 的 SVG 缩到容器宽度：7 个节点的图缩到 400px 时字号只剩 6px。
+   保持它自己算出的自然尺寸，放不下就滚动——预览要的是"看得清结构"。 */
+.viz-prev svg { width: auto !important; max-width: none !important; height: auto; }
+/* 架构图预览：ECharts 自己排版，高度由层数决定（JS 里写行内 height） */
+.topo-chart { width: 100%; height: 260px; }
+
+.viz-prev-hint {
+  padding: 14px 12px; font-size: 11.5px; line-height: 1.7; color: var(--muted);
+  background: repeating-linear-gradient(135deg, #fbfcfd, #fbfcfd 8px, #f7f8fb 8px, #f7f8fb 16px);
+  min-height: 120px;
+}
+.viz-table {
+  border-collapse: collapse; font-size: 11.5px; width: 100%;
+  font-variant-numeric: tabular-nums;
+}
+.viz-table th, .viz-table td {
+  border-bottom: 1px solid var(--line); padding: 4px 8px; text-align: right;
+}
+.viz-table th:first-child, .viz-table td:first-child { text-align: left; }
+.viz-table th { background: #fafbfd; font-weight: 600; color: #3b4351; }
+.viz-table tr:last-child td { border-bottom: none; }
+
+/* CSV 输入区：左边文本域，右边按钮列 */
+.csv-row { display: flex; gap: 8px; align-items: stretch; }
+.csv-input { flex: 1; min-width: 0; }
+.csv-side { display: flex; flex-direction: column; gap: 6px; justify-content: flex-start; }
+.chart-opts { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.fmt-select { width: 148px; }
+.title-input { width: 168px; }
+
+/* 图注卡片：中英双版 + 趋势 + 数字核对结果 */
+.cap-card {
+  margin-top: 12px; padding: 11px 13px 12px; border-radius: 9px;
+  background: var(--panel); border: 1px solid var(--line);
+  border-left: 3px solid var(--brand);
+}
+.cap-head {
+  display: flex; align-items: baseline; gap: 8px; font-size: 12px; font-weight: 600;
+  color: var(--brand); margin-bottom: 7px;
+}
+.cap-head small { font-weight: 400; color: #8a93a3; font-size: 10.5px; }
+.cap-acts { margin-left: auto; }
+.cap-zh { margin: 0 0 7px; font-size: 12.5px; line-height: 1.8; color: #2a2f38; text-align: justify; }
+.cap-en {
+  margin: 0 0 9px; font-size: 12px; line-height: 1.75; color: #4a5260;
+  font-family: "Times New Roman", Georgia, serif; text-align: justify;
+}
+.cap-trend {
+  font-size: 11.5px; line-height: 1.7; color: #2f7a44; background: #f2faf4;
+  border: 1px solid #d6ecdc; border-radius: 7px; padding: 6px 9px;
+}
+.cap-trend-t { font-weight: 600; margin-right: 6px; }
+.cap-warn {
+  margin-top: 8px; font-size: 11.5px; line-height: 1.6; color: #a33;
+  background: #fdf1f1; border: 1px solid #f3cccc; border-radius: 7px; padding: 6px 9px;
+}

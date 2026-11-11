@@ -2445,3 +2445,54 @@
   ]
 }
 ```
+
+## 第十轮补充用例：官方 1.6.2 / 1.6.3（2026-11-11 23:30）
+
+脚本：`tests/ui_write_viz.py`（Edge headless + CDP，真实点击）。证据：`docs/qa/evidence/viz_result.json`、`viz_topology.png`、`viz_topology_zoom.png`、`viz_chart.png`。
+
+### C12 · 数据可视化 + Figure Caption（官方 1.6.3）· PASS
+
+- 输入：`Model,BLEU,Params / Transformer,28.4,65 / BERT,34.5,110 / GPT-3,41.0,175`
+- 实际：柱状 Mermaid 代码含 `xychart-beta` 且 6 个原始数值逐字保留；预览渲染出 SVG；图注由模型撰写、**22/22 个数字可回查原表**（`foreign: []`）；切「表格」时 format 自动落到 LaTeX，`.viz-table` 渲染 4 行 9 格，Markdown 版代码以 `|` 开头；切「雷达」时自动落到 TikZ，代码含 `polaraxis`
+
+```json
+{
+  "kind_format_matrix": {
+    "bar": ["mermaid", "tikz", "matplotlib"],
+    "line": ["mermaid", "tikz", "matplotlib"],
+    "radar": ["tikz", "matplotlib"],
+    "table": ["latex", "markdown"]
+  },
+  "caption": {
+    "source": "llm",
+    "zh_head": "图 1　Transformer、BERT 和 GPT-3 三种模型在 BLEU 分数与参数量上的对比。",
+    "checks": {"verified": 22, "foreign": [], "checked": 22}
+  },
+  "table": {"format_after_kind": "latex", "rows": 4, "cells": 9},
+  "radar": {"format": "tikz", "has_polar": true},
+  "elapsed_s": 3.0
+}
+```
+
+### C13 · 论文架构拓扑图（官方 1.6.2）· PASS
+
+- 输入：一句研究思路（块稀疏注意力 + 重排用于长文档 RAG）
+- 实际：模型产出 7 节点 / 6 边 / 3 层结构；**四种格式代码里都出现了全部 7 个节点 id**（同一张图）；ECharts 预览画出 7 个节点、6 条边，与数据结构一一对应；页面零报错
+
+```json
+{
+  "source": "llm",
+  "nodes": 7, "edges": 6, "groups": ["数据层", "模型层", "输出层"],
+  "id_hits": {"mermaid": 7, "dot": 7, "tikz": 7, "matplotlib": 7},
+  "format_signatures": {
+    "mermaid": "flowchart LR",
+    "dot": "digraph architecture",
+    "tikz": "\\begin{tikzpicture}",
+    "matplotlib": "import matplotlib"
+  },
+  "preview": {"canvas": true, "drawn_nodes": 7, "drawn_links": 6, "height": 426},
+  "elapsed_s": 3.6
+}
+```
+
+补充：生成的 Matplotlib 脚本已在本机实跑验证（`matplotlib 3.11.2`），架构图与 bar/line/radar 四份脚本均产出 PDF，中文标题与图例正常、箭头头部可见。

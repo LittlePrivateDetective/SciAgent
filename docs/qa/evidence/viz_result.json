@@ -1,0 +1,170 @@
+{
+ "ok": true,
+ "steps": [
+  {
+   "tabs": [
+    "论文框架",
+    "架构图",
+    "数据图表"
+   ]
+  },
+  {
+   "topology": {
+    "err": "",
+    "title": "块稀疏RAG架构",
+    "source": "llm",
+    "checks": {
+     "node_count": 9,
+     "edge_count": 8,
+     "group_count": 4,
+     "dropped_edges": 0,
+     "formats": [
+      "mermaid",
+      "dot",
+      "tikz",
+      "matplotlib"
+     ]
+    },
+    "nodes": 9,
+    "edges": 8,
+    "groups": [
+     "数据层",
+     "模型层",
+     "输出层",
+     "训练层"
+    ],
+    "codeKeys": [
+     "mermaid",
+     "dot",
+     "tikz",
+     "matplotlib"
+    ],
+    "codeLen": {
+     "mermaid": 412,
+     "dot": 1650,
+     "tikz": 1864,
+     "matplotlib": 4821
+    },
+    "idHits": {
+     "mermaid": 9,
+     "dot": 9,
+     "tikz": 9,
+     "matplotlib": 9
+    },
+    "canvas": true,
+    "drawn": 9,
+    "drawnLinks": 8,
+    "chartH": 518,
+    "chars": {
+     "mermaid": "flowchart LR\n  subgraph G0[\"数据层\"]\n    n1([\"长文档输入\"])\n    n2[\"",
+     "dot": "// 块稀疏RAG架构\ndigraph architecture {\n  rankdir=TB;\n  graph [fo",
+     "tikz": "% 需要 \\usepackage{tikz}；中文标签请用 ctex 或 XeLaTeX 编译\n\\begin{figur",
+     "matplotlib": "\"\"\"由 SciAgent 生成的架构图脚本（官方 1.6.2）。\n运行：python architecture.py "
+    },
+    "wait_s": 5.0
+   }
+  },
+  {
+   "fmt_switch": {
+    "mermaid": {
+     "len": 412,
+     "miss": false
+    },
+    "dot": {
+     "len": 1650,
+     "miss": false
+    },
+    "tikz": {
+     "len": 1864,
+     "miss": false
+    },
+    "matplotlib": {
+     "len": 4821,
+     "miss": false
+    }
+   }
+  },
+  {
+   "chart": {
+    "err": "",
+    "format": "mermaid",
+    "kind": "bar",
+    "rows": 3,
+    "columns": {
+     "0": "BLEU",
+     "1": "Params"
+    },
+    "labels": {
+     "0": "Transformer",
+     "1": "BERT",
+     "2": "GPT-3"
+    },
+    "codeHead": "xychart-beta\n    title \"BLEU and parameter compari",
+    "valuesInCode": [
+     "28.4",
+     "34.5",
+     "41.0",
+     "65",
+     "110",
+     "175"
+    ],
+    "svg": true,
+    "capSource": "llm",
+    "capZh": "图 1　Transformer、BERT 和 GPT-3 三种模型在 BLEU 分数与参数量上的对比。柱状图显示，BLEU 分数从 Transformer 的 28.4 上升至 GPT-3 的 41.0，增幅达 44.4%；参数量则由 Transformer 的 65.0 增至 GPT-3 的 175，增长 169.2%。GPT-3 在两项指标上均达到最高值，而 Transformer 在两项指标上均为最低。",
+    "capEn": "Figure 1. Comparison of BLEU scores and parameter counts across Transformer, BERT, and GPT-3. The bar chart shows BLEU scores ranging from 28.4 (Transformer) to 41.0 (GPT-3), with a 44.4% increase from the lowest to highest value. Parameter counts rise from 65.0 (Transformer) to 175 (GPT-3), representing a 169.2% increase. GPT-3 achieves the highest BLEU score and parameter count, while Transformer exhibits the lowest values in both metrics.",
+    "capTrend": "GPT-3 在 BLEU 分数（41.0）和参数量（175）上均达到最高，两项指标均从 Transformer 到 GPT-3 单调递增。",
+    "capChecks": {
+     "verified": 22,
+     "foreign": [],
+     "checked": 22
+    },
+    "capCardDom": true,
+    "trendDom": true,
+    "warnDom": "",
+    "metaDom": [
+     "3 行 × 2 列",
+     "3 个横轴刻度",
+     "图注由模型撰写",
+     "图注数字核对 22/22"
+    ],
+    "wait_s": 4.0
+   }
+  },
+  {
+   "table": {
+    "fmtAfterKind": "latex",
+    "latexHasToprule": true,
+    "mdCodeHead": "**BLEU and parameter comparison**\n\n| Mod",
+    "tableRows": 4,
+    "tableCells": 9,
+    "ths": [
+     "Model",
+     "BLEU",
+     "Params"
+    ]
+   }
+  },
+  {
+   "radar": {
+    "fmt": "tikz",
+    "opts": 4,
+    "ok": true,
+    "err": "",
+    "hasPolar": true,
+    "hintDom": "TikZ：粘进 .tex 导言区加 tikz 宏包；中文标签用 ctex / XeLaTeX 编译",
+    "cap": "llm"
+   }
+  },
+  {
+   "page_errors": []
+  },
+  {
+   "topology_formats": "PASS",
+   "chart_caption": "PASS",
+   "table": "PASS",
+   "radar": "PASS",
+   "no_page_error": "PASS"
+  }
+ ],
+ "error": ""
+}

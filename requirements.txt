@@ -34,6 +34,7 @@ networkx>=3.3                   # 引用图谱：PageRank/介数/社区发现
 # arxiv       -> app/tools/external.py 用 httpx 直连 export.arxiv.org
 # pdfplumber  -> 版面解析统一用 PyMuPDF 的 blocks/drawings
 # pandas      -> CSV 图表转换用标准库 csv 模块
-# matplotlib  -> 前端 ECharts / Mermaid / TikZ 出图，后端不绘图
+# matplotlib  -> 后端不绘图：1.6.2/1.6.3 只**生成** Matplotlib 脚本（前端预览走 ECharts）。
+#                想在本机跑生成的脚本再自己装，服务本身不需要它。
 # sentence-transformers -> 仅 EMB_PROVIDER=local 时需要，属于可选档，
 #                          装它要拉 torch（>1GB），默认镜像不装

@@ -58,6 +58,7 @@ from app.tools.chart import convert as convert_chart
 from app.tools.external import TOOL_SCHEMAS
 from app.tools.external import decide as tool_decide
 from app.tools.external import invoke as tool_invoke
+from app.tools.topology import generate as generate_topology
 
 log = get_logger(__name__)
 router = APIRouter(prefix="/api")
@@ -903,15 +904,19 @@ def tools_agent(body: ToolAgentIn):
 
 # ==================================================================== CSV → 学术图表
 class ChartIn(BaseModel):
-    csv: str
+    csv: str = Field(max_length=200_000)
     format: str = "mermaid"
-    title: str = "实验结果"
+    title: str = Field(default="实验结果", max_length=120)
+    kind: str = "bar"           # bar / line / radar / table
+    caption: bool = True        # 是否顺带生成 Figure Caption
 
 
 @router.post("/tools/csv2chart")
 def csv2chart(body: ChartIn):
+    """CSV → 表格 / 柱状 / 折线 / 雷达的代码（Mermaid·TikZ·Matplotlib·LaTeX）+ 图注（官方 1.6.3）。"""
     try:
-        return {"ok": True, **convert_chart(body.csv, body.format, body.title)}
+        return {"ok": True, **convert_chart(
+            body.csv, body.format, body.title, kind=body.kind, caption=body.caption)}
     except ValueError as exc:
         raise HTTPException(400, str(exc)) from exc
 
@@ -938,6 +943,17 @@ class WriteIn(BaseModel):
 def write_outline(body: WriteIn, db: Session = Depends(get_db)):
     """写作 Copilot：idea → 论文框架 + 只来自库内真实文献的 References（官方 1.6.1）。"""
     return generate_outline(db, body.idea, body.doc_ids or None, top_k=body.top_k)
+
+
+class TopologyIn(BaseModel):
+    idea: str = Field(min_length=2, max_length=1200)
+    outline: str = Field(default="", max_length=6000)
+
+
+@router.post("/write/topology")
+def write_topology(body: TopologyIn):
+    """idea（或已有大纲）→ 架构拓扑图，一次产出 Mermaid / DOT / TikZ / Matplotlib（官方 1.6.2）。"""
+    return generate_topology(body.idea, body.outline)
 
 
 # ==================================================================== Token 级流式 + 思考过程

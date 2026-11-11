@@ -10,6 +10,8 @@
   <script src="https://cdn.jsdelivr.net/npm/element-plus@2.7.6/dist/index.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/element-plus@2.7.6/dist/locale/zh-cn.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+  <!-- 架构图/图表的即时预览：Mermaid 在浏览器里直接渲染，DOT/TikZ/Python 只给代码 -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
 </head>
 <body>
 <div id="app" v-cloak>
@@ -241,8 +243,16 @@
         </div>
       </div>
 
-      <!-- 写作 Copilot：idea → 论文框架，References 由服务端从库内元数据生成 -->
+      <!-- 写作 Copilot：idea → 论文框架（1.6.1）+ 架构拓扑图（1.6.2）+ 数据图表与图注（1.6.3） -->
       <div class="write-wrap" v-show="centerView === 'write'">
+        <div class="wtabs">
+          <span class="wtab" :class="{ on: wr.tab === 'outline' }" @click="wr.tab = 'outline'">论文框架</span>
+          <span class="wtab" :class="{ on: wr.tab === 'topology' }" @click="wr.tab = 'topology'">架构图</span>
+          <span class="wtab" :class="{ on: wr.tab === 'chart' }" @click="wr.tab = 'chart'">数据图表</span>
+          <span class="wtabs-note">官方 1.6.1 / 1.6.2 / 1.6.3</span>
+        </div>
+
+        <template v-if="wr.tab === 'outline'">
         <div class="write-head">
           <el-input v-model="wr.idea" type="textarea" :rows="2" resize="none"
                     placeholder="一句话描述你的研究想法，例如：把稀疏注意力用到长文档 RAG 上，降低显存占用同时保持检索质量"></el-input>
@@ -295,6 +305,160 @@
             </div>
           </template>
         </div>
+        </template>
+
+        <template v-else-if="wr.tab === 'topology'">
+        <div class="write-head">
+          <el-input v-model="wv.idea" type="textarea" :rows="2" resize="none"
+                    placeholder="一句话描述你的研究思路，例如：把块稀疏注意力用到长文档 RAG 上，用重排保住检索质量"></el-input>
+          <div class="write-actions">
+            <span class="write-hint">模型只产出节点与边，四种绘图代码由渲染层生成 —— 语法不会因模型发挥而崩</span>
+            <el-button size="small" type="primary" :loading="wv.tLoading" @click="genTopology">
+              {{ wv.tLoading ? '生成中…' : '生成架构图' }}
+            </el-button>
+          </div>
+        </div>
+
+        <div class="write-body">
+          <div v-if="wv.tError" class="write-error">{{ wv.tError }}</div>
+          <div v-if="!wv.topology" class="empty big">
+            写一句研究思路 → 同一张架构图同时给出 Mermaid / Graphviz DOT / TikZ / Matplotlib 四种代码<br>
+            <small>Mermaid 可在这里直接看效果；DOT、TikZ、Python 复制走即可编译</small>
+          </div>
+
+          <template v-else>
+            <div class="viz-meta">
+              <span class="wc-item ok">{{ wv.topology.checks.node_count }} 个节点</span>
+              <span class="wc-item">{{ wv.topology.checks.edge_count }} 条边</span>
+              <span class="wc-item">{{ wv.topology.checks.group_count }} 层</span>
+              <span class="wc-item" :class="wv.topology.source === 'llm' ? 'ok' : 'bad'">
+                {{ wv.topology.source === 'llm' ? '模型生成的结构' : '离线模板（模型不可用）' }}
+              </span>
+              <span class="wc-item bad" v-if="wv.topology.checks.dropped_edges">
+                丢弃 {{ wv.topology.checks.dropped_edges }} 条非法边
+              </span>
+            </div>
+
+            <div class="viz-title">{{ wv.topology.title }}</div>
+
+            <div class="viz-split">
+              <div class="viz-pane">
+                <div class="viz-bar">
+                  <div class="viz-fmts">
+                    <span v-for="f in topoFmts" :key="f.k" class="viz-fmt"
+                          :class="{ on: wv.tFmt === f.k }" @click="pickTopoFmt(f.k)">{{ f.label }}</span>
+                  </div>
+                  <div class="viz-acts">
+                    <el-button size="small" text @click="copyText(topoCode, '架构图代码')">复制</el-button>
+                    <el-button size="small" text @click="downloadText(topoCode, 'architecture', wv.tFmt)">下载</el-button>
+                  </div>
+                </div>
+                <pre class="viz-pre">{{ topoCode }}</pre>
+              </div>
+              <div class="viz-pane">
+                <div class="viz-bar">
+                  <span class="viz-bar-t">预览</span>
+                  <span class="viz-note">四种格式描述的是同一张图</span>
+                </div>
+                <div ref="topoChart" class="topo-chart"></div>
+              </div>
+            </div>
+          </template>
+        </div>
+        </template>
+
+        <template v-else>
+        <div class="write-head">
+          <div class="csv-row">
+            <el-input v-model="wv.csv" type="textarea" :rows="4" resize="none" class="csv-input"
+                      placeholder="粘贴实验 CSV：第一行表头，第一列是横轴标签&#10;Model,BLEU,Params&#10;Transformer,28.4,65"></el-input>
+            <div class="csv-side">
+              <el-button size="small" @click="$refs.csvFile.click()">选择 CSV 文件</el-button>
+              <el-button size="small" text @click="wv.csv = sampleCsv">示例数据</el-button>
+              <input ref="csvFile" type="file" accept=".csv,.tsv,.txt" @change="onCsvFile" hidden />
+            </div>
+          </div>
+          <div class="write-actions">
+            <div class="chart-opts">
+              <el-radio-group v-model="wv.cKind" size="small" @change="syncChartFmt">
+                <el-radio-button label="bar">柱状</el-radio-button>
+                <el-radio-button label="line">折线</el-radio-button>
+                <el-radio-button label="radar">雷达</el-radio-button>
+                <el-radio-button label="table">表格</el-radio-button>
+              </el-radio-group>
+              <el-select v-model="wv.cFmt" size="small" class="fmt-select">
+                <el-option v-for="f in chartFmts" :key="f.k" :label="f.label" :value="f.k"></el-option>
+              </el-select>
+              <el-input v-model="wv.cTitle" size="small" class="title-input"
+                        placeholder="图表标题" />
+            </div>
+            <el-button size="small" type="primary" :loading="wv.cLoading" @click="genChart">
+              {{ wv.cLoading ? '生成中…' : '生成图表 + 图注' }}
+            </el-button>
+          </div>
+        </div>
+
+        <div class="write-body">
+          <div v-if="wv.cError" class="write-error">{{ wv.cError }}</div>
+          <div v-if="!wv.chart" class="empty big">
+            粘贴实验 CSV → 表格 / 柱状 / 折线 / 雷达，一次给出 Mermaid、TikZ、Matplotlib、LaTeX 代码<br>
+            <small>图注由模型按数值统计撰写，写完全部数字回查原表，查不到的直接列出来</small>
+          </div>
+
+          <template v-else>
+            <div class="viz-meta">
+              <span class="wc-item ok">{{ wv.chart.rows }} 行 × {{ wv.chart.columns.length }} 列</span>
+              <span class="wc-item">{{ wv.chart.labels.length }} 个横轴刻度</span>
+              <span class="wc-item" v-if="wv.chart.caption"
+                    :class="wv.chart.caption.source === 'llm' ? 'ok' : 'bad'">
+                图注{{ wv.chart.caption.source === 'llm' ? '由模型撰写' : '由统计规则生成' }}
+              </span>
+              <span class="wc-item" v-if="wv.chart.caption && wv.chart.caption.checks"
+                    :class="wv.chart.caption.checks.foreign.length ? 'bad' : 'ok'">
+                图注数字核对 {{ wv.chart.caption.checks.verified }}/{{ wv.chart.caption.checks.checked }}
+              </span>
+            </div>
+
+            <div class="viz-split">
+              <div class="viz-pane">
+                <div class="viz-bar">
+                  <span class="viz-bar-t">{{ chartFmtLabel }}</span>
+                  <div class="viz-acts">
+                    <el-button size="small" text @click="copyText(wv.chart.code, '图表代码')">复制</el-button>
+                    <el-button size="small" text @click="downloadText(wv.chart.code, 'figure', wv.chart.format)">下载</el-button>
+                  </div>
+                </div>
+                <pre class="viz-pre">{{ wv.chart.code }}</pre>
+              </div>
+              <div class="viz-pane">
+                <div class="viz-bar"><span class="viz-bar-t">预览</span></div>
+                <div class="viz-prev" v-if="wv.chart.format === 'mermaid'" v-html="wv.chartSvg"></div>
+                <div class="viz-prev" v-else-if="wv.chart.format === 'markdown'" v-html="mdTableHtml(wv.chart.code)"></div>
+                <div class="viz-prev-hint" v-else>{{ fmtHint(wv.chart.format) }}</div>
+              </div>
+            </div>
+
+            <div class="cap-card" v-if="wv.chart.caption">
+              <div class="cap-head">
+                <span>Figure Caption</span>
+                <small>模型只看到数值统计；写完逐个回查原表</small>
+                <div class="cap-acts">
+                  <el-button size="small" text
+                             @click="copyText(wv.chart.caption.zh + '\n\n' + wv.chart.caption.en, '图注')">复制中英</el-button>
+                </div>
+              </div>
+              <p class="cap-zh">{{ wv.chart.caption.zh }}</p>
+              <p class="cap-en">{{ wv.chart.caption.en }}</p>
+              <div class="cap-trend" v-if="wv.chart.caption.trend_zh">
+                <span class="cap-trend-t">核心趋势</span>{{ wv.chart.caption.trend_zh }}
+              </div>
+              <div class="cap-warn" v-if="wv.chart.caption.checks && wv.chart.caption.checks.foreign.length">
+                以下数字在原表里找不到，请人工核对：{{ wv.chart.caption.checks.foreign.join('、') }}
+              </div>
+            </div>
+          </template>
+        </div>
+        </template>
       </div>
     </main>
 
