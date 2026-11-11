@@ -1,0 +1,4 @@
+[QA] 20261111_121134 BASE=http://127.0.0.1:8013 用例 2 条
+  [PASS  ] C07   e-3 Token 级流式输出                        97.1s  50 个 token 片段无损拼接，思考阶段 ['plan', 'retrieve', 'read', 'verify']，引用校验 10/10
+  [FAIL  ] C07B  e-3 前端流式与思考过程可视化 (3%)                   4.5s  RESULT: FAIL 未找到发送按钮
+[QA] 证据 -> <repo>\docs\qa\evidence\run_20261111_121134.json

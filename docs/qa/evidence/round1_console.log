@@ -1,0 +1,39 @@
+[QA] 20261111_113738 BASE=http://127.0.0.1:8013 用例 29 条
+  [PASS  ] E01   c-3 架构可复现性与部署                           0.1s  Windows / Python 3.13.14 / deepseek-v4.1-flash / chroma / {'documents': 30, 'chunks': 12656, 'tasks': 52, 'les
+  [PASS  ] E02   c-1 代码质量                                2.2s  6750 行，模块全部可导入，无明文密钥
+  [BLOCK] E03   c-3 Docker 可复现                          0.0s  本机无 Docker，无法执行 docker build；配置静态检查：chromadb 在 requirements=False
+  [FAIL  ] A01   a-1 Task Planning (9%)                 85.1s  trace=['planner', 'retriever', 'writer', 'writer', 'reviewer', 'reviewer', 'reflector']
+  [FAIL  ] A02   a-1 Multi-Agent 路由 (9%)                71.6s  两种模式 agent 序列完全相同，路由未分化
+  [FAIL  ] A03   a-2 Dense/Sparse 混合检索 (8%)              0.0s  用例自身抛异常：ImportError: cannot import name 'retrieve' from 'app.rag.hybrid' (<repo>\app\rag\hybrid.
+  [FAIL  ] A04   a-2 10 条引用溯源准确率 (8%)                   48.4s  溯源命中 4/10
+  [FAIL  ] A05   a-3 四类 PDF 解析 (7%)                      0.1s  无扫描件；长文档解析异常
+  [BLOCK] A06   a-4 Function Calling 外部 API (6%)        0.0s  工具接口不存在（HTTP 404），Function Calling 能力未实现
+  [PASS  ] A07   a-5 Prompt 与 Guardrails (5%)           38.8s  两类诱导均未产生被放行的伪造锚点；格式校验生效
+  [FAIL  ] B01   b-1 图论算法筛选核心文献 (10%)                    0.2s  用例自身抛异常：TypeError: build_graph() missing 1 required positional argument: 'db'
+  [BLOCK] B02   b-1 Future Work 自动提炼去重 (10%)            0.0s  Future Work 接口不存在（HTTP 404）
+  [PASS  ] B03   b-2 三层语义去重 (8%)                         0.0s  30 篇，同族分组 {}
+  [BLOCK] B04   b-2 arXiv 版本差异 (8%)                     0.0s  库内无多版本文献，无法实测 diff
+  [BLOCK] B05   b-2 GitHub 复现性对比 (8%)                   0.0s  复现性接口不存在（HTTP 404）
+  [PASS  ] B06   b-3 中英双向同步滚动 (7%)                      16.4s  双栏渲染 OK，已加载段落=7
+英文滚动 700 -&gt; 中文 693
+中文滚动 1300 -&gt; 英文 700 =&gt; 1310
+顶部段落序号 英文=6 中文=6
+RESULT: PASS 双向联动生效且按
+  [PASS  ] B07   b-3 引用一键跳转 (7%)                         3.1s  img.src=/api/documents/dc80b816ae34b/page/3.png?dpi=130&amp;t=1794368524516
+高亮框数量=1 页码显示=3 / 26
+RESULT: PASS 锚
+  [PASS  ] C01   c-3 多文档并发分析                             0.8s  2 份并发上传完成
+  [PASS  ] C02   c-3 并发问答                               21.9s  4 路并发完成，耗时 [21.9, 21.0, 15.5, 19.3]
+  [PASS  ] C03   c-3 干净环境一键复现                            4.4s  全新环境启动成功，文档数 0，向量后端 sqlite
+  [PASS  ] C04   c-3 长 PDF 打开耗时                          0.1s  页图 79ms / 页元数据 37ms / 章节树 5ms
+  [PASS  ] C05   c-3 20+ 图谱渲染帧率                          3.7s  图谱节点=30 首帧耗时=265ms canvas=998x678
+1s 内 rAF 回调=1（无头虚拟时钟，仅参考）
+RESULT: PASS 20+ 节点图谱渲染，首帧 265ms
+  [PASS  ] C06   c-3 峰值内存/显存                            25.5s  RSS 595→596 MB（Δ+1.4 MB）；GPU：1075 MiB
+  [BLOCK] C07   e-3 Token 级流式输出                         0.0s  流式接口不存在（HTTP 404）
+  [PASS  ] C08   e-3 断网/异常错误边界                           0.0s  异常均被拦截，状态码 [200, 400, 404, 422]
+  [BLOCK] C09   硬性用例 4：CSV 转 TikZ/Mermaid               0.0s  CSV 图表接口不存在（HTTP 404）
+  [PASS  ] D01   d-2 六大核心模块闭环                           30.0s  六模块全部贯通
+  [PASS  ] D02   d-1 文献筛选 / 对比阅读痛点                      73.6s  证据覆盖 3 篇：['1706.03762v1.pdf', '1910.10683v4.pdf', '2211.05100v4.pdf']
+  [FAIL  ] F01   f-2 开源潜力与推广                             0.0s  缺 ['LICENSE']
+[QA] 证据 -> <repo>\docs\qa\evidence\run_20261111_113738.json

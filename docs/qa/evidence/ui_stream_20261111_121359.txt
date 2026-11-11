@@ -1,0 +1,2 @@
+ask-bar HTML=&lt;div class="el-input"&gt;&lt;!-- input --&gt;&lt;!-- prepend slot --&gt;&lt;!--v-if--&gt;&lt;div class="el-input__wrapper" tabindex="-1"&gt;&lt;!-- prefix slot --&gt;&lt;!--v-if--&gt;&lt;input class="el-input__inner" type="text" autocomplete="off" tabindex="0" placeholder="问点什么…（Enter 发送）" id="el-id-5764-13"&gt;&lt;!-- suffix slot --&gt;&lt;!--v-if--&gt;&lt;/div&gt;&lt;!-- append slot --&gt;&lt;!--v-if--&gt;&lt;/div&gt;
+RESULT: FAIL 未找到发送按钮

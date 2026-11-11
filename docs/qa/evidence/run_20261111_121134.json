@@ -1,0 +1,63 @@
+{
+  "run_id": "20261111_121134",
+  "base": "http://127.0.0.1:8013",
+  "timestamp": "2026-11-11T12:13:16.526042",
+  "summary": {
+    "total": 2,
+    "pass": 1,
+    "fail": 1,
+    "blocked": 0
+  },
+  "results": [
+    {
+      "id": "C07",
+      "group": "stream",
+      "point": "e-3 Token 级流式输出",
+      "steps": "请求 SSE，解析 thinking/token/done 事件，校验 token 拼接与最终答案一致",
+      "expected": "多个真实 token 片段、思考过程事件齐全、拼接无损、引用校验有效",
+      "actual": "50 个 token 片段无损拼接，思考阶段 ['plan', 'retrieve', 'read', 'verify']，引用校验 10/10",
+      "status": "PASS",
+      "elapsed_s": 97.1,
+      "evidence": {
+        "chunks": 50,
+        "elapsed_s": 97.1,
+        "thinking_stages": [
+          "plan",
+          "retrieve",
+          "read",
+          "verify"
+        ],
+        "joined_chars": 325,
+        "raw_equals_tokens": true,
+        "verify": {
+          "total": 10,
+          "valid": 10,
+          "invalid": 0,
+          "rate": 1.0,
+          "invalid_anchors": [],
+          "invalid_refs": [],
+          "bad_numbers": [],
+          "cleaned": "Transformer 的核心机制是完全依赖自注意力（self-attention）来建模输入与输出之间的全局依赖关系，摒弃了传统的循环神经网络（RNN）或卷积神经网络（CNN）结构 [1] [p2@107,150,505,193]。该架构通过多头自注意力机制实现序列中任意位置间的直接关联，从而在并行化程度和训练效率上显著优于以往模型 [3] [p10@108,97,504,129]。每个 Transformer 层包含两个子层：多头自注意力子层和位置式前馈网络子层，两者均结合残差连接与层归一化以提升训练稳定性 [6] [p3@55,107,291,237]。由于自注意力本身对输入顺序不敏感，因此需引入显式的位置编码（如正弦函数或可学习嵌入）以保留序列顺序信息 [7] [p5@89,93,524,593]。这一设计使 Transformer 在机器翻译等任务中达到更高性能，并大幅缩短训练时间 [5] [p1@143,361,469,523]。",
+          "has_citation": true
+        },
+        "evidence": 11,
+        "first": "Transformer",
+        "answer_head": "Transformer 的核心机制是完全依赖自注意力（self-attention）来建模输入与输出之间的全局依赖关系，摒弃了传统的循环神经网络（RNN）或卷积神经网络（CNN）结构 [1] [p2@107,150,505,193]。该架构通过多头自注意力机制实现序列中任意位置间的直接关联，从而在并行化程度和训练效率上"
+      }
+    },
+    {
+      "id": "C07B",
+      "group": "stream",
+      "point": "e-3 前端流式与思考过程可视化 (3%)",
+      "steps": "无头浏览器打开流式开关并发送问题，检查思考时间线与逐 token 答案",
+      "expected": "思考步骤 >=2 且答案真实渲染，无前端报错",
+      "actual": "RESULT: FAIL 未找到发送按钮",
+      "status": "FAIL",
+      "elapsed_s": 4.5,
+      "evidence": {
+        "dom_length": 6480,
+        "raw": "RESULT: FAIL 未找到发送按钮"
+      }
+    }
+  ]
+}

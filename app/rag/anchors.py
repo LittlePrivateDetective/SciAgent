@@ -26,6 +26,29 @@ _RE_ARXIV_LIKE = re.compile(r"(?:arxiv[:\s]*)?\b\d{4}\.\d{4,5}(?:v\d+)?\b", re.I
 _RE_FILENAME = re.compile(r"[\w.\-]+\.pdf", re.I)
 TOL = 3.0
 
+# 论文正文里数词常写成英文单词（"twelve hours"），另一页才写成 "12 hours"。
+# 答案写「12 小时」却引用了含 "twelve" 的那段时，逐字比对会误报幻觉
+# （QA 最终轮 C07 实测 bad_numbers=['12']，而 p2 原文确实是 twelve hours）。
+# 只把这些词**加进证据池**，不放宽答案侧：模型编造的数字依然无处可藏。
+_WORD_NUM = {
+    "one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6,
+    "seven": 7, "eight": 8, "nine": 9, "ten": 10, "eleven": 11,
+    "twelve": 12, "thirteen": 13, "fourteen": 14, "fifteen": 15,
+    "sixteen": 16, "seventeen": 17, "eighteen": 18, "nineteen": 19,
+    "twenty": 20, "thirty": 30, "forty": 40, "fifty": 50,
+    "sixty": 60, "seventy": 70, "eighty": 80, "ninety": 90,
+    "hundred": 100, "thousand": 1000, "million": 1000000,
+    "billion": 1000000000,
+}
+_RE_WORD_NUM = re.compile(
+    r"\b(" + "|".join(_WORD_NUM) + r")\b", re.IGNORECASE
+)
+
+
+def _number_words(text: str) -> list[float]:
+    """把证据文本里的英文数词转成数值，供数字溯源池使用。"""
+    return [float(_WORD_NUM[m.group(1).lower()]) for m in _RE_WORD_NUM.finditer(text)]
+
 
 def make_anchor(page: int, bbox) -> str:
     x0, y0, x1, y1 = bbox
@@ -122,7 +145,7 @@ def verify(answer: str, evidence: list[dict], question: str = "") -> dict:
     pool_text = " ".join(
         ((ev.get("text") or "") + " " + (ev.get("section_path") or "")) for ev in pool_src
     )
-    pool = [v for _, v in _numbers(pool_text)]
+    pool = [v for _, v in _numbers(pool_text)] + _number_words(pool_text)
     q_pool = [v for _, v in _numbers(question)] if question else []
 
     for raw, val in _numbers(_QUOTE_RE.sub(" ", answer)):

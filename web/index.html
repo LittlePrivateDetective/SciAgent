@@ -34,7 +34,10 @@
     <aside class="panel left">
       <div class="panel-head">
         <span>文献库</span>
-        <el-button size="small" text @click="loadDocs">刷新</el-button>
+        <div class="viewer-tools">
+          <el-button size="small" text @click="openTrash">回收站</el-button>
+          <el-button size="small" text @click="loadDocs">刷新</el-button>
+        </div>
       </div>
 
       <div class="upload-area">
@@ -49,7 +52,7 @@
       <div class="doc-list">
         <div v-if="!docs.length" class="empty">还没有文献，先上传或一键导入</div>
         <div v-for="d in docs" :key="d.id" class="doc-item" :class="{active: activeDocId===d.id}">
-          <el-checkbox v-model="d._sel" @change="syncSelection" />
+          <el-checkbox v-model="d._sel" @change="syncSelection"></el-checkbox>
           <div class="doc-main" @click="openDoc(d)">
             <div class="doc-title" :title="d.title || d.filename">{{ d.title || d.filename }}</div>
             <div class="doc-meta">
@@ -82,7 +85,7 @@
             <el-button size="small" text :disabled="page>=pageCount" @click="goPage(page+1)">下一页</el-button>
           </template>
           <template v-else-if="centerView === 'bilingual'">
-            <el-switch v-model="bi.sync" size="small" active-text="联动" style="margin:0 8px" />
+            <el-switch v-model="bi.sync" size="small" active-text="联动" style="margin:0 8px"></el-switch>
             <el-button size="small" text @click="translateAll" :loading="bi.job.running">
               {{ bi.job.running ? `翻译中 ${bi.job.done}/${bi.job.total}` : '整篇翻译' }}
             </el-button>
@@ -197,13 +200,14 @@
         <span>智能问答</span>
         <div class="chat-tools">
           <el-select v-model="scope" size="small" style="width:96px">
-            <el-option label="当前文献" value="doc" :disabled="!activeDoc" />
-            <el-option label="全部文献" value="all" />
+            <el-option label="当前文献" value="doc" :disabled="!activeDoc"></el-option>
+            <el-option label="全部文献" value="all"></el-option>
           </el-select>
           <el-radio-group v-model="mode" size="small">
             <el-radio-button label="qa">问答</el-radio-button>
             <el-radio-button label="compare">对比</el-radio-button>
           </el-radio-group>
+          <el-switch v-model="streamMode" size="small" active-text="流式" style="margin-left:6px"></el-switch>
         </div>
       </div>
 
@@ -214,6 +218,11 @@
         </div>
         <div v-for="(m,i) in messages" :key="i" class="msg" :class="m.role">
           <div class="bubble">
+            <div v-if="m.thinking && m.thinking.length" class="think-timeline">
+              <div v-for="(t,j) in m.thinking" :key="j" class="think-step">
+                <span class="think-dot"></span>{{ t }}
+              </div>
+            </div>
             <div class="md" v-html="m.html"></div>
             <div v-if="m.verify && m.verify.total" class="verify">
               引用校验：{{ m.verify.valid }}/{{ m.verify.total }} 命中
@@ -236,7 +245,7 @@
       </div>
 
       <div class="ask-bar">
-        <el-input v-model="question" placeholder="问点什么…（Enter 发送）" @keyup.enter="ask()" :disabled="loading" />
+        <el-input v-model="question" placeholder="问点什么…（Enter 发送）" @keyup.enter="ask()" :disabled="loading"></el-input>
         <el-button type="primary" :loading="loading" @click="ask()">发送</el-button>
       </div>
     </section>
@@ -267,6 +276,21 @@
       <el-button @click="resolveDup('both')">两份都留</el-button>
       <el-button type="primary" @click="resolveDup('keep_new')">用新文件覆盖</el-button>
     </template>
+  </el-dialog>
+
+  <!-- 回收站：删除可恢复，配合后端审计日志 -->
+  <el-dialog v-model="trash.visible" title="回收站（删除可恢复）" width="640px">
+    <div v-if="!trash.items.length" class="empty">回收站是空的</div>
+    <div v-for="t in trash.items" :key="t.doc_id" class="trash-item">
+      <div class="trash-main">
+        <div class="doc-title">{{ t.title || t.filename }}</div>
+        <div class="doc-meta">
+          {{ t.page_count }} 页 · {{ t.chunk_count }} 块 · {{ t.deleted_at }} · {{ t.reason }}
+        </div>
+      </div>
+      <el-button size="small" type="primary" plain :disabled="!t.restorable"
+                 @click="restoreTrash(t)">恢复</el-button>
+    </div>
   </el-dialog>
 </div>
 

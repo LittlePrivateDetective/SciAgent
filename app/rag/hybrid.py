@@ -23,6 +23,7 @@ from app.core.config import settings
 from app.core.logger import get_logger
 from app.db.models import Chunk, Document
 from app.db.session import SessionLocal
+from app.rag.chunker import strip_carry
 from app.rag.embed import embed_query
 from app.rag.store import get_store
 
@@ -65,6 +66,7 @@ class Hit:
     sparse_score: float = 0.0
     idx: int = 0
     stitched: bool = False
+    neighbor_of: str = ""      # 若本条是邻块扩展出来的，记下主块 id
 
     @property
     def anchor(self) -> str:
@@ -84,6 +86,7 @@ class Hit:
             "text": self.text,
             "score": round(self.score, 4),
             "stitched": self.stitched,
+            "neighbor_of": self.neighbor_of,
         }
 
 
@@ -158,7 +161,17 @@ def _load_corpus(doc_ids: list[str] | None) -> tuple[list[CorpusRow], dict[str, 
         )
         if doc_ids:
             stmt = stmt.where(Chunk.doc_id.in_(doc_ids))
-        rows = [CorpusRow(*r) for r in db.execute(stmt).all()]
+        # 按文档内顺序推进，边读边剥掉 overlap 前缀。
+        # 不这么做的话，Hit.text 会带着上一块的尾巴，而 bbox 只框住本块，
+        # "点锚点回原文核对"就会失败（QA A04）。
+        raw_rows = db.execute(stmt.order_by(Chunk.doc_id, Chunk.page, Chunk.idx)).all()
+        rows: list[CorpusRow] = []
+        last_raw: dict[str, str] = {}
+        for r in raw_rows:
+            cr = CorpusRow(*r)
+            cr.text = strip_carry(last_raw.get(cr.doc_id, ""), cr.text)
+            last_raw[cr.doc_id] = r[5]  # 原始 text；carry 是基于未剥离的上一块算的
+            rows.append(cr)
         names = {d.id: d.filename for d in db.scalars(select(Document)).all()}
     _CORPUS_CACHE[key] = (rows, names)
     return rows, names
@@ -383,40 +396,51 @@ def search(
     return deduped[:top_k]
 
 
-def _stitch(hits: list[Hit], top_n: int = 4, window: int = 1) -> None:
-    """邻块拼接（母块扩展）：把命中块的同页前后相邻块并进来。
+def _stitch(hits: list[Hit], top_n: int = 3) -> list[Hit]:
+    """邻块扩展：把命中块的**同页紧邻后一块**作为独立证据条目追加。
 
-    为什么必须做：切块是按 600 字机械切的，一句关键结论经常被切成两半。
-    实测 "We trained the base models for a tot|al of 100,000 steps" 就被切开，
-    模型只拿到前半句，于是回答"证据被截断"——明明是检索到了，却答不出来。
-    并进邻块后同一处结论完整可见，且仍以主块的 bbox 作锚点，页码不漂移。
+    P0 修复（2026-11-11 QA 实测）：旧实现把邻块文本拼进 `h.text`，
+    但 `h.bbox` 仍指向主块——证据文本与锚点框不再一一对应，
+    10 条随机引用只有 4 条能回原文核对（QA A04）。这直接违背
+    "细粒度内容有精准原文出处"的核心承诺，比少召回几个字严重得多。
+
+    现在每条证据（含邻块）都带自己的 chunk_id / bbox / anchor：
+    - 被 600 字窗口切断的句子后半，模型仍能读到（独立编号，可单独引用）；
+    - 点任何一条锚点，PDF 上高亮的就是这段文本本身；
+    - 数字溯源不会把邻块内容当成无依据幻觉。
     """
     if not hits:
-        return
+        return hits
+    seen = {h.chunk_id for h in hits}
+    extra: list[Hit] = []
     with SessionLocal() as db:
         for h in hits[:top_n]:
             rows = db.execute(
-                select(Chunk.idx, Chunk.text)
-                .where(
-                    Chunk.doc_id == h.doc_id,
-                    Chunk.page == h.page,
-                    Chunk.idx.between(h.idx - window, h.idx + window),
-                )
-                .order_by(Chunk.idx)
+                select(Chunk.id, Chunk.idx, Chunk.text, Chunk.bbox,
+                       Chunk.section_path, Chunk.kind)
+                .where(Chunk.doc_id == h.doc_id,
+                       Chunk.page == h.page,
+                       Chunk.idx.in_((h.idx, h.idx + 1)))
+                .order_by(Chunk.idx).limit(2)
             ).all()
-            if len(rows) <= 1:
-                continue
-            # 主块必须排在最前：命中块才是与问题最相关的部分，
-            # 放到中间会被下游的字符截断切掉（实测 "100,000 steps" 就这样丢了）。
-            main = [t for i, t in rows if i == h.idx]
-            prev = [t for i, t in rows if i < h.idx][::-1]
-            nxt = [t for i, t in rows if i > h.idx]
-            merged = " ".join(
-                (t or "").strip() for t in (main + prev + nxt) if t
-            ).strip()
-            if len(merged) > len(h.text):
-                h.text = merged
-                h.stitched = True
+            # 邻块是从 Chunk 表直接取的**原始文本**，开头仍带着分块时的
+            # 80 字 overlap（来自主块尾部）；而它的 bbox 只框住本块。
+            # 主检索通道已在 _load_corpus 里统一剥离，这里必须同样处理，
+            # 否则邻块证据的文本里有一段根本不在锚点框内（QA A04 实测
+            # 唯一一条 MISS 就是这么来的：evidence 589 字 vs 原文 508 字）。
+            main_raw = next((t for _, i, t, *_ in rows if i == h.idx), "")
+            for cid, idx, text, bbox, sec, kind in rows:
+                if idx == h.idx or cid in seen or not text:
+                    continue
+                seen.add(cid)
+                extra.append(Hit(
+                    chunk_id=cid, doc_id=h.doc_id, doc_name=h.doc_name,
+                    page=h.page, bbox=bbox, text=strip_carry(main_raw, text),
+                    section_path=sec or "", kind=kind or "text",
+                    score=round(h.score * 0.8, 4), idx=int(idx),
+                    neighbor_of=h.chunk_id,
+                ))
+    return hits + extra
 
 
 def _api_rerank(query: str, hits: list[Hit], top_k: int) -> list[Hit] | None:
@@ -525,8 +549,7 @@ def search_with_rerank(query: str, doc_ids: list[str] | None = None, top_k: int 
     remote = _api_rerank(query, hits, top_k)
     if remote:
         final = _ensure_mentioned_docs(remote[:top_k], query, top_k)
-        _stitch(final)
-        return final
+        return _stitch(final)
 
     q_tokens = set(tokenize(query))
     max_sparse = max((h.sparse_score for h in hits), default=0.0) or 1.0
@@ -544,5 +567,4 @@ def search_with_rerank(query: str, doc_ids: list[str] | None = None, top_k: int 
     for h in reranked:
         h.score = local_score(h)
     out = _ensure_mentioned_docs(reranked[:top_k], query, top_k)
-    _stitch(out)
-    return out
+    return _stitch(out)

@@ -1,0 +1,95 @@
+{
+  "run_id": "20261111_113722",
+  "base": "http://127.0.0.1:8013",
+  "timestamp": "2026-11-11T11:37:24.695720",
+  "summary": {
+    "total": 3,
+    "pass": 2,
+    "fail": 0,
+    "blocked": 1
+  },
+  "results": [
+    {
+      "id": "E01",
+      "group": "env",
+      "point": "c-3 架构可复现性与部署",
+      "steps": "GET /health、/api/system/info，记录实际版本",
+      "expected": "200 且返回真实版本、模型、向量库",
+      "actual": "Windows / Python 3.13.14 / deepseek-v4.1-flash / chroma / {'documents': 30, 'chunks': 12656, 'tasks': 52, 'lessons': 30}",
+      "status": "PASS",
+      "elapsed_s": 0.3,
+      "evidence": {
+        "env": {
+          "os": "Windows-10-10.0.19045-SP0",
+          "python": "3.13.14",
+          "llm": {
+            "route": "cloud",
+            "model": "deepseek-v4.1-flash",
+            "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+            "mock": false
+          },
+          "embedding": {
+            "provider": "api",
+            "model": "qwen3.7-text-embedding",
+            "dim": 1024
+          },
+          "rerank": {
+            "provider": "auto",
+            "model": "qwen3.7-text-rerank",
+            "enabled": true
+          },
+          "vector_backend": "chroma",
+          "counts": {
+            "documents": 30,
+            "chunks": 12656,
+            "tasks": 52,
+            "lessons": 30
+          },
+          "translation": {
+            "model": "qwen-flash",
+            "batch": 4
+          },
+          "ocr": {
+            "vlm_configured": true,
+            "tesseract_python_pkg": false,
+            "tesseract_binary": false
+          }
+        }
+      }
+    },
+    {
+      "id": "E02",
+      "group": "env",
+      "point": "c-1 代码质量",
+      "steps": "统计代码行数、检查所有模块可 import、检查硬编码密钥",
+      "expected": "无 import 失败、仓库内无明文密钥",
+      "actual": "6750 行，模块全部可导入，无明文密钥",
+      "status": "PASS",
+      "elapsed_s": 2.3,
+      "evidence": {
+        "code_lines": 6750
+      }
+    },
+    {
+      "id": "E03",
+      "group": "env",
+      "point": "c-3 Docker 可复现",
+      "steps": "检查 Dockerfile/compose/requirements/.env.example 一致性；尝试 docker 命令",
+      "expected": "配置齐全且真实 docker build 成功",
+      "actual": "本机无 Docker，无法执行 docker build；配置静态检查：chromadb 在 requirements=False",
+      "status": "BLOCKED",
+      "elapsed_s": 0.0,
+      "evidence": {
+        "files": {
+          "Dockerfile": true,
+          "docker-compose.yml": true,
+          "requirements.txt": true,
+          ".env.example": true
+        },
+        "docker": "docker: command not found（本机未安装）",
+        "chromadb_in_requirements": false,
+        "dockerfile_has_chroma": false
+      }
+    }
+  ]
+}

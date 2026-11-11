@@ -1,0 +1,324 @@
+{
+  "run_id": "20261111_142756",
+  "base": "http://127.0.0.1:8013",
+  "timestamp": "2026-11-11T14:28:59.928020",
+  "summary": {
+    "total": 3,
+    "pass": 3,
+    "fail": 0,
+    "blocked": 0
+  },
+  "results": [
+    {
+      "id": "A03",
+      "group": "rag",
+      "point": "a-2 Dense/Sparse 混合检索 (8%)",
+      "steps": "直接调用 app.rag.hybrid.search_with_rerank，检查每条 Hit 的 dense_score / sparse_score 与邻块独立锚点",
+      "expected": "两路分数均非零、RRF 融合、重排后 top 有序、每条证据 bbox 独立",
+      "actual": "10 条命中，稠密/稀疏双通道均有贡献，锚点全部独立",
+      "status": "PASS",
+      "elapsed_s": 21.0,
+      "evidence": {
+        "hits": 10,
+        "top": [
+          {
+            "doc": "1706.03762v1.pdf",
+            "page": 7,
+            "score": 0.9633,
+            "dense": 0.6825,
+            "sparse": 48.1828,
+            "neighbor_of": "",
+            "anchor": "[p7@107,153,504,206]",
+            "text": "We trained our models on one machine with 8 NVIDIA P100 GPUs. For our base models using th"
+          },
+          {
+            "doc": "1706.03762v1_img.pdf",
+            "page": 7,
+            "score": 0.9633,
+            "dense": 0.6821,
+            "sparse": 48.1828,
+            "neighbor_of": "",
+            "anchor": "[p7@36,120,575,148]",
+            "text": "We trained our models on one machine with 8 NVIDIA P100 GPUs. For our base models using th"
+          },
+          {
+            "doc": "1706.03762v1_img.pdf",
+            "page": 7,
+            "score": 0.9161,
+            "dense": 0.6441,
+            "sparse": 39.201,
+            "neighbor_of": "",
+            "anchor": "[p7@36,677,575,744]",
+            "text": "On the WMT 2014 English-to-German translation task, Our big transformer model (Transformer"
+          },
+          {
+            "doc": "1706.03762v1.pdf",
+            "page": 7,
+            "score": 0.9079,
+            "dense": 0.6449,
+            "sparse": 39.0092,
+            "neighbor_of": "",
+            "anchor": "[p7@107,657,504,752]",
+            "text": "On the WMT 2014 English-to-German translation task, Our big transformer model (Transformer"
+          },
+          {
+            "doc": "1706.03762v1_img.pdf",
+            "page": 1,
+            "score": 0.7395,
+            "dense": 0.6197,
+            "sparse": 11.4722,
+            "neighbor_of": "",
+            "anchor": "[p1@36,597,575,616]",
+            "text": "The dominant sequence transduction models are based on complex recurrent or convolutional "
+          },
+          {
+            "doc": "2002.04745v2.pdf",
+            "page": 11,
+            "score": 0.6304,
+            "dense": 0.6463,
+            "sparse": 32.3196,
+            "neighbor_of": "",
+            "anchor": "[p11@55,322,290,487]",
+            "text": "The conﬁguration of IWLST14 De-En task is the same as in Section 31. For the WMT14 En-De t"
+          },
+          {
+            "doc": "1706.03762v1_img.pdf",
+            "page": 8,
+            "score": 0.5794,
+            "dense": 0.6386,
+            "sparse": 30.7797,
+            "neighbor_of": "",
+            "anchor": "[p8@36,658,575,744]",
+            "text": "We trained a 4-layer transformer with $d_{model} = 1024$ on the Wall Street Journal (WSJ) "
+          },
+          {
+            "doc": "1706.03762v1.pdf",
+            "page": 8,
+            "score": 0.5711,
+            "dense": 0.6303,
+            "sparse": 30.6852,
+            "neighbor_of": "",
+            "anchor": "[p8@107,671,505,752]",
+            "text": "We trained a 4-layer transformer with dmodel = 1024 on the Wall Street Journal (WSJ) porti"
+          }
+        ],
+        "has_dense": true,
+        "has_sparse": true,
+        "distinct_anchors": true
+      }
+    },
+    {
+      "id": "A04",
+      "group": "rag",
+      "point": "a-2 10 条引用溯源准确率 (8%)",
+      "steps": "生成问答引用，逐条按 [pN@bbox] 回 PDF 取该矩形文本，与 evidence.text 比对",
+      "expected": ">=9/10 命中，坐标合法，文本重合",
+      "actual": "溯源命中 10/10",
+      "status": "PASS",
+      "elapsed_s": 39.7,
+      "evidence": {
+        "total": 10,
+        "hit": 10,
+        "detail": [
+          {
+            "doc": "2002.04745v2.pdf",
+            "page": 11,
+            "bbox": [
+              307.1,
+              69.5,
+              543.1,
+              194.1
+            ],
+            "scanned": false,
+            "method": "bbox_word_coverage",
+            "coverage": 0.934,
+            "bbox_legal": true,
+            "bbox_words": 58,
+            "result": "HIT"
+          },
+          {
+            "doc": "1706.03762v1.pdf",
+            "page": 7,
+            "bbox": [
+              107.5,
+              153.1,
+              504.2,
+              206.8
+            ],
+            "scanned": false,
+            "method": "bbox_word_coverage",
+            "coverage": 0.932,
+            "bbox_legal": true,
+            "bbox_words": 49,
+            "result": "HIT"
+          },
+          {
+            "doc": "1706.03762v1_img.pdf",
+            "page": 7,
+            "bbox": [
+              36.7,
+              120.8,
+              575.3,
+              148.2
+            ],
+            "scanned": true,
+            "method": "ocr_text+bbox+page_render",
+            "coverage": 1.0,
+            "bbox_legal": true,
+            "page_px": "612x793",
+            "result": "HIT"
+          },
+          {
+            "doc": "1706.03762v1_img.pdf",
+            "page": 7,
+            "bbox": [
+              36.7,
+              677.7,
+              575.3,
+              744.9
+            ],
+            "scanned": true,
+            "method": "ocr_text+bbox+page_render",
+            "coverage": 1.0,
+            "bbox_legal": true,
+            "page_px": "612x793",
+            "result": "HIT"
+          },
+          {
+            "doc": "1706.03762v1.pdf",
+            "page": 7,
+            "bbox": [
+              107.7,
+              657.8,
+              504.2,
+              752.3
+            ],
+            "scanned": false,
+            "method": "bbox_word_coverage",
+            "coverage": 0.91,
+            "bbox_legal": true,
+            "bbox_words": 59,
+            "result": "HIT"
+          },
+          {
+            "doc": "2002.04745v2.pdf",
+            "page": 11,
+            "bbox": [
+              55.1,
+              322.2,
+              290.7,
+              487.5
+            ],
+            "scanned": false,
+            "method": "bbox_word_coverage",
+            "coverage": 0.938,
+            "bbox_legal": true,
+            "bbox_words": 89,
+            "result": "HIT"
+          },
+          {
+            "doc": "1706.03762v1.pdf",
+            "page": 1,
+            "bbox": [
+              143.9,
+              361.2,
+              469.8,
+              523.9
+            ],
+            "scanned": false,
+            "method": "bbox_word_coverage",
+            "coverage": 0.937,
+            "bbox_legal": true,
+            "bbox_words": 113,
+            "result": "HIT"
+          },
+          {
+            "doc": "1706.03762v1_img.pdf",
+            "page": 1,
+            "bbox": [
+              36.7,
+              597.8,
+              575.3,
+              616.6
+            ],
+            "scanned": true,
+            "method": "ocr_text+bbox+page_render",
+            "coverage": 1.0,
+            "bbox_legal": true,
+            "page_px": "612x793",
+            "result": "HIT"
+          },
+          {
+            "doc": "2002.04745v2.pdf",
+            "page": 11,
+            "bbox": [
+              307.1,
+              202.8,
+              543.2,
+              272.7
+            ],
+            "scanned": false,
+            "method": "bbox_word_coverage",
+            "coverage": 1.0,
+            "bbox_legal": true,
+            "bbox_words": 43,
+            "result": "HIT"
+          },
+          {
+            "doc": "1706.03762v1.pdf",
+            "page": 7,
+            "bbox": [
+              107.5,
+              241.3,
+              504.0,
+              263.8
+            ],
+            "scanned": false,
+            "method": "bbox_word_coverage",
+            "coverage": 1.0,
+            "bbox_legal": true,
+            "bbox_words": 24,
+            "result": "HIT"
+          }
+        ],
+        "criteria": "普通 PDF：证据实词在 bbox 内覆盖率≥0.75 且坐标合法；扫描件：OCR 原文一致 + bbox 合法 + 页图可渲染（PDF 无文本层）"
+      }
+    },
+    {
+      "id": "C07",
+      "group": "stream",
+      "point": "e-3 Token 级流式输出",
+      "steps": "请求 SSE，解析 thinking/token/done 事件，校验 token 拼接与最终答案一致",
+      "expected": "多个真实 token 片段、思考过程事件齐全、拼接无损、引用校验有效",
+      "actual": "39 个 token 片段无损拼接，思考阶段 ['plan', 'retrieve', 'read', 'verify']，引用校验 6/6",
+      "status": "PASS",
+      "elapsed_s": 2.2,
+      "evidence": {
+        "chunks": 39,
+        "elapsed_s": 2.2,
+        "thinking_stages": [
+          "plan",
+          "retrieve",
+          "read",
+          "verify"
+        ],
+        "joined_chars": 247,
+        "raw_equals_tokens": true,
+        "verify": {
+          "total": 6,
+          "valid": 6,
+          "invalid": 0,
+          "rate": 1.0,
+          "invalid_anchors": [],
+          "invalid_refs": [],
+          "bad_numbers": [],
+          "cleaned": "Transformer 的核心机制是完全依赖自注意力机制来建模输入与输出之间的全局依赖关系，摒弃了传统的循环神经网络（RNN）和卷积神经网络（CNN） [3] [p1@36,597,575,616]。该架构通过多头自注意力机制并行计算所有位置的表示，显著提升了训练效率并减少了序列计算的依赖 [10] [p2@36,263,575,301]。相比基于卷积或递归的模型，Transformer 能在常数时间内捕捉任意两个位置间的依赖，克服了长距离依赖学习困难的问题 [10]。其设计使得模型在机器翻译任务中实现了更高的并行化程度和更短的训练时间，同时达到新的性能上限 [3]。",
+          "has_citation": true
+        },
+        "evidence": 11,
+        "first": "Transformer",
+        "answer_head": "Transformer 的核心机制是完全依赖自注意力机制来建模输入与输出之间的全局依赖关系，摒弃了传统的循环神经网络（RNN）和卷积神经网络（CNN） [3] [p1@36,597,575,616]。该架构通过多头自注意力机制并行计算所有位置的表示，显著提升了训练效率并减少了序列计算的依赖 [10] [p2@36,26"
+      }
+    }
+  ]
+}

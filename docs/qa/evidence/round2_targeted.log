@@ -1,0 +1,23 @@
+Building prefix dict from the default dictionary ...
+[QA] 20261111_120223 BASE=http://127.0.0.1:8013 用例 11 条
+  [PASS  ] E02   c-1 代码质量                                2.3s  7887 行，模块全部可导入，无明文密钥
+12:02:26 | DEBUG   | jieba                    | Building prefix dict from the default dictionary ...
+Loading model from cache <user>\AppData\Local\Temp\jieba.cache
+12:02:26 | DEBUG   | jieba                    | Loading model from cache <user>\AppData\Local\Temp\jieba.cache
+Loading model cost 0.738 seconds.
+12:02:27 | DEBUG   | jieba                    | Loading model cost 0.738 seconds.
+Prefix dict has been built successfully.
+12:02:27 | DEBUG   | jieba                    | Prefix dict has been built successfully.
+12:02:39 | INFO    | app.rag.store            | 向量后端：Chroma (<repo>\data\chroma)
+12:02:39 | INFO    | app.rag.hybrid           | rerank 生效：16→8 条，耗时 345ms，top1=0.956
+  [PASS  ] A03   a-2 Dense/Sparse 混合检索 (8%)             13.5s  9 条命中，稠密/稀疏双通道均有贡献，锚点全部独立
+  [FAIL  ] A06   a-4 Function Calling 外部 API (6%)        0.0s  外部工具调用失败 HTTP 200
+  [PASS  ] B01   b-1 图论算法筛选核心文献 (10%)                    0.2s  30 节点/146 边，PageRank 独立复算最大偏差 4.8e-07，入度零误差
+  [PASS  ] B02   b-1 Future Work 自动提炼去重 (10%)            0.5s  提炼 60 条，其中 48 条命中后续论文
+  [FAIL  ] B03   b-2 三层语义去重 (8%)                         0.0s  去重层未命中：['SimHash']
+  [PASS  ] B05   b-2 GitHub 复现性对比 (8%)                   3.2s  {"items": [{"doc_id": "dc7092cdf7b5c", "title": "Layer Normalization", "year": "2016", "repos": ["ivendrov/ord
+  [PASS  ] C09   硬性用例 4：CSV 转 TikZ/Mermaid               0.0s  Mermaid 与 TikZ 均保留全部数值
+  [PASS  ] A06B  a-4 工具超时/失败重试/降级 (6%)                  14.1s  超时重试 3 次、失败重试 2 次，均降级到本地库并标注 source
+  [PASS  ] A06C  a-4 Function Calling 决策 (6%)            3.3s  LLM 选定 arxiv_search，真实执行返回 1 条（local_library）
+  [PASS  ] F01   f-2 开源潜力与推广                             0.0s  交付要素齐全
+[QA] 证据 -> <repo>\docs\qa\evidence\run_20261111_120223.json

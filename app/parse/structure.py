@@ -626,6 +626,52 @@ def parse_pdf(path: str, max_pages: int | None = None) -> ParsedDoc:
     return parsed
 
 
+def _fallback_ocr_references(blocks: list[Block]) -> list[dict]:
+    """OCR 参考区兜底：标题与条目常粘成同一块（"References\\n[1] ..."）。
+
+    `RE_REF_HEAD` 要求整块文本就是 "References"，逐块匹配会把整个参考区漏掉，
+    实测扫描件 refs=0 而正文里明明有 [1]–[36]（QA A05）。
+    这里改为按 `[n]` 标签切分参考区整段文本，不依赖分块边界。
+    """
+    start = None
+    for i, b in enumerate(blocks):
+        first = (b.text.strip().splitlines() or [""])[0].strip()
+        if RE_REF_HEAD.match(first):
+            start = i
+            break
+    if start is None:
+        return []
+
+    tail = "\n".join(b.text for b in blocks[start:])
+    lines = tail.splitlines()
+    if lines and RE_REF_HEAD.match(lines[0].strip()):
+        tail = "\n".join(lines[1:])
+
+    parts = re.split(r"\[(\d{1,3})\]", tail)
+    refs: list[dict] = []
+    seen: set[int] = set()
+    for j in range(1, len(parts), 2):
+        idx = int(parts[j])
+        body = re.sub(r"\s+", " ", parts[j + 1] if j + 1 < len(parts) else "").strip()
+        body = re.sub(r"^\d{1,2}\s+", "", body).strip()
+        if idx in seen or not (20 <= len(body) <= 1000):
+            continue
+        if not re.search(r"(?:19|20)\d{2}", body) and "arxiv" not in body.lower():
+            continue
+        seen.add(idx)
+        b0 = blocks[start]
+        refs.append({
+            "index": idx, "text": f"[{idx}] {body}",
+            "page": b0.page, "bbox": [round(v, 1) for v in b0.bbox],
+            "anchor": b0.anchor,
+        })
+    if refs:
+        for b in blocks[start + 1:]:
+            if b.kind == "text":
+                b.kind = "reference"
+    return refs
+
+
 def finalize_ocr_structure(parsed: ParsedDoc) -> ParsedDoc:
     """OCR 回填后的结构重建：保留标题层级，补分类 / 章节树 / 参考文献 / 元信息。
 
@@ -666,8 +712,10 @@ def finalize_ocr_structure(parsed: ParsedDoc) -> ParsedDoc:
                 }
             )
 
-    # 3) 参考文献
+    # 3) 参考文献（OCR 分块把标题和条目粘在一起时走兜底切分）
     parsed.references = _extract_references(parsed.blocks)
+    if not parsed.references:
+        parsed.references = _fallback_ocr_references(parsed.blocks)
 
     # 4) 标题 / 作者 / 摘要：首页区块（OCR 文本前几行就是标题与作者）
     page1 = [b for b in parsed.blocks if b.page == 1]

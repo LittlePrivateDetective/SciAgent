@@ -233,3 +233,37 @@ class LLMCall(Base):
     completion_tokens: Mapped[int] = mapped_column(Integer, default=0)
     latency_ms: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+
+
+class TrashEntry(Base):
+    """回收站：被删除文献的可恢复快照。
+
+    QA 事故复盘（2026-11-11）：原实现 DELETE 无二次确认、无审计、不可恢复，
+    一次误触就永久丢掉 7 篇 / 7110 个检索块。现在删除只写快照 + 审计日志，
+    源文件始终保留在磁盘，恢复时重新解析即可（低频操作，允许慢）。
+    """
+
+    __tablename__ = "trash_entries"
+
+    doc_id: Mapped[str] = mapped_column(String(24), primary_key=True)
+    filename: Mapped[str] = mapped_column(String(255))
+    title: Mapped[str] = mapped_column(String(512), default="")
+    file_path: Mapped[str] = mapped_column(String(512), default="")
+    chunk_count: Mapped[int] = mapped_column(Integer, default=0)
+    page_count: Mapped[int] = mapped_column(Integer, default=0)
+    actor: Mapped[str] = mapped_column(String(64), default="")
+    reason: Mapped[str] = mapped_column(String(255), default="")
+    deleted_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+
+
+class AuditLog(Base):
+    """关键写操作审计：谁、什么时候、对哪篇、做了什么。"""
+
+    __tablename__ = "audit_logs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    action: Mapped[str] = mapped_column(String(32), index=True)
+    doc_id: Mapped[str] = mapped_column(String(24), default="", index=True)
+    detail: Mapped[str] = mapped_column(Text, default="")
+    actor: Mapped[str] = mapped_column(String(64), default="")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, index=True)

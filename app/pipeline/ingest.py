@@ -11,12 +11,12 @@ import time
 import uuid
 from pathlib import Path
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.core.logger import get_logger
-from app.db.models import Chunk, Citation, Document, Section
+from app.db.models import AuditLog, Chunk, Citation, Document, Section, TrashEntry
 from app.parse.ocr import ocr_page
 from app.parse.structure import (
     Block,
@@ -402,10 +402,26 @@ def ingest(
     }
 
 
-def delete_document(db: Session, doc_id: str) -> bool:
+def delete_document(db: Session, doc_id: str, actor: str = "", reason: str = "") -> bool:
+    """删除文献，但**先留可恢复快照 + 审计**。
+
+    为什么物理删块而只保留元数据快照：软删标记会让 12656 个已删块继续留在
+    BM25/Chroma 语料里污染检索，要改检索层好几处；而源文件本来就在磁盘上，
+    恢复 = 重新解析一次（低频操作），换来的是检索层的绝对干净。
+    """
     doc = db.get(Document, doc_id)
     if not doc:
         return False
+    n_chunks = db.scalar(select(func.count(Chunk.id)).where(Chunk.doc_id == doc_id)) or 0
+    snap = {
+        "doc_id": doc_id, "filename": doc.filename, "title": doc.title,
+        "file_path": doc.file_path, "chunk_count": n_chunks,
+        "page_count": doc.page_count, "actor": actor or "ui", "reason": reason or "user_delete",
+    }
+    db.merge(TrashEntry(**snap))
+    db.add(AuditLog(action="delete", doc_id=doc_id,
+                    detail=json.dumps(snap, ensure_ascii=False), actor=actor or "ui"))
+
     db.execute(delete(Chunk).where(Chunk.doc_id == doc_id))
     db.execute(delete(Section).where(Section.doc_id == doc_id))
     db.execute(delete(Citation).where(Citation.src_doc_id == doc_id))
@@ -417,8 +433,39 @@ def delete_document(db: Session, doc_id: str) -> bool:
         get_store().delete_by_doc(doc_id)
     except Exception as exc:  # noqa: BLE001 向量库清理失败不影响主流程
         log.warning("向量库清理失败：%s", exc)
-    log.info("已删除文档 %s", doc_id)
+    log.info("已删除文档 %s（进入回收站，%d 块，源文件保留）", doc_id, n_chunks)
     return True
+
+
+def restore_document(db: Session, doc_id: str, actor: str = "") -> dict:
+    """从回收站恢复：重新解析磁盘上的原始 PDF。"""
+    entry = db.get(TrashEntry, doc_id)
+    if not entry:
+        return {"ok": False, "error": "回收站中没有这条记录"}
+    path = Path(entry.file_path)
+    if not path.exists():
+        return {"ok": False, "error": f"源文件已不存在：{entry.file_path}"}
+    if db.get(Document, doc_id):
+        return {"ok": True, "restored": False, "message": "该文献已在库中，无需恢复"}
+
+    result = ingest(db, path, entry.filename, force=True)
+    if not (result.get("ok") or result.get("stage") == "duplicate"):
+        return {"ok": False, "error": result.get("error") or "重新解析失败", "ingest": result}
+
+    new_id = (result.get("doc") or {}).get("id", "")
+    db.delete(entry)
+    db.add(AuditLog(action="restore", doc_id=new_id or doc_id,
+                    detail=json.dumps({"filename": entry.filename,
+                                       "old_doc_id": doc_id,
+                                       "chunks": result.get("chunks", 0)}, ensure_ascii=False),
+                    actor=actor or "ui"))
+    db.commit()
+    invalidate_cache()
+    invalidate_graph()
+    # 重新解析会生成新的 doc_id，必须回给调用方，否则前端/QA 还拿旧 id 查会 404
+    return {"ok": True, "restored": True, "doc_id": new_id,
+            "old_doc_id": doc_id, "filename": entry.filename,
+            "chunks": result.get("chunks", 0), "message": "已从回收站恢复"}
 
 
 def reembed_all(batch_size: int = 48) -> dict:

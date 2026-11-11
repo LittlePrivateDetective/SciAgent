@@ -1,0 +1,4 @@
+[QA] 20261111_141540 BASE=http://127.0.0.1:8013 用例 2 条
+  [PASS  ] E03   c-3 Docker 配置一致性 + 布局预演                48.2s  COPY 5 项齐全、15 个第三方依赖全部声明、零密钥 mock 启动 5 接口全 200（has_dotenv=False）
+  [BLOCK] E03D  c-3 真实 docker build（【待实测】）              0.0s  本机无 Docker，无法执行 docker build；已由 E03 完成等价布局预演，真实构建需在装 Docker 的机器执行：docker compose up -d --build
+[QA] 证据 -> <repo>\docs\qa\evidence\run_20261111_141540.json

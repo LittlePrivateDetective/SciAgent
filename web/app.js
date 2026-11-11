@@ -61,6 +61,8 @@ const app = createApp({
       question: "",
       mode: "qa",
       scope: "all",
+      streamMode: false,
+      trash: { visible: false, items: [] },
       loading: false,
       rescanning: false,
       centerView: "reader",
@@ -239,8 +241,9 @@ const app = createApp({
       if (!q || this.loading) return;
       this.question = "";
       this.messages.push({ role: "user", html: mdToHtml(q) });
-      this.loading = true;
       this.scrollChat();
+      if (this.streamMode) return this.askStream(q);
+      this.loading = true;
 
       // 检索范围：勾选了文献就用勾选的；否则按"当前文献"限定时只用正在读的那篇。
       // 没有这个约束，库内 37 篇时问"这篇论文的第六作者"会被别的文献抢答。
@@ -269,6 +272,87 @@ const app = createApp({
         this.loading = false;
         this.scrollChat();
       }
+    },
+
+    docIdsFor() {
+      // 对比模式必须跨文献，否则"当前文献"会把对比限制成一篇自己跟自己比
+      let ids = this.selection.length ? this.selection : [];
+      if (!ids.length && this.mode !== "compare" && this.scope === "doc" && this.activeDoc) {
+        ids = [this.activeDoc.id];
+      }
+      return ids;
+    },
+
+    /* SSE 流式问答：thinking 事件渲染为思考时间线，token 事件逐字追加。
+     * 不套 JSON 包裹，所以拿到的是模型真实 delta；done 事件再补证据与校验。 */
+    async askStream(q) {
+      const msg = { role: "assistant", html: "", evidence: [], verify: {}, trace: [], thinking: [] };
+      this.messages.push(msg);
+      this.loading = true;
+      let raw = "";
+      try {
+        const resp = await fetch("/api/chat/stream", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question: q, doc_ids: this.docIdsFor(), mode: this.mode }),
+        });
+        if (!resp.ok) throw new Error("HTTP " + resp.status);
+        const reader = resp.body.getReader();
+        const dec = new TextDecoder();
+        let buf = "";
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buf += dec.decode(value, { stream: true });
+          let cut;
+          while ((cut = buf.indexOf("\n\n")) >= 0) {
+            const line = buf.slice(0, cut).trim();
+            buf = buf.slice(cut + 2);
+            if (!line.startsWith("data: ")) continue;
+            const payload = line.slice(6);
+            if (payload === "[DONE]") continue;
+            let ev;
+            try { ev = JSON.parse(payload); } catch (e) { continue; }
+            if (ev.event === "token") {
+              raw += ev.text || "";
+              msg.html = mdToHtml(raw);
+            } else if (ev.event === "thinking") {
+              msg.thinking.push(`${ev.stage} · ${ev.text}`);
+            } else if (ev.event === "done") {
+              msg.html = mdToHtml(ev.answer || raw);
+              msg.evidence = ev.evidence || [];
+              msg.verify = ev.verify || {};
+            } else if (ev.event === "error") {
+              msg.thinking.push("错误边界 · " + ev.text);
+              if (!msg.html) msg.html = mdToHtml("生成中断，已安全降级：" + ev.text);
+            }
+            this.scrollChat();
+          }
+        }
+        if (!msg.html) msg.html = mdToHtml("（未收到有效内容）");
+      } catch (e) {
+        msg.thinking.push("错误边界 · " + e);
+        msg.html = mdToHtml("请求失败：" + e);
+      } finally {
+        this.loading = false;
+        this.scrollChat();
+      }
+    },
+
+    async openTrash() {
+      const r = await fetch("/api/documents/trash").then((x) => x.json());
+      this.trash.items = r.items || [];
+      this.trash.visible = true;
+    },
+
+    async restoreTrash(t) {
+      const r = await fetch(`/api/documents/${t.doc_id}/restore?actor=ui`, { method: "POST" })
+        .then((x) => x.json());
+      if (r.ok) ElementPlus.ElMessage.success(r.message || "已恢复");
+      else ElementPlus.ElMessage.error(r.error || "恢复失败");
+      await this.openTrash();
+      await this.loadDocs();
+      await this.loadInfo();
     },
 
     scrollChat() {
@@ -561,7 +645,19 @@ const app = createApp({
     },
 
     async removeDoc(d) {
-      await fetch(`/api/documents/${d.id}`, { method: "DELETE" });
+      // P0：原实现点一下就永久删库。现在必须二次确认，且后端只移入回收站。
+      try {
+        await ElementPlus.ElMessageBox.confirm(
+          `确定删除「${d.title || d.filename}」吗？\n会移入回收站，源文件保留，可随时恢复。`,
+          "删除文献", { type: "warning", confirmButtonText: "移入回收站", cancelButtonText: "取消" }
+        );
+      } catch (e) {
+        return;
+      }
+      const r = await fetch(`/api/documents/${d.id}?actor=ui&reason=ui_delete`, { method: "DELETE" })
+        .then((x) => x.json());
+      if (!r.ok) { ElementPlus.ElMessage.error("删除失败"); return; }
+      ElementPlus.ElMessage.success("已移入回收站（左栏「回收站」可恢复）");
       if (this.activeDoc && this.activeDoc.id === d.id) { this.activeDoc = null; this.highlights = []; }
       this.loadDocs();
       this.loadInfo();
@@ -570,4 +666,5 @@ const app = createApp({
 });
 
 app.use(ElementPlus, { locale: ElementPlusLocaleZhCn });
-app.mount("#app");
+// 暴露实例供 QA 回归台驱动真实方法（生产无副作用，也便于评审现场调试）
+window.__sciagent = app.mount("#app");

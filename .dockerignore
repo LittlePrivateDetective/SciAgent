@@ -1,0 +1,20 @@
+# 镜像只需要源码 + 前端 + 说明文档；运行期数据与 QA 产物一律不进镜像。
+# QA 第三轮发现：docs/qa/evidence 下有浏览器 profile 与布局预演副本，
+# 不排除会把数百 MB 垃圾打进镜像，并让预演递归膨胀。
+.git
+.venv
+venv
+__pycache__
+*.pyc
+*.pyo
+.env
+data/
+tests/
+scripts/
+docs/qa/evidence/
+docs/qa/_*/
+*.db
+*.db-shm
+*.db-wal
+*.log
+.DS_Store

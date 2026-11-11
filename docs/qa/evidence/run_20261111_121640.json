@@ -1,0 +1,27 @@
+{
+  "run_id": "20261111_121640",
+  "base": "http://127.0.0.1:8013",
+  "timestamp": "2026-11-11T12:16:43.677722",
+  "summary": {
+    "total": 1,
+    "pass": 0,
+    "fail": 1,
+    "blocked": 0
+  },
+  "results": [
+    {
+      "id": "C07B",
+      "group": "stream",
+      "point": "e-3 前端流式与思考过程可视化 (3%)",
+      "steps": "无头浏览器打开流式开关并发送问题，检查思考时间线与逐 token 答案",
+      "expected": "思考步骤 >=2 且答案真实渲染，无前端报错",
+      "actual": "running…",
+      "status": "FAIL",
+      "elapsed_s": 3.6,
+      "evidence": {
+        "dom_length": 6703,
+        "raw": "running…"
+      }
+    }
+  ]
+}

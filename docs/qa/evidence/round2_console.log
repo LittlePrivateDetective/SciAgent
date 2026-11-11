@@ -1,0 +1,57 @@
+Building prefix dict from the default dictionary ...
+[QA] 20261111_121934 BASE=http://127.0.0.1:8013 用例 35 条
+  [PASS  ] E01   c-3 架构可复现性与部署                           0.2s  Windows / Python 3.13.14 / deepseek-v4.1-flash / chroma / {'documents': 37, 'chunks': 19766, 'tasks': 67, 'les
+  [PASS  ] E02   c-1 代码质量                                2.5s  7935 行，模块全部可导入，无明文密钥
+  [BLOCK] E03   c-3 Docker 可复现                          0.0s  本机无 Docker，无法执行 docker build；配置静态检查：chromadb 在 requirements=True
+  [PASS  ] A01   a-1 Task Planning (9%)                 75.4s  编排节点 ['planner', 'retriever', 'writer', 'writer', 'reviewer', 'reviewer', 'reflector']，耗时 75.4s，答案 3477 字
+  [FAIL  ] A02   a-1 Multi-Agent 路由 (9%)               112.8s  路由模板未分化 qa=compare compare=compare
+12:22:45 | DEBUG   | jieba                    | Building prefix dict from the default dictionary ...
+Loading model from cache <user>\AppData\Local\Temp\jieba.cache
+12:22:45 | DEBUG   | jieba                    | Loading model from cache <user>\AppData\Local\Temp\jieba.cache
+Loading model cost 0.689 seconds.
+12:22:46 | DEBUG   | jieba                    | Loading model cost 0.689 seconds.
+Prefix dict has been built successfully.
+12:22:46 | DEBUG   | jieba                    | Prefix dict has been built successfully.
+12:23:02 | INFO    | app.rag.store            | 向量后端：Chroma (<repo>\data\chroma)
+12:23:03 | INFO    | app.rag.hybrid           | rerank 生效：16→8 条，耗时 365ms，top1=0.956
+  [PASS  ] A03   a-2 Dense/Sparse 混合检索 (8%)             18.3s  10 条命中，稠密/稀疏双通道均有贡献，锚点全部独立
+  [FAIL  ] A04   a-2 10 条引用溯源准确率 (8%)                   30.2s  溯源命中 1/10
+  [FAIL  ] A05   a-3 四类 PDF 解析 (7%)                      0.1s  扫描件标题树/参考文献缺失；长文档解析异常
+  [FAIL  ] A06   a-4 Function Calling 外部 API (6%)       19.2s  arXiv 不可达时未给出可用降级结果
+  [PASS  ] A07   a-5 Prompt 与 Guardrails (5%)           39.0s  两类诱导均未产生被放行的伪造锚点；格式校验生效
+  [PASS  ] B01   b-1 图论算法筛选核心文献 (10%)                    0.3s  37 节点/220 边，PageRank 独立复算最大偏差 4.92e-07，入度零误差
+  [PASS  ] B02   b-1 Future Work 自动提炼去重 (10%)            0.9s  提炼 60 条，其中 56 条命中后续论文
+12:24:33 | INFO    | app.parse.structure      | 解析完成 data\pdf\1706.03762v1.pdf：15 页 / 708 区块 / 30 标题 / 36 参考文献 / 扫描件=False
+  [FAIL  ] B03   b-2 三层语义去重 (8%)                         0.4s  去重层未命中：['SimHash']
+  [PASS  ] B04   b-2 arXiv 版本差异 (8%)                     0.6s  v1↔v7：改写章节 10、新增句 41、删除句 113；/diff 接口 200
+  [PASS  ] B05   b-2 GitHub 复现性对比 (8%)                   2.5s  {"items": [{"doc_id": "dc7092cdf7b5c", "title": "Layer Normalization", "year": "2016", "repos": ["ivendrov/ord
+  [PASS  ] B06   b-3 中英双向同步滚动 (7%)                      12.7s  双栏渲染 OK，已加载段落=5
+英文滚动 700 -&gt; 中文 135
+中文滚动 1300 -&gt; 英文 292 =&gt; 1559
+顶部段落序号 英文=7 中文=7
+RESULT: PASS 双向联动生效且按
+  [PASS  ] B07   b-3 引用一键跳转 (7%)                         2.2s  img.src=/api/documents/dca501d1039dc/page/3.png?dpi=130&amp;t=1794371091011
+高亮框数量=1 页码显示=3 / 15
+RESULT: PASS 锚
+  [PASS  ] C01   c-3 多文档并发分析                             0.5s  3 份真实入库并发完成，耗时 [0.1, 0.0, 0.1]s，无串档、服务存活
+  [PASS  ] C02   c-3 并发问答                               24.7s  4 路并发完成，耗时 [18.2, 23.9, 24.7, 17.4]
+  [PASS  ] C03   c-3 干净环境一键复现                            4.4s  全新环境启动成功，文档数 0，向量后端 sqlite
+  [PASS  ] C04   c-3 长 PDF 打开耗时                          0.1s  页图 74ms / 页元数据 31ms / 章节树 6ms
+  [PASS  ] C05   c-3 20+ 图谱渲染帧率                          2.6s  图谱节点=37 首帧耗时=258ms canvas=998x678
+1s 内 rAF 回调=2（无头虚拟时钟，仅参考）
+RESULT: PASS 20+ 节点图谱渲染，首帧 258ms
+  [PASS  ] C06   c-3 峰值内存/显存                            17.3s  RSS 820→813 MB（Δ-6.6 MB）；GPU：1004 MiB
+  [PASS  ] C07   e-3 Token 级流式输出                         1.8s  41 个 token 片段无损拼接，思考阶段 ['plan', 'retrieve', 'read', 'verify']，引用校验 8/8
+  [FAIL  ] C07B  e-3 前端流式与思考过程可视化 (3%)                   2.1s  已打开流式开关并点击发送，等待 SSE…
+RESULT: FAIL 流式思考过程或答案未渲染
+  [PASS  ] C08   e-3 断网/异常错误边界                           0.0s  异常均被拦截，状态码 [404, 400, 404, 422]
+  [PASS  ] C09   硬性用例 4：CSV 转 TikZ/Mermaid               0.0s  Mermaid 与 TikZ 均保留全部数值
+  [PASS  ] A06B  a-4 工具超时/失败重试/降级 (6%)                   2.7s  超时重试 3 次、失败重试 2 次，均降级到本地库并标注 source
+  [PASS  ] A06C  a-4 Function Calling 决策 (6%)            3.7s  LLM 选定 arxiv_search，真实执行返回 1 条（local_library）
+  [BLOCK] C10   c-1 删除可恢复性与审计 (P0)                      0.2s  上传被判重或返回体缺 doc.id，无法验证恢复链路
+  [PASS  ] D01   d-2 六大核心模块闭环                           24.0s  六模块全部贯通
+  [PASS  ] D02   d-1 文献筛选 / 对比阅读痛点                      59.4s  证据覆盖 5 篇：['1706.03762v1.pdf', '1910.10683v4.pdf', '2005.14165v4.pdf', 'N19-1423.pdf', 'UnderstandingDeepLearni
+  [FAIL  ] C11   c-1 零崩溃 Bug 证据                          1.4s  日志中存在 2 处 Traceback
+  [PASS  ] F02   f-1 学术赋能效率 (5%)                         9.4s  在 6,341,691 字 / 19766 块中用 9.4s 定位 10 条证据（4926 字），过滤 99.922% 语料，引用校验 6/6
+  [PASS  ] F01   f-2 开源潜力与推广                             0.0s  交付要素齐全
+[QA] 证据 -> <repo>\docs\qa\evidence\run_20261111_121934.json

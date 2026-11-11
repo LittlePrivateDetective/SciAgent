@@ -1,0 +1,4 @@
+[QA] 20261111_144245 BASE=http://127.0.0.1:8013 用例 1 条
+  [PASS  ] C06   c-3 峰值内存/显存                            12.9s  RSS 629→630 MB（Δ+0.6 MB）；GPU：1020 MiB
+[QA] 证据 -> <repo>\docs\qa\evidence\run_20261111_144245.json
+[QA] 定向回归 1 条，不更新 latest.json

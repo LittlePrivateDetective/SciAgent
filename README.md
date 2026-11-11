@@ -27,8 +27,15 @@ SciAgent 让模型**只能引用检索到的 chunk**，服务端把 chunk 换成
 | 多 Agent 编排 | ✅ | LangGraph 七节点 + 条件边动态重规划 + Reflector 写长期记忆 |
 | 引用图谱 | ✅ | 三级引用匹配（arXiv/DOI/标题）+ PageRank（幂迭代自实现）+ 介数中心性 + 社区发现 + ECharts 前端 |
 | 领域综述 | ✅ | 基于图谱影响力排序，自动生成带 `[n]` 引用的四段式迷你综述 |
-| 阅读器 | ⏳ 基础版 | 页图 + bbox 高亮 + 章节树；PDF.js 画布渲染待接 |
-| 翻译/写作/推荐 | ⏳ 未开始 | P1/P2 排期见 `docs/方案设计-v1.md` |
+| 阅读器 | ✅ | 页图 + bbox 高亮 + 一~三级章节树；任意证据/译文可一键跳回原文同页同框 |
+| 中英对照 | ✅ | 双栏双向联动滚动（按段落锚点对齐）、按页懒翻译 + 落库缓存、`#bi` 深链 |
+| 外部工具链 | ✅ | Function Calling 选工具 → arXiv / GitHub / Crossref 真实 API；重试 → 降级 → 如实标注 |
+| 学术图表 | ✅ | CSV 实验表格无损转 Mermaid xychart / TikZ(pgfplots) |
+| Future Work 对撞 | ✅ | 候选句抽取 → 4-gram 语义去重 → 与库内后续论文关键词对撞 |
+| 代码复现性 | ✅ | 正文抽 GitHub 仓库 → star/许可证/最后更新/归档状态加权分级 |
+| 流式输出 | ✅ | SSE token 级增量 + 思考过程时间线 + 完成事件带证据与校验 |
+| 数据安全 | ✅ | 删除进回收站（可恢复）+ 审计日志 + 前端二次确认 |
+| 写作 Copilot / 多用户推荐 | ⏳ 未开始 | P2 排期见 `docs/方案设计-v1.md` |
 
 ## 架构
 
@@ -89,10 +96,14 @@ app/
 │              anchors 锚点校验 / dedup 内容去重
 ├── agents/    state 状态 / prompts 提示词 / nodes 七节点 / graph 编排
 ├── pipeline/  ingest 入库管线（解析→去重→切块→向量化→落库）
+├── tools/     external 外部 API 工具链 / chart CSV→Mermaid·TikZ
+├── research/  future_work 提炼对撞 / reproducibility 复现性评估
 └── api/       routes 全部 HTTP 接口
 web/           Vue3 + Element Plus 单页（CDN，无构建链）
 data/          pdf 测试集 / uploads 上传 / pages 页图 / chroma 向量 / sciagent.db
-docs/          方案设计、官方需求文档、执行备忘录
+docs/          方案设计、官方需求文档、执行备忘录、qa/ 全套测试交付物
+tests/         qa_suite 回归台 / qa_report 报告 / browser_cdp 浏览器驱动 /
+               container_rehearsal 容器布局预演 / restore_scanned 扫描件恢复
 ```
 
 ## 主要接口
@@ -109,6 +120,23 @@ docs/          方案设计、官方需求文档、执行备忘录
 | POST | `/api/graph/survey` | 基于图谱影响力排序生成带引用的领域综述 |
 | POST | `/api/library/rescan` | 批量导入官方测试集 |
 | GET | `/api/system/info` | 模型路由/向量后端/OCR 能力自检 |
+| GET/POST | `/api/documents/{id}/bilingual[/translate]` | 中英对照段落 / 按需翻译 |
+| POST | `/api/chat/stream` | SSE 流式问答（thinking / token / done 事件） |
+| GET/POST | `/api/tools/*` | 工具健康检查、schema、显式调用、LLM Function Calling 决策 |
+| POST | `/api/tools/csv2chart` | CSV → Mermaid / TikZ |
+| GET | `/api/research/future-work` | Future Work 提炼去重与后续论文对撞 |
+| GET | `/api/research/reproducibility` | 论文开源代码复现性评估 |
+| GET | `/api/documents/trash` · `/api/audit` | 回收站与关键写操作审计 |
+| POST | `/api/documents/{id}/restore` | 从回收站恢复（重新解析源文件） |
+
+## 回归测试
+
+```bash
+./.venv/Scripts/python.exe tests/qa_suite.py --group all      # 全量 QA（证据落 docs/qa/evidence/）
+./.venv/Scripts/python.exe tests/qa_report.py                 # 生成测试总表与回归报告
+```
+
+交付物见 `docs/qa/`：测试用例总表、缺陷与修复记录、最终回归报告、逐项自评、可复现交付说明。
 
 ## 批量脚本
 
@@ -139,9 +167,11 @@ docker compose up -d --build     # 单容器，数据挂 ./data
 
 - `EMB_PROVIDER=hash` 时语义检索退化，属于兜底档，不是交付档；
 - 公式只抽 bbox 不做 LaTeX 重建（刻意选择：可验证 > 花哨）；
-- 541 页书籍首次解析约 40–60s，走后台任务不阻塞 UI；
-- 前端 PDF.js 画布渲染与中英对照阅读在 P1 排期。
+- 541 页书籍首次解析实测 **260 秒**（其中向量化 246 秒），走后台任务不阻塞 UI；
+- 本机无 Docker，`docker build` 与真机图谱帧率标【待实测】，详见 `docs/qa/05_delivery.md`；
+- arXiv 导出 API 在本机网络不可达，工具层自动降级到本地语料并标注 `degraded=true`；
+- 前端 PDF.js 画布渲染（当前为页图 + bbox 覆盖层）、写作 Copilot、多用户推荐仍在 P2 排期。
 
 ## 许可证
 
-代码 Apache-2.0；`data/pdf/` 下论文版权归原作者，仅用于赛事测试。
+代码 MIT（见 `LICENSE`）；`data/pdf/` 下论文版权归原作者，仅用于赛事测试。

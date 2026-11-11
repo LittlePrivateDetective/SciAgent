@@ -1,0 +1,475 @@
+{
+  "run_id": "20261111_140012",
+  "base": "http://127.0.0.1:8013",
+  "timestamp": "2026-11-11T14:02:34.363549",
+  "summary": {
+    "total": 9,
+    "pass": 7,
+    "fail": 2,
+    "blocked": 0
+  },
+  "results": [
+    {
+      "id": "A02",
+      "group": "agent",
+      "point": "a-1 Multi-Agent 路由 (9%)",
+      "steps": "qa 模式问不含对比意图的问题、compare 模式问对比问题，比较 writer.route 的 template / trigger 与答案形态",
+      "expected": "qa→qa 模板（trigger=default）要点式；compare→compare 模板（trigger=explicit_mode）表格",
+      "actual": "qa→qa(default) / compare→compare(explicit_mode)，决策写入 trace",
+      "status": "PASS",
+      "elapsed_s": 93.9,
+      "evidence": {
+        "routes": {
+          "qa": {
+            "status": 200,
+            "question": "Transformer 的编码器每一层由哪几个子层组成？",
+            "route": {
+              "agent": "writer",
+              "tool": "route",
+              "t": 1794376832.703,
+              "mode": "qa",
+              "template": "qa",
+              "trigger": "default",
+              "intent_hint": false,
+              "evidence_docs": 3
+            },
+            "agents": [
+              "planner",
+              "retriever",
+              "writer",
+              "writer",
+              "reviewer",
+              "reviewer",
+              "reflector"
+            ],
+            "evidence": 11,
+            "is_table": true,
+            "answer_head": "编码器每一层由两个子层组成：第一个是 multi-head self-attention mechanism，第二个是 simple, position-wise fully connected feed-forward network。["
+          },
+          "compare": {
+            "status": 200,
+            "question": "对比 BERT 与 GPT-3 在训练目标上的差异",
+            "route": {
+              "agent": "writer",
+              "tool": "route",
+              "t": 1794376856.955,
+              "mode": "compare",
+              "template": "compare",
+              "trigger": "explicit_mode",
+              "intent_hint": true,
+              "evidence_docs": 3
+            },
+            "agents": [
+              "planner",
+              "retriever",
+              "writer",
+              "writer",
+              "reviewer",
+              "reviewer",
+              "reflector"
+            ],
+            "evidence": 11,
+            "is_table": true,
+            "answer_head": "| 维度 | BERT 的做法 | GPT-3 的做法 |\n|---|---|---|\n| 预训练目标构成 | 使用两个无监督任务进行预训练 [5]；Task #1 为 Masked LM [2][5]；此外使用 next sentence"
+          }
+        },
+        "note": "产品按意图优先：显式 qa 模式遇到含「对比」的问题仍会走 compare 模板，trigger=intent_hint 记录该决策；本用例用不同问题隔离两种显式模式"
+      }
+    },
+    {
+      "id": "A04",
+      "group": "rag",
+      "point": "a-2 10 条引用溯源准确率 (8%)",
+      "steps": "生成问答引用，逐条按 [pN@bbox] 回 PDF 取该矩形文本，与 evidence.text 比对",
+      "expected": ">=9/10 命中，坐标合法，文本重合",
+      "actual": "用例自身抛异常：NameError: name 'Chunk' is not defined",
+      "status": "FAIL",
+      "elapsed_s": 11.5,
+      "evidence": {
+        "traceback": "Traceback (most recent call last):\n  File \"<repo>\\tests\\qa_suite.py\", line 1122, in run\n    status, actual, ev = c[\"fn\"]()\n                         ~~~~~~~^^\n  File \"<repo>\\tests\\qa_suite.py\", line 292, in a04\n    chunk = db.get(Chunk, e[\"chunk_id\"])\n                   ^^^^^\nNameError: name 'Chunk' is not defined\n"
+      }
+    },
+    {
+      "id": "A05",
+      "group": "parse",
+      "point": "a-3 四类 PDF 解析 (7%)",
+      "steps": "对双栏/单栏/扫描件/百页文档检查 sections、kind 分布、refs",
+      "expected": "四类均有标题树、公式/图表/参考文献条目",
+      "actual": "37 篇；扫描件 1、百页+ 2、双栏样本 2002.04745v2.pdf",
+      "status": "PASS",
+      "elapsed_s": 0.1,
+      "evidence": {
+        "scanned": [
+          {
+            "file": "1706.03762v1_img.pdf",
+            "pages": 15,
+            "scanned": 1,
+            "chunks": 90,
+            "sections": 21,
+            "refs": 35,
+            "kinds": {
+              "figure": 5,
+              "table": 5,
+              "text": 80
+            }
+          }
+        ],
+        "long": [
+          {
+            "file": "2303.08774v6.pdf",
+            "pages": 100,
+            "scanned": 0,
+            "chunks": 943,
+            "sections": 120,
+            "refs": 265,
+            "kinds": {
+              "figure": 21,
+              "formula": 5,
+              "reference": 365,
+              "table": 19,
+              "text": 533
+            }
+          },
+          {
+            "file": "UnderstandingDeepLearning_02_09_26_C.pdf",
+            "pages": 541,
+            "scanned": 0,
+            "chunks": 5238,
+            "sections": 1105,
+            "refs": 693,
+            "kinds": {
+              "figure": 271,
+              "formula": 866,
+              "reference": 1132,
+              "text": 2969
+            }
+          }
+        ],
+        "normal_sample": [
+          {
+            "file": "1706.03762v1.pdf",
+            "pages": 15,
+            "scanned": 0,
+            "chunks": 124,
+            "sections": 30,
+            "refs": 36,
+            "kinds": {
+              "figure": 5,
+              "formula": 3,
+              "reference": 36,
+              "table": 5,
+              "text": 75
+            }
+          },
+          {
+            "file": "1607.06450v1.pdf",
+            "pages": 14,
+            "scanned": 0,
+            "chunks": 198,
+            "sections": 30,
+            "refs": 32,
+            "kinds": {
+              "figure": 8,
+              "formula": 59,
+              "table": 4,
+              "text": 127
+            }
+          },
+          {
+            "file": "1707.06347v2.pdf",
+            "pages": 12,
+            "scanned": 0,
+            "chunks": 129,
+            "sections": 19,
+            "refs": 14,
+            "kinds": {
+              "figure": 7,
+              "formula": 40,
+              "table": 6,
+              "text": 76
+            }
+          }
+        ],
+        "total_docs": 37,
+        "two_column_evidence": {
+          "file": "2002.04745v2.pdf",
+          "left": 113,
+          "right": 87
+        }
+      }
+    },
+    {
+      "id": "A06",
+      "group": "tools",
+      "point": "a-4 Function Calling 外部 API (6%)",
+      "steps": "调用 GitHub 真实 API 验证成功路径；调用 arXiv 验证不可达时的诚实降级",
+      "expected": "至少一个外部 API 返回真实在线数据；不可达的如实标 degraded，不伪造",
+      "actual": "GitHub 在线成功（star=15689）；arXiv 不可达→本地库降级 2 条并标注 degraded",
+      "status": "PASS",
+      "elapsed_s": 16.0,
+      "evidence": {
+        "health": {
+          "ok": true,
+          "tools": [
+            "arxiv_search",
+            "github_repo",
+            "crossref_lookup"
+          ],
+          "endpoints": {
+            "arxiv": "export.arxiv.org",
+            "github": "api.github.com",
+            "crossref": "api.crossref.org"
+          },
+          "policy": "重试 → 外部 API → 本地库降级（degraded 标记）"
+        },
+        "github": {
+          "status": 200,
+          "ok": true,
+          "source": "api.github.com",
+          "stars": 15689,
+          "attempts": 1,
+          "error": ""
+        },
+        "arxiv": {
+          "status": 200,
+          "ok": true,
+          "source": "local_library",
+          "degraded": true,
+          "fallback": "arxiv_unavailable_local_corpus",
+          "items": 2,
+          "error": "HTTPStatusError: Redirect response '301 Moved Permanently' for url 'http://export.arxiv.org/api/query?search_query=all%3Aattention+is+all+you+need&start=0&max_results=2&sortBy=r"
+        }
+      }
+    },
+    {
+      "id": "B03",
+      "group": "innov",
+      "point": "b-2 三层语义去重 (8%)",
+      "steps": "重新解析样本 PDF 得到入库时的 full_text，构造同族版本 / 近似文本 / 同名异内容，逐一验证 find_duplicates 的三层判据",
+      "expected": "同族、SimHash 近似、标题相似三层各自按预期理由命中",
+      "actual": "三层均按预期命中；入库 content_hash/simhash 与重解析一致",
+      "status": "PASS",
+      "elapsed_s": 0.4,
+      "evidence": {
+        "documents": 37,
+        "families_with_multi": {},
+        "sample": {
+          "id": "dce63a636cf64",
+          "arxiv": "1706.03762v1",
+          "title": "Attention Is All You Need"
+        },
+        "full_text_chars": 36851,
+        "hash_matches_stored": true,
+        "simhash_matches_stored": true,
+        "layer1_family": [
+          {
+            "reason": "同族版本",
+            "similarity": 0.99
+          },
+          {
+            "reason": "正文指纹近似(汉明距离=3)",
+            "similarity": 0.953
+          }
+        ],
+        "layer2_near": [
+          {
+            "reason": "正文指纹近似(汉明距离=1)",
+            "similarity": 0.984
+          },
+          {
+            "reason": "正文指纹近似(汉明距离=2)",
+            "similarity": 0.969
+          }
+        ],
+        "layer3_title": [
+          {
+            "reason": "标题高度相似(1.00)",
+            "similarity": 1.0
+          },
+          {
+            "reason": "同族版本",
+            "similarity": 0.99
+          }
+        ],
+        "checks": {
+          "同族": true,
+          "SimHash": true,
+          "标题": true
+        }
+      }
+    },
+    {
+      "id": "C01",
+      "group": "eng",
+      "point": "c-3 多文档并发分析",
+      "steps": "取 3 份**尚未入库**的真实 PDF 并发上传，再逐篇抽查首页块，核对无串档",
+      "expected": "全部成功或正确判重；新入库文档首页块互不混淆；服务仍健康",
+      "actual": "3 份真实入库并发完成，耗时 [1.1, 1.1, 1.5]s，无串档、服务存活",
+      "status": "PASS",
+      "elapsed_s": 2.0,
+      "evidence": {
+        "selected": [
+          "qa_probe_3.pdf",
+          "qa_probe_9.pdf",
+          "qa_probe_15.pdf"
+        ],
+        "uploads": [
+          {
+            "file": "qa_probe_3.pdf",
+            "status": 200,
+            "elapsed": 1.1,
+            "stage": null,
+            "ok": true,
+            "forced": true,
+            "chunks": 14,
+            "error": null
+          },
+          {
+            "file": "qa_probe_9.pdf",
+            "status": 200,
+            "elapsed": 1.1,
+            "stage": null,
+            "ok": true,
+            "forced": true,
+            "chunks": 9,
+            "error": null
+          },
+          {
+            "file": "qa_probe_15.pdf",
+            "status": 200,
+            "elapsed": 1.5,
+            "stage": null,
+            "ok": true,
+            "forced": true,
+            "chunks": 17,
+            "error": null
+          }
+        ],
+        "cross_check": [
+          {
+            "file": "qa_probe_3.pdf",
+            "result": "OK",
+            "first": "Provided proper attribution is provided, Google hereby grant",
+            "pages_ok": true
+          },
+          {
+            "file": "qa_probe_9.pdf",
+            "result": "OK",
+            "first": "Prafulla Dhariwal\nArvind Neelakantan\nPranav Shyam\nGirish Sas",
+            "pages_ok": true
+          },
+          {
+            "file": "qa_probe_15.pdf",
+            "result": "OK",
+            "first": "Mark Chen * 1 Jerry Tworek * 1 Heewoo Jun * 1 Qiming Yuan * ",
+            "pages_ok": true
+          }
+        ],
+        "distinct_first_blocks": true,
+        "health_after": [
+          200,
+          {
+            "ok": true,
+            "service": "sciagent",
+            "version": "1.0.0"
+          }
+        ],
+        "cleanup_status": [
+          200,
+          200,
+          200
+        ]
+      }
+    },
+    {
+      "id": "C07B",
+      "group": "stream",
+      "point": "e-3 前端流式与思考过程可视化 (3%)",
+      "steps": "无头浏览器打开流式开关并发送问题，检查思考时间线与逐 token 答案",
+      "expected": "思考步骤 >=2 且答案真实渲染，无前端报错",
+      "actual": "控件已渲染：发送 / 流式开关；开始真实 SSE…",
+      "status": "FAIL",
+      "elapsed_s": 4.0,
+      "evidence": {
+        "dom_length": 6374,
+        "raw": "控件已渲染：发送 / 流式开关；开始真实 SSE…"
+      }
+    },
+    {
+      "id": "C10",
+      "group": "eng",
+      "point": "c-1 删除可恢复性与审计 (P0)",
+      "steps": "上传 1 篇小 PDF → 删除 → 查回收站 → 恢复 → 核对块数",
+      "expected": "删除进回收站、审计有记录、恢复后块数一致",
+      "actual": "删除→回收站→恢复闭环成功，块数 12 前后一致，审计已留痕",
+      "status": "PASS",
+      "elapsed_s": 10.2,
+      "evidence": {
+        "file": "qa_probe_21.pdf",
+        "old_doc_id": "dc86b860ff299",
+        "new_doc_id": "d12b14f1a6d18",
+        "chunks_before": 12,
+        "delete": [
+          200,
+          {
+            "ok": true,
+            "trash": true,
+            "message": "已移入回收站，可用 /api/documents/{id}/restore 恢复"
+          }
+        ],
+        "trash_has": true,
+        "audit_has_delete": true,
+        "restore": [
+          200,
+          {
+            "ok": true,
+            "restored": true,
+            "doc_id": "d12b14f1a6d18",
+            "old_doc_id": "dc86b860ff299",
+            "filename": "qa_probe_21.pdf",
+            "chunks": 12,
+            "message": "已从回收站恢复"
+          }
+        ],
+        "chunks_after": 12,
+        "doc_back": true
+      }
+    },
+    {
+      "id": "C11",
+      "group": "eng",
+      "point": "c-1 零崩溃 Bug 证据",
+      "steps": "只扫描本轮 QA 时间窗内的日志，检查新增 Traceback；并验证所有已登记接口无 5xx",
+      "expected": "本轮窗口内零 Traceback，接口无 5xx",
+      "actual": "本轮窗口零 Traceback（历史 2 处已被兜底），11 个接口全部 200",
+      "status": "PASS",
+      "elapsed_s": 3.7,
+      "evidence": {
+        "log_lines_scanned": 1531,
+        "qa_window_start": "2026-11-11T13:58:12.679009",
+        "tracebacks_in_window": [],
+        "historic_tracebacks": 2,
+        "unhandled": [],
+        "endpoint_status": {
+          "/health": 200,
+          "/api/system/info": 200,
+          "/api/documents": 200,
+          "/api/tasks": 200,
+          "/api/graph": 200,
+          "/api/tools/health": 200,
+          "/api/tools/catalog": 200,
+          "/api/documents/trash": 200,
+          "/api/audit": 200,
+          "/api/research/future-work": 200,
+          "/api/research/reproducibility?online=false": 200
+        },
+        "counts": {
+          "documents": 37,
+          "chunks": 19766,
+          "tasks": 84,
+          "lessons": 46
+        }
+      }
+    }
+  ]
+}

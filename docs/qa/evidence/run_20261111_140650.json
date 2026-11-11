@@ -1,0 +1,30 @@
+{
+  "run_id": "20261111_140650",
+  "base": "http://127.0.0.1:8013",
+  "timestamp": "2026-11-11T14:06:56.164300",
+  "summary": {
+    "total": 1,
+    "pass": 1,
+    "fail": 0,
+    "blocked": 0
+  },
+  "results": [
+    {
+      "id": "C07B",
+      "group": "stream",
+      "point": "e-3 前端流式与思考过程可视化 (3%)",
+      "steps": "无头浏览器打开流式开关并发送问题，检查思考时间线与逐 token 答案",
+      "expected": "思考步骤 >=2 且答案真实渲染，无前端报错",
+      "actual": "RESULT: PASS 流式开关/思考时间线/逐token答案/证据均渲染",
+      "status": "PASS",
+      "elapsed_s": 5.3,
+      "evidence": {
+        "driver": "CDP realtime (virtual-time 与 SSE 流不兼容)",
+        "raw": "控件已渲染：发送 / 流式开关；开始真实 SSE…\n思考步骤=4 html字符=595 DOM文本=315 证据=11\n答案片段=Transformer 的核心机制是完全依赖自注意力机制来建模输入与输出之间的全局依赖关系，摒弃了传统的循环神经网络（RNN）和卷积神经网络 [3] p1 ▸。\nRESULT: PASS 流式开关/思考时间线/逐token答案/证据均渲染",
+        "dom_length": 6516,
+        "screenshot": "<repo>\\docs\\qa\\evidence\\ui_stream_20261111_140650.png",
+        "error": ""
+      }
+    }
+  ]
+}

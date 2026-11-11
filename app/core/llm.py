@@ -202,9 +202,10 @@ class LLMGateway:
         )
 
     # ---------------- 流式 ----------------
-    def chat_stream(self, messages: Sequence[dict]) -> Iterator[str]:
+    def chat_stream(self, messages: Sequence[dict], *, model: str | None = None) -> Iterator[str]:
         """逐段产出文本，用于前端 SSE 的"流式思考"。"""
         route = self.route()
+        model_name = model or settings.llm_model
         if route == "mock":
             text = _mock_reply(False)
             for i in range(0, len(text), 12):
@@ -223,7 +224,7 @@ class LLMGateway:
         else:
             url = f"{settings.llm_base_url.rstrip('/')}/chat/completions"
             payload = {
-                "model": settings.llm_model,
+                "model": model_name,
                 "messages": list(messages),
                 "temperature": settings.llm_temperature,
                 "stream": True,
@@ -252,9 +253,67 @@ class LLMGateway:
         except Exception as exc:  # noqa: BLE001
             log.warning("流式调用失败，降级为整体返回: %s", exc)
             try:
-                yield self.chat(messages).text
+                yield self.chat(messages, model=model_name).text
             except LLMError as e:
                 yield f"[服务异常] {e}"
+
+    # ---------------- Function Calling ----------------
+    def function_call(
+        self,
+        messages: Sequence[dict],
+        tools: Sequence[dict],
+        *,
+        model: str | None = None,
+        retries: int = 1,
+    ) -> dict | None:
+        """让模型按 OpenAI tools 协议选择工具，返回 {name, arguments} 或 None。
+
+        用独立的轻量模型做路由：主模型是推理模型，工具选择这种结构化决策
+        交给它既慢又容易把思维链写进 arguments。
+        """
+        route = self.route()
+        if route == "mock":
+            return None
+        payload = {
+            "model": model or settings.trans_model or settings.llm_model,
+            "messages": list(messages),
+            "tools": list(tools),
+            "tool_choice": "auto",
+            "temperature": 0.1,
+            "max_tokens": 512,
+            "stream": False,
+        }
+        for attempt in range(retries + 1):
+            try:
+                if route == "local":
+                    resp = self.client.post(
+                        f"{settings.ollama_base_url.rstrip('/')}/api/chat",
+                        json={"model": settings.ollama_model, "messages": list(messages),
+                              "tools": list(tools), "stream": False})
+                else:
+                    resp = self.client.post(
+                        f"{settings.llm_base_url.rstrip('/')}/chat/completions",
+                        headers={"Authorization": f"Bearer {settings.llm_api_key}",
+                                 "Content-Type": "application/json"},
+                        json=payload)
+                if resp.status_code >= 400:
+                    raise LLMError(f"HTTP {resp.status_code}: {resp.text[:200]}")
+                msg = (resp.json().get("choices") or [{}])[0].get("message") or {}
+                tc = (msg.get("tool_calls") or [None])[0]
+                if not tc:
+                    return None
+                fn = tc.get("function") or {}
+                raw_args = fn.get("arguments") or "{}"
+                try:
+                    args = json.loads(raw_args)
+                except json.JSONDecodeError:
+                    args = {}
+                return {"name": fn.get("name"), "arguments": args}
+            except Exception as exc:  # noqa: BLE001 由上层降级到关键词路由
+                log.warning("Function Calling 决策失败（第 %d 次）：%s", attempt + 1, exc)
+                if attempt < retries:
+                    time.sleep(0.4)
+        return None
 
     # ---------------- JSON 便捷封装 ----------------
     def chat_json(

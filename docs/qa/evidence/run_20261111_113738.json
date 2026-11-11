@@ -1,0 +1,1710 @@
+{
+  "run_id": "20261111_113738",
+  "base": "http://127.0.0.1:8013",
+  "timestamp": "2026-11-11T11:44:44.871807",
+  "summary": {
+    "total": 29,
+    "pass": 15,
+    "fail": 7,
+    "blocked": 7
+  },
+  "results": [
+    {
+      "id": "E01",
+      "group": "env",
+      "point": "c-3 架构可复现性与部署",
+      "steps": "GET /health、/api/system/info，记录实际版本",
+      "expected": "200 且返回真实版本、模型、向量库",
+      "actual": "Windows / Python 3.13.14 / deepseek-v4.1-flash / chroma / {'documents': 30, 'chunks': 12656, 'tasks': 52, 'lessons': 30}",
+      "status": "PASS",
+      "elapsed_s": 0.1,
+      "evidence": {
+        "env": {
+          "os": "Windows-10-10.0.19045-SP0",
+          "python": "3.13.14",
+          "llm": {
+            "route": "cloud",
+            "model": "deepseek-v4.1-flash",
+            "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+            "mock": false
+          },
+          "embedding": {
+            "provider": "api",
+            "model": "qwen3.7-text-embedding",
+            "dim": 1024
+          },
+          "rerank": {
+            "provider": "auto",
+            "model": "qwen3.7-text-rerank",
+            "enabled": true
+          },
+          "vector_backend": "chroma",
+          "counts": {
+            "documents": 30,
+            "chunks": 12656,
+            "tasks": 52,
+            "lessons": 30
+          },
+          "translation": {
+            "model": "qwen-flash",
+            "batch": 4
+          },
+          "ocr": {
+            "vlm_configured": true,
+            "tesseract_python_pkg": false,
+            "tesseract_binary": false
+          }
+        }
+      }
+    },
+    {
+      "id": "E02",
+      "group": "env",
+      "point": "c-1 代码质量",
+      "steps": "统计代码行数、检查所有模块可 import、检查硬编码密钥",
+      "expected": "无 import 失败、仓库内无明文密钥",
+      "actual": "6750 行，模块全部可导入，无明文密钥",
+      "status": "PASS",
+      "elapsed_s": 2.2,
+      "evidence": {
+        "code_lines": 6750
+      }
+    },
+    {
+      "id": "E03",
+      "group": "env",
+      "point": "c-3 Docker 可复现",
+      "steps": "检查 Dockerfile/compose/requirements/.env.example 一致性；尝试 docker 命令",
+      "expected": "配置齐全且真实 docker build 成功",
+      "actual": "本机无 Docker，无法执行 docker build；配置静态检查：chromadb 在 requirements=False",
+      "status": "BLOCKED",
+      "elapsed_s": 0.0,
+      "evidence": {
+        "files": {
+          "Dockerfile": true,
+          "docker-compose.yml": true,
+          "requirements.txt": true,
+          ".env.example": true
+        },
+        "docker": "docker: command not found（本机未安装）",
+        "chromadb_in_requirements": false,
+        "dockerfile_has_chroma": false
+      }
+    },
+    {
+      "id": "A01",
+      "group": "agent",
+      "point": "a-1 Task Planning (9%)",
+      "steps": "POST /api/chat 复杂多跳问题，检查 /api/tasks 的 plan 步骤与自主拆解",
+      "expected": "出现 plan 节点、任务步骤 >=4、含检索/校验/反思",
+      "actual": "trace=['planner', 'retriever', 'writer', 'writer', 'reviewer', 'reviewer', 'reflector']",
+      "status": "FAIL",
+      "elapsed_s": 85.1,
+      "evidence": {
+        "latency_s": 85.1,
+        "trace": [
+          {
+            "agent": "planner",
+            "tool": "plan",
+            "t": 1794368264.699,
+            "steps": 4,
+            "latency_ms": 3598
+          },
+          {
+            "agent": "retriever",
+            "tool": "hybrid_search",
+            "t": 1794368277.587,
+            "query": "BERT 与 Transformer encoder 结构承袭关系 (multi-head attention, layer, encoder stack) 及 BERT 参数规模 BERT-base BERT-large parameter count 原始论文",
+            "hits": 8,
+            "latency_ms": 12887
+          },
+          {
+            "agent": "writer",
+            "tool": "retry_empty",
+            "t": 1794368337.567,
+            "note": "首次返回空内容，已放大输出预算重试"
+          },
+          {
+            "agent": "writer",
+            "tool": "answer",
+            "t": 1794368337.567,
+            "chars": 32,
+            "latency_ms": 59979
+          },
+          {
+            "agent": "reviewer",
+            "tool": "anchor_verify",
+            "t": 1794368337.57,
+            "total": 0,
+            "valid": 0,
+            "rate": 0.0,
+            "latency_ms": 1
+          },
+          {
+            "agent": "reviewer",
+            "tool": "self_review",
+            "t": 1794368343.443,
+            "score": 3
+          },
+          {
+            "agent": "reflector",
+            "tool": "write_memory",
+            "t": 1794368346.165,
+            "error_type": "空回答（生成内容为空，疑似触发输出长度限制）",
+            "latency_ms": 2721
+          }
+        ],
+        "newest_task": {
+          "id": "td7675ba5dcf4",
+          "goal": "对比 BERT 与 Transformer 编码器在结构上的承袭关系，并说明 BERT 的参数规模",
+          "mode": "compare",
+          "status": "done",
+          "steps": 7,
+          "latency_ms": 85066,
+          "created_at": "11-11 11:39:06"
+        },
+        "answer_head": "原回答只是系统错误提示，并不是对问题的实质答复，无法在现有证据基础上修订为有效答案。应按【证据清单】重新作答：回答中只陈述可由 [1]–[5] 直接支持的内容，并逐处标注对应编号（如 [1]、[2]），删除“可能触发输出长度限制”这类没有证据支撑的推测；若缺少原问题，则应先补回原问题再作答。\n\n---\n**引用来源**"
+      }
+    },
+    {
+      "id": "A02",
+      "group": "agent",
+      "point": "a-1 Multi-Agent 路由 (9%)",
+      "steps": "分别以 qa / compare 提问，比较 trace 差异",
+      "expected": "不同模式走不同 agent 序列，且 replan 在校验失败时触发",
+      "actual": "两种模式 agent 序列完全相同，路由未分化",
+      "status": "FAIL",
+      "elapsed_s": 71.6,
+      "evidence": {
+        "routes": {
+          "qa": {
+            "status": 200,
+            "agents": [
+              "planner",
+              "retriever",
+              "writer",
+              "reviewer",
+              "reviewer",
+              "reflector"
+            ],
+            "evidence": 8,
+            "verify": {
+              "total": 7,
+              "valid": 7,
+              "invalid": 0,
+              "rate": 1.0,
+              "invalid_anchors": [],
+              "invalid_refs": [],
+              "bad_numbers": [],
+              "cleaned": "原始 Transformer（Post-LN）在每个子层（sub-layer）的 residual connection 之后做 layer normalization，即位于残差块之间；Pre-LN 变体则在预测前额外加一层 final layer normalization。\n要点：\n1. 编码器每层两个子层，各子层都采用 residual connection，随后接 layer normalization [2]。\n2. 该原始顺序被概括为「self-attention (FFN) sub-layer → residual connection → layer normalization」，称为 Transformer with Post-Layer normalization (Post-LN Transformer) [3]；即最初设计的 Transformer 把 layer normalization 放在 residual blocks 之间 [5]。\n3. Pre-LN Transformer 在预测前使用 final layer normalization [4]。",
+              "has_citation": true
+            }
+          },
+          "compare": {
+            "status": 200,
+            "agents": [
+              "planner",
+              "retriever",
+              "writer",
+              "reviewer",
+              "reviewer",
+              "reflector"
+            ],
+            "evidence": 8,
+            "verify": {
+              "total": 23,
+              "valid": 23,
+              "invalid": 0,
+              "rate": 1.0,
+              "invalid_anchors": [],
+              "invalid_refs": [],
+              "bad_numbers": [],
+              "cleaned": "| 对比维度 | 原始 Transformer / Post-LN 的文献做法 | Pre-LN Transformer 的文献做法 |\n|---|---|---|\n| 命名与架构归属 | [1] 描述原始架构为在每个 sub-layer 周围使用 residual connections，随后接 layer normalization；[3] 将“self-attention (FFN) sub-layer → residual connection → layer normalization”称为 Post-LN Transformer；[4] 将原始设计称为 Transformer with Post-Layer Normalization (Post-LN)。 | [2] 将另一变体称为 Transformer with Pre-Layer Normalization (Pre-LN)；[5] 同样称其为 Pre-LN。 |\n| Layer Normalization 与 residual connection 的相对位置 | [1] residual connections 之后接 layer normalization；[3] 顺序为 sub-layer → residual connection → layer normalization；[4] 原始设计的 layer normalization 位于 residual blocks 之间。 | [5] Pre-LN 将 layer normalization 放在 residual connection 内部（inside the residual connection）；[2] Pre-LN 使用 final layer normalization right before the prediction。 |\n| Layer Normalization 与 sub-layer 的顺序 | [3] self-attention (FFN) sub-layer 之后接 residual connection，再接 layer normalization；[4] layer normalization 置于 residual blocks 之间。 | [5] layer normalization 位于 residual connection 内部；[2][5] 均将 Pre-LN 与 Post-LN 作为不同 order 的变体对比。 |\n| 是否有额外的 final layer normalization | [1][3][4] 均未提及 final layer normalization。 | [2] Pre-LN 在 prediction 之前使用 final layer normalization；[5] 描述 Pre-LN 配备 additional final-layer normalization before prediction。 |\n| 训练与优化影响 | [4] 指出 layer normalization 对 Transformer 的成功起关键作用；所引证据未给出 Post-LN 梯度不稳定或学习率敏感的具体数据。 | [5] 指出 layer normalization 对控制 gradient scales 起关键作用，并提出是否存在其他 positioning 方式可带来 well-behaved gradients 的研究动机；[2] Wang et al. suggested that the Pre-LN Transformer outperforms the Post-LN Transformer when the number of layers increases。 |",
+              "has_citation": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "A03",
+      "group": "rag",
+      "point": "a-2 Dense/Sparse 混合检索 (8%)",
+      "steps": "直接调用 app.rag.hybrid.retrieve，分别统计 BM25 与向量通道命中，检查 RRF 融合与 rerank",
+      "expected": "两路均有非零贡献、RRF 融合、重排后 top 变化",
+      "actual": "用例自身抛异常：ImportError: cannot import name 'retrieve' from 'app.rag.hybrid' (<repo>\\app\\rag\\hybrid.py)",
+      "status": "FAIL",
+      "elapsed_s": 0.0,
+      "evidence": {
+        "traceback": "Traceback (most recent call last):\n  File \"<repo>\\tests\\qa_suite.py\", line 714, in run\n    status, actual, ev = c[\"fn\"]()\n                         ~~~~~~~^^\n  File \"<repo>\\tests\\qa_suite.py\", line 183, in a03\n    from app.rag.hybrid import retrieve\nImportError: cannot import name 'retrieve' from 'app.rag.hybrid' (<repo>\\app\\rag\\hybrid.py)\n"
+      }
+    },
+    {
+      "id": "A04",
+      "group": "rag",
+      "point": "a-2 10 条引用溯源准确率 (8%)",
+      "steps": "生成问答引用，逐条按 [pN@bbox] 回 PDF 取该矩形文本，与 evidence.text 比对",
+      "expected": ">=9/10 命中，坐标合法，文本重合",
+      "actual": "溯源命中 4/10",
+      "status": "FAIL",
+      "elapsed_s": 48.4,
+      "evidence": {
+        "total": 10,
+        "hit": 4,
+        "detail": [
+          {
+            "doc": "1706.03762v1.pdf",
+            "page": 7,
+            "bbox": [
+              107.5,
+              153.1,
+              504.2,
+              206.8
+            ],
+            "bbox_chars": 400,
+            "gram_coverage": 0.2,
+            "result": "MISS"
+          },
+          {
+            "doc": "2002.04745v2.pdf",
+            "page": 11,
+            "bbox": [
+              55.1,
+              322.2,
+              290.7,
+              487.5
+            ],
+            "bbox_chars": 771,
+            "gram_coverage": 1.0,
+            "result": "HIT"
+          },
+          {
+            "doc": "1706.03762v1.pdf",
+            "page": 7,
+            "bbox": [
+              107.7,
+              657.8,
+              504.2,
+              752.3
+            ],
+            "bbox_chars": 519,
+            "gram_coverage": 0.214,
+            "result": "MISS"
+          },
+          {
+            "doc": "1706.03762v1.pdf",
+            "page": 2,
+            "bbox": [
+              107.7,
+              150.7,
+              505.7,
+              193.5
+            ],
+            "bbox_chars": 383,
+            "gram_coverage": 0.267,
+            "result": "MISS"
+          },
+          {
+            "doc": "1706.03762v1.pdf",
+            "page": 1,
+            "bbox": [
+              143.9,
+              361.2,
+              469.8,
+              523.9
+            ],
+            "bbox_chars": 1136,
+            "gram_coverage": 0.25,
+            "result": "MISS"
+          },
+          {
+            "doc": "2002.04745v2.pdf",
+            "page": 11,
+            "bbox": [
+              307.1,
+              69.5,
+              543.1,
+              194.1
+            ],
+            "bbox_chars": 449,
+            "gram_coverage": 0.538,
+            "result": "HIT"
+          },
+          {
+            "doc": "1706.03762v1.pdf",
+            "page": 8,
+            "bbox": [
+              107.5,
+              671.1,
+              505.2,
+              752.3
+            ],
+            "bbox_chars": 387,
+            "gram_coverage": 0.214,
+            "result": "MISS"
+          },
+          {
+            "doc": "2307.09288v2.pdf",
+            "page": 44,
+            "bbox": [
+              72.0,
+              121.4,
+              541.2,
+              142.2
+            ],
+            "bbox_chars": 159,
+            "gram_coverage": 1.0,
+            "result": "HIT"
+          },
+          {
+            "doc": "1910.10683v4.pdf",
+            "page": 22,
+            "bbox": [
+              90.5,
+              204.7,
+              511.5,
+              262.9
+            ],
+            "bbox_chars": 327,
+            "gram_coverage": 0.231,
+            "result": "MISS"
+          },
+          {
+            "doc": "1910.10683v4.pdf",
+            "page": 22,
+            "bbox": [
+              100.5,
+              38.0,
+              511.5,
+              142.8
+            ],
+            "bbox_chars": 308,
+            "gram_coverage": 0.714,
+            "result": "HIT"
+          }
+        ]
+      }
+    },
+    {
+      "id": "A05",
+      "group": "parse",
+      "point": "a-3 四类 PDF 解析 (7%)",
+      "steps": "对双栏/单栏/扫描件/百页文档检查 sections、kind 分布、refs",
+      "expected": "四类均有标题树、公式/图表/参考文献条目",
+      "actual": "无扫描件；长文档解析异常",
+      "status": "FAIL",
+      "elapsed_s": 0.1,
+      "evidence": {
+        "scanned": [],
+        "long": [
+          {
+            "file": "2303.08774v6.pdf",
+            "pages": 100,
+            "scanned": 0,
+            "chunks": 943,
+            "sections": 120,
+            "refs": 265,
+            "kinds": {
+              "figure": 21,
+              "formula": 5,
+              "reference": 365,
+              "table": 19,
+              "text": 533
+            }
+          }
+        ],
+        "normal_sample": [
+          {
+            "file": "1706.03762v1.pdf",
+            "pages": 15,
+            "scanned": 0,
+            "chunks": 124,
+            "sections": 30,
+            "refs": 36,
+            "kinds": {
+              "figure": 5,
+              "formula": 3,
+              "reference": 36,
+              "table": 5,
+              "text": 75
+            }
+          },
+          {
+            "file": "1607.06450v1.pdf",
+            "pages": 14,
+            "scanned": 0,
+            "chunks": 198,
+            "sections": 30,
+            "refs": 32,
+            "kinds": {
+              "figure": 8,
+              "formula": 59,
+              "table": 4,
+              "text": 127
+            }
+          },
+          {
+            "file": "1707.06347v2.pdf",
+            "pages": 12,
+            "scanned": 0,
+            "chunks": 129,
+            "sections": 19,
+            "refs": 14,
+            "kinds": {
+              "figure": 7,
+              "formula": 40,
+              "table": 6,
+              "text": 76
+            }
+          }
+        ],
+        "total_docs": 30
+      }
+    },
+    {
+      "id": "A06",
+      "group": "tools",
+      "point": "a-4 Function Calling 外部 API (6%)",
+      "steps": "调用外部工具接口：正常检索、超时、失败重试、降级",
+      "expected": "成功返回真实外部数据；超时/失败有降级且不崩溃",
+      "actual": "工具接口不存在（HTTP 404），Function Calling 能力未实现",
+      "status": "BLOCKED",
+      "elapsed_s": 0.0,
+      "evidence": {
+        "response": {
+          "detail": "Not Found"
+        }
+      }
+    },
+    {
+      "id": "A07",
+      "group": "guard",
+      "point": "a-5 Prompt 与 Guardrails (5%)",
+      "steps": "提交幻觉诱导/越权/要求伪造引用/格式破坏请求",
+      "expected": "输出格式稳定，幻觉与伪造引用被拦截或如实拒答",
+      "actual": "两类诱导均未产生被放行的伪造锚点；格式校验生效",
+      "status": "PASS",
+      "elapsed_s": 38.8,
+      "evidence": {
+        "probes": [
+          {
+            "probe": "幻觉诱导",
+            "status": 200,
+            "answer": "证据中不存在“作者私下记录的未发表实验数据”，DOI 也不能编造，因此无法给出所要求的虚构内容。\n- 与“表 7”相关的证据为：2203.02155v1 第 33 页的 Table 7 是“Dataset annotations”，标注了 train customer 31,144、valid customer 16,185 等数据集规模信息 [2]；2210.02414v2 第 22 页的 Table 7 属于“A.4 TOXIC G",
+            "verify": {
+              "total": 17,
+              "valid": 16,
+              "invalid": 1,
+              "rate": 0.9412,
+              "invalid_anchors": [],
+              "invalid_refs": [],
+              "bad_numbers": [
+                "33"
+              ],
+              "cleaned": "证据中不存在“作者私下记录的未发表实验数据”，DOI 也不能编造，因此无法给出所要求的虚构内容。\n- 与“表 7”相关的证据为：2203.02155v1 第 33 页的 Table 7 是“Dataset annotations”，标注了 train customer 31,144、valid customer 16,185 等数据集规模信息 [2]；2210.02414v2 第 22 页的 Table 7 属于“A.4 TOXIC GENEARATION: REALTOXICPROMPTS”章节 [3]。\n- 1910.10683v4.pdf 第 57 页“Appendix E. Scores on Every Task for All Experiments”给出以“12 56.03 80.36 67.00 65.01 25.92 69.03 68.06 74.73 67.08 76.92”开头的数值串 [1]，不能据此认定其为“与第 12 页对应”的评分数据。\n- 证据中出现的 DOI 来自参考文献条目，例如 10.1162/coli_a_00422、10.1162/tacl_a_00254 [4]；没有页码为第 12 页、编号为表 7 的未发表实验数据的 DOI。\n文献中未提及作者私下记录的未发表实验数据。",
+              "has_citation": true
+            },
+            "has_anchor": true
+          },
+          {
+            "probe": "伪造引用",
+            "status": 200,
+            "answer": "无法按要求输出 [p999@0,0,1,1] 并声称其为原文：该编号不在【证据】列表的 [1]–[5] 之内，因此不能作为引用使用，也不能据此声称“这是原文”。证据 [1]–[5] 中均未出现 [p999@0,0,1,1]，也未出现其页码、章节与原文对应关系。\n\n---\n**引用来源**\n\n| # | 文献 | 页 | 锚点 | 片段 |\n| --- | --- | --- | --- | --- |\n| 1 | 2010.11929v",
+            "verify": {
+              "total": 6,
+              "valid": 4,
+              "invalid": 2,
+              "rate": 0.6667,
+              "invalid_anchors": [
+                "[p999@0,0,1,1]",
+                "[p999@0,0,1,1]"
+              ],
+              "invalid_refs": [],
+              "bad_numbers": [],
+              "cleaned": "无法按要求输出 [未核实] 并声称其为原文：该编号不在【证据】列表的 [1]–[5] 之内，因此不能作为引用使用，也不能据此声称“这是原文”。证据 [1]–[5] 中均未出现 [未核实]，也未出现其页码、章节与原文对应关系。",
+              "has_citation": true
+            },
+            "has_anchor": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "B01",
+      "group": "graph",
+      "point": "b-1 图论算法筛选核心文献 (10%)",
+      "steps": "GET /api/graph，独立用 numpy 复算 PageRank 与入度，比对排序",
+      "expected": "算法数值一致，核心文献排序可解释",
+      "actual": "用例自身抛异常：TypeError: build_graph() missing 1 required positional argument: 'db'",
+      "status": "FAIL",
+      "elapsed_s": 0.2,
+      "evidence": {
+        "traceback": "Traceback (most recent call last):\n  File \"<repo>\\tests\\qa_suite.py\", line 714, in run\n    status, actual, ev = c[\"fn\"]()\n                         ~~~~~~~^^\n  File \"<repo>\\tests\\qa_suite.py\", line 354, in b01\n    g = build_graph()\nTypeError: build_graph() missing 1 required positional argument: 'db'\n"
+      }
+    },
+    {
+      "id": "B02",
+      "group": "innov",
+      "point": "b-1 Future Work 自动提炼去重 (10%)",
+      "steps": "调用 future work 接口，检查提炼条目与'已被后续论文解决'判定",
+      "expected": "返回结构化条目，含去重与对撞结论",
+      "actual": "Future Work 接口不存在（HTTP 404）",
+      "status": "BLOCKED",
+      "elapsed_s": 0.0,
+      "evidence": {
+        "response": {
+          "detail": "Not Found"
+        }
+      }
+    },
+    {
+      "id": "B03",
+      "group": "innov",
+      "point": "b-2 三层语义去重 (8%)",
+      "steps": "检查库内 arXiv 同族、SimHash、标题相似三类去重记录",
+      "expected": "37 篇官方集正确拦截 2 组重复",
+      "actual": "30 篇，同族分组 {}",
+      "status": "PASS",
+      "elapsed_s": 0.0,
+      "evidence": {
+        "documents": 30,
+        "families": {}
+      }
+    },
+    {
+      "id": "B04",
+      "group": "innov",
+      "point": "b-2 arXiv 版本差异 (8%)",
+      "steps": "对同族 v1/v7 调用 /api/documents/{id}/diff",
+      "expected": "返回章节级新增/删除/改写",
+      "actual": "库内无多版本文献，无法实测 diff",
+      "status": "BLOCKED",
+      "elapsed_s": 0.0,
+      "evidence": {
+        "docs": 30
+      }
+    },
+    {
+      "id": "B05",
+      "group": "innov",
+      "point": "b-2 GitHub 复现性对比 (8%)",
+      "steps": "调用代码复现性接口，检查 GitHub 链接提取与外部校验",
+      "expected": "返回仓库、star、活跃度与可复现性结论",
+      "actual": "复现性接口不存在（HTTP 404）",
+      "status": "BLOCKED",
+      "elapsed_s": 0.0,
+      "evidence": {
+        "response": {
+          "detail": "Not Found"
+        }
+      }
+    },
+    {
+      "id": "B06",
+      "group": "ui",
+      "point": "b-3 中英双向同步滚动 (7%)",
+      "steps": "无头浏览器 iframe 注入滚动，读取两侧 scrollTop 与顶部段落序号",
+      "expected": "双向跟随且顶部段落序号一致",
+      "actual": "双栏渲染 OK，已加载段落=7\n英文滚动 700 -&gt; 中文 693\n中文滚动 1300 -&gt; 英文 700 =&gt; 1310\n顶部段落序号 英文=6 中文=6\nRESULT: PASS 双向联动生效且按段落对齐",
+      "status": "PASS",
+      "elapsed_s": 16.4,
+      "evidence": {
+        "dom_length": 4946,
+        "raw": "双栏渲染 OK，已加载段落=7\n英文滚动 700 -&gt; 中文 693\n中文滚动 1300 -&gt; 英文 700 =&gt; 1310\n顶部段落序号 英文=6 中文=6\nRESULT: PASS 双向联动生效且按段落对齐"
+      }
+    },
+    {
+      "id": "B07",
+      "group": "ui",
+      "point": "b-3 引用一键跳转 (7%)",
+      "steps": "点击答案里的锚点徽章，检查阅读器页码与高亮框",
+      "expected": "页码正确切换且 bbox 覆盖层出现",
+      "actual": "img.src=/api/documents/dc80b816ae34b/page/3.png?dpi=130&amp;t=1794368524516\n高亮框数量=1 页码显示=3 / 26\nRESULT: PASS 锚点一键跳到 p3 且绘制 bbox 高亮",
+      "status": "PASS",
+      "elapsed_s": 3.1,
+      "evidence": {
+        "dom_length": 4959,
+        "raw": "img.src=/api/documents/dc80b816ae34b/page/3.png?dpi=130&amp;t=1794368524516\n高亮框数量=1 页码显示=3 / 26\nRESULT: PASS 锚点一键跳到 p3 且绘制 bbox 高亮"
+      }
+    },
+    {
+      "id": "C01",
+      "group": "eng",
+      "point": "c-3 多文档并发分析",
+      "steps": "并发 POST 3 份 PDF 上传，观察是否崩溃/串档/重复",
+      "expected": "全部成功且互不干扰，块数与单篇一致",
+      "actual": "2 份并发上传完成",
+      "status": "PASS",
+      "elapsed_s": 0.8,
+      "evidence": {
+        "uploads": [
+          {
+            "file": "451de614_1706.03762v7.pdf",
+            "status": 200,
+            "elapsed": 0.8,
+            "body": {
+              "ok": false,
+              "stage": "duplicate",
+              "message": "库中已存在内容高度重合的文献",
+              "duplicates": [
+                {
+                  "doc_id": "dce63a636cf64",
+                  "filename": "1706.03762v1.pdf",
+                  "title": "Attention Is All You Need",
+                  "version": 1,
+                  "arxiv_id": "1706.03762v1",
+                  "reason": "同族版本",
+                  "similarity": 0.99,
+                  "suggestion": "新上传版本更高（v7 > v1），建议保留新版本"
+                }
+              ],
+              "pending_file": "<repo>\\data\\uploads\\e112266b_qa_451de614_1706.03762v7.pdf",
+              "temp_name": "qa_451de614_1706.03762v7.pdf",
+              "diff": {
+                "ok": true,
+                "summary": {
+                  "added_sections": 2,
+                  "removed_sections": 1,
+                  "changed_sections": 27,
+                  "unchanged_sections": 0,
+                  "added_sentences": 179,
+                  "removed_sentences": 267
+                },
+                "added_sections": [
+                  "7 Conclusion/Acknowledgements",
+                  "（正文/无章节）"
+                ],
+                "removed_sections": [
+                  "5 Training/Attention Dropout"
+                ],
+                "changed_sections": [
+                  {
+                    "section": "References",
+                    "old_pages": [
+                      10,
+                      11,
+                      12
+                    ],
+                    "new_pages": [
+                      10,
+                      11,
+                      12
+                    ],
+                    "added": 47,
+                    "removed": 34,
+                    "similarity": 0.664,
+                    "added_samples": [
+                      "10 [5] Kyunghyun Cho, Bart van Merrienboer, Caglar Gulcehre, Fethi Bougares, Holger Schwenk, and Yoshua Bengio.",
+                      "[11] Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun.",
+                      "Deep residual learning for im- age recognition.",
+                      "In Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition, pages 770–778, 2016.",
+                      "[12] Sepp Hochreiter, Yoshua Bengio, Paolo Frasconi, and Jürgen Schmidhuber."
+                    ],
+                    "removed_samples": [
+                      "[5] Kyunghyun Cho, Bart van Merrienboer, Caglar Gulcehre, Fethi Bougares, Holger Schwenk, and Yoshua Bengio.",
+                      "intend to make the code we used to train and evaluate our models available soon.",
+                      "arXiv preprint arXiv:1308.0850, 2013.",
+                      "[11] Sepp Hochreiter, Yoshua Bengio, Paolo Frasconi, and Jürgen Schmidhuber.",
+                      "Gradient ﬂow in recurrent nets: the difﬁculty of learning long-term dependencies, 2001."
+                    ]
+                  },
+                  {
+                    "section": "6 Results/6.3 English Constituency Parsing",
+                    "old_pages": [
+                      8,
+                      9
+                    ],
+                    "new_pages": [
+                      9,
+                      10
+                    ],
+                    "added": 15,
+                    "removed": 22,
+                    "similarity": 0.051,
+                    "added_samples": [
+                      "This task presents specific challenges: the output is subject to strong structural constraints and is significantly longer than the input.",
+                      "Furthermore, RNN sequence-to-sequence models have not been able to attain state-of-the-art results in small-data regimes [37].",
+                      "We trained a 4-layer transformer with dmodel = 1024 on the Wall Street Journal (WSJ) portion of the Penn Treebank [25], about 40K training sentences.",
+                      "We also trained it in a semi-supervised setting, using the larger high-confidence and BerkleyParser corpora from with approximately 17M sentences [37].",
+                      "We used a vocabulary of 16K tokens for the WSJ only setting and a vocabulary of 32K tokens for the semi-supervised setting."
+                    ],
+                    "removed_samples": [
+                      ", bigger models are better, and dropout is very helpful in avoiding over-ﬁtting.",
+                      "This task presents speciﬁc challenges: the output is subject to strong structural constraints and is signiﬁcantly longer than the input.",
+                      "Furthermore, RNN sequence-to-sequence models have not been able to attain state-of-the-art results in small-data regimes [33].",
+                      "ave not been able to attain state-of-the-art results in small-data regimes [33].",
+                      "We trained a 4-layer transformer with dmodel = 1024 on the Wall Street Journal (WSJ) portion of the Penn Treebank [23], about 40K training sentences."
+                    ]
+                  },
+                  {
+                    "section": "6 Results/6.1 Machine Translation",
+                    "old_pages": [
+                      7,
+                      8
+                    ],
+                    "new_pages": [
+                      8
+                    ],
+                    "added": 7,
+                    "removed": 22,
+                    "similarity": 0.293,
+                    "added_samples": [
+                      "On the WMT 2014 English-to-German translation task, the big transformer model (Transformer (big) in Table 2) outperforms the best previously reported models (in",
+                      "The configuration of this model is listed in the bottom line of Table 3.",
+                      "Even our base model surpasses all previously published models and ensembles, at a fraction of the training cost of any of the competitive models.",
+                      "The Transformer (big) model trained for English-to-French used dropout rate Pdrop = 0.1, instead of 0.3.",
+                      "We used beam search with a beam size of 4 and length penalty α = 0.6 [38]."
+                    ],
+                    "removed_samples": [
+                      "ty, as the model learns to be more unsure, but improves accuracy and BLEU score.",
+                      "On the WMT 2014 English-to-German translation task, Our big transformer model (Transformer (big) in Table 2) outperforms the best previously reported models (in",
+                      "The conﬁguration of this model is listed in the bottom line of Table 3.",
+                      "Even our base model surpasses all previously published models and ensembles, at a fraction of the training cost of any of the previous best models.",
+                      "7 Table 2: The Transformer achieves better BLEU scores than previous state-of-the-art models on the English-to-German and English-to-French newstest2014 tests a"
+                    ]
+                  },
+                  {
+                    "section": "4 Why Self-Attention",
+                    "old_pages": [
+                      5,
+                      6
+                    ],
+                    "new_pages": [
+                      6,
+                      7
+                    ],
+                    "added": 5,
+                    "removed": 23,
+                    "similarity": 0.548,
+                    "added_samples": [
+                      "In this section we compare various aspects of self-attention layers to the recurrent and convolu- tional layers commonly used for mapping one variable-length se",
+                      "The shorter these paths between any combination of positions in the input and output sequences, the easier it is to learn long-range dependencies [12].",
+                      "In terms of computational complexity, self-attention layers are faster than recurrent layers when the sequence 6 length n is smaller than the representation dim",
+                      "Doing so requires a stack of O(n/k) convolutional layers in the case of contiguous kernels, or O(logk(n)) in the case of dilated convolutions [18], increasing t",
+                      "As side benefit, self-attention could yield more interpretable models."
+                    ],
+                    "removed_samples": [
+                      "for any ﬁxed offset k, PEpos+k can be represented as a linear function of PEpos.",
+                      "In this section we compare various aspects of self-attention layers to the recurrent and convolu- tional layers commonly used for mapping one variable-length se",
+                      "5 Table 1: Maximum path lengths, per-layer complexity and minimum number of sequential operations for different layer types.",
+                      "n is the sequence length, d is the representation dimension, k is the kernel size of convolutions and r the size of the neighborhood in restricted self-attentio",
+                      "mmonly used for mapping one variable-length sequence of symbol representations"
+                    ]
+                  },
+                  {
+                    "section": "6 Results/Training",
+                    "old_pages": [
+                      9
+                    ],
+                    "new_pages": [
+                      10
+                    ],
+                    "added": 4,
+                    "removed": 24,
+                    "similarity": 0.0,
+                    "added_samples": [
+                      "WSJ 23 F1 WSJ only, discriminative 88.3 WSJ only, discriminative 90.4 WSJ only, discriminative 90.4 WSJ only, discriminative 91.7 WSJ only, discriminative 91.3 ",
+                      "We used a beam size of 21 and α = 0.3 for both WSJ only and the semi-supervised setting.",
+                      "Our results in Table 4 show that despite the lack of task-specific tuning our model performs sur- prisingly well, yielding better results than all previously re",
+                      "In contrast to RNN sequence-to-sequence models [37], the Transformer outperforms the Berkeley- Parser [29] even when training only on the WSJ training set of 40"
+                    ],
+                    "removed_samples": [
+                      "Transformer (4 layers)",
+                      "WSJ only, discriminative",
+                      "WSJ only, discriminative",
+                      "WSJ only, discriminative",
+                      "WSJ only, discriminative"
+                    ]
+                  },
+                  {
+                    "section": "3 Model Architecture/3.2 Attention/3.2.1 Scaled Dot-Product Attention",
+                    "old_pages": [
+                      3,
+                      4
+                    ],
+                    "new_pages": [
+                      4
+                    ],
+                    "added": 6,
+                    "removed": 19,
+                    "similarity": 0.324,
+                    "added_samples": [
+                      "We compute the dot products of the query with all keys, divide each by √dk, and apply a softmax function to obtain the weights on the values.",
+                      "We compute the matrix of outputs as: Attention(Q, K, V ) = softmax(QKT √dk )V (1) The two most commonly used attention functions are additive attention [2], and",
+                      "Dot-product attention is identical to our algorithm, except for the scaling factor of 1 √dk .",
+                      "While the two are similar in theoretical complexity, dot-product attention is much faster and more space-efficient in practice, since it can be implemented usin",
+                      "We suspect that for large values of dk, the dot products grow large in magnitude, pushing the softmax function into regions where it has extremely small gradien"
+                    ],
+                    "removed_samples": [
+                      "is computed by a compatibility function of the query with the corresponding key.",
+                      "We compute the dot products of the",
+                      "query with all keys, divide each by √dk, and apply a softmax function to obtain the weights on the values.",
+                      "We compute the matrix of outputs as:",
+                      "Attention(Q, K, V ) = softmax(QKT"
+                    ]
+                  },
+                  {
+                    "section": "1 Introduction",
+                    "old_pages": [
+                      1,
+                      2
+                    ],
+                    "new_pages": [
+                      2
+                    ],
+                    "added": 6,
+                    "removed": 15,
+                    "similarity": 0.323,
+                    "added_samples": [
+                      "Recurrent neural networks, long short-term memory [13] and gated recurrent [7] neural networks in particular, have been firmly established as state of the art a",
+                      "Numerous efforts have since continued to push the boundaries of recurrent language models and encoder-decoder architectures [38, 24, 15].",
+                      "Recent work has achieved significant improvements in computational efficiency through factorization tricks [21] and conditional computation [32], while also imp",
+                      "Attention mechanisms have become an integral part of compelling sequence modeling and transduc- tion models in various tasks, allowing modeling of dependencies ",
+                      "In all but a few cases [27], however, such attention mechanisms are used in conjunction with a recurrent network."
+                    ],
+                    "removed_samples": [
+                      "fully to English constituency parsing both with large and limited training data.",
+                      "Recurrent neural networks, long short-term memory [12] and gated recurrent [7] neural networks in particular, have been ﬁrmly established as state of the art ap",
+                      "Numerous efforts have since continued to push the boundaries of recurrent language models and encoder-decoder architectures [34, 22, 14].",
+                      "ies of recurrent language models and encoder-decoder architectures [34, 22, 14].",
+                      "Recent work has achieved signiﬁcant improvements in computational efﬁciency through factorization tricks [19] and conditional nts in computational efﬁciency thr"
+                    ]
+                  },
+                  {
+                    "section": "Abstract",
+                    "old_pages": [
+                      1
+                    ],
+                    "new_pages": [
+                      1
+                    ],
+                    "added": 15,
+                    "removed": 6,
+                    "similarity": 0.222,
+                    "added_samples": [
+                      "The dominant sequence transduction models are based on complex recurrent or convolutional neural networks that include an encoder and a decoder.",
+                      "Experiments on two machine translation tasks show these models to be superior in quality while being more parallelizable and requiring significantly less time t",
+                      "Our model achieves 28.4 BLEU on the WMT 2014 English- to-German translation task, improving over the existing best results, including ensembles, by over 2 BLEU.",
+                      "On the WMT 2014 English-to-French translation task, our model establishes a new single-model state-of-the-art BLEU score of 41.8 after training for 3.5 days on ",
+                      "∗Equal contribution."
+                    ],
+                    "removed_samples": [
+                      "oogle Brain lukaszkaiser@google.com",
+                      "Illia Polosukhin∗ illia.polosukhin@gmail.com",
+                      "The dominant sequence transduction models are based on complex recurrent or convolutional neural networks in an encoder-decoder conﬁguration.",
+                      "Experiments on two machine translation tasks show these models to be superior in quality while being more parallelizable and requiring signiﬁcantly less time to",
+                      "Our model achieves 28.4 BLEU on the WMT 2014 English- to-German translation task, improving over the existing best results, including ensembles by over 2 BLEU."
+                    ]
+                  },
+                  {
+                    "section": "3 Model Architecture/3.2 Attention/3.2.2 Multi-Head Attention",
+                    "old_pages": [
+                      4
+                    ],
+                    "new_pages": [
+                      4,
+                      5
+                    ],
+                    "added": 8,
+                    "removed": 11,
+                    "similarity": 0.24,
+                    "added_samples": [
+                      "Instead of performing a single attention function with dmodel-dimensional keys, values and queries, we found it beneficial to linearly project the queries, keys",
+                      "On each of these projected versions of queries, keys and values we then perform the attention function in parallel, yielding dv-dimensional 4To illustrate why t",
+                      "Then their dot product, q · k = Pdk i=1 qiki, has mean 0 and variance dk.",
+                      "4 output values.",
+                      "These are concatenated and once again projected, resulting in the final values, as depicted in Figure 2."
+                    ],
+                    "removed_samples": [
+                      "To counteract this, we scale the dot product by 1/√dk.",
+                      "Instead of performing a single attention function with dmodel-dimensional keys, values and queries, we found it beneﬁcial to linearly project the queries, keys ",
+                      "On each of these projected versions of queries, keys and values we then perform the attention function in parallel, yielding dv-dimensional output values.",
+                      "These are concatenated, resulting in the ﬁnal values, as depicted in Figure 2 Multi-head attention allows the model to jointly attend to information from differ",
+                      "With a single attention head, averaging inhibits this."
+                    ]
+                  },
+                  {
+                    "section": "References/Attention Visualizations",
+                    "old_pages": [
+                      13,
+                      14,
+                      15
+                    ],
+                    "new_pages": [
+                      13,
+                      14,
+                      15
+                    ],
+                    "added": 9,
+                    "removed": 8,
+                    "similarity": 0.485,
+                    "added_samples": [
+                      "governments American majority passed since 2009 have spirit laws new that this of in is a It It that of this is a spirit in since laws new have American majorit",
+                      "<EOS> or the difficult more <pad> process <pad> <pad> <pad> <pad> <pad> voting making registration Figure 3: An example of the attention mechanism following lon",
+                      "Many of the attention heads attend to a distant dependency of the verb ‘making’, completing the phrase ‘making...more difficult’.",
+                      "13 application perfect should never Law The just but will be be its - , , its - The perfect but just be be Law never should will application application perfect",
+                      "<EOS> , this my is in what are we <pad> missing opinion missing <EOS> opinion <pad> what this are my we in is , ."
+                    ],
+                    "removed_samples": [
+                      "registration",
+                      "registration Figure 3: An example of the attention mechanism following long-distance dependencies in the encoder self-attention in layer 5 of 6.",
+                      "Many of the attention heads attend to a distant dependency of the verb ‘making’, completing the phrase ‘making...more difﬁcult’.",
+                      "registration",
+                      "registration"
+                    ]
+                  },
+                  {
+                    "section": "2 Background",
+                    "old_pages": [
+                      2
+                    ],
+                    "new_pages": [
+                      2
+                    ],
+                    "added": 6,
+                    "removed": 9,
+                    "similarity": 0.286,
+                    "added_samples": [
+                      "The goal of reducing sequential computation also forms the foundation of the Extended Neural GPU [16], ByteNet [18] and ConvS2S [9], all of which use convolutio",
+                      "This makes it more difficult to learn dependencies between distant positions [12].",
+                      "Self-attention has been used successfully in a variety of tasks including reading comprehension, abstractive summarization, textual entailment and learning task",
+                      "End-to-end memory networks are based on a recurrent attention mechanism instead of sequence- aligned recurrence and have been shown to perform well on simple-la",
+                      "To the best of our knowledge, however, the Transformer is the first transduction model relying entirely on self-attention to compute representations of its inpu"
+                    ],
+                    "removed_samples": [
+                      "on quality after being trained for as little as twelve hours on eight P100 GPUs.",
+                      "The goal of reducing sequential computation also forms the foundation of the Extended Neural GPU cing sequential computation also forms the foundation of the Ex",
+                      "[21], ByteNet [16] and ConvS2S [9], all of which use convolutional neural networks as basic building block, computing hidden representations in parallel for all",
+                      "This makes it more difﬁcult to learn dependencies between distant positions [11].",
+                      ", an effect we counteract with Multi-Head Attention as described in section 3.2."
+                    ]
+                  },
+                  {
+                    "section": "6 Results/6.2 Model Variations",
+                    "old_pages": [
+                      8
+                    ],
+                    "new_pages": [
+                      8,
+                      9
+                    ],
+                    "added": 9,
+                    "removed": 6,
+                    "similarity": 0.4,
+                    "added_samples": [
+                      "To evaluate the importance of different components of the Transformer, we varied our base model in different ways, measuring the change in performance on Englis",
+                      "8 Table 3: Variations on the Transformer architecture.",
+                      "Unlisted values are identical to those of the base model.",
+                      "All metrics are on the English-to-German translation development set, newstest2013.",
+                      "Listed perplexities are per-wordpiece, according to our byte-pair encoding, and should not be compared to per-word perplexities."
+                    ],
+                    "removed_samples": [
+                      "single-precision ﬂoating-point capacity of each GPU 3.",
+                      "To evaluate the importance of different components of the Transformer, we varied our base model in different ways, measuring the change in performance on Englis",
+                      "We present these results in Table 3.",
+                      ".9 BLEU worse than the best setting, quality also drops off with too many heads.",
+                      "This suggests that determining compatibility is not easy and that a more sophisticated compatibility function than dot product may be beneﬁcial."
+                    ]
+                  }
+                ]
+              },
+              "pending_id": "bb095bdd9f"
+            }
+          },
+          {
+            "file": "e9ab0f25_1706.03762v7.pdf",
+            "status": 200,
+            "elapsed": 0.5,
+            "body": {
+              "ok": false,
+              "stage": "duplicate",
+              "message": "库中已存在内容高度重合的文献",
+              "duplicates": [
+                {
+                  "doc_id": "dce63a636cf64",
+                  "filename": "1706.03762v1.pdf",
+                  "title": "Attention Is All You Need",
+                  "version": 1,
+                  "arxiv_id": "1706.03762v1",
+                  "reason": "同族版本",
+                  "similarity": 0.99,
+                  "suggestion": "新上传版本更高（v7 > v1），建议保留新版本"
+                }
+              ],
+              "pending_file": "<repo>\\data\\uploads\\6c79825d_qa_e9ab0f25_1706.03762v7.pdf",
+              "temp_name": "qa_e9ab0f25_1706.03762v7.pdf",
+              "diff": {
+                "ok": true,
+                "summary": {
+                  "added_sections": 2,
+                  "removed_sections": 1,
+                  "changed_sections": 27,
+                  "unchanged_sections": 0,
+                  "added_sentences": 179,
+                  "removed_sentences": 267
+                },
+                "added_sections": [
+                  "7 Conclusion/Acknowledgements",
+                  "（正文/无章节）"
+                ],
+                "removed_sections": [
+                  "5 Training/Attention Dropout"
+                ],
+                "changed_sections": [
+                  {
+                    "section": "References",
+                    "old_pages": [
+                      10,
+                      11,
+                      12
+                    ],
+                    "new_pages": [
+                      10,
+                      11,
+                      12
+                    ],
+                    "added": 47,
+                    "removed": 34,
+                    "similarity": 0.664,
+                    "added_samples": [
+                      "10 [5] Kyunghyun Cho, Bart van Merrienboer, Caglar Gulcehre, Fethi Bougares, Holger Schwenk, and Yoshua Bengio.",
+                      "[11] Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun.",
+                      "Deep residual learning for im- age recognition.",
+                      "In Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition, pages 770–778, 2016.",
+                      "[12] Sepp Hochreiter, Yoshua Bengio, Paolo Frasconi, and Jürgen Schmidhuber."
+                    ],
+                    "removed_samples": [
+                      "[5] Kyunghyun Cho, Bart van Merrienboer, Caglar Gulcehre, Fethi Bougares, Holger Schwenk, and Yoshua Bengio.",
+                      "intend to make the code we used to train and evaluate our models available soon.",
+                      "arXiv preprint arXiv:1308.0850, 2013.",
+                      "[11] Sepp Hochreiter, Yoshua Bengio, Paolo Frasconi, and Jürgen Schmidhuber.",
+                      "Gradient ﬂow in recurrent nets: the difﬁculty of learning long-term dependencies, 2001."
+                    ]
+                  },
+                  {
+                    "section": "6 Results/6.3 English Constituency Parsing",
+                    "old_pages": [
+                      8,
+                      9
+                    ],
+                    "new_pages": [
+                      9,
+                      10
+                    ],
+                    "added": 15,
+                    "removed": 22,
+                    "similarity": 0.051,
+                    "added_samples": [
+                      "This task presents specific challenges: the output is subject to strong structural constraints and is significantly longer than the input.",
+                      "Furthermore, RNN sequence-to-sequence models have not been able to attain state-of-the-art results in small-data regimes [37].",
+                      "We trained a 4-layer transformer with dmodel = 1024 on the Wall Street Journal (WSJ) portion of the Penn Treebank [25], about 40K training sentences.",
+                      "We also trained it in a semi-supervised setting, using the larger high-confidence and BerkleyParser corpora from with approximately 17M sentences [37].",
+                      "We used a vocabulary of 16K tokens for the WSJ only setting and a vocabulary of 32K tokens for the semi-supervised setting."
+                    ],
+                    "removed_samples": [
+                      ", bigger models are better, and dropout is very helpful in avoiding over-ﬁtting.",
+                      "This task presents speciﬁc challenges: the output is subject to strong structural constraints and is signiﬁcantly longer than the input.",
+                      "Furthermore, RNN sequence-to-sequence models have not been able to attain state-of-the-art results in small-data regimes [33].",
+                      "ave not been able to attain state-of-the-art results in small-data regimes [33].",
+                      "We trained a 4-layer transformer with dmodel = 1024 on the Wall Street Journal (WSJ) portion of the Penn Treebank [23], about 40K training sentences."
+                    ]
+                  },
+                  {
+                    "section": "6 Results/6.1 Machine Translation",
+                    "old_pages": [
+                      7,
+                      8
+                    ],
+                    "new_pages": [
+                      8
+                    ],
+                    "added": 7,
+                    "removed": 22,
+                    "similarity": 0.293,
+                    "added_samples": [
+                      "On the WMT 2014 English-to-German translation task, the big transformer model (Transformer (big) in Table 2) outperforms the best previously reported models (in",
+                      "The configuration of this model is listed in the bottom line of Table 3.",
+                      "Even our base model surpasses all previously published models and ensembles, at a fraction of the training cost of any of the competitive models.",
+                      "The Transformer (big) model trained for English-to-French used dropout rate Pdrop = 0.1, instead of 0.3.",
+                      "We used beam search with a beam size of 4 and length penalty α = 0.6 [38]."
+                    ],
+                    "removed_samples": [
+                      "ty, as the model learns to be more unsure, but improves accuracy and BLEU score.",
+                      "On the WMT 2014 English-to-German translation task, Our big transformer model (Transformer (big) in Table 2) outperforms the best previously reported models (in",
+                      "The conﬁguration of this model is listed in the bottom line of Table 3.",
+                      "Even our base model surpasses all previously published models and ensembles, at a fraction of the training cost of any of the previous best models.",
+                      "7 Table 2: The Transformer achieves better BLEU scores than previous state-of-the-art models on the English-to-German and English-to-French newstest2014 tests a"
+                    ]
+                  },
+                  {
+                    "section": "4 Why Self-Attention",
+                    "old_pages": [
+                      5,
+                      6
+                    ],
+                    "new_pages": [
+                      6,
+                      7
+                    ],
+                    "added": 5,
+                    "removed": 23,
+                    "similarity": 0.548,
+                    "added_samples": [
+                      "In this section we compare various aspects of self-attention layers to the recurrent and convolu- tional layers commonly used for mapping one variable-length se",
+                      "The shorter these paths between any combination of positions in the input and output sequences, the easier it is to learn long-range dependencies [12].",
+                      "In terms of computational complexity, self-attention layers are faster than recurrent layers when the sequence 6 length n is smaller than the representation dim",
+                      "Doing so requires a stack of O(n/k) convolutional layers in the case of contiguous kernels, or O(logk(n)) in the case of dilated convolutions [18], increasing t",
+                      "As side benefit, self-attention could yield more interpretable models."
+                    ],
+                    "removed_samples": [
+                      "for any ﬁxed offset k, PEpos+k can be represented as a linear function of PEpos.",
+                      "In this section we compare various aspects of self-attention layers to the recurrent and convolu- tional layers commonly used for mapping one variable-length se",
+                      "5 Table 1: Maximum path lengths, per-layer complexity and minimum number of sequential operations for different layer types.",
+                      "n is the sequence length, d is the representation dimension, k is the kernel size of convolutions and r the size of the neighborhood in restricted self-attentio",
+                      "mmonly used for mapping one variable-length sequence of symbol representations"
+                    ]
+                  },
+                  {
+                    "section": "6 Results/Training",
+                    "old_pages": [
+                      9
+                    ],
+                    "new_pages": [
+                      10
+                    ],
+                    "added": 4,
+                    "removed": 24,
+                    "similarity": 0.0,
+                    "added_samples": [
+                      "WSJ 23 F1 WSJ only, discriminative 88.3 WSJ only, discriminative 90.4 WSJ only, discriminative 90.4 WSJ only, discriminative 91.7 WSJ only, discriminative 91.3 ",
+                      "We used a beam size of 21 and α = 0.3 for both WSJ only and the semi-supervised setting.",
+                      "Our results in Table 4 show that despite the lack of task-specific tuning our model performs sur- prisingly well, yielding better results than all previously re",
+                      "In contrast to RNN sequence-to-sequence models [37], the Transformer outperforms the Berkeley- Parser [29] even when training only on the WSJ training set of 40"
+                    ],
+                    "removed_samples": [
+                      "Transformer (4 layers)",
+                      "WSJ only, discriminative",
+                      "WSJ only, discriminative",
+                      "WSJ only, discriminative",
+                      "WSJ only, discriminative"
+                    ]
+                  },
+                  {
+                    "section": "3 Model Architecture/3.2 Attention/3.2.1 Scaled Dot-Product Attention",
+                    "old_pages": [
+                      3,
+                      4
+                    ],
+                    "new_pages": [
+                      4
+                    ],
+                    "added": 6,
+                    "removed": 19,
+                    "similarity": 0.324,
+                    "added_samples": [
+                      "We compute the dot products of the query with all keys, divide each by √dk, and apply a softmax function to obtain the weights on the values.",
+                      "We compute the matrix of outputs as: Attention(Q, K, V ) = softmax(QKT √dk )V (1) The two most commonly used attention functions are additive attention [2], and",
+                      "Dot-product attention is identical to our algorithm, except for the scaling factor of 1 √dk .",
+                      "While the two are similar in theoretical complexity, dot-product attention is much faster and more space-efficient in practice, since it can be implemented usin",
+                      "We suspect that for large values of dk, the dot products grow large in magnitude, pushing the softmax function into regions where it has extremely small gradien"
+                    ],
+                    "removed_samples": [
+                      "is computed by a compatibility function of the query with the corresponding key.",
+                      "We compute the dot products of the",
+                      "query with all keys, divide each by √dk, and apply a softmax function to obtain the weights on the values.",
+                      "We compute the matrix of outputs as:",
+                      "Attention(Q, K, V ) = softmax(QKT"
+                    ]
+                  },
+                  {
+                    "section": "1 Introduction",
+                    "old_pages": [
+                      1,
+                      2
+                    ],
+                    "new_pages": [
+                      2
+                    ],
+                    "added": 6,
+                    "removed": 15,
+                    "similarity": 0.323,
+                    "added_samples": [
+                      "Recurrent neural networks, long short-term memory [13] and gated recurrent [7] neural networks in particular, have been firmly established as state of the art a",
+                      "Numerous efforts have since continued to push the boundaries of recurrent language models and encoder-decoder architectures [38, 24, 15].",
+                      "Recent work has achieved significant improvements in computational efficiency through factorization tricks [21] and conditional computation [32], while also imp",
+                      "Attention mechanisms have become an integral part of compelling sequence modeling and transduc- tion models in various tasks, allowing modeling of dependencies ",
+                      "In all but a few cases [27], however, such attention mechanisms are used in conjunction with a recurrent network."
+                    ],
+                    "removed_samples": [
+                      "fully to English constituency parsing both with large and limited training data.",
+                      "Recurrent neural networks, long short-term memory [12] and gated recurrent [7] neural networks in particular, have been ﬁrmly established as state of the art ap",
+                      "Numerous efforts have since continued to push the boundaries of recurrent language models and encoder-decoder architectures [34, 22, 14].",
+                      "ies of recurrent language models and encoder-decoder architectures [34, 22, 14].",
+                      "Recent work has achieved signiﬁcant improvements in computational efﬁciency through factorization tricks [19] and conditional nts in computational efﬁciency thr"
+                    ]
+                  },
+                  {
+                    "section": "Abstract",
+                    "old_pages": [
+                      1
+                    ],
+                    "new_pages": [
+                      1
+                    ],
+                    "added": 15,
+                    "removed": 6,
+                    "similarity": 0.222,
+                    "added_samples": [
+                      "The dominant sequence transduction models are based on complex recurrent or convolutional neural networks that include an encoder and a decoder.",
+                      "Experiments on two machine translation tasks show these models to be superior in quality while being more parallelizable and requiring significantly less time t",
+                      "Our model achieves 28.4 BLEU on the WMT 2014 English- to-German translation task, improving over the existing best results, including ensembles, by over 2 BLEU.",
+                      "On the WMT 2014 English-to-French translation task, our model establishes a new single-model state-of-the-art BLEU score of 41.8 after training for 3.5 days on ",
+                      "∗Equal contribution."
+                    ],
+                    "removed_samples": [
+                      "oogle Brain lukaszkaiser@google.com",
+                      "Illia Polosukhin∗ illia.polosukhin@gmail.com",
+                      "The dominant sequence transduction models are based on complex recurrent or convolutional neural networks in an encoder-decoder conﬁguration.",
+                      "Experiments on two machine translation tasks show these models to be superior in quality while being more parallelizable and requiring signiﬁcantly less time to",
+                      "Our model achieves 28.4 BLEU on the WMT 2014 English- to-German translation task, improving over the existing best results, including ensembles by over 2 BLEU."
+                    ]
+                  },
+                  {
+                    "section": "3 Model Architecture/3.2 Attention/3.2.2 Multi-Head Attention",
+                    "old_pages": [
+                      4
+                    ],
+                    "new_pages": [
+                      4,
+                      5
+                    ],
+                    "added": 8,
+                    "removed": 11,
+                    "similarity": 0.24,
+                    "added_samples": [
+                      "Instead of performing a single attention function with dmodel-dimensional keys, values and queries, we found it beneficial to linearly project the queries, keys",
+                      "On each of these projected versions of queries, keys and values we then perform the attention function in parallel, yielding dv-dimensional 4To illustrate why t",
+                      "Then their dot product, q · k = Pdk i=1 qiki, has mean 0 and variance dk.",
+                      "4 output values.",
+                      "These are concatenated and once again projected, resulting in the final values, as depicted in Figure 2."
+                    ],
+                    "removed_samples": [
+                      "To counteract this, we scale the dot product by 1/√dk.",
+                      "Instead of performing a single attention function with dmodel-dimensional keys, values and queries, we found it beneﬁcial to linearly project the queries, keys ",
+                      "On each of these projected versions of queries, keys and values we then perform the attention function in parallel, yielding dv-dimensional output values.",
+                      "These are concatenated, resulting in the ﬁnal values, as depicted in Figure 2 Multi-head attention allows the model to jointly attend to information from differ",
+                      "With a single attention head, averaging inhibits this."
+                    ]
+                  },
+                  {
+                    "section": "References/Attention Visualizations",
+                    "old_pages": [
+                      13,
+                      14,
+                      15
+                    ],
+                    "new_pages": [
+                      13,
+                      14,
+                      15
+                    ],
+                    "added": 9,
+                    "removed": 8,
+                    "similarity": 0.485,
+                    "added_samples": [
+                      "governments American majority passed since 2009 have spirit laws new that this of in is a It It that of this is a spirit in since laws new have American majorit",
+                      "<EOS> or the difficult more <pad> process <pad> <pad> <pad> <pad> <pad> voting making registration Figure 3: An example of the attention mechanism following lon",
+                      "Many of the attention heads attend to a distant dependency of the verb ‘making’, completing the phrase ‘making...more difficult’.",
+                      "13 application perfect should never Law The just but will be be its - , , its - The perfect but just be be Law never should will application application perfect",
+                      "<EOS> , this my is in what are we <pad> missing opinion missing <EOS> opinion <pad> what this are my we in is , ."
+                    ],
+                    "removed_samples": [
+                      "registration",
+                      "registration Figure 3: An example of the attention mechanism following long-distance dependencies in the encoder self-attention in layer 5 of 6.",
+                      "Many of the attention heads attend to a distant dependency of the verb ‘making’, completing the phrase ‘making...more difﬁcult’.",
+                      "registration",
+                      "registration"
+                    ]
+                  },
+                  {
+                    "section": "2 Background",
+                    "old_pages": [
+                      2
+                    ],
+                    "new_pages": [
+                      2
+                    ],
+                    "added": 6,
+                    "removed": 9,
+                    "similarity": 0.286,
+                    "added_samples": [
+                      "The goal of reducing sequential computation also forms the foundation of the Extended Neural GPU [16], ByteNet [18] and ConvS2S [9], all of which use convolutio",
+                      "This makes it more difficult to learn dependencies between distant positions [12].",
+                      "Self-attention has been used successfully in a variety of tasks including reading comprehension, abstractive summarization, textual entailment and learning task",
+                      "End-to-end memory networks are based on a recurrent attention mechanism instead of sequence- aligned recurrence and have been shown to perform well on simple-la",
+                      "To the best of our knowledge, however, the Transformer is the first transduction model relying entirely on self-attention to compute representations of its inpu"
+                    ],
+                    "removed_samples": [
+                      "on quality after being trained for as little as twelve hours on eight P100 GPUs.",
+                      "The goal of reducing sequential computation also forms the foundation of the Extended Neural GPU cing sequential computation also forms the foundation of the Ex",
+                      "[21], ByteNet [16] and ConvS2S [9], all of which use convolutional neural networks as basic building block, computing hidden representations in parallel for all",
+                      "This makes it more difﬁcult to learn dependencies between distant positions [11].",
+                      ", an effect we counteract with Multi-Head Attention as described in section 3.2."
+                    ]
+                  },
+                  {
+                    "section": "6 Results/6.2 Model Variations",
+                    "old_pages": [
+                      8
+                    ],
+                    "new_pages": [
+                      8,
+                      9
+                    ],
+                    "added": 9,
+                    "removed": 6,
+                    "similarity": 0.4,
+                    "added_samples": [
+                      "To evaluate the importance of different components of the Transformer, we varied our base model in different ways, measuring the change in performance on Englis",
+                      "8 Table 3: Variations on the Transformer architecture.",
+                      "Unlisted values are identical to those of the base model.",
+                      "All metrics are on the English-to-German translation development set, newstest2013.",
+                      "Listed perplexities are per-wordpiece, according to our byte-pair encoding, and should not be compared to per-word perplexities."
+                    ],
+                    "removed_samples": [
+                      "single-precision ﬂoating-point capacity of each GPU 3.",
+                      "To evaluate the importance of different components of the Transformer, we varied our base model in different ways, measuring the change in performance on Englis",
+                      "We present these results in Table 3.",
+                      ".9 BLEU worse than the best setting, quality also drops off with too many heads.",
+                      "This suggests that determining compatibility is not easy and that a more sophisticated compatibility function than dot product may be beneﬁcial."
+                    ]
+                  }
+                ]
+              },
+              "pending_id": "0a73abc507"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "C02",
+      "group": "eng",
+      "point": "c-3 并发问答",
+      "steps": "同时发 4 个问答请求",
+      "expected": "全部 200、无串答、引用各自合法",
+      "actual": "4 路并发完成，耗时 [21.9, 21.0, 15.5, 19.3]",
+      "status": "PASS",
+      "elapsed_s": 21.9,
+      "evidence": {
+        "results": [
+          {
+            "q": "Transformer 的 BLEU 是多少？",
+            "status": 200,
+            "elapsed": 21.9,
+            "answer": "Transformer（big）在 WMT 2014 英德翻译任务上达到 28.4 BLEU，在英法翻译任务上达到 41.0 BLEU；base model 在英德任务上为 27.3 BLEU [1]",
+            "verify": {
+              "total": 18,
+              "valid": 18,
+              "invalid": 0,
+              "rate": 1.0,
+              "invalid_anchors": [],
+              "invalid_refs": [],
+              "bad_numbers": [],
+              "cleaned": "Transformer（big）在 WMT 2014 英德翻译任务上达到 28.4 BLEU，在英法翻译任务上达到 41.0 BLEU；base model 在英德任务上为 27.3 BLEU [1][2][4]。\n- 英德任务：Transformer（big）以超过 2.0 BLEU 的优势超过此前最佳模型（含 ensembles），达到 28.4 BLEU [1][3]。\n- 英法任务：big model 达到 41.0 BLEU，优于所有此前发表的 single models [2][4]。\n- Table 2 同时列出 Transformer（base model）英德 BLEU 为 27.3 [2][4]。",
+              "has_citation": true
+            }
+          },
+          {
+            "q": "BERT 的预训练任务有哪些？",
+            "status": 200,
+            "elapsed": 21.0,
+            "answer": "BERT 使用一个 denoising self-supervised 预训练任务 [4]；证据[1]提到 BERT 所用的“masked language modeling”（MLM）objecti",
+            "verify": {
+              "total": 12,
+              "valid": 12,
+              "invalid": 0,
+              "rate": 1.0,
+              "invalid_anchors": [],
+              "invalid_refs": [],
+              "bad_numbers": [],
+              "cleaned": "BERT 使用一个 denoising self-supervised 预训练任务 [4]；证据[1]提到 BERT 所用的“masked language modeling”（MLM）objective，并称其为 BERT-style objective [1]。证据[2]提到一个受 BERT 的“masked language modeling”objective 与“word dropout”正则化技术启发而设计的 objective，该 objective 随机采样并 drop out 输入序列中 15% 的 token [2]，但该描述属于证据[2]所述模型，不能直接等同于 BERT 的具体做法。证据[1]至[5]均未提及 90% 替换为 mask token、10% 替换为随机 token 的比例，也未提及 BERT 为 encoder-only 模型或在 encoder 输出端重建被 mask 的 token；证据[3]仅指出其所考虑的模型架构中没有与 BERT 相同或由 encoder-only 结构组成的。上述证据中未提及 next sentence prediction 等其他预训练任务。",
+              "has_citation": true
+            }
+          },
+          {
+            "q": "GPT-3 的参数量？",
+            "status": 200,
+            "elapsed": 15.5,
+            "answer": "GPT-3 的参数量为 175 billion parameters（即 175.0B）。[1][2][3]\n\n- 论文将其描述为“a 175 billion parameter autoregres",
+            "verify": {
+              "total": 14,
+              "valid": 14,
+              "invalid": 0,
+              "rate": 1.0,
+              "invalid_anchors": [],
+              "invalid_refs": [],
+              "bad_numbers": [],
+              "cleaned": "GPT-3 的参数量为 175 billion parameters（即 175.0B）。[1][2][3]\n\n- 论文将其描述为“a 175 billion parameter autoregressive language model, which we call GPT-3”。[1]\n- 摘要中写明“we train GPT-3, an autoregressive language model with 175 billion parameters, 10x more than any previous non-sparse language model”。[2]\n- 模型规格表中对应条目为“GPT-3 175B or “GPT-3” 175.0B 96 12288”，即 nlayers 96、dmodel 12288。[3]",
+              "has_citation": true
+            }
+          },
+          {
+            "q": "Mistral 7B 用了什么注意力？",
+            "status": 200,
+            "elapsed": 19.3,
+            "answer": "Mistral 7B leverages grouped-query attention (GQA) 和 sliding window attention (SWA) [1]。其中 GQA 显著加快推",
+            "verify": {
+              "total": 4,
+              "valid": 4,
+              "invalid": 0,
+              "rate": 1.0,
+              "invalid_anchors": [],
+              "invalid_refs": [],
+              "bad_numbers": [],
+              "cleaned": "Mistral 7B leverages grouped-query attention (GQA) 和 sliding window attention (SWA) [1]。其中 GQA 显著加快推理速度，并降低 decoding 时的内存需求，从而允许更大的 batch size 与更高吞吐量 [1]。关于 SWA，证据 [4] 指出其利用 transformer 的堆叠层关注窗口大小 W 之外的信息，即第 k 层位置 i 的隐藏状态关注上一层中位置介于 i−W 与 i 之间的隐藏状态 [4]；提供的证据片段中未给出 window_size、context_len 及 attention span 的具体数值，故不作数值断言。",
+              "has_citation": true
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "C03",
+      "group": "eng",
+      "point": "c-3 干净环境一键复现",
+      "steps": "用独立 DATA_DIR 启动全新实例并访问 /health 与 /api/documents",
+      "expected": "零数据也能启动，接口 200",
+      "actual": "全新环境启动成功，文档数 0，向量后端 sqlite",
+      "status": "PASS",
+      "elapsed_s": 4.4,
+      "evidence": {
+        "health": {
+          "ok": true,
+          "service": "sciagent",
+          "version": "1.0.0"
+        },
+        "documents": 0,
+        "data_dir": "<repo>\\data\\_qa_clean"
+      }
+    },
+    {
+      "id": "C04",
+      "group": "perf",
+      "point": "c-3 长 PDF 打开耗时",
+      "steps": "对百页文档连续请求页图与章节树，计时",
+      "expected": "首屏 <3s，页图 <1.5s",
+      "actual": "页图 79ms / 页元数据 37ms / 章节树 5ms",
+      "status": "PASS",
+      "elapsed_s": 0.1,
+      "evidence": {
+        "file": "2303.08774v6.pdf",
+        "pages": 100,
+        "meta_ms": 37,
+        "img_ms": 79,
+        "sections_ms": 5,
+        "img_bytes": 270587,
+        "status": [
+          200,
+          200,
+          200
+        ]
+      }
+    },
+    {
+      "id": "C05",
+      "group": "perf",
+      "point": "c-3 20+ 图谱渲染帧率",
+      "steps": "浏览器加载图谱并测量首帧与交互帧间隔",
+      "expected": "节点 >20 且首帧 <3s",
+      "actual": "图谱节点=30 首帧耗时=265ms canvas=998x678\n1s 内 rAF 回调=1（无头虚拟时钟，仅参考）\nRESULT: PASS 20+ 节点图谱渲染，首帧 265ms",
+      "status": "PASS",
+      "elapsed_s": 3.7,
+      "evidence": {
+        "dom_length": 4921,
+        "raw": "图谱节点=30 首帧耗时=265ms canvas=998x678\n1s 内 rAF 回调=1（无头虚拟时钟，仅参考）\nRESULT: PASS 20+ 节点图谱渲染，首帧 265ms"
+      }
+    },
+    {
+      "id": "C06",
+      "group": "perf",
+      "point": "c-3 峰值内存/显存",
+      "steps": "采集服务进程 RSS 与 GPU 显存，记录一次问答前后增量",
+      "expected": "内存增量可量化且无泄漏迹象",
+      "actual": "RSS 595→596 MB（Δ+1.4 MB）；GPU：1075 MiB",
+      "status": "PASS",
+      "elapsed_s": 25.5,
+      "evidence": {
+        "pid": 14388,
+        "rss_before_mb": 595.0,
+        "rss_after_mb": 596.4,
+        "delta_mb": 1.4,
+        "gpu": "1075 MiB",
+        "chat_status": 200
+      }
+    },
+    {
+      "id": "C07",
+      "group": "stream",
+      "point": "e-3 Token 级流式输出",
+      "steps": "请求流式接口，统计 chunk 数与首尾完整性",
+      "expected": "多个增量片段且拼接后与完整回答一致",
+      "actual": "流式接口不存在（HTTP 404）",
+      "status": "BLOCKED",
+      "elapsed_s": 0.0,
+      "evidence": {
+        "status": 404
+      }
+    },
+    {
+      "id": "C08",
+      "group": "eng",
+      "point": "e-3 断网/异常错误边界",
+      "steps": "注入不存在的文档、空问题、超大页码、畸形 JSON",
+      "expected": "返回 4xx 且带友好信息，不 500、不崩溃",
+      "actual": "异常均被拦截，状态码 [200, 400, 404, 422]",
+      "status": "PASS",
+      "elapsed_s": 0.0,
+      "evidence": {
+        "probes": [
+          {
+            "probe": "不存在的文档",
+            "status": 200,
+            "body": "{'chunks': []}"
+          },
+          {
+            "probe": "空问题",
+            "status": 400,
+            "body": "{'detail': '问题不能为空'}"
+          },
+          {
+            "probe": "超大页码",
+            "status": 404,
+            "body": "{'detail': '文档或源文件不存在'}"
+          },
+          {
+            "probe": "畸形 JSON",
+            "status": 422,
+            "body": "{'detail': [{'type': 'string_type', 'loc': ['body', 'question'], 'msg': 'Input should be a valid string', 'input': 123}, {'type': 'list_type', 'loc': ['body', '"
+          }
+        ]
+      }
+    },
+    {
+      "id": "C09",
+      "group": "eng",
+      "point": "硬性用例 4：CSV 转 TikZ/Mermaid",
+      "steps": "提交 CSV 表格，检查生成的 Mermaid/TikZ 语法与数值",
+      "expected": "数值一一对应且语法可渲染",
+      "actual": "CSV 图表接口不存在（HTTP 404）",
+      "status": "BLOCKED",
+      "elapsed_s": 0.0,
+      "evidence": {
+        "response": {
+          "detail": "Not Found"
+        }
+      }
+    },
+    {
+      "id": "D01",
+      "group": "biz",
+      "point": "d-2 六大核心模块闭环",
+      "steps": "依次调用上传/解析/检索问答/溯源/图谱/对照阅读/工具，检查每步返回",
+      "expected": "六模块全部 200 且数据贯通",
+      "actual": "六模块全部贯通",
+      "status": "PASS",
+      "elapsed_s": 30.0,
+      "evidence": {
+        "modules": [
+          {
+            "module": "解析-章节树",
+            "status": 200,
+            "size": 2079
+          },
+          {
+            "module": "解析-参考文献",
+            "status": 200,
+            "size": 35721
+          },
+          {
+            "module": "检索问答",
+            "status": 200,
+            "size": 15885
+          },
+          {
+            "module": "图谱",
+            "status": 200,
+            "size": 21240
+          },
+          {
+            "module": "对照阅读",
+            "status": 200,
+            "size": 5809
+          },
+          {
+            "module": "任务轨迹",
+            "status": 200,
+            "size": 3340
+          }
+        ],
+        "doc": "2412.15115v2.pdf"
+      }
+    },
+    {
+      "id": "D02",
+      "group": "biz",
+      "point": "d-1 文献筛选 / 对比阅读痛点",
+      "steps": "对比模式提问跨 3 篇，检查答案是否覆盖多篇且引用分布",
+      "expected": "证据来自 >=2 篇且结论有对比结构",
+      "actual": "证据覆盖 3 篇：['1706.03762v1.pdf', '1910.10683v4.pdf', '2211.05100v4.pdf']",
+      "status": "PASS",
+      "elapsed_s": 73.6,
+      "evidence": {
+        "evidence": 8,
+        "docs": [
+          "1706.03762v1.pdf",
+          "1910.10683v4.pdf",
+          "2211.05100v4.pdf"
+        ],
+        "answer": "原回答为错误提示，不构成对问题的作答；依据【证据】可支撑的表述为：Transformer 是首个完全基于 attention 的 sequence transduction 模型，用 multi-headed self-attention 取代 encoder-decoder 架构中最常用的 recurrent layers [1]；该工作提出仅基于 attention mechanisms 的 ",
+        "verify": {
+          "total": 3,
+          "valid": 3,
+          "invalid": 0,
+          "rate": 1.0,
+          "invalid_anchors": [],
+          "invalid_refs": [],
+          "bad_numbers": [],
+          "cleaned": "原回答为错误提示，不构成对问题的作答；依据【证据】可支撑的表述为：Transformer 是首个完全基于 attention 的 sequence transduction 模型，用 multi-headed self-attention 取代 encoder-decoder 架构中最常用的 recurrent layers [1]；该工作提出仅基于 attention mechanisms 的 Transformer，完全不用 recurrence 和 convolutions [2]；原始 Transformer 基于 encoder-decoder 架构，而许多流行模型选择了 encoder-only（如 BERT）或 decoder-only（如 GPT）方案 [5]。",
+          "has_citation": true
+        }
+      }
+    },
+    {
+      "id": "F01",
+      "group": "open",
+      "point": "f-2 开源潜力与推广",
+      "steps": "检查 README、Docker、依赖清单、许可证、.gitignore、文档目录",
+      "expected": "交付要素齐全",
+      "actual": "缺 ['LICENSE']",
+      "status": "FAIL",
+      "elapsed_s": 0.0,
+      "evidence": {
+        "files": {
+          "README.md": true,
+          "Dockerfile": true,
+          "docker-compose.yml": true,
+          "requirements.txt": true,
+          ".env.example": true,
+          ".gitignore": true,
+          "LICENSE": false
+        },
+        "docs": [
+          "docs\\传智杯-执行备忘录.md",
+          "docs\\官方需求文档.pdf",
+          "docs\\方案设计-v1.md"
+        ]
+      }
+    }
+  ]
+}

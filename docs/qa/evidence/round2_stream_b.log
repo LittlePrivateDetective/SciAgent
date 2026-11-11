@@ -1,0 +1,3 @@
+[QA] 20261111_121359 BASE=http://127.0.0.1:8013 用例 1 条
+  [FAIL  ] C07B  e-3 前端流式与思考过程可视化 (3%)                   4.3s  ask-bar HTML=&lt;div class="el-input"&gt;&lt;!-- input --&gt;&lt;!-- prepend slot --&gt;&lt;!--v-if--&gt;&lt;d
+[QA] 证据 -> <repo>\docs\qa\evidence\run_20261111_121359.json

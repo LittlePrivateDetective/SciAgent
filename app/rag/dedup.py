@@ -42,15 +42,27 @@ def content_hash(text: str) -> str:
 
 
 def simhash64(text: str) -> int:
-    """经典 simhash：分词 → 词哈希 → 按位加权求和 → 取符号位。"""
-    tokens = _TOKEN.findall(normalize(text)[:60000])
+    """经典 simhash：分词 → 词哈希 → 按位加权求和 → 取符号位。
+
+    P1 修复（QA B03）：不能拿 `normalize()` 的结果来分词——它把 `\\s+` 压成空串，
+    36k 字的正文会变成 "attentionisallyouneedashishvaswani..." 一个巨型 token，
+    `_TOKEN` 只能切出 1 个词，整张指纹就由这一个 md5 决定。
+    实测在文末加两句附录会翻转 **38 位**，近似去重完全失效。
+    这里保留词边界，只在数字/标点层做归一化。
+    """
+    cleaned = re.sub(r"\d+", " ", text.lower())
+    cleaned = re.sub(r"[^a-z\u4e00-\u9fa5\s]", " ", cleaned)
+    tokens = _TOKEN.findall(cleaned[:60000])
     if not tokens:
         return 0
+    # 词频加权：高频术语对位模式的贡献更大，少量新词不会把整张指纹推翻
     weights = [0] * 64
-    for tok in tokens:
+    from collections import Counter
+
+    for tok, freq in Counter(tokens).items():
         h = int(hashlib.md5(tok.encode("utf-8")).hexdigest()[:16], 16)
         for i in range(64):
-            weights[i] += 1 if (h >> i) & 1 else -1
+            weights[i] += freq if (h >> i) & 1 else -freq
     out = 0
     for i in range(64):
         if weights[i] > 0:

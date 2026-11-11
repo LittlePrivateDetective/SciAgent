@@ -13,6 +13,36 @@ from app.core.config import settings
 from app.parse.structure import Block, ParsedDoc, build_section_paths
 
 
+def strip_carry(prev: str, cur: str, limit: int = 200) -> str:
+    """去掉分块时的重叠前缀，返回**严格属于本块 bbox** 的正文。
+
+    切块为了"答案不被切在句子中间"，会把上一块的尾巴贴到下一块开头。
+    检索时这是优点，但 `Chunk.bbox` 只覆盖本块的区块——于是
+    `chunk.text` 里有一段文字根本不在锚点框内（QA A04 实测溯源只有 1/10）。
+    凡是要把 chunk 文本当作"原文证据"展示的地方，都必须先过这里：
+    混合检索语料、中英对照段落、答案引用校验。
+
+    用"上一块结尾 == 本块开头"精确还原，比任何启发式都可靠，
+    因为那段文字本来就是从上块末尾复制过来的。
+    """
+    if not prev or not cur:
+        return cur
+    best = 0
+    for k in range(min(limit, len(cur)), 12, -1):
+        if prev.endswith(cur[:k]):
+            best = k
+            break
+    if not best:
+        return cur
+    rest = cur[best:].lstrip("\n ")
+    # 重叠恰好卡在词中间时，rest 会以半截单词开头（如 "ned from ..."），
+    # 丢掉这个残词：它在前一段已经完整出现过。
+    m = re.match(r"^([a-z]{1,6})\s+", rest)
+    if m and prev.endswith(m.group(1)):
+        rest = rest[m.end():]
+    return rest or cur
+
+
 def _union_bbox(blocks: list[Block]) -> list[float]:
     x0 = min(b.bbox[0] for b in blocks)
     y0 = min(b.bbox[1] for b in blocks)

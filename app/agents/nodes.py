@@ -21,6 +21,7 @@ from app.agents.prompts import (
     SYSTEM_CONTRACT,
     render,
 )
+from app.core.config import settings
 from app.core.llm import LLMError, gateway
 from app.core.logger import get_logger
 from app.db.models import Lesson
@@ -35,6 +36,21 @@ COMPARE_HINT = re.compile(
     r"(对比|比较|相比|异同|区别|差异|演进|承袭|变化|vs\.?|versus|compare|difference)",
     re.IGNORECASE,
 )
+
+# JSON 包裹在"推理模型 + 长表格"上极容易把输出预算烧光（实测返回空串）。
+# 兜底改走非推理模型写纯文本，只保留 [n] 引用标记这一条硬约束。
+PLAIN_ANSWER_PROMPT = """【证据（每条都可按 [编号] 精确回查原文）】
+{evidence}
+
+【问题】
+{question}
+
+要求：
+- 第一句直接给结论；{mode_rule}
+- 每个论断后带 [编号]，编号不得超过证据条数；
+- 数字、型号、单位原样抄写，不换算；
+- 只写正文，不要 JSON、不要前言、不要写"模型/系统/错误"等元话语；
+- 300 字以内。"""
 
 
 def _step(state: dict, agent: str, tool: str = "", **extra) -> None:
@@ -230,11 +246,19 @@ def node_answer(state: dict) -> dict:
     # 是否走"多篇对比"模板：必须以用户意图为准。
     # 早期版本用"证据里出现多篇文档"就判定对比，结果单篇问题只要同时召回两篇
     # 就会被强行做成对比表格（实测"Adam 的 beta1"被拿去跟 PPO 论文对比）。
-    is_compare = state.get("mode") == "compare" or (
-        bool(COMPARE_HINT.search(state.get("goal", "")))
-        and len({e["doc_id"] for e in evidence}) > 1
-    )
+    mode = state.get("mode", "qa")
+    doc_count = len({e.get("doc_id") for e in evidence})
+    intent_hint = bool(COMPARE_HINT.search(state.get("goal", ""))) and doc_count > 1
+    is_compare = mode == "compare" or intent_hint
     tpl = COMPARE_PROMPT if is_compare else ANSWER_PROMPT
+    # 路由决策写进 trace：Multi-Agent 的"分流"必须可观测、可回归，
+    # 而不是只能靠读代码推断。trigger 说明是用户显式选了对比模式，
+    # 还是问题里的「对比/差异」触发了意图识别（后者是产品特性，不是误判）。
+    _step(state, "writer", "route", mode=mode,
+          template="compare" if is_compare else "qa",
+          trigger="explicit_mode" if mode == "compare" else
+                  ("intent_hint" if intent_hint else "default"),
+          intent_hint=intent_hint, evidence_docs=doc_count)
     msgs = [
         {
             "role": "system",
@@ -266,7 +290,32 @@ def node_answer(state: dict) -> dict:
         except LLMError as exc:
             log.warning("空回答重试失败：%s", exc)
     if not answer:
-        answer = "模型未返回有效内容（可能触发输出长度限制）。请把问题拆小后重试。"
+        # 最后一次兜底：换**非推理模型**写纯文本。
+        # 推理模型的思维链会吃掉 JSON 包裹的预算，实测对比长表格连续两次空串。
+        try:
+            plain = gateway.chat(
+                [
+                    {"role": "system", "content": SYSTEM_CONTRACT.format(role="科研写作助手")},
+                    {"role": "user", "content": PLAIN_ANSWER_PROMPT.format(
+                        evidence=_evidence_block(evidence, 1000, query=state.get("goal", "")),
+                        question=state.get("goal", ""),
+                        mode_rule="用 Markdown 表格逐项对比，并给出承袭关系/差异点"
+                                  if is_compare else "用 1-3 个要点给依据",
+                    )},
+                ],
+                temperature=0.2, max_tokens=3000, model=settings.trans_model,
+            ).text.strip()
+            if len(plain) > 30 and "模型未返回" not in plain:
+                answer = plain
+                data = {"answer": answer, "confidence": "medium", "missing": ""}
+                _step(state, "writer", "fallback_plaintext",
+                      model=settings.trans_model, chars=len(answer))
+        except LLMError as exc:
+            log.warning("纯文本兜底也失败：%s", exc)
+
+    if not answer:
+        answer = "证据已检索到，但模型未能生成有效回答。请稍后重试或把问题拆小。"
+        state["error"] = "empty_answer"
 
     state["answer"] = answer
     state["confidence"] = data.get("confidence", "medium")
@@ -298,8 +347,17 @@ def node_verify(state: dict) -> dict:
 
 
 def node_review(state: dict) -> dict:
-    """可选：让审稿 Agent 挑刺。仅当证据充分时调用，省 token。"""
+    """可选：让审稿 Agent 挑刺。仅当证据充分且上游答案有效时调用。"""
     if not state.get("evidence"):
+        return state
+    answer = state.get("answer", "")
+    # P0 修复：上游若已经失败（空回答/兜底文案），审稿人会把"系统错误提示"
+    # 当成正文去改写，产出一大段关于"回答不合格"的元话语（QA A01 实测）。
+    # 上游无效就老实跳过，不要把降级文案再加工成看起来像答案的东西。
+    if state.get("error") or len(answer.strip()) < 20 or re.search(
+        r"模型未返回|系统错误|作答失败|任务执行失败|未能生成有效回答", answer
+    ):
+        _step(state, "reviewer", "skip", note="upstream_answer_invalid")
         return state
     try:
         data = gateway.chat_json(

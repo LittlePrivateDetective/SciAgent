@@ -1,29 +1,39 @@
+# ============================================================
+# SciAgent 运行时依赖
+# 原则：只列代码真正 import 的包。QA 第三轮静态校验发现旧清单有 5 个
+# "从不导入"的冗余包、又漏掉了编排核心 langgraph，导致容器环境与本机
+# 实测环境不一致（langgraph 缺失会让 StateGraph 静默降级）。
+# ============================================================
+
 # ---- Web / API ----
 fastapi>=0.111
 uvicorn[standard]>=0.30
-python-multipart>=0.0.9
+python-multipart>=0.0.9          # UploadFile 必需
 pydantic>=2.7
 pydantic-settings>=2.3
+PyYAML>=6.0                     # QA 测试台解析 docker-compose.yml
 
 # ---- 存储 ----
 SQLAlchemy>=2.0.30
 
 # ---- 文档解析 ----
-PyMuPDF>=1.24.0
-pdfplumber>=0.11.0
-Pillow>=10.3.0
-pytesseract>=0.3.10          # 可选：需另装 tesseract 可执行文件，未装则自动降级
+PyMuPDF>=1.24.0                 # PDF 文本/区块/bbox/页图，全项目解析基座
+Pillow>=10.3.0                  # 可选：tesseract OCR 兜底的 Image.open
+pytesseract>=0.3.10             # 可选：需另装 tesseract 二进制，未装自动降级到 VLM
 
-# ---- 检索 ----
+# ---- 检索与编排 ----
 numpy>=1.26
-rank-bm25>=0.2.2
-jieba>=0.42.1
 httpx>=0.27.0
+jieba>=0.42.1                   # 中文分词增强；缺失时退化到英文词+单字
+chromadb>=0.5.0                 # 向量库首选；装不上自动退到 SQLite+NumPy
+langgraph>=0.2.0                # Agent 编排（StateGraph）；缺失会降级到手写状态机
+networkx>=3.3                   # 引用图谱：PageRank/介数/社区发现
 
-# ---- 图谱 / 可视化 ----
-networkx>=3.3
-pandas>=2.2.0
-matplotlib>=3.8.4
-
-# ---- arXiv ----
-arxiv>=2.1.3
+# ---- 显式不依赖（避免误装，均已在代码内自实现或直连）----
+# rank-bm25   -> app/rag/hybrid.py 内纯 Python BM25(k1=1.5,b=0.75)
+# arxiv       -> app/tools/external.py 用 httpx 直连 export.arxiv.org
+# pdfplumber  -> 版面解析统一用 PyMuPDF 的 blocks/drawings
+# pandas      -> CSV 图表转换用标准库 csv 模块
+# matplotlib  -> 前端 ECharts / Mermaid / TikZ 出图，后端不绘图
+# sentence-transformers -> 仅 EMB_PROVIDER=local 时需要，属于可选档，
+#                          装它要拉 torch（>1GB），默认镜像不装

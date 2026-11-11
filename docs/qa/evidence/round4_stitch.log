@@ -1,0 +1,15 @@
+Building prefix dict from the default dictionary ...
+[QA] 20261111_142756 BASE=http://127.0.0.1:8013 用例 3 条
+14:27:58 | DEBUG   | jieba                    | Building prefix dict from the default dictionary ...
+Loading model from cache <user>\AppData\Local\Temp\jieba.cache
+14:27:58 | DEBUG   | jieba                    | Loading model from cache <user>\AppData\Local\Temp\jieba.cache
+Loading model cost 0.805 seconds.
+14:27:59 | DEBUG   | jieba                    | Loading model cost 0.805 seconds.
+Prefix dict has been built successfully.
+14:27:59 | DEBUG   | jieba                    | Prefix dict has been built successfully.
+14:28:17 | INFO    | app.rag.store            | 向量后端：Chroma (<repo>\data\chroma)
+14:28:18 | INFO    | app.rag.hybrid           | rerank 生效：16→8 条，耗时 456ms，top1=0.963
+  [PASS  ] A03   a-2 Dense/Sparse 混合检索 (8%)             21.0s  10 条命中，稠密/稀疏双通道均有贡献，锚点全部独立
+  [PASS  ] A04   a-2 10 条引用溯源准确率 (8%)                   39.7s  溯源命中 10/10
+  [PASS  ] C07   e-3 Token 级流式输出                         2.2s  39 个 token 片段无损拼接，思考阶段 ['plan', 'retrieve', 'read', 'verify']，引用校验 6/6
+[QA] 证据 -> <repo>\docs\qa\evidence\run_20261111_142756.json

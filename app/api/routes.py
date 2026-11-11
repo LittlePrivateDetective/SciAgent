@@ -2,11 +2,12 @@
 from __future__ import annotations
 
 import json
+import time
 import uuid
 from pathlib import Path
 
-from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, Query, UploadFile
-from fastapi.responses import JSONResponse, Response
+from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, Query, Request, UploadFile
+from fastapi.responses import JSONResponse, Response, StreamingResponse
 from pydantic import BaseModel, Field
 from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
@@ -15,7 +16,7 @@ from app.agents.graph import run as run_agent
 from app.core.config import settings
 from app.core.llm import gateway
 from app.core.logger import get_logger
-from app.db.models import Chunk, Citation, Document, Lesson, Section, Task
+from app.db.models import AuditLog, Chunk, Citation, Document, Lesson, Section, Task, TrashEntry
 from app.db.session import get_db
 from app.parse.ocr import ocr_available
 from app.rag.bilingual import (
@@ -28,8 +29,17 @@ from app.rag.bilingual import (
 from app.rag.citation_graph import build_graph as build_citation_graph
 from app.rag.citation_graph import invalidate as invalidate_graph
 from app.parse.structure import render_page_png
-from app.pipeline.ingest import delete_document, ingest, rescan_library, save_upload
+from app.pipeline.ingest import delete_document, ingest, rescan_library, restore_document, save_upload
+from app.rag.anchors import attach_anchors
+from app.rag.anchors import verify as verify_answer
+from app.rag.hybrid import search_with_rerank
 from app.rag.store import get_store
+from app.research.future_work import collect_future_work
+from app.research.reproducibility import collect_reproducibility
+from app.tools.chart import convert as convert_chart
+from app.tools.external import TOOL_SCHEMAS
+from app.tools.external import decide as tool_decide
+from app.tools.external import invoke as tool_invoke
 
 log = get_logger(__name__)
 router = APIRouter(prefix="/api")
@@ -141,6 +151,19 @@ def document_diff(doc_id: str, other_id: str, db: Session = Depends(get_db)):
     return diff_docs(db, other_id, doc_id)
 
 
+# 必须注册在 /documents/{doc_id} 之前，否则 "trash" 会被当成 doc_id 吃掉
+@router.get("/documents/trash")
+def list_trash(db: Session = Depends(get_db)):
+    rows = list(db.scalars(select(TrashEntry).order_by(TrashEntry.deleted_at.desc())).all())
+    return {"items": [
+        {"doc_id": r.doc_id, "filename": r.filename, "title": r.title,
+         "chunk_count": r.chunk_count, "page_count": r.page_count,
+         "actor": r.actor, "reason": r.reason,
+         "deleted_at": r.deleted_at.isoformat(), "restorable": Path(r.file_path).exists()}
+        for r in rows
+    ]}
+
+
 @router.get("/documents")
 def list_documents(db: Session = Depends(get_db)):
     docs = list(db.scalars(select(Document).order_by(Document.created_at.desc())).all())
@@ -161,14 +184,18 @@ def get_document(doc_id: str, db: Session = Depends(get_db)):
 
 
 @router.delete("/documents/{doc_id}")
-def remove_document(doc_id: str, db: Session = Depends(get_db)):
-    if not delete_document(db, doc_id):
+def remove_document(doc_id: str, request: Request, actor: str = "ui", reason: str = "",
+                    db: Session = Depends(get_db)):
+    """删除 → 回收站（可恢复）+ 审计。源文件永远保留在磁盘。"""
+    if not delete_document(db, doc_id, actor=actor, reason=reason or "api_delete"):
         raise HTTPException(404, "文档不存在")
-    return {"ok": True}
+    return {"ok": True, "trash": True, "message": "已移入回收站，可用 /api/documents/{id}/restore 恢复"}
 
 
 @router.get("/documents/{doc_id}/sections")
 def get_sections(doc_id: str, db: Session = Depends(get_db)):
+    if not db.get(Document, doc_id):
+        raise HTTPException(404, "文档不存在")
     rows = list(
         db.scalars(select(Section).where(Section.doc_id == doc_id).order_by(Section.order_idx)).all()
     )
@@ -177,6 +204,8 @@ def get_sections(doc_id: str, db: Session = Depends(get_db)):
 
 @router.get("/documents/{doc_id}/chunks")
 def get_chunks(doc_id: str, page: int | None = None, db: Session = Depends(get_db)):
+    if not db.get(Document, doc_id):
+        raise HTTPException(404, "文档不存在")
     stmt = select(Chunk).where(Chunk.doc_id == doc_id)
     if page:
         stmt = stmt.where(Chunk.page == page)
@@ -225,6 +254,8 @@ def get_page_meta(doc_id: str, db: Session = Depends(get_db)):
 
 @router.get("/documents/{doc_id}/refs")
 def get_references(doc_id: str, db: Session = Depends(get_db)):
+    if not db.get(Document, doc_id):
+        raise HTTPException(404, "文档不存在")
     rows = list(
         db.scalars(
             select(Citation).where(Citation.src_doc_id == doc_id).order_by(Citation.ref_index)
@@ -457,3 +488,160 @@ def rescan(background: BackgroundTasks, sync: bool = Query(False, description="t
 
     background.add_task(job)
     return {"ok": True, "message": "已在后台导入 data/pdf，进度见服务日志", "total": len(list(settings.pdf_dir.glob("*.pdf")))}
+
+
+# ==================================================================== 回收站 / 审计（P0 数据安全）
+@router.post("/documents/{doc_id}/restore")
+def restore_doc(doc_id: str, actor: str = "ui", db: Session = Depends(get_db)):
+    return restore_document(db, doc_id, actor=actor)
+
+
+@router.get("/audit")
+def list_audit(limit: int = Query(50, ge=1, le=500), db: Session = Depends(get_db)):
+    rows = list(db.scalars(select(AuditLog).order_by(AuditLog.created_at.desc()).limit(limit)).all())
+    return {"items": [
+        {"action": r.action, "doc_id": r.doc_id, "detail": r.detail,
+         "actor": r.actor, "created_at": r.created_at.isoformat()} for r in rows
+    ]}
+
+
+# ==================================================================== 外部工具链 / Function Calling
+@router.get("/tools/health")
+def tools_health():
+    """列出工具与其真实可达性；不实际联网，避免健康检查被外网拖慢。"""
+    return {"ok": True, "tools": [t["function"]["name"] for t in TOOL_SCHEMAS],
+            "endpoints": {"arxiv": "export.arxiv.org", "github": "api.github.com",
+                          "crossref": "api.crossref.org"},
+            "policy": "重试 → 外部 API → 本地库降级（degraded 标记）"}
+
+
+@router.get("/tools/catalog")
+def tools_catalog():
+    return {"tools": TOOL_SCHEMAS}
+
+
+class ToolIn(BaseModel):
+    tool: str
+    args: dict = Field(default_factory=dict)
+    simulate: str = ""       # QA 用：timeout / fail
+    retries: int = 2
+    timeout: float = 8.0
+
+
+@router.post("/tools/invoke")
+def tools_invoke(body: ToolIn):
+    # 直接返回 ToolResult：它自带 ok/degraded/source/attempts。
+    # 早期写成 {"ok": True, **result} 会被 result.ok 覆盖，反而把
+    # "降级成功"错误地暴露成 HTTP 层 ok=True / 工具层 ok=False 的歧义结构。
+    return tool_invoke(body.tool, body.args, simulate=body.simulate,
+                       retries=body.retries, timeout=body.timeout)
+
+
+class ToolAgentIn(BaseModel):
+    question: str
+
+
+@router.post("/tools/agent")
+def tools_agent(body: ToolAgentIn):
+    """让 LLM 按 OpenAI tools 协议决定调哪个工具，再真实执行。"""
+    return {"ok": True, **tool_decide(body.question)}
+
+
+# ==================================================================== CSV → 学术图表
+class ChartIn(BaseModel):
+    csv: str
+    format: str = "mermaid"
+    title: str = "实验结果"
+
+
+@router.post("/tools/csv2chart")
+def csv2chart(body: ChartIn):
+    try:
+        return {"ok": True, **convert_chart(body.csv, body.format, body.title)}
+    except ValueError as exc:
+        raise HTTPException(400, str(exc)) from exc
+
+
+# ==================================================================== 科研增强
+@router.get("/research/future-work")
+def future_work(limit: int = Query(60, ge=1, le=200), db: Session = Depends(get_db)):
+    return collect_future_work(db, max_items=limit)
+
+
+@router.get("/research/reproducibility")
+def reproducibility(max_docs: int = Query(8, ge=1, le=20), online: bool = True,
+                    db: Session = Depends(get_db)):
+    return collect_reproducibility(db, max_docs=max_docs, online=online)
+
+
+# ==================================================================== Token 级流式 + 思考过程
+class StreamIn(BaseModel):
+    question: str
+    doc_ids: list[str] = Field(default_factory=list)
+    mode: str = "qa"
+
+
+@router.post("/chat/stream")
+def chat_stream(body: StreamIn, db: Session = Depends(get_db)):
+    """SSE：先推真实的检索/校验思考事件，再逐 token 推答案。
+
+    与 /api/chat 不冲突：这里不套 JSON 包裹，模型每产出一个 delta 就发一个
+    token 事件；结束后用同一套 attach_anchors + verify 做引用校验，
+    把 evidence / verify 放在 done 事件里（流式也要能溯源）。
+    """
+    q = (body.question or "").strip()
+    if not q:
+        raise HTTPException(400, "问题不能为空")
+    doc_ids = body.doc_ids or [d.id for d in db.scalars(select(Document)).all()]
+
+    def gen():
+        def emit(event: str, **data) -> str:
+            return "data: " + json.dumps({"event": event, **data}, ensure_ascii=False) + "\n\n"
+
+        try:
+            yield emit("thinking", stage="plan", text="任务规划：拆解问题与检索目标")
+            t = time.time()
+            hits = search_with_rerank(q, doc_ids, top_k=8)
+            evidence = [h.to_dict() for h in hits]
+            yield emit("thinking", stage="retrieve",
+                       text=f"BM25 + 稠密向量 + RRF + 重排，命中 {len(evidence)} 条证据",
+                       hits=len(evidence), latency_ms=int((time.time() - t) * 1000))
+            if not evidence:
+                yield emit("error", text="文献库中没有检索到相关内容")
+                yield emit("done", answer="没有检索到相关证据。", evidence=[], verify={})
+                return
+
+            block = "\n".join(
+                f"[{i}] 来源：{e['doc_name']} 第{e['page']}页 | {e['text'][:900]}"
+                for i, e in enumerate(evidence, start=1)
+            )
+            yield emit("thinking", stage="read", text="通读证据，定位可引用的原句")
+            msgs = [
+                {"role": "system", "content": "你是严谨的科研写作助手。只依据给定证据回答，"
+                                              "每个论断后带 [编号]；数字原样抄写；"
+                                              "找不到就直说文献未提及。不要 JSON、不要前言。"},
+                {"role": "user", "content": f"【证据】\n{block}\n\n【问题】\n{q}\n\n"
+                                            f"要求：第一句给结论，200 字以内，正文带 [编号] 引用。"},
+            ]
+            buf: list[str] = []
+            for piece in gateway.chat_stream(msgs, model=settings.trans_model):
+                buf.append(piece)
+                yield emit("token", text=piece)
+            answer = "".join(buf).strip()
+            rendered = attach_anchors(answer, evidence)
+            v = verify_answer(rendered, evidence, q)
+            yield emit("thinking", stage="verify",
+                       text=f"引用校验 {v.get('valid')}/{v.get('total')} 命中",
+                       rate=v.get("rate"))
+            yield emit("done", answer=rendered, raw_answer=answer,
+                       evidence=evidence, verify=v)
+        except Exception as exc:  # noqa: BLE001 流内异常也要给前端可渲染的事件，不能断流
+            log.exception("流式回答失败")
+            yield emit("error", text=f"生成中断：{type(exc).__name__}: {str(exc)[:160]}")
+        yield "data: [DONE]\n\n"
+
+    return StreamingResponse(
+        gen(), media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no",
+                 "Connection": "keep-alive"},
+    )

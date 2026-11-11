@@ -29,6 +29,7 @@ from app.core.llm import LLMError, gateway
 from app.core.logger import get_logger
 from app.db.models import Chunk, Document, Translation
 from app.db.session import session_scope
+from app.rag.chunker import strip_carry as _strip_carry
 
 log = get_logger(__name__)
 
@@ -38,32 +39,8 @@ _JOBS_LOCK = threading.Lock()
 
 
 # ---------------------------------------------------------------- 段落重建
-def _strip_carry(prev: str, cur: str, limit: int = 200) -> str:
-    """去掉分块时的重叠前缀。
-
-    切块为了"答案不被切在句子中间"，会把上一块的尾巴 80 字符贴到下一块开头
-    （见 chunker._tail_overlap）。检索时这是优点，阅读时这是重影：
-    用户会看到 "ollectively contribute to..." 这种从词中间开始的段落。
-
-    这里用"上一块结尾 == 本块开头"做精确还原——比任何启发式都可靠，
-    因为那段文字本来就是从上块末尾复制过来的。
-    """
-    if not prev or not cur:
-        return cur
-    best = 0
-    for k in range(min(limit, len(cur)), 12, -1):
-        if prev.endswith(cur[:k]):
-            best = k
-            break
-    if not best:
-        return cur
-    rest = cur[best:].lstrip("\n ")
-    # 重叠恰好卡在词中间时，rest 会以半截单词开头（如 "ned from ..."），
-    # 丢掉这个残词：它在前一段已经完整出现过。
-    m = re.match(r"^([a-z]{1,6})\s+", rest)
-    if m and prev.endswith(m.group(1)):
-        rest = rest[m.end():]
-    return rest or cur
+# overlap 剥离统一走 app.rag.chunker.strip_carry：
+# 检索层、证据展示、中英对照必须共用同一份实现，否则三处会各自漂移。
 
 
 def _load_chunks(db: Session, doc_id: str, page_from: int, page_to: int) -> list[Chunk]:

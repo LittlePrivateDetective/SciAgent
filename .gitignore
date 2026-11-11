@@ -16,3 +16,18 @@ data/*.db
 data/*.db-shm
 data/*.db-wal
 data/logs/
+data/_qa_*/
+data/_qa_tmp/
+data/_qa_clean/
+
+# 浏览器自动化 profile 与截图缓存：只是临时缓存，不是证据本体
+docs/qa/evidence/_profile_*/
+docs/qa/evidence/_cdp_*/
+docs/qa/evidence/_p_*/
+docs/qa/evidence/_qa_*/
+docs/qa/evidence/_profile*/
+docs/qa/evidence/_p4/
+docs/qa/evidence/_p_dump/
+docs/qa/evidence/_p_chk*/
+docs/qa/evidence/_p_ui/
+docs/qa/evidence/_qa_ui_check.js

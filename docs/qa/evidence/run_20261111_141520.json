@@ -1,0 +1,40 @@
+{
+  "run_id": "20261111_141520",
+  "base": "http://127.0.0.1:8013",
+  "timestamp": "2026-11-11T14:15:20.936379",
+  "summary": {
+    "total": 2,
+    "pass": 0,
+    "fail": 1,
+    "blocked": 1
+  },
+  "results": [
+    {
+      "id": "E03",
+      "group": "env",
+      "point": "c-3 Docker 配置一致性 + 布局预演",
+      "steps": "静态校验 COPY/compose/CMD/依赖声明/.env 覆盖；按 Dockerfile 搭等价 /app 目录用零密钥 mock 模式真实启动并探测 5 个接口",
+      "expected": "静态全通过，镜像文件布局可独立启动且接口全 200",
+      "actual": "用例自身抛异常：UnboundLocalError: cannot access local variable 'os' where it is not associated with a value",
+      "status": "FAIL",
+      "elapsed_s": 0.6,
+      "evidence": {
+        "traceback": "Traceback (most recent call last):\n  File \"<repo>\\tests\\qa_suite.py\", line 1158, in run\n    status, actual, ev = c[\"fn\"]()\n                         ~~~~~~~^^\n  File \"<repo>\\tests\\qa_suite.py\", line 153, in e03\n    boot = layout_and_boot()\n  File \"<repo>\\tests\\container_rehearsal.py\", line 143, in layout_and_boot\n    tmp = ROOT / \"data\" / f\"_qa_container_{time.strftime('%H%M%S')}_{os.getpid()}\"\n                                                                     ^^\nUnboundLocalError: cannot access local variable 'os' where it is not associated with a value\n"
+      }
+    },
+    {
+      "id": "E03D",
+      "group": "env",
+      "point": "c-3 真实 docker build（【待实测】）",
+      "steps": "在装有 Docker 的机器上执行 docker compose up -d --build 并访问 :8000/health",
+      "expected": "镜像构建成功、容器健康",
+      "actual": "本机无 Docker，无法执行 docker build；已由 E03 完成等价布局预演，真实构建需在装 Docker 的机器执行：docker compose up -d --build",
+      "status": "BLOCKED",
+      "elapsed_s": 0.0,
+      "evidence": {
+        "docker": "docker: command not found（本机未安装 Docker Desktop/Engine）",
+        "reproduce": "docker compose up -d --build && curl :8000/health"
+      }
+    }
+  ]
+}

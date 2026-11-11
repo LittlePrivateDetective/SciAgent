@@ -1,0 +1,885 @@
+{
+  "run_id": "20261111_120223",
+  "base": "http://127.0.0.1:8013",
+  "timestamp": "2026-11-11T12:03:01.206502",
+  "summary": {
+    "total": 11,
+    "pass": 9,
+    "fail": 2,
+    "blocked": 0
+  },
+  "results": [
+    {
+      "id": "E02",
+      "group": "env",
+      "point": "c-1 代码质量",
+      "steps": "统计代码行数、检查所有模块可 import、检查硬编码密钥",
+      "expected": "无 import 失败、仓库内无明文密钥",
+      "actual": "7887 行，模块全部可导入，无明文密钥",
+      "status": "PASS",
+      "elapsed_s": 2.3,
+      "evidence": {
+        "code_lines": 7887
+      }
+    },
+    {
+      "id": "A03",
+      "group": "rag",
+      "point": "a-2 Dense/Sparse 混合检索 (8%)",
+      "steps": "直接调用 app.rag.hybrid.search_with_rerank，检查每条 Hit 的 dense_score / sparse_score 与邻块独立锚点",
+      "expected": "两路分数均非零、RRF 融合、重排后 top 有序、每条证据 bbox 独立",
+      "actual": "9 条命中，稠密/稀疏双通道均有贡献，锚点全部独立",
+      "status": "PASS",
+      "elapsed_s": 13.5,
+      "evidence": {
+        "hits": 9,
+        "top": [
+          {
+            "doc": "1706.03762v1.pdf",
+            "page": 7,
+            "score": 0.9559,
+            "dense": 0.6822,
+            "sparse": 46.1583,
+            "neighbor_of": "",
+            "anchor": "[p7@107,153,504,206]",
+            "text": "ence pairs containing approximately 25000 source tokens and 25000 target tokens.\nWe traine"
+          },
+          {
+            "doc": "1706.03762v1.pdf",
+            "page": 7,
+            "score": 0.8784,
+            "dense": 0.6443,
+            "sparse": 37.1484,
+            "neighbor_of": "",
+            "anchor": "[p7@107,657,504,752]",
+            "text": "ty, as the model learns to be more unsure, but improves accuracy and BLEU score.\nOn the WM"
+          },
+          {
+            "doc": "1706.03762v1.pdf",
+            "page": 2,
+            "score": 0.8209,
+            "dense": 0.5778,
+            "sparse": 30.0939,
+            "neighbor_of": "",
+            "anchor": "[p2@107,150,505,193]",
+            "text": "ver, such attention mechanisms are used in conjunction with a recurrent network.\nIn this w"
+          },
+          {
+            "doc": "1706.03762v1.pdf",
+            "page": 1,
+            "score": 0.7181,
+            "dense": 0.616,
+            "sparse": 11.1479,
+            "neighbor_of": "",
+            "anchor": "[p1@143,361,469,523]",
+            "text": "oogle Brain lukaszkaiser@google.com\nIllia Polosukhin∗ illia.polosukhin@gmail.com\nThe domin"
+          },
+          {
+            "doc": "1706.03762v1.pdf",
+            "page": 2,
+            "score": 0.6724,
+            "dense": 0.59,
+            "sparse": 39.2156,
+            "neighbor_of": "",
+            "anchor": "[p2@107,236,504,246]",
+            "text": "on quality after being trained for as little as twelve hours on eight P100 GPUs.\nThe goal "
+          },
+          {
+            "doc": "2002.04745v2.pdf",
+            "page": 11,
+            "score": 0.6357,
+            "dense": 0.6462,
+            "sparse": 32.1935,
+            "neighbor_of": "",
+            "anchor": "[p11@55,322,290,487]",
+            "text": "Experiment on Section 4\nThe conﬁguration of IWLST14 De-En task is the same as in Section 3"
+          },
+          {
+            "doc": "2002.04745v2.pdf",
+            "page": 11,
+            "score": 0.5381,
+            "dense": 0.6785,
+            "sparse": 21.8115,
+            "neighbor_of": "",
+            "anchor": "[p11@307,69,543,194]",
+            "text": "2https://www.smashwords.com 3https://spacy.io\nusing Moses (Koehn et al., 2007) and apply B"
+          },
+          {
+            "doc": "1706.03762v1.pdf",
+            "page": 8,
+            "score": 0.5293,
+            "dense": 0.63,
+            "sparse": 28.9638,
+            "neighbor_of": "",
+            "anchor": "[p8@107,671,505,752]",
+            "text": "ave not been able to attain state-of-the-art results in small-data regimes [33].\nWe traine"
+          }
+        ],
+        "has_dense": true,
+        "has_sparse": true,
+        "distinct_anchors": true
+      }
+    },
+    {
+      "id": "A06",
+      "group": "tools",
+      "point": "a-4 Function Calling 外部 API (6%)",
+      "steps": "调用外部工具接口：正常检索、超时、失败重试、降级",
+      "expected": "成功返回真实外部数据；超时/失败有降级且不崩溃",
+      "actual": "外部工具调用失败 HTTP 200",
+      "status": "FAIL",
+      "elapsed_s": 0.0,
+      "evidence": {
+        "health": {
+          "ok": true,
+          "tools": [
+            "arxiv_search",
+            "github_repo",
+            "crossref_lookup"
+          ],
+          "endpoints": {
+            "arxiv": "export.arxiv.org",
+            "github": "api.github.com",
+            "crossref": "api.crossref.org"
+          },
+          "policy": "重试 → 外部 API → 本地库降级（degraded 标记）"
+        },
+        "invoke": {
+          "status": 200,
+          "body": {
+            "ok": false,
+            "tool": "arxiv_search",
+            "data": null,
+            "source": "",
+            "degraded": false,
+            "fallback": "",
+            "attempts": 0,
+            "latency_ms": 0,
+            "error": "参数不匹配：arxiv_search() missing 1 required positional argument: 'query'"
+          }
+        }
+      }
+    },
+    {
+      "id": "B01",
+      "group": "graph",
+      "point": "b-1 图论算法筛选核心文献 (10%)",
+      "steps": "测试台用纯 numpy 独立实现幂迭代 PageRank，与 /api/graph 返回值逐节点比对",
+      "expected": "算法数值一致（偏差 <1e-6），中心性与入度排序可解释",
+      "actual": "30 节点/146 边，PageRank 独立复算最大偏差 4.8e-07，入度零误差",
+      "status": "PASS",
+      "elapsed_s": 0.2,
+      "evidence": {
+        "nodes": 30,
+        "edges": 146,
+        "max_pr_diff": 4.8e-07,
+        "indegree_mismatch": [],
+        "top5": [
+          {
+            "label": "Language Models are Few-Shot Learners",
+            "in": 20,
+            "pr": 0.073455
+          },
+          {
+            "label": "Attention Is All You Need",
+            "in": 16,
+            "pr": 0.142668
+          },
+          {
+            "label": "Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transforme",
+            "in": 16,
+            "pr": 0.108166
+          },
+          {
+            "label": "Scaling Laws for Neural Language Models",
+            "in": 12,
+            "pr": 0.06182
+          },
+          {
+            "label": "Training language models to follow instructions with human feedback",
+            "in": 9,
+            "pr": 0.028565
+          }
+        ],
+        "betweenness_present": true,
+        "stats": {
+          "documents": 30,
+          "nodes": 30,
+          "edges": 146,
+          "total_reference_entries": 3210,
+          "matched": 176,
+          "matched_by": {
+            "arxiv": 62,
+            "doi": 0,
+            "title": 114,
+            "none": 3034
+          },
+          "density": 0.1678
+        }
+      }
+    },
+    {
+      "id": "B02",
+      "group": "innov",
+      "point": "b-1 Future Work 自动提炼去重 (10%)",
+      "steps": "调用 future work 接口，检查提炼条目与'已被后续论文解决'判定",
+      "expected": "返回结构化条目，含去重与对撞结论",
+      "actual": "提炼 60 条，其中 48 条命中后续论文",
+      "status": "PASS",
+      "elapsed_s": 0.5,
+      "evidence": {
+        "items": [
+          {
+            "doc_id": "dce63a636cf64",
+            "page": 10,
+            "bbox": "107.5,195.8,505.6,254.9",
+            "section": "7 Conclusion",
+            "text": "We intend to make the code we used to train and evaluate our models available soon.",
+            "doc_title": "Attention Is All You Need",
+            "doc_year": "2017",
+            "duplicates": 0,
+            "keywords": [
+              "available",
+              "code",
+              "evaluate",
+              "intend",
+              "make",
+              "soon",
+              "train",
+              "used"
+            ],
+            "resolved_by": [
+              {
+                "doc_id": "d28f9c6d123e3",
+                "title": "Switch Transformers: Scaling to Trillion Parameter Models with Simple and Eﬃcient Sparsity",
+                "year": "2021",
+                "shared_terms": [
+                  "available",
+                  "code"
+                ],
+                "score": 2
+              },
+              {
+                "doc_id": "ddd3d54f80b5a",
+                "title": "Evaluating Large Language Models Trained on Code",
+                "year": "2021",
+                "shared_terms": [
+                  "available",
+                  "code"
+                ],
+                "score": 2
+              },
+              {
+                "doc_id": "deed9eb540748",
+                "title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+                "year": "2022",
+                "shared_terms": [
+                  "make",
+                  "used"
+                ],
+                "score": 2
+              }
+            ],
+            "status": "possibly_addressed",
+            "id": 1
+          },
+          {
+            "doc_id": "d16a2835145ee",
+            "page": 10,
+            "bbox": "72,404,540.4,449.9",
+            "section": "5 Discussion/5.6 Directions for future work",
+            "text": "Further scaling up models has so far appeared to increase the capabilities of language models, and is a straightforward direction for future work.",
+            "doc_title": "Emergent Abilities of Large Language Models",
+            "doc_year": "2022",
+            "duplicates": 0,
+            "keywords": [
+              "appeared",
+              "capabilities",
+              "direction",
+              "further",
+              "increase",
+              "language",
+              "scaling",
+              "straightforward"
+            ],
+            "resolved_by": [
+              {
+                "doc_id": "d8821b3e541fa",
+                "title": "Scaling Laws for Neural Language Models",
+                "year": "2020",
+                "shared_terms": [
+                  "language",
+                  "scaling"
+                ],
+                "score": 2
+              },
+              {
+                "doc_id": "d28f9c6d123e3",
+                "title": "Switch Transformers: Scaling to Trillion Parameter Models with Simple and Eﬃcient Sparsity",
+                "year": "2021",
+                "shared_terms": [
+                  "language",
+                  "scaling"
+                ],
+                "score": 2
+              },
+              {
+                "doc_id": "ddd3d54f80b5a",
+                "title": "Evaluating Large Language Models Trained on Code",
+                "year": "2021",
+                "shared_terms": [
+                  "capabilities",
+                  "language"
+                ],
+                "score": 2
+              }
+            ],
+            "status": "possibly_addressed",
+            "id": 2
+          },
+          {
+            "doc_id": "d16a2835145ee",
+            "page": 11,
+            "bbox": "71.5,477.3,541.6,535.1",
+            "section": "6 Conclusions",
+            "text": "Such abilities are a recently discovered outcome of scaling up language models, and the questions of how they emerge and whether more scaling will enable further emergent abilities seem to be important future research directions for the ﬁeld of NLP.",
+            "doc_title": "Emergent Abilities of Large Language Models",
+            "doc_year": "2022",
+            "duplicates": 0,
+            "keywords": [
+              "abilities",
+              "discovered",
+              "language",
+              "outcome",
+              "questions",
+              "recently",
+              "scaling",
+              "they"
+            ],
+            "resolved_by": [
+              {
+                "doc_id": "d8821b3e541fa",
+                "title": "Scaling Laws for Neural Language Models",
+                "year": "2020",
+                "shared_terms": [
+                  "language",
+                  "scaling"
+                ],
+                "score": 2
+              },
+              {
+                "doc_id": "d28f9c6d123e3",
+                "title": "Switch Transformers: Scaling to Trillion Parameter Models with Simple and Eﬃcient Sparsity",
+                "year": "2021",
+                "shared_terms": [
+                  "language",
+                  "scaling"
+                ],
+                "score": 2
+              },
+              {
+                "doc_id": "deed9eb540748",
+                "title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+                "year": "2022",
+                "shared_terms": [
+                  "language",
+                  "they"
+                ],
+                "score": 2
+              }
+            ],
+            "status": "possibly_addressed",
+            "id": 3
+          },
+          {
+            "doc_id": "ddd3d54f80b5a",
+            "page": 14,
+            "bbox": "307,589.6,543.2,707.2",
+            "section": "9. Conclusion",
+            "text": "Model performance could be improved by training on a distribution more similar to the evaluation set, and also by producing multiple samples from a model.",
+            "doc_title": "Evaluating Large Language Models Trained on Code",
+            "doc_year": "2021",
+            "duplicates": 0,
+            "keywords": [
+              "distribution",
+              "evaluation",
+              "improved",
+              "multiple",
+              "performance",
+              "producing",
+              "similar",
+              "training"
+            ],
+            "resolved_by": [
+              {
+                "doc_id": "d8821b3e541fa",
+                "title": "Scaling Laws for Neural Language Models",
+                "year": "2020",
+                "shared_terms": [
+                  "performance",
+                  "training"
+                ],
+                "score": 2
+              },
+              {
+                "doc_id": "d817ac4e56a32",
+                "title": "Language Models are Few-Shot Learners",
+                "year": "2020",
+                "shared_terms": [
+                  "performance",
+                  "training"
+                ],
+                "score": 2
+              },
+              {
+                "doc_id": "d8d380ed3abb5",
+                "title": "GLM-130B: AN OPEN BILINGUAL PRE-TRAINED MODEL",
+                "year": "2022",
+                "shared_terms": [
+                  "performance",
+                  "training"
+                ],
+                "score": 2
+              }
+            ],
+            "status": "possibly_addressed",
+            "id": 4
+          },
+          {
+            "doc_id": "d1011ebd3a2b3",
+            "page": 1,
+            "bbox": "109.6,400.7,503.9,555.8",
+            "section": "Abstract",
+            "text": "To facilitate future work on transfer learning for NLP, we release our data set, pre-trained models, and code.1 Keywords:",
+            "doc_title": "Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer",
+            "doc_year": "2019",
+            "duplicates": 0,
+            "keywords": [
+              "code",
+              "data",
+              "facilitate",
+              "keywords",
+              "learning",
+              "release",
+              "trained",
+              "transfer"
+            ],
+            "resolved_by": [
+              {
+                "doc_id": "d6beecb8798e0",
+                "title": "On Layer Normalization in the Transformer Architecture",
+                "year": "2020",
+                "shared_terms": [
+                  "data",
+                  "learning"
+                ],
+                "score": 2
+              },
+              {
+                "doc_id": "d28f9c6d123e3",
+                "title": "Switch Transformers: Scaling to Trillion Parameter Models with Simple and Eﬃcient Sparsity",
+                "year": "2021",
+                "shared_terms": [
+                  "code",
+                  "learning"
+                ],
+                "score": 2
+              },
+              {
+                "doc_id": "ddd3d54f80b5a",
+                "title": "Evaluating Large Language Models Trained on Code",
+                "year": "2021",
+                "shared_terms": [
+                  "code",
+                  "trained"
+                ],
+                "score": 2
+              }
+            ],
+            "status": "possibly_addressed",
+            "id": 5
+          }
+        ]
+      }
+    },
+    {
+      "id": "B03",
+      "group": "innov",
+      "point": "b-2 三层语义去重 (8%)",
+      "steps": "对同一篇文献构造 ①同族 v9 版本 ②轻微改动的近似文本 ③同名异内容，逐一调用 find_duplicates",
+      "expected": "三层各自命中，且给出正确判重理由",
+      "actual": "去重层未命中：['SimHash']",
+      "status": "FAIL",
+      "elapsed_s": 0.0,
+      "evidence": {
+        "documents": 30,
+        "families_with_multi": {},
+        "sample": {
+          "id": "dce63a636cf64",
+          "arxiv": "1706.03762v1",
+          "title": "Attention Is All You Need"
+        },
+        "layer1_family": [
+          {
+            "reason": "标题高度相似(1.00)",
+            "similarity": 1.0
+          }
+        ],
+        "layer2_simhash": [],
+        "layer3_title": [
+          {
+            "reason": "标题高度相似(1.00)",
+            "similarity": 1.0
+          }
+        ]
+      }
+    },
+    {
+      "id": "B05",
+      "group": "innov",
+      "point": "b-2 GitHub 复现性对比 (8%)",
+      "steps": "调用代码复现性接口，检查 GitHub 链接提取与外部校验",
+      "expected": "返回仓库、star、活跃度与可复现性结论",
+      "actual": "{\"items\": [{\"doc_id\": \"dc7092cdf7b5c\", \"title\": \"Layer Normalization\", \"year\": \"2016\", \"repos\": [\"ivendrov/order-embedding\", \"cooijmanstim/Attentive_reader\"], \"checked_repo\": \"ivendrov/order-embedding",
+      "status": "PASS",
+      "elapsed_s": 3.2,
+      "evidence": {
+        "response": {
+          "items": [
+            {
+              "doc_id": "dc7092cdf7b5c",
+              "title": "Layer Normalization",
+              "year": "2016",
+              "repos": [
+                "ivendrov/order-embedding",
+                "cooijmanstim/Attentive_reader"
+              ],
+              "checked_repo": "ivendrov/order-embedding",
+              "repo_info": {
+                "repo": "ivendrov/order-embedding",
+                "stars": 189,
+                "forks": 61,
+                "language": "JavaScript",
+                "license": null,
+                "pushed_at": "2016-10-13T20:01:19Z",
+                "archived": false,
+                "open_issues": 2,
+                "url": "https://github.com/ivendrov/order-embedding"
+              },
+              "reproducibility": "medium",
+              "reasons": [
+                "star 189",
+                "无明确许可证",
+                "最后更新 3680 天前"
+              ],
+              "degraded": false,
+              "source": "api.github.com"
+            },
+            {
+              "doc_id": "d817ac4e56a32",
+              "title": "Language Models are Few-Shot Learners",
+              "year": "2020",
+              "repos": [
+                "openai/gpt-3"
+              ],
+              "checked_repo": "openai/gpt-3",
+              "repo_info": {
+                "repo": "openai/gpt-3",
+                "stars": 15689,
+                "forks": 2240,
+                "language": null,
+                "license": null,
+                "pushed_at": "2020-09-18T22:06:11Z",
+                "archived": true,
+                "open_issues": 3,
+                "url": "https://github.com/openai/gpt-3"
+              },
+              "reproducibility": "low",
+              "reasons": [
+                "star 15689",
+                "无明确许可证",
+                "最后更新 2244 天前",
+                "仓库已归档"
+              ],
+              "degraded": false,
+              "source": "api.github.com"
+            },
+            {
+              "doc_id": "d28f9c6d123e3",
+              "title": "Switch Transformers: Scaling to Trillion Parameter Models with Simple and Eﬃcient Sparsity",
+              "year": "2021",
+              "repos": [
+                "tensorflow/mesh"
+              ],
+              "checked_repo": "tensorflow/mesh",
+              "repo_info": {
+                "repo": "tensorflow/mesh",
+                "stars": 1625,
+                "forks": 254,
+                "language": "Python",
+                "license": "Apache-2.0",
+                "pushed_at": "2023-11-17T19:39:54Z",
+                "archived": true,
+                "open_issues": 98,
+                "url": "https://github.com/tensorflow/mesh"
+              },
+              "reproducibility": "low",
+              "reasons": [
+                "star 1625",
+                "许可证 Apache-2.0",
+                "最后更新 1089 天前",
+                "仓库已归档"
+              ],
+              "degraded": false,
+              "source": "api.github.com"
+            },
+            {
+              "doc_id": "ddd3d54f80b5a",
+              "title": "Evaluating Large Language Models Trained on Code",
+              "year": "2021",
+              "repos": [
+                "openai/human-eval",
+                "openai/code-align-evals-data"
+              ],
+              "checked_repo": "openai/human-eval",
+              "repo_info": {
+                "repo": "openai/human-eval",
+                "stars": 3425,
+                "forks": 480,
+                "language": "Python",
+                "license": "MIT",
+                "pushed_at": "2026-10-16T19:05:13Z",
+                "archived": false,
+                "open_issues": 47,
+                "url": "https://github.com/openai/human-eval"
+              },
+              "reproducibility": "high",
+              "reasons": [
+                "star 3425",
+                "许可证 MIT",
+                "最后更新 25 天前"
+              ],
+              "degraded": false,
+              "source": "api.github.com"
+            },
+            {
+              "doc_id": "d5e1461a7722b",
+              "title": "ZeRO: Memory Optimizations Toward Training Trillion Parameter Models",
+              "year": "2019",
+              "repos": [
+                "microsoft/deepspeed",
+                "nvidia/Megatron-LM"
+              ],
+              "checked_repo": "microsoft/deepspeed",
+              "repo_info": null,
+              "reproducibility": "no_public_code",
+              "reasons": [
+                "正文未检出 GitHub 仓库链接"
+              ],
+              "degraded": true,
+              "source": "unavailable"
+            },
+            {
+              "doc_id": "d1011ebd3a2b3",
+              "title": "Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer",
+              "year": "2019",
+              "repos": [
+                "google-research/text-to-text-transfer-transformer",
+                "LDNOOBW/List-of-Dirty-Naughty-Obscene-and-Otherwise-Bad-Words"
+              ],
+              "checked_repo": "google-research/text-to-text-transfer-transformer",
+              "repo_info": {
+                "repo": "google-research/text-to-text-transfer-transformer",
+                "stars": 6565,
+                "forks": 800,
+                "language": "Python",
+                "license": "Apache-2.0",
+                "pushed_at": "2026-10-12T19:32:28Z",
+                "archived": false,
+                "open_issues": 110,
+                "url": "https://github.com/google-research/text-to-text-transfer-transformer"
+              },
+              "reproducibility": "high",
+              "reasons": [
+                "star 6565",
+                "许可证 Apache-2.0",
+                "最后更新 29 天前"
+              ],
+              "degraded": false,
+              "source": "api.github.com"
+            },
+            {
+              "doc_id": "d16a2835145ee",
+              "title": "Emergent Abilities of Large Language Models",
+              "year": "2022",
+              "repos": [
+                "inverse-scaling/prize"
+              ],
+              "checked_repo": "inverse-scaling/prize",
+              "repo_info": {
+                "repo": "inverse-scaling/prize",
+                "stars": 626,
+                "forks": 27,
+                "language": null,
+                "license": "CC-BY-4.0",
+                "pushed_at": "2023-10-11T23:56:56Z",
+                "archived": false,
+                "open_issues": 0,
+                "url": "https://github.com/inverse-scaling/prize"
+              },
+              "reproducibility": "medium",
+              "reasons": [
+                "star 626",
+                "许可证 CC-BY-4.0",
+                "最后更新 1126 天前"
+              ],
+              "degraded": false,
+              "source": "api.github.com"
+            },
+            {
+              "doc_id": "d46b9a50a8416",
+              "title": "Learning Transferable Visual Models From Natural Language Supervision",
+              "year": "2021",
+              "repos": [
+                "OpenAI/CLIP"
+              ],
+              "checked_repo": "OpenAI/CLIP",
+              "repo_info": {
+                "repo": "openai/CLIP",
+                "stars": 34594,
+                "forks": 4064,
+                "language": "Jupyter Notebook",
+                "license": "MIT",
+                "pushed_at": "2026-03-25T18:46:40Z",
+                "archived": false,
+                "open_issues": 273,
+                "url": "https://github.com/openai/CLIP"
+              },
+              "reproducibility": "high",
+              "reasons": [
+                "star 34594",
+                "许可证 MIT",
+                "最后更新 230 天前"
+              ],
+              "degraded": false,
+              "source": "api.github.com"
+            }
+          ],
+          "stats": {
+            "documents_scanned": 30,
+            "with_public_code": 8,
+            "high": 3,
+            "degraded": 1
+          },
+          "method": "正文正则抽 GitHub 链接 → GitHub REST API 查 star/license/pushed_at → 加权分级"
+        }
+      }
+    },
+    {
+      "id": "C09",
+      "group": "eng",
+      "point": "硬性用例 4：CSV 转 TikZ/Mermaid",
+      "steps": "提交 CSV 表格，检查生成的 Mermaid/TikZ 语法与数值",
+      "expected": "数值一一对应且语法可渲染",
+      "actual": "Mermaid 与 TikZ 均保留全部数值",
+      "status": "PASS",
+      "elapsed_s": 0.0,
+      "evidence": {
+        "format": "mermaid",
+        "code": "xychart-beta\n    title \"对比\"\n    x-axis [\"Transformer\", \"BERT\"]\n    y-axis \"value\" 0 --> 132\n    bar [28.4, 30.1]  %% bleu\n    bar [65, 110]  %% params\n    %% raw values: {\"bleu\": [\"28.4\", \"30.1\"], \"params\": [\"65M\", \"110M\"]}",
+        "tikz": "\\begin{figure}[htbp]\n  \\centering\n  \\begin{tikzpicture}\n    \\begin{axis}[\n      ybar, enlargelimits=0.15, legend style={at={(0.5,-0.18)},anchor=north,legend columns=-1},\n      ylabel={value}, symbolic xCoords={Transformer,BERT},\n      xtick=data, nodes near coords, grid=major,\n      title={对比},\n    ]\n      \\addplot coordinates {(\"Transformer\",28.4), (\"BERT\",30.1)};  % bleu\n      \\addlegendentry{bl"
+      }
+    },
+    {
+      "id": "A06B",
+      "group": "tools",
+      "point": "a-4 工具超时/失败重试/降级 (6%)",
+      "steps": "注入 simulate=timeout / fail，检查 attempts、degraded、fallback 与本地降级结果",
+      "expected": "重试次数正确、降级结果标注来源、服务不崩溃",
+      "actual": "超时重试 3 次、失败重试 2 次，均降级到本地库并标注 source",
+      "status": "PASS",
+      "elapsed_s": 14.1,
+      "evidence": {
+        "branches": {
+          "timeout": {
+            "status": 200,
+            "attempts": 3,
+            "degraded": true,
+            "fallback": "arxiv_unavailable_local_corpus",
+            "source": "local_library",
+            "items": 2,
+            "error": "TimeoutException: QA 模拟超时"
+          },
+          "fail": {
+            "status": 200,
+            "attempts": 2,
+            "degraded": true,
+            "fallback": "arxiv_unavailable_local_corpus",
+            "source": "local_library",
+            "items": 2,
+            "error": "HTTPStatusError: QA 模拟 502"
+          }
+        },
+        "health_after": [
+          200,
+          {
+            "ok": true,
+            "service": "sciagent",
+            "version": "1.0.0"
+          }
+        ],
+        "catalog": null
+      }
+    },
+    {
+      "id": "A06C",
+      "group": "tools",
+      "point": "a-4 Function Calling 决策 (6%)",
+      "steps": "POST /api/tools/agent，让模型按 tools 协议选工具并真实执行",
+      "expected": "selected_by=llm_function_call 且执行结果非空",
+      "actual": "LLM 选定 arxiv_search，真实执行返回 1 条（local_library）",
+      "status": "PASS",
+      "elapsed_s": 3.3,
+      "evidence": {
+        "status": 200,
+        "selected_by": "llm_function_call",
+        "call": {
+          "name": "arxiv_search",
+          "arguments": {
+            "query": "attention is all you need",
+            "max_results": 1
+          }
+        },
+        "result_ok": true,
+        "result_source": "local_library",
+        "items": 1
+      }
+    },
+    {
+      "id": "F01",
+      "group": "open",
+      "point": "f-2 开源潜力与推广",
+      "steps": "检查 README、Docker、依赖清单、许可证、.gitignore、文档目录",
+      "expected": "交付要素齐全",
+      "actual": "交付要素齐全",
+      "status": "PASS",
+      "elapsed_s": 0.0,
+      "evidence": {
+        "files": {
+          "README.md": true,
+          "Dockerfile": true,
+          "docker-compose.yml": true,
+          "requirements.txt": true,
+          ".env.example": true,
+          ".gitignore": true,
+          "LICENSE": true
+        },
+        "docs": [
+          "docs\\传智杯-执行备忘录.md",
+          "docs\\官方需求文档.pdf",
+          "docs\\方案设计-v1.md"
+        ]
+      }
+    }
+  ]
+}

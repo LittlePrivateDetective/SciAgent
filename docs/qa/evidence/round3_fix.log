@@ -1,0 +1,4 @@
+[QA] 20261111_140604 BASE=http://127.0.0.1:8013 用例 2 条
+  [PASS  ] A04   a-2 10 条引用溯源准确率 (8%)                   18.2s  溯源命中 9/10
+  [FAIL  ] C07B  e-3 前端流式与思考过程可视化 (3%)                   0.7s  CDP_NO_OUTPUT CDP 异常 Handshake status 403 Forbidden -+-+- {'content-length': '229', 'content-type': 'text/html
+[QA] 证据 -> <repo>\docs\qa\evidence\run_20261111_140604.json

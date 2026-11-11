@@ -1,0 +1,33 @@
+{
+  "run_id": "20261111_144245",
+  "base": "http://127.0.0.1:8013",
+  "timestamp": "2026-11-11T14:42:58.522080",
+  "summary": {
+    "total": 1,
+    "pass": 1,
+    "fail": 0,
+    "blocked": 0
+  },
+  "results": [
+    {
+      "id": "C06",
+      "group": "perf",
+      "point": "c-3 峰值内存/显存",
+      "steps": "采集服务进程 RSS 与 GPU 显存，记录一次问答前后增量",
+      "expected": "内存增量可量化且无泄漏迹象",
+      "actual": "RSS 629→630 MB（Δ+0.6 MB）；GPU：1020 MiB",
+      "status": "PASS",
+      "elapsed_s": 12.9,
+      "evidence": {
+        "pid": 43936,
+        "port": 8013,
+        "rss_before_mb": 628.9,
+        "rss_after_mb": 629.5,
+        "delta_mb": 0.6,
+        "gpu": "1020 MiB",
+        "chat_status": 200,
+        "note": "GPU 数值是 nvidia-smi 报告的系统级占用；全部模型走云端 API，本进程显存占用为 0"
+      }
+    }
+  ]
+}

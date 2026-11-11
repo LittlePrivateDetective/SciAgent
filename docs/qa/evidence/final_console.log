@@ -1,0 +1,57 @@
+Building prefix dict from the default dictionary ...
+[QA] 20261111_142913 BASE=http://127.0.0.1:8013 用例 36 条
+  [PASS  ] E01   c-3 架构可复现性与部署                           0.2s  Windows / Python 3.13.14 / deepseek-v4.1-flash / chroma / {'documents': 37, 'chunks': 19766, 'tasks': 106, 'le
+  [PASS  ] E02   c-1 代码质量                                2.3s  8015 行，模块全部可导入，无明文密钥
+  [PASS  ] E03   c-3 Docker 配置一致性 + 布局预演                91.1s  COPY 5 项齐全、15 个第三方依赖全部声明、零密钥 mock 启动 5 接口全 200（has_dotenv=False）
+  [BLOCK] E03D  c-3 真实 docker build（【待实测】）              0.0s  本机无 Docker，无法执行 docker build；已由 E03 完成等价布局预演，真实构建需在装 Docker 的机器执行：docker compose up -d --build
+  [PASS  ] A01   a-1 Task Planning (9%)                104.3s  编排节点 ['planner', 'retriever', 'writer', 'writer', 'writer', 'writer', 'reviewer', 'reviewer', 'reflector']，耗时 
+  [PASS  ] A02   a-1 Multi-Agent 路由 (9%)               107.3s  qa→qa(default) / compare→compare(explicit_mode)，决策写入 trace
+14:34:19 | DEBUG   | jieba                    | Building prefix dict from the default dictionary ...
+Loading model from cache <user>\AppData\Local\Temp\jieba.cache
+14:34:19 | DEBUG   | jieba                    | Loading model from cache <user>\AppData\Local\Temp\jieba.cache
+Loading model cost 0.849 seconds.
+14:34:20 | DEBUG   | jieba                    | Loading model cost 0.849 seconds.
+Prefix dict has been built successfully.
+14:34:20 | DEBUG   | jieba                    | Prefix dict has been built successfully.
+14:34:37 | INFO    | app.rag.store            | 向量后端：Chroma (<repo>\data\chroma)
+14:34:38 | INFO    | app.rag.hybrid           | rerank 生效：16→8 条，耗时 352ms，top1=0.963
+  [PASS  ] A03   a-2 Dense/Sparse 混合检索 (8%)             19.7s  10 条命中，稠密/稀疏双通道均有贡献，锚点全部独立
+  [PASS  ] A04   a-2 10 条引用溯源准确率 (8%)                   16.7s  溯源命中 10/10
+  [PASS  ] A05   a-3 四类 PDF 解析 (7%)                      0.3s  37 篇；扫描件 1、百页+ 2、双栏样本 2002.04745v2.pdf
+  [PASS  ] A06   a-4 Function Calling 外部 API (6%)       17.8s  GitHub 在线成功（star=15689）；arXiv 不可达→本地库降级 2 条并标注 degraded
+  [PASS  ] A07   a-5 Prompt 与 Guardrails (5%)           53.6s  两类诱导均未产生被放行的伪造锚点；格式校验生效
+  [PASS  ] B01   b-1 图论算法筛选核心文献 (10%)                    0.3s  37 节点/221 边，PageRank 独立复算最大偏差 4.98e-07，入度零误差
+  [PASS  ] B02   b-1 Future Work 自动提炼去重 (10%)            1.3s  提炼 60 条，其中 56 条命中后续论文
+14:36:08 | INFO    | app.parse.structure      | 解析完成 data\pdf\1706.03762v1.pdf：15 页 / 708 区块 / 30 标题 / 36 参考文献 / 扫描件=False
+  [PASS  ] B03   b-2 三层语义去重 (8%)                         0.5s  三层均按预期命中；入库 content_hash/simhash 与重解析一致
+  [PASS  ] B04   b-2 arXiv 版本差异 (8%)                     0.7s  v1↔v7：改写章节 27、新增句 179、删除句 267；/diff 接口 200
+  [PASS  ] B05   b-2 GitHub 复现性对比 (8%)                   6.7s  {"items": [{"doc_id": "dc7092cdf7b5c", "title": "Layer Normalization", "year": "2016", "repos": ["ivendrov/ord
+  [PASS  ] B06   b-3 中英双向同步滚动 (7%)                       6.4s  双栏渲染 OK，已加载段落=5
+英文滚动 700 -&gt; 中文 135
+中文滚动 1300 -&gt; 英文 292 =&gt; 1559
+顶部段落序号 英文=7 中文=7
+RESULT: PASS 双向联动生效且按
+  [PASS  ] B07   b-3 引用一键跳转 (7%)                         5.4s  img.src=/api/documents/dca501d1039dc/page/3.png?dpi=130&amp;t=1794378987567
+高亮框数量=1 页码显示=3 / 15
+RESULT: PASS 锚
+  [PASS  ] C01   c-3 多文档并发分析                             2.1s  3 份真实入库并发完成，耗时 [1.2, 1.1, 1.5]s，无串档、服务存活
+  [PASS  ] C02   c-3 并发问答                               83.2s  4 路并发完成，耗时 [80.2, 83.2, 44.4, 59.0]
+  [PASS  ] C03   c-3 干净环境一键复现                            3.9s  全新环境启动成功，文档数 0，向量后端 sqlite
+  [PASS  ] C04   c-3 长 PDF 打开耗时                          0.1s  页图 79ms / 页元数据 32ms / 章节树 6ms
+  [PASS  ] C05   c-3 20+ 图谱渲染帧率                          5.4s  图谱节点=37 首帧耗时=251ms canvas=998x678
+1s 内 rAF 回调=2（无头虚拟时钟，仅参考）
+RESULT: PASS 20+ 节点图谱渲染，首帧 251ms
+  [PASS  ] C06   c-3 峰值内存/显存                            15.9s  RSS 7→7 MB（Δ+0.0 MB）；GPU：1087 MiB
+  [PASS  ] C07   e-3 Token 级流式输出                         2.6s  55 个 token 片段无损拼接，思考阶段 ['plan', 'retrieve', 'read', 'verify']，引用校验 12/13
+  [PASS  ] C07B  e-3 前端流式与思考过程可视化 (3%)                   9.2s  RESULT: PASS 流式开关/思考时间线/逐token答案/证据均渲染
+  [PASS  ] C08   e-3 断网/异常错误边界                           0.0s  异常均被拦截，状态码 [404, 400, 404, 422]
+  [PASS  ] C09   硬性用例 4：CSV 转 TikZ/Mermaid               0.0s  Mermaid 与 TikZ 均保留全部数值
+  [PASS  ] A06B  a-4 工具超时/失败重试/降级 (6%)                  24.5s  超时重试 3 次、失败重试 2 次，均降级到本地库并标注 source
+  [PASS  ] A06C  a-4 Function Calling 决策 (6%)            3.5s  LLM 选定 arxiv_search，真实执行返回 1 条（local_library）
+  [PASS  ] C10   c-1 删除可恢复性与审计 (P0)                      2.7s  删除→回收站→恢复闭环成功，块数 12 前后一致，审计已留痕
+  [PASS  ] D01   d-2 六大核心模块闭环                           24.4s  六模块全部贯通
+  [PASS  ] D02   d-1 文献筛选 / 对比阅读痛点                     101.3s  证据覆盖 5 篇：['1706.03762v1.pdf', '1910.10683v4.pdf', '2005.14165v4.pdf', 'N19-1423.pdf', 'UnderstandingDeepLearni
+  [PASS  ] C11   c-1 零崩溃 Bug 证据                          1.9s  本轮窗口零 Traceback（历史 2 处已被兜底），11 个接口全部 200
+  [PASS  ] F02   f-1 学术赋能效率 (5%)                        14.6s  在 6,341,691 字 / 19766 块中用 14.6s 定位 11 条证据（4800 字），过滤 99.924% 语料，引用校验 9/9
+  [PASS  ] F01   f-2 开源潜力与推广                             0.0s  交付要素齐全
+[QA] 证据 -> <repo>\docs\qa\evidence\run_20261111_142913.json
