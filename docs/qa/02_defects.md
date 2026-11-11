@@ -154,3 +154,9 @@
 | --- | --- | --- | --- | --- | --- |
 | D-65 | **P2（统计失真）** | 后台把参数改回原值后，「参数覆盖」仍显示 **1 项**、来源标成"后台覆盖"，效果与从未改过完全一样；`ui_admin.py` 的 `overridden == 0` 断言因此失败（`params 41 / rows 33` 都对，只有 load 项 false） | `save()` 无条件写 `app_settings` 行，只要经过一次"保存"就留下覆盖记录，哪怕值与启动值逐字节相同 | 保存时先与 `BOOT_VALUES`（启动快照）比对：相等就**删掉覆盖行**，只热更新内存值，返回 `reverted: true`；换成 `.env` 里不同的值仍照常落库 | 实测 `local → auto` 后 `overridden: 1 → 0`，`app_settings` 表清空，`ui_admin` 九项全 PASS |
 | — | 新功能 | 无缺陷。冷启动 5876ms → 热态 138ms 的对照来自本轮实测，见 `01_test_cases.md` C14 | — | — | — |
+
+## 第十三轮：主模型切 qwen-flash 的连带观察（2026-11-12 01:25）
+
+| 编号 | 分级 | 问题（实测证据） | 根因 | 改法 | 回归结果 |
+| --- | --- | --- | --- | --- | --- |
+| D-66 | **P2（显示失真）** | 学术问答里的公式原样显示成 `$O(n^{2}·d)$`、`$d_k = d_v = d_{model}/h$`，带美元符号的源码。换 qwen-flash 后公式更密集，在演示截图里非常显眼（`evidence/qwen_main_qa.png`） | 前端 `index.html` 从未引入 KaTeX / MathJax（全仓 grep 无 `katex\|mathjax`），`mdToHtml` 只做 Markdown 转换 | **未修**。修法：引 KaTeX CDN + auto-render，只对消息区渲染、且只在流式结束后渲染一次（逐 token 重渲染会卡）。涉及 CDN 依赖与离线降级，需单独评估 | 现状记录在案；不影响引用与锚点校验（1.0 通过率） |
