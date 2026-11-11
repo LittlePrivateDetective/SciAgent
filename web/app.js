@@ -73,7 +73,7 @@ const app = createApp({
         "Attention Is All You Need 的第 6 作者是谁，在哪个机构？",
         "Transformer 训练 Base 模型用了多少块 GPU，什么型号？",
         "Transformer (big) 在 EN-DE 上的 BLEU 是多少？比之前最好结果提升多少？",
-        "对比 GPT-1、GPT-2 和 GPT-3 的参数量变化",
+        "对比 BERT 与 Transformer 编码器在结构上的承袭关系",
       ],
     };
   },
@@ -219,7 +219,8 @@ const app = createApp({
       // 检索范围：勾选了文献就用勾选的；否则按"当前文献"限定时只用正在读的那篇。
       // 没有这个约束，库内 37 篇时问"这篇论文的第六作者"会被别的文献抢答。
       let docIds = this.selection.length ? this.selection : [];
-      if (!docIds.length && this.scope === "doc" && this.activeDoc) {
+      // 对比模式必须跨文献，否则"当前文献"会把对比限制成一篇自己跟自己比
+      if (!docIds.length && this.mode !== "compare" && this.scope === "doc" && this.activeDoc) {
         docIds = [this.activeDoc.id];
       }
       try {

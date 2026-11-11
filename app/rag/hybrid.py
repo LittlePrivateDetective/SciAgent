@@ -198,6 +198,60 @@ _COMPARE_HINT = re.compile(
 )
 
 
+# 领域别名表：通行叫法 ↔ 论文标题关键词。
+# 论文正文几乎不会自称 "GPT-1"，用户却只会这么问；缺了这层映射，
+# "GPT-1 的参数量" 在 37 篇库里检索不到那篇原始论文（标题里根本没有 GPT 字样）。
+# 表只覆盖库内实际存在的工作，新增文献时按需补一行即可。
+_ALIAS = {
+    "gpt-1": "generative pre-training",
+    "gpt1": "generative pre-training",
+    "gpt-2": "unsupervised multitask learners",
+    "gpt2": "unsupervised multitask learners",
+    "gpt-3": "few-shot learners",
+    "gpt3": "few-shot learners",
+    "bert": "bidirectional transformers",
+    "t5": "text-to-text transformer",
+    "vit": "image is worth",
+    "lora": "low-rank adaptation",
+    "instructgpt": "follow instructions",
+    "rlhf": "follow instructions",
+    "chinchilla": "compute-optimal",
+    "ppo": "proximal policy optimization",
+    "layernorm": "layer normalization",
+    "ln": "layer normalization",
+    "transformer": "attention is all you need",
+    "gat": "graph attention",
+    "mixtral": "mixture of experts",
+    "moe": "mixture of experts",
+}
+
+
+def _alias_boosts(query: str) -> dict[str, float]:
+    """把问题里的模型别名映射到库内标题，给出按篇的加权。
+
+    与 _doc_boost_map 的区别：这张表是**加性**的——对比题里同时提到
+    GPT-1/2/3 时，三篇都该被抬上来，而不是只留一篇。
+    """
+    low = query.lower()
+    wanted: list[str] = []
+    for key, title_kw in _ALIAS.items():
+        # 用词边界匹配，避免 "ln" 命中 "alignment"
+        if re.search(rf"(?<![a-z0-9]){re.escape(key)}(?![a-z0-9])", low):
+            wanted.append(title_kw)
+    if not wanted:
+        return {}
+
+    with SessionLocal() as db:
+        docs = db.execute(select(Document.id, Document.title, Document.filename)).all()
+
+    out: dict[str, float] = {}
+    for did, title, fname in docs:
+        hay = f"{title or ''} {fname or ''}".lower()
+        if any(kw in hay for kw in wanted):
+            out[did] = 1.7
+    return out
+
+
 def _doc_boost_map(query: str) -> dict[str, float]:
     """问题里点名了某篇文献时，给这篇的块加权。
 
@@ -217,21 +271,26 @@ def _doc_boost_map(query: str) -> dict[str, float]:
         return {}
     with SessionLocal() as db:
         docs = db.execute(select(Document.id, Document.filename, Document.title)).all()
-    hits: dict[str, int] = {}
+
+    # 用"标题被命中词覆盖的比例"决胜，而不是命中词个数：
+    # 问"Layer Normalization 论文"时，标题《Layer Normalization》(覆盖 1.0) 应压过
+    # 《On Layer Normalization in the Transformer Architecture》(覆盖 0.29)，
+    # 但两者命中词数都是 2，只数个数会判成并列而放弃加权。
+    scored: list[tuple[str, int, float]] = []
     for did, fname, title in docs:
         toks = {t for t in tokenize(f"{title or ''} {fname or ''}") if len(t) > 2 and t not in _STOP}
-        n = len(q & toks)
-        if n:
-            hits[did] = n
-    if not hits:
+        if len(toks) < 2:
+            continue
+        inter = q & toks
+        if len(inter) >= 2:
+            scored.append((did, len(inter), len(inter) / len(toks)))
+
+    if not scored:
         return {}
-    top = max(hits.values())
-    if top < 2:  # 只命中一个泛词（如 "transformer"）不足以判定，避免误伤
-        return {}
-    winners = [d for d, h in hits.items() if h == top]
-    if len(winners) > 1:  # 并列第一 → 用户没特指，别猜
-        return {}
-    return {d: (1.45 if h == top else 1.0) for d, h in hits.items()}
+    scored.sort(key=lambda x: (x[2], x[1]), reverse=True)
+    if len(scored) > 1 and abs(scored[0][2] - scored[1][2]) < 1e-6:
+        return {}  # 覆盖率并列 → 用户没特指，别猜
+    return {scored[0][0]: 1.45}
 
 
 # ---------------- 融合检索 ----------------
@@ -273,11 +332,16 @@ def search(
     fused = alpha * rrf_ranks(dense) + (1 - alpha) * rrf_ranks(sparse)
     fused = fused * (1.0 + 0.15 * (dense > 0) * (sparse > 0))  # 两路同时命中给一点加成
 
-    # 用户点名了某篇文献 → 该文献整体加权
-    boosts = _doc_boost_map(query)
-    if boosts:
+    # 两档加权相乘：别名映射（加性，对比题也生效）× 文献指认（单篇收窄，对比题禁用）
+    narrow = _doc_boost_map(query)
+    alias = _alias_boosts(query)
+    if narrow or alias:
         fused = fused * np.array(
-            [boosts.get(by_id[cid].doc_id, 1.0) if cid in by_id else 1.0 for cid in id_list]
+            [
+                (narrow.get(by_id[cid].doc_id, 1.0) if cid in by_id else 1.0)
+                * (alias.get(by_id[cid].doc_id, 1.0) if cid in by_id else 1.0)
+                for cid in id_list
+            ]
         )
 
     k = min(max(top_k * 3, 20), len(id_list))
@@ -410,6 +474,47 @@ def _api_rerank(query: str, hits: list[Hit], top_k: int) -> list[Hit] | None:
         return None
 
 
+def _ensure_mentioned_docs(hits: list[Hit], query: str, top_k: int) -> list[Hit]:
+    """问题点名了某几篇（GPT-1/2/3、BERT、T5…）时，保证每篇都进证据。
+
+    为什么不能只靠召回加权：加权发生在重排之前，而 cross-encoder 只看"这段文字
+    与问题的字面相关性"——GPT-1 原文从不自称 GPT-1，重排会给它低分，把加权效果
+    全部抵消。对比题恰恰要求"点到的每篇都得有证据"，否则只能答"未提及"。
+    """
+    wanted = _alias_boosts(query)
+    if not wanted:
+        return hits
+
+    present = {h.doc_id for h in hits}
+    missing = [d for d in wanted if d not in present]
+    if not missing:
+        return hits
+
+    extra: list[Hit] = []
+    for doc_id in missing[:4]:
+        got = search(query, [doc_id], top_k=2)
+        extra.extend(got[:2])
+
+    if not extra:
+        return hits
+
+    merged = hits + extra
+    merged.sort(key=lambda h: h.score, reverse=True)
+    # 点名文献至少保 1 条，再按分数补满
+    forced = [h for h in extra if h.doc_id not in present]
+    keep = forced[: len(missing)] + [h for h in merged if h not in forced]
+    seen: set[str] = set()
+    out: list[Hit] = []
+    for h in keep:
+        if h.chunk_id in seen:
+            continue
+        seen.add(h.chunk_id)
+        out.append(h)
+        if len(out) >= top_k:
+            break
+    return out
+
+
 def search_with_rerank(query: str, doc_ids: list[str] | None = None, top_k: int | None = None) -> list[Hit]:
     """召回 → 重排。优先用重排模型，不可用时用「关键词覆盖率 + 位置先验」兜底。"""
     top_k = top_k or settings.top_k
@@ -419,7 +524,7 @@ def search_with_rerank(query: str, doc_ids: list[str] | None = None, top_k: int 
 
     remote = _api_rerank(query, hits, top_k)
     if remote:
-        final = remote[:top_k]
+        final = _ensure_mentioned_docs(remote[:top_k], query, top_k)
         _stitch(final)
         return final
 
@@ -438,6 +543,6 @@ def search_with_rerank(query: str, doc_ids: list[str] | None = None, top_k: int 
     reranked = sorted(hits, key=local_score, reverse=True)
     for h in reranked:
         h.score = local_score(h)
-    out = reranked[:top_k]
+    out = _ensure_mentioned_docs(reranked[:top_k], query, top_k)
     _stitch(out)
     return out
