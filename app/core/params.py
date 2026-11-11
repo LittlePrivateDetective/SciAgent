@@ -168,6 +168,18 @@ P: list[Param] = [
           "排障时开 DEBUG，演示时用 INFO", ("DEBUG", "INFO", "WARNING", "ERROR")),
     Param("demo_access_token", "service", "演示访问令牌", "secret",
           "设置后所有写接口需要带 Authorization: Bearer <token>；留空表示不鉴权"),
+    Param("keepalive_enabled", "service", "后台保活", "bool",
+          "每 5 分钟一次心跳：刷新数据库连接，并让本地模型留在显存。"
+          "关掉后 Ollama 会在空闲 5 分钟时卸掉模型，下一次请求要重新加载"),
+    Param("keepalive_interval", "service", "保活间隔", "int",
+          "秒。默认 300（5 分钟）。本地模型默认 5 分钟无请求就卸载，"
+          "间隔要小于这个值，建议 240–300", 30, 1800, 30, "秒"),
+    Param("keepalive_warm_model", "service", "预热本地模型", "bool",
+          "本地路由下给 Ollama 发空请求并带 keep_alive=30m，模型常驻显存。"
+          "不产生任何 token 费用"),
+    Param("keepalive_warm_cloud", "service", "预热云端连接", "bool",
+          "云端路由下每轮发一次 1-token 请求保活连接池。一天 288 次、会产生少量费用，"
+          "只省掉首次 TLS 握手（100–300ms），默认关", advanced=True),
     Param("port", "service", "服务端口", "int",
           "改完要重启进程才生效；容器里注意同步改端口映射", 1024, 65535, 1, "", "restart"),
 ]
@@ -353,6 +365,15 @@ def save(db: Session, values: dict[str, Any], actor: str = "admin") -> dict:
     applied = []
     for p, v in staged:
         row = db.get(AppSetting, p.key)
+        # 值改回"不覆盖时本来就该是"的值（启动快照，可能是 .env 或默认值）→ 删掉覆盖行。
+        # 否则把参数改回原值后，后台仍显示"已覆盖 1 项"，来源也标成"后台覆盖"，
+        # 而实际效果与从未改过完全一样。这条是被回归脚本的 overridden==0 断言抓出来的。
+        if p.kind != "secret" and v == BOOT_VALUES.get(p.key, p.default()):
+            if row is not None:
+                db.delete(row)
+            apply_value(p.key, v)
+            applied.append({"key": p.key, "value": v, "scope": p.scope, "reverted": True})
+            continue
         payload = json.dumps(v, ensure_ascii=False)
         if row is None:
             db.add(AppSetting(key=p.key, value=payload, actor=actor))

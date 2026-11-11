@@ -35,7 +35,7 @@ const app = createApp({
       groupFilter: "",
       overview: {
         counts: {}, corpus: {}, storage: {}, runtime: {}, audit: [],
-        llm: {}, ollama: {}, vector: {}, embedding: {}, rerank: {},
+        llm: {}, ollama: {}, vector: {}, embedding: {}, rerank: {}, keepalive: {},
       },
       auditItems: [],
       test: { visible: false, running: false, prompt: "用一句话说明什么是检索增强生成。", maxTokens: 512, result: null, raw: "" },
@@ -64,6 +64,18 @@ const app = createApp({
     ollama() { return this.overview.ollama || {}; },
     embedding() { return this.overview.embedding || {}; },
     rerank() { return this.overview.rerank || {}; },
+
+    keepalive() { return this.overview.keepalive || {}; },
+
+    keepaliveText() {
+      const k = this.keepalive;
+      if (!k.enabled) return "已关闭";
+      const parts = [`每 ${k.interval_s || "-"}s`];
+      if (k.beats) parts.push(`已跳 ${k.beats} 次`);
+      if (k.last_ms !== null && k.last_ms !== undefined) parts.push(`最近 ${k.last_ms}ms`);
+      if (k.last_warm && k.last_warm !== "skip" && k.last_warm !== "none") parts.push(`预热 ${k.last_warm}`);
+      return parts.join(" · ");
+    },
 
     uptimeText() {
       const s = this.runtime.uptime_sec || 0;
@@ -152,7 +164,7 @@ const app = createApp({
       this.params = [];
       this.overview = {
         counts: {}, corpus: {}, storage: {}, runtime: {}, audit: [],
-        llm: {}, ollama: {}, vector: {}, embedding: {}, rerank: {},
+        llm: {}, ollama: {}, vector: {}, embedding: {}, rerank: {}, keepalive: {},
       };
       this.pwd = "";
     },

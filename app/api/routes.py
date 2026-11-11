@@ -93,8 +93,33 @@ def system_info(db: Session = Depends(get_db)):
         },
         # 对照阅读的翻译模型与缓存进度（前端据此决定是否提示"整篇翻译"）
         "translation": {"model": settings.trans_model, "batch": settings.trans_batch},
+        "keepalive": _keepalive_status(),
         "official_pdfs": len(list(settings.pdf_dir.glob("*.pdf"))),
     }
+
+
+def _keepalive_status() -> dict:
+    from app.core import keepalive
+
+    return keepalive.status()
+
+
+@router.get("/keepalive")
+def keepalive_info():
+    """后台保活状态：最近一次心跳、耗时、累计次数、最近一次错误。"""
+    return {"ok": True, **_keepalive_status()}
+
+
+@router.post("/keepalive/beat")
+def keepalive_beat():
+    """手动补一次心跳。
+
+    外部 cron / Windows 计划任务保活时打这个接口即可（见 scripts/keepalive.sh）。
+    30 秒内重复调用返回上次结果，不会被刷着烧 token。
+    """
+    from app.core import keepalive
+
+    return {"ok": True, **keepalive.beat(manual=True)}
 
 
 # ---------------- 文档 ----------------

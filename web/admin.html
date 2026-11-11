@@ -123,6 +123,7 @@
               <div class="k">模型</div><div class="v">{{ llm.model || '-' }}</div>
               <div class="k">接口地址</div><div class="v mono">{{ llm.base_url || '-' }}</div>
               <div class="k">向量化</div><div class="v">{{ embedding.provider }} · {{ embedding.model }} · {{ embedding.dim }} 维</div>
+              <div class="k">保活心跳</div><div class="v">{{ keepaliveText }}<span class="tag" v-if="keepalive.last_error" title="最近一次失败原因">异常</span></div>
               <div class="k">重排</div><div class="v">{{ rerank.provider }} · {{ rerank.model || '-' }} · {{ rerank.url_set ? '已配地址' : '未配地址' }}</div>
               <div class="k">本地模型</div>
               <div class="v">

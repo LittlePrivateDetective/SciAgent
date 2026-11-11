@@ -41,7 +41,7 @@ WEB_DIR = BASE_DIR / "web"
 
 
 @app.on_event("startup")
-def _startup() -> None:
+async def _startup() -> None:
     settings.ensure_dirs()
     init_db()
     # 后台改过的参数存在 app_settings 表里，启动时回灌——否则重启一次全部失效，
@@ -62,6 +62,25 @@ def _startup() -> None:
         "official_pdfs": len(list(settings.pdf_dir.glob("*.pdf"))),
     }
     log.info("SciAgent 启动完成：%s", info)
+
+    # 五分钟心跳：本地模型默认 5 分钟没请求就被 Ollama 卸出显存，下一次请求要重新
+    # 加载（3B 约 1.5–4 秒），演示第一句会莫名卡住。开关与间隔在后台「服务与安全」组
+    try:
+        from app.core import keepalive
+
+        keepalive.start()
+    except Exception:  # noqa: BLE001 保活起不来不能挡住服务
+        log.warning("保活循环启动失败", exc_info=True)
+
+
+@app.on_event("shutdown")
+async def _shutdown() -> None:
+    try:
+        from app.core import keepalive
+
+        await keepalive.stop()
+    except Exception:  # noqa: BLE001
+        pass
 
 
 @app.get("/health")

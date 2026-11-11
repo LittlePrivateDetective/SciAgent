@@ -2496,3 +2496,33 @@
 ```
 
 补充：生成的 Matplotlib 脚本已在本机实跑验证（`matplotlib 3.11.2`），架构图与 bar/line/radar 四份脚本均产出 PDF，中文标题与图例正常、箭头头部可见。
+
+## 第十一轮补充用例：后台保活心跳（2026-11-12 01:15）
+
+脚本：`tests/keepalive_check.py`（纯 HTTP，无浏览器）。验证"每 5 分钟一跳"是真的在跳，而不是只在参数里存了个数。
+
+### C14 · 保活心跳四项 · PASS
+
+```json
+{
+  "auto_start":  {"enabled": true, "beats": 1, "last_beat_at": "2026-11-12T01:08:30", "last_ms": 0},
+  "interval_hot": {"before": 1, "after": 2, "interval_s": 30, "ms": 0},
+  "warm":        {"warm": "ollama", "ms": 120, "ollama_ps_has_model": true, "error": ""},
+  "switch_off":  {"before": 3, "after": 3, "enabled": false},
+  "restored":    {"route": "cloud", "interval": 300, "enabled": true}
+}
+```
+
+- **自动开始**：服务启动后无需任何触发，约 5 秒内产生第 1 次心跳（循环每 5 秒看一次表，首轮 `last=0` 立即触发）
+- **间隔热生效**：后台把 300 改成 30，**不用重启**，40 秒内多跳一次（`beats 1 → 2`）
+- **本地预热**：切 `llm_route=local` 后 `last_warm=ollama`，`ollama ps` 可见 `qwen2.5:3b  2.7 GB  100% GPU  UNTIL 29 minutes from now`——`keep_alive=30m` 生效
+- **关掉就停**：`keepalive_enabled=false` 后 40 秒内 `beats` 不变（3 → 3），不是"存了不看"
+
+冷/热对比（同一台机、同一模型）：
+
+| 场景 | 首跳耗时 | 说明 |
+|---|---:|---|
+| 模型已被卸载（冷） | **5876 ms** | 含把 2.7 GB 权重搬进显存 |
+| 心跳续期（热） | **138 ms** | 已在显存，只做一次空 prefill |
+
+即保活把"演示第一句话的等待"从 5.9 秒压到 0.14 秒，差 42 倍。

@@ -85,6 +85,13 @@ class Settings(BaseSettings):
     chunk_overlap: int = 80
     hybrid_alpha: float = 0.6
 
+    # ---------- 保活 ----------
+    # 每 5 分钟一次心跳：刷新 DB 连接 + 让本地模型常驻显存（Ollama 默认 5 分钟卸载）
+    keepalive_enabled: int = 1
+    keepalive_interval: int = 300      # 秒
+    keepalive_warm_model: int = 1      # 本地路由下预热 Ollama
+    keepalive_warm_cloud: int = 0      # 云端预热会产生 token 费用，默认关
+
     # ---------- 服务 ----------
     port: int = 8000
     data_dir: str = "./data"

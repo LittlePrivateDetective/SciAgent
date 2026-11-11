@@ -29,6 +29,13 @@ from app.db.session import get_db
 from app.rag.store import get_store
 
 log = get_logger(__name__)
+def _keepalive_status() -> dict:
+    """后台保活状态。延迟导入：避免 core 层反向依赖 api 层。"""
+    from app.core import keepalive
+
+    return keepalive.status()
+
+
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
 BOOT_AT = time.time()
@@ -182,6 +189,7 @@ def overview(_=Depends(auth.require_admin), db: Session = Depends(get_db)):
             "pid": os.getpid(),
             "rss_mb": _rss_mb(),
         },
+        "keepalive": _keepalive_status(),
         "audit": [
             {"action": a.action, "detail": a.detail, "actor": a.actor,
              "at": a.created_at.strftime("%m-%d %H:%M:%S")}
