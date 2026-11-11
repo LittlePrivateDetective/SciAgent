@@ -137,13 +137,29 @@ def find_duplicates(
             continue
 
         # 3) SimHash 近似
+        #
+        # 距离 5–6 这一档必须再验一次标题：同领域论文大量共用词汇，指纹本来就近。
+        # 实测把 ELECTRA(2003.10555) 判成了 BERT(N19-1423) 的重复（汉明距离 6、
+        # similarity 0.906），直接堵死了「自动下载新论文」——下载成功却入不了库。
+        # 真·同篇不同版本标题几乎一致（>0.9），标题差异大的就是两篇不同的论文。
         if sh and d.simhash:
             dist = hamming(sh, d.simhash)
-            if dist <= 6:
+            if dist <= 4:
                 out.append(
                     DupHit(d, f"正文指纹近似(汉明距离={dist})", round(1 - dist / 64, 3), _suggest(d, arxiv_id))
                 )
                 continue
+            if dist <= 6:
+                from difflib import SequenceMatcher
+
+                ratio = (SequenceMatcher(None, normalize(title), normalize(d.title)).ratio()
+                         if title and d.title else 1.0)
+                if ratio >= 0.6:
+                    out.append(
+                        DupHit(d, f"正文指纹近似(汉明距离={dist}，标题相似 {ratio:.2f})",
+                               round(1 - dist / 64, 3), _suggest(d, arxiv_id))
+                    )
+                    continue
 
         # 4) 标题高度相似
         if title and d.title:

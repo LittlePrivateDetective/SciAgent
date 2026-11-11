@@ -35,6 +35,7 @@
       <div class="panel-head">
         <span>文献库</span>
         <div class="viewer-tools">
+          <el-button size="small" text @click="openDiscover('search')">发现</el-button>
           <el-button size="small" text @click="openTrash">回收站</el-button>
           <el-button size="small" text @click="loadDocs">刷新</el-button>
         </div>
@@ -388,6 +389,149 @@
                  @click="restoreTrash(t)">恢复</el-button>
     </div>
   </el-dialog>
+
+  <!-- 论文发现与推荐（官方 1.4）：搜索下载 / 补全参考文献 / 新论文推荐。
+       三个 tab 都打到真实 arXiv，下载后走同一条入库流水线（解析→去重→切块→向量化）。 -->
+  <el-drawer v-model="disc.visible" size="640px" :with-header="false" class="disc-drawer">
+    <div class="disc-head">
+      <div>
+        <div class="disc-title">论文发现与推荐</div>
+        <div class="disc-sub">arXiv 实时检索 · 下载后自动解析入库</div>
+      </div>
+      <el-button text @click="disc.visible = false">关闭</el-button>
+    </div>
+
+    <el-tabs v-model="disc.tab" @tab-change="onDiscTab">
+      <el-tab-pane label="搜索下载" name="search">
+        <div class="disc-search">
+          <el-input v-model="disc.q" clearable
+                    placeholder="论文标题或英文关键词，如 attention is all you need"
+                    @keyup.enter="doSearch" />
+          <el-button type="primary" :loading="disc.searching" @click="doSearch">搜索</el-button>
+        </div>
+        <div class="disc-meta" v-if="disc.searched">
+          arXiv 返回 {{ disc.results.length }} 条 · {{ disc.searchMs }}ms
+        </div>
+        <div class="disc-list">
+          <div v-for="it in disc.results" :key="it.arxiv_id" class="disc-card">
+            <div class="disc-card-top">
+              <span class="disc-aid">{{ it.arxiv_id }}</span>
+              <span class="disc-date">{{ it.published }}</span>
+              <span class="disc-cat" v-if="it.category">{{ it.category }}</span>
+              <span class="disc-gh" v-if="it.github">GitHub</span>
+            </div>
+            <div class="disc-name">{{ it.title }}</div>
+            <div class="disc-authors">{{ (it.authors || []).join(' · ') }}</div>
+            <div class="disc-abs">{{ it.summary.length > 240 ? it.summary.slice(0, 240) + '…' : it.summary }}</div>
+            <div class="disc-actions">
+              <el-button v-if="it.in_library" size="small" text type="success"
+                         @click="openFromDisc(it)">已在库里 · 打开</el-button>
+              <el-button v-else size="small" type="primary" plain
+                         :loading="disc.importing === it.arxiv_id"
+                         @click="importPaper(it)">下载并入库</el-button>
+              <el-button size="small" text @click="openArxiv(it.abs_url)">arXiv 页面</el-button>
+            </div>
+          </div>
+          <div v-if="disc.searched && !disc.results.length && !disc.searching" class="empty">
+            没搜到结果，换个英文标题或关键词再试
+          </div>
+        </div>
+      </el-tab-pane>
+
+      <el-tab-pane label="补全参考文献" name="refs">
+        <div v-if="!activeDoc" class="empty">先在左边选一篇文献，再回来看它的参考文献</div>
+        <template v-else>
+          <div class="disc-meta">
+            当前文献《{{ activeDoc.title || activeDoc.filename }}》 · 共 {{ disc.refTotal }} 条参考文献 ·
+            arXiv 匹配 {{ disc.refMatched }} 条
+            <el-button size="small" text :loading="disc.refLoading" @click="loadRefs">重新分析</el-button>
+          </div>
+          <div class="disc-hint">
+            按正文被引次数排序：被引越多的条目越值得补全；只引一次的多半是「为引用而引用」，排在后面。
+          </div>
+          <div class="disc-list" v-loading="disc.refLoading">
+            <div v-for="it in disc.refItems" :key="it.index" class="disc-card ref">
+              <el-checkbox :model-value="disc.refSelected.includes(it.arxiv_id)"
+                           :disabled="!it.arxiv_id || it.in_library"
+                           @change="toggleRef(it)" />
+              <div class="ref-body">
+                <div class="disc-name">{{ it.title || it.text.slice(0, 90) }}</div>
+                <div class="disc-ref-meta">
+                  <span class="ref-cites" :title="'正文里 [' + it.index + '] 出现 ' + it.cites + ' 次'">
+                    [{{ it.index }}] 被引 {{ it.cites }} 次
+                  </span>
+                  <span v-if="it.in_library" class="tag-ok">已在库</span>
+                  <span v-else-if="it.arxiv_id" class="tag-aid">{{ it.arxiv_id }}</span>
+                  <span v-else class="tag-miss">arXiv 未匹配</span>
+                </div>
+              </div>
+            </div>
+            <div v-if="!disc.refLoading && !disc.refItems.length" class="empty">
+              这篇没解析出参考文献条目，或都已在库
+            </div>
+          </div>
+          <div class="disc-foot">
+            <span class="disc-meta">已选 {{ disc.refSelected.length }} 篇</span>
+            <el-button type="primary" :disabled="!disc.refSelected.length || !!disc.job"
+                       :loading="!!disc.job" @click="importRefs">批量下载入库</el-button>
+          </div>
+          <div v-if="disc.job" class="disc-job">
+            <el-progress :percentage="Math.round(disc.job.done / (disc.job.total || 1) * 100)" />
+            <div class="disc-meta">
+              正在处理 {{ disc.job.current || '…' }} · 成功 {{ disc.job.ok }} · 失败 {{ disc.job.failed }}
+            </div>
+            <div v-for="r in disc.job.items" :key="r.arxiv_id" class="disc-job-row">
+              <span :class="r.ok ? 'job-ok' : 'job-bad'">{{ r.ok ? '已完成' : '失败' }}</span>
+              <span class="job-name">{{ r.title || r.arxiv_id }}</span>
+              <span v-if="!r.ok" class="job-err">{{ r.error || r.stage }}</span>
+            </div>
+          </div>
+        </template>
+      </el-tab-pane>
+
+      <el-tab-pane label="新论文推荐" name="rec">
+        <div class="disc-meta">
+          <span>库内主题：{{ disc.recTopics.length ? disc.recTopics.join(' · ') : '分析中…' }}</span>
+          <el-select v-model="disc.recDays" size="small" style="width:118px" @change="loadRec">
+            <el-option :value="90" label="近 3 个月" />
+            <el-option :value="180" label="近 6 个月" />
+            <el-option :value="365" label="近 1 年" />
+          </el-select>
+          <el-button size="small" text :loading="disc.recLoading" @click="loadRec">刷新</el-button>
+        </div>
+        <div class="disc-hint">
+          按库内论文的兴趣画像排序；带 GitHub 代码的加权靠前。点「有用 / 不感兴趣」会改写下次推荐。
+        </div>
+        <div class="disc-list" v-loading="disc.recLoading">
+          <div v-for="it in disc.recItems" :key="it.arxiv_id" class="disc-card">
+            <div class="disc-card-top">
+              <span class="disc-aid">{{ it.arxiv_id }}</span>
+              <span class="disc-date">{{ it.published }}</span>
+              <span class="disc-rel">相关度 {{ it.relevance }}</span>
+              <span class="disc-gh" v-if="it.github">GitHub</span>
+            </div>
+            <div class="disc-name">{{ it.title }}</div>
+            <div class="disc-reason">{{ it.reason }}</div>
+            <div class="disc-abs">{{ it.summary }}</div>
+            <div class="disc-actions">
+              <el-button v-if="it.in_library" size="small" text type="success"
+                         @click="openFromDisc(it)">已在库里 · 打开</el-button>
+              <el-button v-else size="small" type="primary" plain
+                         :loading="disc.importing === it.arxiv_id"
+                         @click="importPaper(it)">下载并入库</el-button>
+              <el-button size="small" text :type="it.liked ? 'success' : ''"
+                         @click="sendFeedback(it, 'like')">有用</el-button>
+              <el-button size="small" text @click="sendFeedback(it, 'dislike')">不感兴趣</el-button>
+              <el-button size="small" text @click="openArxiv(it.abs_url)">arXiv</el-button>
+            </div>
+          </div>
+          <div v-if="!disc.recLoading && !disc.recItems.length" class="empty">
+            {{ disc.recNote || '还没拿到推荐，点「刷新」试试' }}
+          </div>
+        </div>
+      </el-tab-pane>
+    </el-tabs>
+  </el-drawer>
 
   <!-- 划词翻译：选中即出现「译」按钮，点一下才发起请求。
        不自动翻译是因为每次选区都会打一次模型，用户随手一划就烧 token，

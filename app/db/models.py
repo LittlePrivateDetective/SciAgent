@@ -267,3 +267,20 @@ class AuditLog(Base):
     detail: Mapped[str] = mapped_column(Text, default="")
     actor: Mapped[str] = mapped_column(String(64), default="")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, index=True)
+
+
+class RecommendFeedback(Base):
+    """推荐反馈：赞 / 踩 / 点开（官方 1.4.3 第 3 点）。
+
+    只记行为，不记用户画像：单用户场景下它就是"这个方向我感兴趣/不感兴趣"的
+    显式信号，下一条推荐里 dislike 直接过滤、like 参与排序。
+    """
+
+    __tablename__ = "recommend_feedback"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    arxiv_id: Mapped[str] = mapped_column(String(64), index=True)
+    action: Mapped[str] = mapped_column(String(16), index=True)   # like / dislike / click
+    reason: Mapped[str] = mapped_column(String(320), default="")  # 当时的推荐理由，便于复盘
+    actor: Mapped[str] = mapped_column(String(64), default="")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, index=True)

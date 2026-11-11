@@ -31,6 +31,7 @@ SciAgent 让模型**只能引用检索到的 chunk**，服务端把 chunk 换成
 | 文内引用跳转 | ✅ | 点正文 `[11]` 直达 References 第 11 条并高亮，浮层同步显示条目全文（官方 1.3.2） |
 | 划词翻译 | ✅ | 选中英文即出现「译」按钮，走独立非推理模型；扫描件无文本层时如实提示（官方 1.3.3.1） |
 | 中英对照 | ✅ | 双栏双向联动滚动（按段落锚点对齐）、按页懒翻译 + 落库缓存、`#bi` 深链 |
+| 论文发现与推荐 | ✅ | 标题/关键词搜 arXiv → 下载 PDF → 走**同一条入库流水线**；参考文献按**正文被引次数**排序补全；新论文推荐带中文理由 + GitHub 标记 + 赞/踩反馈（官方 1.4） |
 | 外部工具链 | ✅ | Function Calling 选工具 → arXiv / GitHub / Crossref 真实 API；重试 → 降级 → 如实标注 |
 | 学术图表 | ✅ | CSV 实验表格无损转 Mermaid xychart / TikZ(pgfplots) |
 | Future Work 对撞 | ✅ | 候选句抽取 → 4-gram 语义去重 → 与库内后续论文关键词对撞 |
@@ -126,6 +127,12 @@ tests/         qa_suite 回归台 / qa_report 报告 / browser_cdp 浏览器驱�
 | GET | `/api/documents/{id}/page/{n}/text` | 页内词级文本层（划词与角标点击的底座） |
 | GET | `/api/documents/{id}/references` | References 逐条索引：编号 → 页码 + bbox |
 | POST | `/api/translate` | 划词翻译（即译即返，不落库） |
+| GET | `/api/discover/search` | arXiv 检索候选论文，标注库里是否已有 |
+| POST | `/api/discover/import` | 下载指定 arXiv 编号并走完整入库 |
+| GET | `/api/discover/references` | 库内论文的参考文献候选（按正文被引次数排序） |
+| POST | `/api/discover/references/import` | 批量补全（后台任务），配 `/api/discover/jobs/{id}` 轮询 |
+| GET | `/api/discover/recommend` | 新论文推荐：TF-IDF 兴趣画像 + 中文理由 + GitHub 标记 |
+| GET/POST | `/api/discover/feedback` | 赞 / 踩 / 点开反馈（影响下次推荐排序） |
 | POST | `/api/write/outline` | 写作 Copilot：idea → 四段框架 + 无幻觉 References |
 | GET/POST | `/api/documents/{id}/bilingual[/translate]` | 中英对照段落 / 按需翻译 |
 | POST | `/api/chat/stream` | SSE 流式问答（thinking / token / done 事件） |
@@ -176,10 +183,12 @@ docker compose up -d --build     # 单容器，数据挂 ./data
 - 公式只抽 bbox 不做 LaTeX 重建（刻意选择：可验证 > 花哨）；
 - 541 页书籍首次解析实测 **260 秒**（其中向量化 246 秒），走后台任务不阻塞 UI；
 - 本机无 Docker，`docker build` 与真机图谱帧率标【待实测】，详见 `docs/qa/05_delivery.md`；
-- arXiv 导出 API 在本机网络不可达，工具层自动降级到本地语料并标注 `degraded=true`；
+- arXiv API 与 PDF 下载本机实测可达（检索 ~1.7s、下载+入库 11s/篇）；接口抖动时工具层降级到本地语料并标注 `degraded=true`；
 - 阅读器用页图 + 词级透明文本层，不引 PDF.js：排版 100% 还原、无 worker/CMap 依赖，
   但正文文字位置由 PyMuPDF 的词框决定，个别花体字/连字会略有偏移；
-- 扫描件没有文本层，划词翻译与角标跳转不可用（页面上会明确提示，不假装支持）；
+- 扫描件没有文本层，页面上不能划词、角标也不能点；单页提供「翻译本页」（按段落调翻译并复用浮层），整篇译文走「对照」视图。真正的词级文本层需要本地 OCR 引擎（tesseract），本机未安装；
+- 新论文推荐是**按需刷新**（按钮 + 时间窗口），没有常驻定时任务：演示环境不一定有外网，
+  后台定时抓取只会空转，反而让日志充满失败记录；
 - 多用户与协同过滤推荐未做：当前是单机单用户定位。
 
 ## 许可证

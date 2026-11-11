@@ -74,6 +74,15 @@ const app = createApp({
       scope: "all",
       streamMode: false,
       trash: { visible: false, items: [] },
+      // 论文发现与推荐（官方 1.4）：三个 tab 各自独立加载，互不阻塞
+      disc: {
+        visible: false, tab: "search", q: "", searching: false, searched: false,
+        results: [], searchMs: 0,
+        refLoading: false, refItems: [], refSelected: [], refTotal: 0, refMatched: 0,
+        job: null, jobTimer: null,
+        recLoading: false, recItems: [], recTopics: [], recDays: 180, recNote: "",
+        importing: "",
+      },
       loading: false,
       rescanning: false,
       centerView: "reader",
@@ -146,6 +155,181 @@ const app = createApp({
       const r = await fetch("/api/system/info").then((x) => x.json());
       this.info = r;
     },
+    /* ---------------- 论文发现与推荐（官方 1.4） ---------------- */
+
+    openDiscover(tab) {
+      this.disc.visible = true;
+      if (tab) this.disc.tab = tab;
+      this.onDiscTab(this.disc.tab);
+    },
+
+    onDiscTab(name) {
+      // 切到哪个 tab 才去拉哪个 tab 的数据：推荐要调模型（3 秒），不该在打开抽屉时就烧掉
+      if (name === "refs" && this.activeDoc && !this.disc.refItems.length) this.loadRefs();
+      if (name === "rec" && !this.disc.recItems.length) this.loadRec();
+    },
+
+    async doSearch() {
+      const q = (this.disc.q || "").trim();
+      if (!q || this.disc.searching) return;
+      this.disc.searching = true;
+      try {
+        const r = await fetch(`/api/discover/search?q=${encodeURIComponent(q)}&max=8`).then((x) => x.json());
+        this.disc.results = r.items || [];
+        this.disc.searchMs = r.ms || 0;
+      } catch (e) {
+        ElementPlus.ElMessage.error("arXiv 检索失败，检查网络后重试");
+      } finally {
+        this.disc.searching = false;
+        this.disc.searched = true;
+      }
+    },
+
+    async importPaper(it) {
+      if (this.disc.importing) return;
+      this.disc.importing = it.arxiv_id;
+      try {
+        const r = await fetch("/api/discover/import", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ arxiv_id: it.arxiv_id, title: it.title || "" }),
+        }).then((x) => x.json());
+        if (r.ok) {
+          ElementPlus.ElMessage.success(`已入库：${r.title || it.title}（${r.chunks || 0} 段）`);
+          it.in_library = true;
+          it.doc_id = r.doc_id || "";
+          await this.loadDocs();
+        } else if (r.stage === "exists") {
+          ElementPlus.ElMessage.info(r.message || "库里已有这篇");
+          it.in_library = true;
+          it.doc_id = r.doc_id || "";
+        } else if (r.stage === "duplicate") {
+          // 库里有同族版本：不硬塞，让用户去左栏按版本处理
+          ElementPlus.ElMessage.warning(r.message || "库中已有相近版本");
+        } else {
+          ElementPlus.ElMessage.error(r.error || r.message || "下载入库失败");
+        }
+      } catch (e) {
+        ElementPlus.ElMessage.error("下载失败，检查网络后重试");
+      } finally {
+        this.disc.importing = "";
+      }
+    },
+
+    openFromDisc(it) {
+      this.disc.visible = false;
+      const d = this.docs.find((x) => x.id === it.doc_id);
+      if (d) this.openDoc(d);
+      else this.loadDocs();
+    },
+
+    openArxiv(url) {
+      if (url) window.open(url, "_blank", "noopener");
+    },
+
+    async loadRefs() {
+      if (!this.activeDoc || this.disc.refLoading) return;
+      this.disc.refLoading = true;
+      try {
+        const r = await fetch(`/api/discover/references?doc_id=${this.activeDoc.id}&limit=8`).then((x) => x.json());
+        this.disc.refItems = r.items || [];
+        this.disc.refTotal = r.total_refs || 0;
+        this.disc.refMatched = r.matched || 0;
+        // 默认勾上能下的前 5 条：多数人点开就是想"补齐"，不该让他逐个勾
+        this.disc.refSelected = (r.items || [])
+          .filter((i) => i.arxiv_id && !i.in_library)
+          .slice(0, 5)
+          .map((i) => i.arxiv_id);
+      } catch (e) {
+        ElementPlus.ElMessage.error("参考文献分析失败，稍后重试");
+      } finally {
+        this.disc.refLoading = false;
+      }
+    },
+
+    toggleRef(it) {
+      if (!it.arxiv_id || it.in_library) return;
+      const i = this.disc.refSelected.indexOf(it.arxiv_id);
+      if (i >= 0) this.disc.refSelected.splice(i, 1);
+      else this.disc.refSelected.push(it.arxiv_id);
+    },
+
+    async importRefs() {
+      if (!this.disc.refSelected.length || this.disc.job) return;
+      const titles = {};
+      for (const it of this.disc.refItems) if (it.arxiv_id) titles[it.arxiv_id] = it.title || "";
+      try {
+        const r = await fetch("/api/discover/references/import", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ arxiv_ids: this.disc.refSelected, titles }),
+        }).then((x) => x.json());
+        if (!r.ok) {
+          ElementPlus.ElMessage.error(r.detail || "任务创建失败");
+          return;
+        }
+        this.disc.job = { total: r.total, done: 0, ok: 0, failed: 0, current: "", items: [], state: "running" };
+        this.pollJob(r.job_id);
+      } catch (e) {
+        ElementPlus.ElMessage.error("批量下载启动失败");
+      }
+    },
+
+    pollJob(jobId) {
+      clearInterval(this.disc.jobTimer);
+      this.disc.jobTimer = setInterval(async () => {
+        try {
+          const s = await fetch(`/api/discover/jobs/${jobId}`).then((x) => x.json());
+          this.disc.job = { ...this.disc.job, ...s };
+          if (s.state === "done") {
+            clearInterval(this.disc.jobTimer);
+            this.disc.jobTimer = null;
+            ElementPlus.ElMessage.success(`补全完成：成功 ${s.ok} 篇，失败 ${s.failed} 篇`);
+            await this.loadDocs();
+            await this.loadRefs();
+          }
+        } catch (e) {
+          /* 轮询失败不打断：下一轮再试，用户看到的是进度停住而不是报错弹窗 */
+        }
+      }, 1500);
+    },
+
+    async loadRec() {
+      if (this.disc.recLoading) return;
+      this.disc.recLoading = true;
+      this.disc.recNote = "";
+      try {
+        const q = `limit=6&days=${this.disc.recDays}` + (this.activeDoc ? `&doc_id=${this.activeDoc.id}` : "");
+        const r = await fetch(`/api/discover/recommend?${q}`).then((x) => x.json());
+        this.disc.recItems = r.items || [];
+        this.disc.recTopics = r.topics || [];
+        this.disc.recNote = r.note || r.error || "";
+      } catch (e) {
+        this.disc.recNote = "推荐加载失败，检查网络后重试";
+      } finally {
+        this.disc.recLoading = false;
+      }
+    },
+
+    async sendFeedback(it, action) {
+      try {
+        await fetch("/api/discover/feedback", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ arxiv_id: it.arxiv_id, action, reason: it.reason || "" }),
+        });
+        if (action === "like") {
+          it.liked = true;
+          ElementPlus.ElMessage.success("已记录，下次推荐会更多这类方向");
+        } else {
+          this.disc.recItems = this.disc.recItems.filter((x) => x.arxiv_id !== it.arxiv_id);
+          ElementPlus.ElMessage.info("已隐藏，这类方向会减少");
+        }
+      } catch (e) {
+        ElementPlus.ElMessage.error("反馈提交失败");
+      }
+    },
+
     async loadDocs() {
       const r = await fetch("/api/documents").then((x) => x.json());
       this.docs = (r.documents || []).map((d) => ({ ...d, _sel: this.selection.includes(d.id) }));

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import re
 import time
 import uuid
 from pathlib import Path
@@ -47,6 +48,7 @@ from app.rag.hybrid import search_with_rerank
 from app.rag.store import get_store
 from app.research.future_work import collect_future_work
 from app.research.reproducibility import collect_reproducibility
+from app.research import discover as discover_mod
 from app.research.writer import generate as generate_outline
 from app.tools.chart import convert as convert_chart
 from app.tools.external import TOOL_SCHEMAS
@@ -817,3 +819,109 @@ def chat_stream(body: StreamIn, db: Session = Depends(get_db)):
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no",
                  "Connection": "keep-alive"},
     )
+
+
+# ---------------------------------------------------------------- 1.4 论文自动下载与推荐
+class DiscoverImportIn(BaseModel):
+    arxiv_id: str = ""
+    title: str = ""
+    force: bool = False
+
+
+class DiscoverRefImportIn(BaseModel):
+    arxiv_ids: list[str] = Field(default_factory=list)
+    titles: dict[str, str] = Field(default_factory=dict)
+
+
+class DiscoverFeedbackIn(BaseModel):
+    arxiv_id: str = ""
+    action: str = "like"
+    reason: str = ""
+
+
+def _mark_in_library(db: Session, items: list[dict]) -> list[dict]:
+    """标出「库里已有」：用户最怕的是点了下载才发现重复。
+
+    必须走 library_index 归一化：arXiv 返回 `1706.03762`，库里存 `1706.03762v1`，
+    直接比字符串会得出"库里没有"的错误结论（实测就是这样漏标的）。
+    """
+    idx = discover_mod.library_index(db)
+    for it in items:
+        d = idx.get(discover_mod._base_id(it.get("arxiv_id") or ""))
+        it["in_library"] = bool(d)
+        it["doc_id"] = d.id if d else ""
+    return items
+
+
+@router.get("/discover/search")
+def discover_search(q: str = Query(..., min_length=2), max: int = Query(8, ge=1, le=20),
+                    db: Session = Depends(get_db)):
+    """按标题/关键词在 arXiv 检索候选论文。
+
+    纯标题走 `ti:`，多词短语走 `all:"..."`（词组匹配），都不中再退化到 `all:词`。
+    检索失败时如实返回空 + error，不拿本地库冒充 arXiv 结果。
+    """
+    t0 = time.time()
+    raw = re.sub(r"[^A-Za-z0-9\s\-]", " ", " ".join((q or "").split()))[:160].strip()
+    if not raw:
+        raise HTTPException(400, "查询词需要包含英文标题或关键词")
+    items = discover_mod.search_arxiv(f'all:"{raw}"', max)
+    if not items:
+        items = discover_mod.search_arxiv(f"ti:{raw}", max)
+    if not items:
+        items = discover_mod.search_arxiv(f"all:{raw}", max)
+    _mark_in_library(db, items)
+    return {"ok": True, "q": q, "items": items, "source": "arxiv.org",
+            "ms": int((time.time() - t0) * 1000)}
+
+
+@router.post("/discover/import")
+def discover_import(body: DiscoverImportIn, db: Session = Depends(get_db)):
+    """下载一篇并走完整入库（解析 → 去重 → 切块 → 向量化 → 章节树 → 引用图）。"""
+    return discover_mod.import_paper(db, body.arxiv_id, body.title, force=body.force)
+
+
+@router.get("/discover/references")
+def discover_references(doc_id: str = Query(...), limit: int = Query(8, ge=1, le=15),
+                        min_cites: int = Query(2, ge=0), db: Session = Depends(get_db)):
+    """库内论文的参考文献候选，按正文被引次数排序（被引多的才值得补）。"""
+    return discover_mod.reference_candidates(db, doc_id, limit=limit, min_cites=min_cites)
+
+
+@router.post("/discover/references/import")
+def discover_import_refs(body: DiscoverRefImportIn, background: BackgroundTasks,
+                         db: Session = Depends(get_db)):
+    """批量补全参考文献：分钟级操作，立刻返回 job_id，前端轮询进度。"""
+    ids = [a for a in body.arxiv_ids if a]
+    if not ids:
+        raise HTTPException(400, "没有选择要下载的条目")
+    if len(ids) > 20:
+        raise HTTPException(400, "一次最多补全 20 篇，请分批")
+    job_id = discover_mod.create_job(ids, body.titles)
+    background.add_task(discover_mod.run_job, job_id)
+    return {"ok": True, "job_id": job_id, "total": len(ids)}
+
+
+@router.get("/discover/jobs/{job_id}")
+def discover_job(job_id: str):
+    st = discover_mod.job_status(job_id)
+    return {"ok": st.get("state") != "missing", **st}
+
+
+@router.get("/discover/recommend")
+def discover_recommend(limit: int = Query(6, ge=1, le=12), days: int = Query(180, ge=7, le=3650),
+                       doc_id: str = Query("", description="以某篇文献为种子（可选）"),
+                       db: Session = Depends(get_db)):
+    """按库内兴趣找近期 arXiv 新论文，附中文推荐理由与 GitHub 代码标记。"""
+    return discover_mod.recommend(db, limit=limit, days=days, doc_id=doc_id)
+
+
+@router.post("/discover/feedback")
+def discover_feedback(body: DiscoverFeedbackIn, db: Session = Depends(get_db)):
+    """赞 / 踩 / 点开：下一次推荐里 dislike 直接过滤、like 参与加权。"""
+    return discover_mod.feedback(db, body.arxiv_id, body.action, body.reason)
+
+
+@router.get("/discover/feedback")
+def discover_feedback_stats(db: Session = Depends(get_db)):
+    return discover_mod.feedback_stats(db)
