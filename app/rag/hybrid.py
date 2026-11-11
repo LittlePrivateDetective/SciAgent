@@ -383,12 +383,14 @@ def search(
             )
         )
 
-    # 同页去重：同一页相邻块只保留最高分那块，避免答案被切碎后重复堆砌
+    # 同页去重：同一页相邻块只保留最高分那块，避免答案被切碎后重复堆砌。
+    # 只对正文块生效——表格/图表/公式是"独立被引用的对象"，同页各留一条才是对的。
+    # 早期一视同仁，结果 Table 1 所在页已有正文块时，表格块直接被丢掉（D-67）。
     seen: set[tuple[str, int]] = set()
     deduped: list[Hit] = []
     for h in hits:
         key = (h.doc_id, h.page)
-        if key in seen and len(deduped) >= top_k:
+        if h.kind == "text" and key in seen and len(deduped) >= top_k:
             continue
         seen.add(key)
         deduped.append(h)
@@ -593,14 +595,81 @@ def _drop_shadowed_scans(hits: list[Hit], doc_ids: list[str] | None) -> list[Hit
     return kept
 
 
+# 数值/参数类提问：这类问题的答案极大概率落在表格里（复杂度、超参、BLEU、GPU 数）
+_NUMERIC_HINT = re.compile(
+    r"(多少|几块|几个|几层|几倍|维度|尺寸|参数量|超参|复杂度|数量|比例|占比|分数|准确率|"
+    r"BLEU|F1|GPU|显存|耗时|成本|延迟|吞吐|对比|比较|差异)",
+    re.IGNORECASE,
+)
+
+
+def _ensure_table_candidates(query: str, hits: list[Hit], doc_ids: list[str] | None,
+                             limit: int = 8) -> list[Hit]:
+    """数值类问题额外补一批表格块进候选池。
+
+    为什么需要单独一条通道：表格标题（含 complexity / BLEU / hyperparameter 这类词）
+    常被切块规则留在表格块里，而正文段落在讲同一件事时会反复出现这些词，于是
+    表格在 BM25 和向量两路都被正文压住——实测 Table 1 排第 55 名。
+    候选池扩大能把它捞回来，但那是"碰运气"；这里直接按 kind 过滤再排一次名，
+    让"问数值"的问题必然带上几张表，重排模型才有材料可挑。
+
+    只在数词/参数类问句上启用，且候选里表格不足 3 条时才补，
+    避免把"这篇论文讲了什么"这种宽泛问题也塞满表格。
+    """
+    if not hits or not _NUMERIC_HINT.search(query):
+        return hits
+    if sum(1 for h in hits if h.kind == "table") >= 3:
+        return hits
+
+    try:
+        bm25, ids = _get_bm25(doc_ids)
+        chunks, names = _load_corpus(doc_ids)
+        if len(chunks) != len(ids):
+            return hits
+        scores = bm25.scores(tokenize(query))
+        have = {h.chunk_id for h in hits}
+        cand: list[tuple[float, int]] = [
+            (float(scores[i]), i)
+            for i, c in enumerate(chunks)
+            if c.kind == "table" and c.id not in have and scores[i] > 0
+        ]
+        cand.sort(key=lambda x: -x[0])
+        extra: list[Hit] = []
+        for sc, i in cand[:limit]:
+            c = chunks[i]
+            extra.append(
+                Hit(
+                    chunk_id=c.id, doc_id=c.doc_id, doc_name=names.get(c.doc_id, c.doc_id),
+                    page=c.page, bbox=c.bbox, text=c.text, section_path=c.section_path,
+                    kind=c.kind, score=sc, sparse_score=sc, idx=int(c.idx),
+                )
+            )
+        if extra:
+            log.debug("表格定向补召回 %d 条（问句含数值意图）", len(extra))
+            return hits + extra
+    except Exception:  # noqa: BLE001 补召回失败不能影响主链路
+        log.debug("表格定向补召回失败", exc_info=True)
+    return hits
+
+
 def search_with_rerank(query: str, doc_ids: list[str] | None = None, top_k: int | None = None) -> list[Hit]:
-    """召回 → 重排。优先用重排模型，不可用时用「关键词覆盖率 + 位置先验」兜底。"""
+    """召回 → 重排。优先用重排模型，不可用时用「关键词覆盖率 + 位置先验」兜底。
+
+    候选池为什么是 top_k×4（而不是原来的 ×2）：cross-encoder 是唯一能把
+    "字面不相关但语义对口"的段落捞上来的环节，而它只能重排喂进去的东西。
+    实测「多头注意力的计算复杂度」这道题，含答案的 Table 1 在两路召回里都排
+    第 55 名——候选池只有 16 条时它永远见不到重排模型，答案只能写"证据未给出"；
+    候选池放到 40 条后它进了重排，得分 0.573 排到第一（详见缺陷 D-67）。
+    代价是重排 token 约 ×2.5，单次调用约多花 0.001 元、多 100–200ms。
+    """
     top_k = top_k or settings.top_k
-    hits = search(query, doc_ids, top_k=max(top_k * 2, 12))
+    cand_n = max(top_k * 4, 40)
+    hits = search(query, doc_ids, top_k=cand_n)
     if not hits:
         return []
 
     hits = _drop_shadowed_scans(hits, doc_ids)
+    hits = _ensure_table_candidates(query, hits, doc_ids)
 
     remote = _api_rerank(query, hits, top_k)
     if remote:

@@ -60,6 +60,42 @@ def _tail_overlap(text: str, chars: int) -> str:
     return tail[m.end() :] if m else tail
 
 
+def _is_grid_fragment(txt: str) -> bool:
+    """单行网格片段：短、不以句末标点结尾、不含完整句子。
+
+    解析器会把表格网格拆成很多**单行区块**（"Layer Type"、"Complexity per Layer"、
+    "O(n²·d)"），单独看每一行都不像表格，只有连起来才是。所以判据放在"行"这一级：
+    不超过 60 字符、不以 . 。 ? ! : 结尾，就认为可能是网格的一行。
+    正文段落几乎不可能满足——它们要么长、要么带句号。
+    """
+    t = txt.strip()
+    if not t or "\n" in t or len(t) > 60:
+        return False
+    if t[-1] in ".。?!:：":
+        return False
+    return True
+
+
+def _looks_like_grid(txt: str) -> bool:
+    """判断一段文字是不是"表格网格"而不是正文段落。
+
+    为什么需要：解析器只把**表题**（"Table 1: Maximum path lengths…"）认成 table，
+    紧随其后的网格行（"Layer Type / Complexity per Layer / Self-Attention / O(n²·d)"）
+    因为字号与正文一致，被当成了普通正文块。于是表格块里只有一句标题、
+    真正的数值在隔壁的 text 块里——问"计算复杂度是多少"时，两路召回都答不上来
+    （实测 Table 1 排第 55 名，缺陷 D-67）。
+
+    判据是"短行占比高 + 几乎没有句末标点"：表格行通常 ≤40 字符，
+    且不会以 ". " 结尾；正文段落正好相反。
+    """
+    lines = [ln.strip() for ln in txt.split("\n") if ln.strip()]
+    if len(lines) < 4:
+        return False
+    short = sum(1 for ln in lines if len(ln) <= 40)
+    ends = txt.count(". ") + txt.count("。") + txt.count("? ") + txt.count("! ")
+    return short / len(lines) >= 0.6 and ends <= max(1, len(lines) // 6)
+
+
 def build_chunks(parsed: ParsedDoc, max_chars: int | None = None, overlap: int | None = None) -> list[dict]:
     max_chars = max_chars or settings.chunk_max_chars
     overlap = settings.chunk_overlap if overlap is None else overlap
@@ -99,30 +135,65 @@ def build_chunks(parsed: ParsedDoc, max_chars: int | None = None, overlap: int |
         carry = _tail_overlap(body, overlap)
         buf, size = [], 0
 
-    for b in parsed.blocks:
+    blocks = parsed.blocks
+    i = 0
+    while i < len(blocks):
+        b = blocks[i]
         txt = b.text.strip()
         if not txt:
+            i += 1
             continue
 
         # 规则 1：标题硬边界（标题本身不进正文块，但章节路径已记录）
         if b.kind == "heading":
             flush()
+            i += 1
             continue
 
         # 规则 2：图表/公式/参考文献独立成块
         if b.kind in {"table", "figure", "formula", "reference"}:
             flush()
             sec = section_paths.get(b.order, "")
+            body = txt
+            box = [round(v, 1) for v in b.bbox]
+
+            # 表格：把紧随其后的网格行吃进来。
+            # 只吃同页、同类型的正文块，且累计不超过 1800 字——
+            # 超过这个量通常已经把下一段论述也拖进来了。
+            if b.kind == "table":
+                j = i + 1
+                taken = 0
+                while j < len(blocks) and taken < 40:
+                    nb = blocks[j]
+                    ntxt = nb.text.strip()
+                    if not ntxt or nb.page != b.page or nb.kind != "text":
+                        break
+                    if len(body) + len(ntxt) > 1800:
+                        break
+                    if not (_looks_like_grid(ntxt) or _is_grid_fragment(ntxt)):
+                        break
+                    body = f"{body}\n{ntxt}"
+                    box = [
+                        min(box[0], round(nb.bbox[0], 1)),
+                        min(box[1], round(nb.bbox[1], 1)),
+                        max(box[2], round(nb.bbox[2], 1)),
+                        max(box[3], round(nb.bbox[3], 1)),
+                    ]
+                    taken += 1
+                    i = j
+                    j += 1
+
             chunks.append(
                 {
                     "page": b.page,
-                    "bbox": [round(v, 1) for v in b.bbox],
-                    "text": txt,
+                    "bbox": box,
+                    "text": body,
                     "section_path": sec,
                     "kind": b.kind,
-                    "char_len": len(txt),
+                    "char_len": len(body),
                 }
             )
+            i += 1
             continue
 
         # 规则 3：窗口合并
@@ -130,6 +201,7 @@ def build_chunks(parsed: ParsedDoc, max_chars: int | None = None, overlap: int |
             flush()
         buf.append(b)
         size += len(txt)
+        i += 1
 
     flush()
     return chunks
