@@ -905,7 +905,9 @@ def discover_import_refs(body: DiscoverRefImportIn, background: BackgroundTasks,
 @router.get("/discover/jobs/{job_id}")
 def discover_job(job_id: str):
     st = discover_mod.job_status(job_id)
-    return {"ok": st.get("state") != "missing", **st}
+    # 注意不要写 {"ok": ..., **st}：st 里的 ok 是"成功篇数"，展开后会覆盖掉布尔值，
+    # 前端拿到 ok:0 会以为任务失败（实测踩到）。用 found 表达"任务是否存在"。
+    return {"found": st.get("state") != "missing", **st}
 
 
 @router.get("/discover/recommend")
