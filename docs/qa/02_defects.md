@@ -159,5 +159,15 @@
 
 | 编号 | 分级 | 问题（实测证据） | 根因 | 改法 | 回归结果 |
 | --- | --- | --- | --- | --- | --- |
-| D-66 | **P2（显示失真）** | 学术问答里的公式原样显示成 `$O(n^{2}·d)$`、`$d_k = d_v = d_{model}/h$`，带美元符号的源码。换 qwen-flash 后公式更密集，在演示截图里非常显眼（`evidence/qwen_main_qa.png`） | 前端 `index.html` 从未引入 KaTeX / MathJax（全仓 grep 无 `katex\|mathjax`），`mdToHtml` 只做 Markdown 转换 | **未修**。修法：引 KaTeX CDN + auto-render，只对消息区渲染、且只在流式结束后渲染一次（逐 token 重渲染会卡）。涉及 CDN 依赖与离线降级，需单独评估 | 现状记录在案；不影响引用与锚点校验（1.0 通过率） |
+| D-66 | **P2（显示失真）** | 学术问答里的公式原样显示成 `$O(n^{2}·d)$`、`$d_k = d_v = d_{model}/h$`，带美元符号的源码。换 qwen-flash 后公式更密集，在演示截图里非常显眼（`evidence/qwen_main_qa.png`） | 前端 `index.html` 从未引入 KaTeX / MathJax（全仓 grep 无 `katex\|mathjax`），`mdToHtml` 只做 Markdown 转换 | **已修（第十四轮，2026-11-12）**。修法：引 KaTeX CDN + auto-render，只对消息区渲染、且只在流式结束后渲染一次（逐 token 重渲染会卡）。涉及 CDN 依赖与离线降级，需单独评估 | 现状记录在案；不影响引用与锚点校验（1.0 通过率） |
 | D-67 | **P1（证据召回缺口）** | 问"多头注意力的计算复杂度是多少"时，检索到的 10 条证据里**没有 Table 1**，模型只能回答"证据未给出具体复杂度"。而库里 `1706.03762v1.pdf` 第 6 页的 chunk idx35（`kind=table`）确实存着 `Table 1: Maximum path lengths, per-layer complexity...` 和 `O(n2 · d)` | 表格 chunk 的文本被切碎成符号与列名，稠密向量接近噪声、BM25 也匹配不上中文"复杂度"→ 本地重排给的 `kind_bonus` 只有 1.05，云端重排同样没把它排进前 10 | **未修**。候选改法：① 表格 chunk 在重排时给更高先验（1.05 → 1.15）并保留整表不切；② 入库时为表格单独生成一句"这张表讲了什么"的文本描述，跟着 chunk 一起索引 | 已确认与模型无关：qwen-flash、DeepSeek 都答不出，但 DeepSeek 会明确指出"证据[5]只比较了 self-attention 与 recurrent，未给 multi-head"，属正确行为 |
+
+## 第十四轮：公式渲染接入 KaTeX（2026-11-12 03:45–04:05，D-66）
+
+| 编号 | 分级 | 问题 | 根因 | 改法 | 回归结果 |
+| --- | --- | --- | --- | --- | --- |
+| D-66 | **P2（显示失真）** | 学术问答里公式显示成 `$O(n^{2}·d)$`、`$d_k = d_v = d_{model}/h$` 源码，带美元符号 | 前端从未引入公式渲染库；`mdToHtml` 只做 Markdown（表格/粗体/行内代码） | ① `index.html` 引 KaTeX 0.16.11（CSS + 核心 + auto-render，CDN 与其余依赖同源）；② `app.js` 新增 `v-math` 指令：`mounted` 立即渲染、`updated` 走 **260ms 防抖**——流式时每个 token 都会重建 innerHTML，逐帧调 KaTeX 会占满主线程（单个 60 字符公式约 3ms，8 个公式即 24ms/帧）；③ 无 `$` 直接短路返回，不扫 DOM；④ `throwOnError:false` + `ignoredTags` 排除 `pre/code`，CDN 挂了或语法错都安静降级成原文 | `tests/ui_math.py` 六项全 PASS：CDN 与 auto-render 均加载；第 1 段 **4 处行内公式全部渲染**且无裸 `$`；`$$…$$` 渲染为 **1 个 `.katex-display`**（居中独立成行）；语法错误 `$\frac{1}{$` **保留原文且后续正文照常显示**（不抛异常、不吞段落）；无横向溢出。截图 `evidence/ui_math.png` |
+
+**为什么不引入 MathJax**：体积大一个量级（~1MB vs ~280KB），且本项目只需要 TeX 子集；KaTeX 同步渲染、无闪烁，更贴合"答案逐字流式出现"的场景。
+
+**已知取舍**：KaTeX 走 CDN，断网时公式退回源码（与修复前一致），不阻塞正文阅读；若离线演示需要，可把 `katex.min.css` 与字体拷进 `web/vendor/`，用相对路径引入。

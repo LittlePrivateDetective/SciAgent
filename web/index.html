@@ -6,6 +6,9 @@
   <title>SciAgent · 科研智能体</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/element-plus@2.7.6/dist/index.css" />
   <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/vue@3.4.31/dist/vue.global.prod.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/element-plus@2.7.6/dist/index.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/element-plus@2.7.6/dist/locale/zh-cn.min.js"></script>
@@ -494,7 +497,7 @@
                 <span class="think-dot"></span>{{ t }}
               </div>
             </div>
-            <div class="md" v-html="m.html"></div>
+            <div class="md" v-math v-html="m.html"></div>
             <div v-if="m.verify && m.verify.total" class="verify">
               引用校验：{{ m.verify.valid }}/{{ m.verify.total }} 命中
               <span v-if="m.verify.rate < 1" class="warn">（{{ m.verify.invalid }} 处未核实）</span>

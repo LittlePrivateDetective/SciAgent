@@ -131,7 +131,55 @@ function lineRects(words, idxs) {
     .map((r) => ({ x: r.x0, y: r.y0, w: r.x1 - r.x0, h: r.y1 - r.y0 }));
 }
 
+/* ---------- 公式渲染（KaTeX，修 D-66） ----------
+ * 为什么不在 mdToHtml 里做：那里是纯字符串拼接，拿到的是已经转义的 HTML 片段；
+ * KaTeX 要的是原始 TeX 文本，只能等 DOM 落地后再扫一遍。
+ * 为什么要防抖：流式时每个 token 都会重建 innerHTML，逐帧调 KaTeX 会把主线程占满
+ * （一个 60 字符的公式渲染约 3ms，一段答案里 8 个公式就是 24ms/帧，肉眼可见掉帧）。
+ * CDN 没加载、公式语法有错，都必须安静降级成原文，不能影响正文可读性。
+ */
+const _mathTimers = new WeakMap();
+
+function renderMath(el) {
+  if (!el || typeof window.renderMathInElement !== "function") return;
+  const txt = el.textContent || "";
+  if (txt.indexOf("$") === -1 && txt.indexOf("\\(") === -1) return;
+  try {
+    window.renderMathInElement(el, {
+      delimiters: [
+        { left: "$$", right: "$$", display: true },
+        { left: "\\[", right: "\\]", display: true },
+        { left: "$", right: "$", display: false },
+        { left: "\\(", right: "\\)", display: false },
+      ],
+      throwOnError: false,
+      errorColor: "#b91c1c",
+      ignoredTags: ["script", "noscript", "style", "textarea", "pre", "code", "option"],
+    });
+  } catch (e) {
+    /* 渲染失败就保持原文，不打断阅读 */
+  }
+}
+
+const vMath = {
+  mounted(el) {
+    renderMath(el);
+  },
+  updated(el) {
+    const t = _mathTimers.get(el);
+    if (t) clearTimeout(t);
+    _mathTimers.set(
+      el,
+      setTimeout(() => {
+        _mathTimers.delete(el);
+        renderMath(el);
+      }, 260)
+    );
+  },
+};
+
 const app = createApp({
+  directives: { math: vMath },
   data() {
     return {
       info: {},
