@@ -15,9 +15,9 @@
 系统 cron（Linux / macOS）：
     */5 * * * * cd /path/to/sciagent && .venv/bin/python scripts/keepalive.py >> /tmp/scia.log 2>&1
 
-Windows 计划任务（每 5 分钟）：
+Windows 计划任务（每 5 分钟，<仓库路径> 换成本机实际目录）：
     schtasks /Create /SC MINUTE /MO 5 /TN SciAgentKeepAlive /F ^
-      /TR "<repo>\\.venv\\Scripts\\python.exe <repo>\\scripts\\keepalive.py"
+      /TR "<仓库路径>\\.venv\\Scripts\\python.exe <仓库路径>\\scripts\\keepalive.py"
 
 删除：schtasks /Delete /TN SciAgentKeepAlive /F
 """

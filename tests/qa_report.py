@@ -152,7 +152,7 @@ def build() -> None:
         "## 复现命令",
         "",
         "```bash",
-        "cd <repo>",
+        "cd sciagent",
         "./.venv/Scripts/python.exe tests/qa_suite.py --group all",
         "./.venv/Scripts/python.exe tests/qa_report.py",
         "```",
