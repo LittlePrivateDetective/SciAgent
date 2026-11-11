@@ -300,3 +300,23 @@ def cached_ratio(db: Session, doc_id: str) -> dict:
     total = db.query(Chunk).filter(Chunk.doc_id == doc_id, Chunk.kind != "reference").count()
     done = db.query(Translation).filter(Translation.doc_id == doc_id).count()
     return {"total": total, "done": done, "ratio": round(done / total, 3) if total else 0.0}
+
+
+def translate_selection(text: str) -> dict:
+    """划词/悬停翻译：把用户选中的英文片段译成中文。
+
+    与整篇翻译共用同一套提示词和模型，区别只在于：
+    - 不落库（选中的是临时片段，缓存没有复用价值，还会污染译文统计）；
+    - 超长选区先截断，避免一次划到整页拖垮交互（用户等 30 秒会以为坏了）。
+    """
+    raw = (text or "").strip()
+    if not raw:
+        return {"ok": False, "error": "选区为空", "zh": ""}
+    truncated = False
+    if len(raw) > 4000:
+        raw = raw[:4000]
+        truncated = True
+    out = _translate_batch([raw])
+    if not out or not out[0]:
+        return {"ok": False, "error": "翻译服务暂时不可用，请稍后重试", "zh": "", "truncated": truncated}
+    return {"ok": True, "zh": out[0], "chars": len(raw), "truncated": truncated}

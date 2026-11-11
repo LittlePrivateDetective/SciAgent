@@ -1,0 +1,181 @@
+{
+  "run_id": "20261111_190035",
+  "base": "http://127.0.0.1:8013",
+  "timestamp": "2026-11-11T19:01:14.927455",
+  "summary": {
+    "total": 2,
+    "pass": 1,
+    "fail": 1,
+    "blocked": 0
+  },
+  "results": [
+    {
+      "id": "F03",
+      "group": "write",
+      "point": "f-1 写作 Copilot 无幻觉 References（官方 1.6.1）",
+      "steps": "POST /api/write/outline 给一句 idea，检查四段框架、每条 Reference 能否回指库内 doc_id、越界引用数",
+      "expected": "四段均有正文；References 全部有 doc_id 且在库内；模型编造条目=0；越界引用=0",
+      "actual": "15.0s 生成 4 段（7534 字符），References 4 条全部可回指库内文献，编造 0 条、越界引用 0 处",
+      "status": "PASS",
+      "elapsed_s": 15.0,
+      "evidence": {
+        "latency_s": 15.0,
+        "title": "Sparse Attention for Memory-Efficient Long-Document Retrieval-Augmented Generation",
+        "sections": {
+          "abstract": 1351,
+          "introduction": 2190,
+          "related_work": 2013,
+          "plan": 1980
+        },
+        "sections_with_cites": {
+          "abstract": [
+            "[1]",
+            "[2]",
+            "[3]"
+          ],
+          "introduction": [
+            "[1]",
+            "[2]",
+            "[3]"
+          ],
+          "related_work": [
+            "[1]",
+            "[2]",
+            "[3]",
+            "[4]"
+          ],
+          "plan": [
+            "[1]",
+            "[2]",
+            "[3]",
+            "[4]"
+          ]
+        },
+        "refs": [
+          {
+            "i": 1,
+            "doc_in_library": true,
+            "gbt": "DAO T, FU D Y, ERMON S, et al. FlashAttention: Fast and Memory-Eﬃcient Exact Attention with IO-Awareness[EB/OL]. arXiv:2205.14135v2, 2022."
+          },
+          {
+            "i": 2,
+            "doc_in_library": true,
+            "gbt": "PRINCE S J. Understanding Deep Learning[EB/OL]. 2026."
+          },
+          {
+            "i": 3,
+            "doc_in_library": true,
+            "gbt": "佚名. DeepSeek-V3 Technical Report[EB/OL]. arXiv:2412.19437v1, 2024."
+          },
+          {
+            "i": 4,
+            "doc_in_library": true,
+            "gbt": "佚名. Robust Speech Recognition via Large-Scale Weak Supervision[EB/OL]. arXiv:2212.04356v1, 2022."
+          }
+        ],
+        "checks": {
+          "citations_total": 14,
+          "citations_valid": 4,
+          "citations_invalid": [],
+          "refs_from_library": 4,
+          "refs_generated_by_llm": 0,
+          "cited_refs": 4
+        },
+        "sample": "Retrieval-augmented generation (RAG) over long documents is limited by the quadratic cost of attention over retrieved context: as the number of retrieved passages grows, both activation memory and KV-"
+      }
+    },
+    {
+      "id": "F04",
+      "group": "write",
+      "point": "f-1 写作视图前端渲染（官方 1.6.1）",
+      "steps": "真实浏览器：切「写作」→ 填 idea → 生成 → 检查四段与 References 渲染，点条目能否打开原文",
+      "expected": "四段渲染完整、统计条正确、点 References 能打开对应文献",
+      "actual": "写作视图回归未通过",
+      "status": "FAIL",
+      "elapsed_s": 24.8,
+      "evidence": {
+        "steps": [
+          {
+            "write_view_display": "flex"
+          },
+          {
+            "render": {
+              "err": "",
+              "title": "把稀疏注意力用到长文档检索增强生成上，降低显存占用同时保持检索质量",
+              "elapsed": {
+                "citations_total": 0,
+                "citations_valid": 0,
+                "citations_invalid": [],
+                "refs_from_library": 3,
+                "refs_generated_by_llm": 0,
+                "cited_refs": 0
+              },
+              "secs": [
+                {
+                  "name": "Abstract · 摘要",
+                  "len": 0,
+                  "html": "<div class=\"write-sec-head\"><span>Abstract · 摘要</span><!----></div><p class=\"write-sec-text\"></p>"
+                },
+                {
+                  "name": "Introduction · 引言",
+                  "len": 0,
+                  "html": "<div class=\"write-sec-head\"><span>Introduction · 引言</span><!----></div><p class=\"write-sec-text\"></p>"
+                },
+                {
+                  "name": "Related Work · 相关工作",
+                  "len": 0,
+                  "html": "<div class=\"write-sec-head\"><span>Related Work · 相关工作</span><!----></div><p class=\"write-sec-text\"></p>"
+                },
+                {
+                  "name": "Research Plan · 研究方案",
+                  "len": 0,
+                  "html": "<div class=\"write-sec-head\"><span>Research Plan · 研究方案</span><!----></div><p class=\"write-sec-text\"></p>"
+                }
+              ],
+              "refs": 3,
+              "refsSample": [
+                {
+                  "idx": "[1]",
+                  "text": "DAO T, FU D Y, ERMON S, et al. FlashAttention: Fast and Memory-Eﬃcient Exact Attention with IO-Awareness[EB/OL]. arXiv:2205.14135v2, 2022."
+                },
+                {
+                  "idx": "[2]",
+                  "text": "PRINCE S J. Understanding Deep Learning[EB/OL]. 2026."
+                }
+              ],
+              "dimRefs": 3,
+              "checksDom": [
+                "References 3 条，全部来自库内",
+                "模型编造条目 0 条",
+                "越界引用 0 处",
+                "正文引用 0 处 · 命中文献 0 篇"
+              ],
+              "allRefsHaveDoc": true,
+              "bodyScroll": 644,
+              "elapsed_s": 19.3
+            }
+          },
+          {
+            "sections": "FAIL"
+          },
+          {
+            "refs_real": "PASS"
+          },
+          {
+            "no_invalid_cite": "PASS"
+          },
+          {
+            "open_ref": {
+              "before": "write",
+              "after": "reader",
+              "doc": "2205.14135v2.pdf",
+              "docId": "d3f2c7ae3da68"
+            }
+          }
+        ],
+        "ok": false,
+        "error": ""
+      }
+    }
+  ]
+}

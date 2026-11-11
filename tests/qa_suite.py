@@ -621,6 +621,62 @@ def b07():
     return _browser_selftest("anchor")
 
 
+_TL_CACHE: dict = {}
+
+
+def _textlayer_result() -> dict:
+    """文本层回归只跑一次浏览器会话，B08/B09 共用结果（每次约 20 秒，跑两遍没必要）。"""
+    if "r" not in _TL_CACHE:
+        from tests.ui_textlayer import run as run_tl
+        _TL_CACHE["r"] = run_tl()
+    return _TL_CACHE["r"]
+
+
+@case("B08", "ui", "a-1 正文引用角标跳 References（官方 1.3.2）",
+      "在阅读器点正文里的 [29]，检查页码、高亮框尺寸与位置、条目详情浮层",
+      "翻到 References 页、高亮框圈住该条（宽≥页宽 50%、高≥8px）且滚入视野")
+def b08():
+    """官方 1.3.2 的硬性要求：正文 [n] 一键跳到 References 对应条目。
+
+    这条用例同时守住三个曾经真实踩过的坑：
+    1. bbox 类型错（字符串被逐字符解构）→ 高亮框只有 1% 宽、0 高；
+    2. 跳转后不滚动 → 目标在视野外，用户以为没跳成功；
+    3. 文本层缩放算错 → 文字整体漂移，点击热区错位。
+    """
+    r = _textlayer_result()
+    cite = next((s["cite"] for s in r["steps"] if "cite" in s), {})
+    geo = next((s["geometry"] for s in r["steps"] if "geometry" in s), {})
+    ev = {"steps": r["steps"], "ok": r["ok"], "error": r.get("error")}
+    if r.get("error"):
+        return fail(r["error"], **ev)
+    if not r["ok"]:
+        return fail(f"角标跳转/划词翻译未通过：{cite.get('label')} p{cite.get('before')}→p{cite.get('after')}", **ev)
+    return ok(
+        f"点 {str(cite.get('label')).strip()} 由 p{cite.get('before')} 跳到 p{cite.get('after')}，"
+        f"高亮 {cite.get('hlW')}×{cite.get('hlH')}px 且滚入视野；"
+        f"文本层对齐误差 {geo.get('dw')}px、{geo.get('inside_ratio', 0) * 100:.0f}% 词落在页面内", **ev)
+
+
+@case("B09", "ui", "a-3 划词翻译（官方 1.3.3.1）",
+      "在阅读器选中一段英文正文，点浮层「译」，检查返回中文",
+      "选区文本带空格、返回非空中文译文")
+def b09():
+    """划词翻译是 1.3.3.1 的要求，与 B08 共用同一次浏览器会话（都在 ui_textlayer 里跑）。"""
+    r = _textlayer_result()
+    sel = next((s["select"] for s in r["steps"] if "select" in s), {})
+    tr = next((s["translate"] for s in r["steps"] if "translate" in s), {})
+    ev = {"steps": r["steps"], "ok": r["ok"]}
+    if not sel or not sel.get("popVisible"):
+        return fail("选中正文后未出现翻译入口", **ev)
+    # 选区粘连（Attentionmechanisms）会让译文质量下降，也必须判失败
+    words = str(sel.get("text") or "")
+    if " " not in words.strip():
+        return fail(f"选区缺空格，词被粘连：{words[:60]}", **ev)
+    if not tr.get("ok"):
+        return fail("翻译未返回有效中文", **ev)
+    return ok(f"选中「{words[:48]}…」→ {str(tr.get('zh'))[:48]}", **ev)
+
+
 def _browser_selftest(kind: str):
     edge = Path(r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe")
     if not edge.exists():
@@ -1156,6 +1212,79 @@ def f02():
     return ok(f"在 {total_chars:,} 字 / {total_chunks} 块中用 {dt:.1f}s 定位 "
               f"{len(evs)} 条证据（{ev_chars} 字），过滤 {ev['filter_ratio']*100:.3f}% 语料，"
               f"引用校验 {v.get('valid')}/{v.get('total')}", **ev)
+
+
+@case("F03", "write", "f-1 写作 Copilot 无幻觉 References（官方 1.6.1）",
+      "POST /api/write/outline 给一句 idea，检查四段框架、每条 Reference 能否回指库内 doc_id、越界引用数",
+      "四段均有正文；References 全部有 doc_id 且在库内；模型编造条目=0；越界引用=0")
+def f03():
+    """官方 1.6.1 的硬约束是"References 真实没有幻觉"。
+
+    这里不看模型说得多好，只看结构：条目文本由服务端从库内元数据生成，
+    模型只能写 [n]。所以断言落在"每条 ref 都能回指一个真实 doc_id"上——
+    这是可程序化验证的，不依赖人读。
+    """
+    idea = "把稀疏注意力用到长文档检索增强生成上，降低显存占用同时保持检索质量"
+    t = time.time()
+    s, r = api("POST", "/api/write/outline", json={"idea": idea, "top_k": 5})
+    dt = time.time() - t
+    if s != 200:
+        return fail(f"HTTP {s}", response=r)
+    if not r.get("ok"):
+        return fail(f"生成失败：{r.get('error')}", response=r)
+
+    _, docs = api("GET", "/api/documents")
+    lib = {d["id"] for d in docs.get("documents", [])}
+    secs = r.get("sections") or []
+    refs = r.get("references") or []
+    checks = r.get("checks") or {}
+
+    ev = {
+        "latency_s": round(dt, 1),
+        "title": r.get("title"),
+        "sections": {x["key"]: len(x.get("text") or "") for x in secs},
+        "sections_with_cites": {x["key"]: x.get("citations") for x in secs},
+        "refs": [{"i": x["index"], "doc_in_library": x["doc_id"] in lib, "gbt": x["gbt"]} for x in refs],
+        "checks": checks,
+        "sample": (next((x["text"] for x in secs if x["key"] == "abstract"), "") or "")[:200],
+    }
+
+    empty = [x["key"] for x in secs if len(x.get("text") or "") < 120]
+    if empty:
+        return fail(f"章节为空或过短：{empty}", **ev)
+    if len(secs) != 4:
+        return fail(f"章节数 {len(secs)} != 4", **ev)
+    if not refs:
+        return fail("References 为空", **ev)
+    bad_ref = [x["index"] for x in refs if x["doc_id"] not in lib]
+    if bad_ref:
+        return fail(f"存在库里没有的文献条目 {bad_ref}（即模型编造）", **ev)
+    if checks.get("refs_generated_by_llm") != 0:
+        return fail(f"refs_generated_by_llm={checks.get('refs_generated_by_llm')}", **ev)
+    if checks.get("citations_invalid"):
+        return fail(f"正文存在越界引用 {checks['citations_invalid']}", **ev)
+    return ok(
+        f"{dt:.1f}s 生成 4 段（{sum(ev['sections'].values())} 字符），"
+        f"References {len(refs)} 条全部可回指库内文献，编造 0 条、越界引用 0 处", **ev)
+
+
+@case("F04", "write", "f-1 写作视图前端渲染（官方 1.6.1）",
+      "真实浏览器：切「写作」→ 填 idea → 生成 → 检查四段与 References 渲染，点条目能否打开原文",
+      "四段渲染完整、统计条正确、点 References 能打开对应文献")
+def f04():
+    from tests.ui_writer import run as run_wr
+    r = run_wr()
+    ev = {"steps": r["steps"], "ok": r["ok"], "error": r.get("error")}
+    if r.get("error"):
+        return fail(r["error"], **ev)
+    if not r["ok"]:
+        return fail("写作视图回归未通过", **ev)
+    render = next((x["render"] for x in r["steps"] if "render" in x), {})
+    opened = next((x["open_ref"] for x in r["steps"] if "open_ref" in x), {})
+    return ok(
+        f"{render.get('elapsed_s')}s 渲染 4 段 + {render.get('refs')} 条 References；"
+        f"统计条「{' / '.join(render.get('checksDom', [])[:2])}」；"
+        f"点 [1] 打开 {opened.get('doc')}", **ev)
 
 
 @case("F01", "open", "f-2 开源潜力与推广", "检查 README、Docker、依赖清单、许可证、.gitignore、文档目录", "交付要素齐全")

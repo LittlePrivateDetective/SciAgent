@@ -1,0 +1,249 @@
+{
+  "run_id": "20261111_185245",
+  "base": "http://127.0.0.1:8013",
+  "timestamp": "2026-11-11T18:53:32.832194",
+  "summary": {
+    "total": 5,
+    "pass": 5,
+    "fail": 0,
+    "blocked": 0
+  },
+  "results": [
+    {
+      "id": "A04",
+      "group": "rag",
+      "point": "a-2 10 条引用溯源准确率 (8%)",
+      "steps": "生成问答引用，逐条按 [pN@bbox] 回 PDF 取该矩形文本，与 evidence.text 比对",
+      "expected": ">=9/10 命中，坐标合法，文本重合",
+      "actual": "溯源命中 10/10",
+      "status": "PASS",
+      "elapsed_s": 34.4,
+      "evidence": {
+        "total": 10,
+        "hit": 10,
+        "detail": [
+          {
+            "doc": "1706.03762v1.pdf",
+            "page": 7,
+            "bbox": [
+              107.5,
+              153.1,
+              504.2,
+              206.8
+            ],
+            "scanned": false,
+            "method": "bbox_word_coverage",
+            "coverage": 0.932,
+            "bbox_legal": true,
+            "bbox_words": 49,
+            "result": "HIT"
+          },
+          {
+            "doc": "1706.03762v1_img.pdf",
+            "page": 7,
+            "bbox": [
+              36.7,
+              120.8,
+              575.3,
+              148.2
+            ],
+            "scanned": true,
+            "method": "ocr_text+bbox+page_render",
+            "coverage": 1.0,
+            "bbox_legal": true,
+            "page_px": "612x793",
+            "result": "HIT"
+          },
+          {
+            "doc": "1706.03762v1_img.pdf",
+            "page": 7,
+            "bbox": [
+              36.7,
+              677.7,
+              575.3,
+              744.9
+            ],
+            "scanned": true,
+            "method": "ocr_text+bbox+page_render",
+            "coverage": 1.0,
+            "bbox_legal": true,
+            "page_px": "612x793",
+            "result": "HIT"
+          },
+          {
+            "doc": "1706.03762v1.pdf",
+            "page": 7,
+            "bbox": [
+              107.7,
+              657.8,
+              504.2,
+              752.3
+            ],
+            "scanned": false,
+            "method": "bbox_word_coverage",
+            "coverage": 0.91,
+            "bbox_legal": true,
+            "bbox_words": 59,
+            "result": "HIT"
+          },
+          {
+            "doc": "2002.04745v2.pdf",
+            "page": 11,
+            "bbox": [
+              55.1,
+              322.2,
+              290.7,
+              487.5
+            ],
+            "scanned": false,
+            "method": "bbox_word_coverage",
+            "coverage": 0.938,
+            "bbox_legal": true,
+            "bbox_words": 89,
+            "result": "HIT"
+          },
+          {
+            "doc": "2002.04745v2.pdf",
+            "page": 11,
+            "bbox": [
+              307.1,
+              69.5,
+              543.1,
+              194.1
+            ],
+            "scanned": false,
+            "method": "bbox_word_coverage",
+            "coverage": 0.934,
+            "bbox_legal": true,
+            "bbox_words": 58,
+            "result": "HIT"
+          },
+          {
+            "doc": "1706.03762v1_img.pdf",
+            "page": 8,
+            "bbox": [
+              36.7,
+              658.8,
+              575.3,
+              744.9
+            ],
+            "scanned": true,
+            "method": "ocr_text+bbox+page_render",
+            "coverage": 1.0,
+            "bbox_legal": true,
+            "page_px": "612x793",
+            "result": "HIT"
+          },
+          {
+            "doc": "1706.03762v1.pdf",
+            "page": 8,
+            "bbox": [
+              107.5,
+              671.1,
+              505.2,
+              752.3
+            ],
+            "scanned": false,
+            "method": "bbox_word_coverage",
+            "coverage": 0.88,
+            "bbox_legal": true,
+            "bbox_words": 53,
+            "result": "HIT"
+          },
+          {
+            "doc": "1706.03762v1.pdf",
+            "page": 7,
+            "bbox": [
+              107.5,
+              241.3,
+              504.0,
+              263.8
+            ],
+            "scanned": false,
+            "method": "bbox_word_coverage",
+            "coverage": 1.0,
+            "bbox_legal": true,
+            "bbox_words": 24,
+            "result": "HIT"
+          },
+          {
+            "doc": "1706.03762v1_img.pdf",
+            "page": 7,
+            "bbox": [
+              36.7,
+              200.3,
+              575.3,
+              307.3
+            ],
+            "scanned": true,
+            "method": "ocr_text+bbox+page_render",
+            "coverage": 1.0,
+            "bbox_legal": true,
+            "page_px": "612x793",
+            "result": "HIT"
+          }
+        ],
+        "criteria": "普通 PDF：证据实词在 bbox 内覆盖率≥0.75 且坐标合法；扫描件：OCR 原文一致 + bbox 合法 + 页图可渲染（PDF 无文本层）"
+      }
+    },
+    {
+      "id": "B06",
+      "group": "ui",
+      "point": "b-3 中英双向同步滚动 (7%)",
+      "steps": "无头浏览器 iframe 注入滚动，读取两侧 scrollTop 与顶部段落序号",
+      "expected": "双向跟随且顶部段落序号一致",
+      "actual": "双栏渲染 OK，已加载段落=5\n英文滚动 700 -&gt; 中文 141\n中文滚动 1300 -&gt; 英文 298 =&gt; 1559\n顶部段落序号 英文=7 中文=7\nRESULT: PASS 双向联动生效且按段落对齐",
+      "status": "PASS",
+      "elapsed_s": 2.4,
+      "evidence": {
+        "dom_length": 6466,
+        "raw": "双栏渲染 OK，已加载段落=5\n英文滚动 700 -&gt; 中文 141\n中文滚动 1300 -&gt; 英文 298 =&gt; 1559\n顶部段落序号 英文=7 中文=7\nRESULT: PASS 双向联动生效且按段落对齐"
+      }
+    },
+    {
+      "id": "B07",
+      "group": "ui",
+      "point": "b-3 引用一键跳转 (7%)",
+      "steps": "点击答案里的锚点徽章，检查阅读器页码与高亮框",
+      "expected": "页码正确切换且 bbox 覆盖层出现",
+      "actual": "img.src=/api/documents/dca501d1039dc/page/3.png?dpi=130&amp;t=1794394404355\n高亮框数量=1 页码显示=3 / 15\nRESULT: PASS 锚点一键跳到 p3 且绘制 bbox 高亮",
+      "status": "PASS",
+      "elapsed_s": 2.2,
+      "evidence": {
+        "dom_length": 6479,
+        "raw": "img.src=/api/documents/dca501d1039dc/page/3.png?dpi=130&amp;t=1794394404355\n高亮框数量=1 页码显示=3 / 15\nRESULT: PASS 锚点一键跳到 p3 且绘制 bbox 高亮"
+      }
+    },
+    {
+      "id": "C05",
+      "group": "perf",
+      "point": "c-3 20+ 图谱渲染帧率",
+      "steps": "浏览器加载图谱并测量首帧与交互帧间隔",
+      "expected": "节点 >20 且首帧 <3s",
+      "actual": "图谱节点=37 首帧耗时=250ms canvas=998x672\n1s 内 rAF 回调=1（无头虚拟时钟，仅参考）\nRESULT: PASS 20+ 节点图谱渲染，首帧 250ms",
+      "status": "PASS",
+      "elapsed_s": 3.3,
+      "evidence": {
+        "dom_length": 6441,
+        "raw": "图谱节点=37 首帧耗时=250ms canvas=998x672\n1s 内 rAF 回调=1（无头虚拟时钟，仅参考）\nRESULT: PASS 20+ 节点图谱渲染，首帧 250ms"
+      }
+    },
+    {
+      "id": "C07B",
+      "group": "stream",
+      "point": "e-3 前端流式与思考过程可视化 (3%)",
+      "steps": "无头浏览器打开流式开关并发送问题，检查思考时间线与逐 token 答案",
+      "expected": "思考步骤 >=2 且答案真实渲染，无前端报错",
+      "actual": "RESULT: PASS 流式开关/思考时间线/逐token答案/证据均渲染",
+      "status": "PASS",
+      "elapsed_s": 4.7,
+      "evidence": {
+        "driver": "CDP realtime (virtual-time 与 SSE 流不兼容)",
+        "raw": "控件已渲染：发送 / 流式开关；开始真实 SSE…\n思考步骤=4 html字符=686 DOM文本=335 证据=11\n答案片段=Transformer 的核心机制是完全依赖自注意力机制来建模输入与输出之间的全局依赖关系，摒弃了传统的循环神经网络（RNN）和卷积神经网络 [3] p1 ▸。\nRESULT: PASS 流式开关/思考时间线/逐token答案/证据均渲染",
+        "dom_length": 6516,
+        "screenshot": "<repo>\\docs\\qa\\evidence\\ui_stream_20261111_185245.png",
+        "error": ""
+      }
+    }
+  ]
+}

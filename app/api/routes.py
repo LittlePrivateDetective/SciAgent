@@ -25,6 +25,7 @@ from app.rag.bilingual import (
     job_status,
     start_job,
     translate_pages,
+    translate_selection,
 )
 from app.rag.citation_graph import build_graph as build_citation_graph
 from app.rag.citation_graph import invalidate as invalidate_graph
@@ -36,6 +37,7 @@ from app.rag.hybrid import search_with_rerank
 from app.rag.store import get_store
 from app.research.future_work import collect_future_work
 from app.research.reproducibility import collect_reproducibility
+from app.research.writer import generate as generate_outline
 from app.tools.chart import convert as convert_chart
 from app.tools.external import TOOL_SCHEMAS
 from app.tools.external import decide as tool_decide
@@ -252,6 +254,93 @@ def get_page_meta(doc_id: str, db: Session = Depends(get_db)):
     return {"pages": out}
 
 
+@router.get("/documents/{doc_id}/page/{page}/text")
+def get_page_text(doc_id: str, page: int, db: Session = Depends(get_db)):
+    """页内词级文本层：让页图上的原文可被选中、角标可被点击。
+
+    阅读器主视图是 PNG 页图（排版 100% 还原），代价是正文没有任何可交互的文本。
+    官方 1.3.2 要求「点正文里的 [11] 跳到 References」、1.3.3.1 要求「划词翻译」，
+    两者都必须有文本层。这里按词返回 bbox，前端用**透明文字**绝对定位覆盖在页图上：
+    视觉仍是原图，但文字可选、可点。
+
+    用紧凑数组而非对象（一页约 500 词，对象序列化会白白多出几十 KB）：
+    [text, x, y, w, h]
+    """
+    import pymupdf
+
+    doc = db.get(Document, doc_id)
+    if not doc or not Path(doc.file_path).exists():
+        raise HTTPException(404, "文档或源文件不存在")
+    try:
+        with pymupdf.open(doc.file_path) as pdf:
+            if not 1 <= page <= len(pdf):
+                raise HTTPException(404, f"页码超出范围（共 {len(pdf)} 页）")
+            pg = pdf[page - 1]
+            words = [
+                [w[4], round(w[0], 1), round(w[1], 1), round(w[2] - w[0], 1), round(w[3] - w[1], 1)]
+                for w in pg.get_text("words")
+                if w[4].strip()
+            ]
+            width, height = round(pg.rect.width, 2), round(pg.rect.height, 2)
+    except HTTPException:
+        raise
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(400, f"文本层提取失败：{exc}") from exc
+
+    # 扫描件没有文本层：如实返回空列表，让前端提示「该页为扫描图，划词翻译不可用」，
+    # 而不是假装成功再让用户对着一片死区发呆。
+    return {
+        "page": page,
+        "width": width,
+        "height": height,
+        "has_text_layer": bool(words),
+        "words": words,
+    }
+
+
+@router.get("/documents/{doc_id}/references")
+def get_reference_entries(doc_id: str, db: Session = Depends(get_db)):
+    """References 区逐条索引：编号 → 页码 + bbox + 原文。
+
+    和 /refs 的区别：/refs 返回的是**引用边**（谁引了谁，供图谱用），
+    这里返回的是**参考文献列表本身**，供「点正文 [11] 跳到第 11 条」使用。
+    编号直接从条目文本开头的 [n] 解析——这是 LaTeX 排版的事实格式，
+    比依赖 Citation 表的 ref_index 更可靠（后者在匹配失败时会缺号）。
+    """
+    import re as _re
+
+    if not db.get(Document, doc_id):
+        raise HTTPException(404, "文档不存在")
+    rows = list(
+        db.scalars(
+            select(Chunk)
+            .where(Chunk.doc_id == doc_id, Chunk.kind == "reference")
+            .order_by(Chunk.page, Chunk.idx)
+        ).all()
+    )
+    pat = _re.compile(r"^\s*\[(\d{1,3})\]")
+    entries: dict[int, dict] = {}
+    for c in rows:
+        m = pat.match(c.text or "")
+        if not m:
+            continue
+        idx = int(m.group(1))
+        # 同号重复时保留首条：正文角标指向的永远是第一次出现的那条
+        if idx in entries:
+            continue
+        entries[idx] = {
+            "index": idx,
+            "page": c.page,
+            # bbox 在库里是 "x0,y0,x1,y1" 字符串，必须在这里转成数组再返回：
+            # 前端覆盖层按 [x0,y0,x1,y1] 解构，直接给字符串会逐字符解构，
+            # 算出一个 1% 宽、0 高的畸形高亮框（实测踩到过）。
+            "bbox": [float(v) for v in str(c.bbox).split(",")],
+            "text": c.text,
+            "chunk_id": c.id,
+        }
+    return {"total": len(entries), "entries": [entries[k] for k in sorted(entries)]}
+
+
 @router.get("/documents/{doc_id}/refs")
 def get_references(doc_id: str, db: Session = Depends(get_db)):
     if not db.get(Document, doc_id):
@@ -332,6 +421,20 @@ def post_translate(doc_id: str, body: TranslateIn, db: Session = Depends(get_db)
 @router.get("/documents/{doc_id}/bilingual/status")
 def get_translate_status(doc_id: str, db: Session = Depends(get_db)):
     return {"job": job_status(doc_id), "cached": cached_ratio(db, doc_id)}
+
+
+class TranslateIn(BaseModel):
+    text: str = Field(min_length=1, max_length=8000)
+
+
+@router.post("/translate")
+def translate_arbitrary(body: TranslateIn):
+    """划词 / 悬停翻译：任意片段即译即返，不落库。
+
+    与整篇翻译分开做，是因为整篇走后台任务 + translations 表缓存（按页、可续传），
+    而划词是"用户手指还按着"的交互，必须同步返回，且选区内容不值得缓存。
+    """
+    return translate_selection(body.text)
 
 
 # ---------------- 问答 ----------------
@@ -572,6 +675,18 @@ def future_work(limit: int = Query(60, ge=1, le=200), db: Session = Depends(get_
 def reproducibility(max_docs: int = Query(8, ge=1, le=20), online: bool = True,
                     db: Session = Depends(get_db)):
     return collect_reproducibility(db, max_docs=max_docs, online=online)
+
+
+class WriteIn(BaseModel):
+    idea: str = Field(min_length=2, max_length=1200)
+    doc_ids: list[str] = Field(default_factory=list)
+    top_k: int = Field(6, ge=1, le=10)
+
+
+@router.post("/write/outline")
+def write_outline(body: WriteIn, db: Session = Depends(get_db)):
+    """写作 Copilot：idea → 论文框架 + 只来自库内真实文献的 References（官方 1.6.1）。"""
+    return generate_outline(db, body.idea, body.doc_ids or None, top_k=body.top_k)
 
 
 # ==================================================================== Token 级流式 + 思考过程

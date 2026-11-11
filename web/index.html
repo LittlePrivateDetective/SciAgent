@@ -71,13 +71,14 @@
     <main class="panel center">
       <div class="panel-head">
         <span>{{ viewTitle }}
-          <small v-if="centerView !== 'graph' && activeDoc">{{ activeDoc.filename }}</small>
+          <small v-if="(centerView === 'reader' || centerView === 'bilingual') && activeDoc">{{ activeDoc.filename }}</small>
         </span>
         <div class="viewer-tools">
           <el-radio-group v-model="centerView" size="small" @change="onViewChange">
             <el-radio-button label="reader">阅读</el-radio-button>
             <el-radio-button label="bilingual">对照</el-radio-button>
             <el-radio-button label="graph">图谱</el-radio-button>
+            <el-radio-button label="write">写作</el-radio-button>
           </el-radio-group>
           <template v-if="centerView === 'reader'">
             <el-button size="small" text @click="toggleTree">章节树</el-button>
@@ -90,6 +91,9 @@
             <el-button size="small" text @click="translateAll" :loading="bi.job.running">
               {{ bi.job.running ? `翻译中 ${bi.job.done}/${bi.job.total}` : '整篇翻译' }}
             </el-button>
+          </template>
+          <template v-else-if="centerView === 'write'">
+            <span class="pager" style="margin-right:6px">References 只取自库内真实文献</span>
           </template>
           <template v-else>
             <el-button size="small" text @click="loadGraph(false)">刷新</el-button>
@@ -108,9 +112,29 @@
         </div>
 
         <div class="page-stage" v-if="activeDoc">
-          <img :src="pageUrl" class="pdf-page" @load="onImgLoad" />
-          <div class="hl" v-for="(box,i) in highlights" :key="i" :style="box.style"
-               :title="box.text"></div>
+          <!-- page-frame 是唯一定位基准：它恰好等于图片的渲染尺寸。
+               高亮框和文本层都用百分比相对它定位，才不会因为 .page-stage 的 padding
+               或图片居中出现整体偏移（之前 .hl 直接挂在外层容器上，窄屏会偏 12px）。 -->
+          <div class="page-frame">
+            <img :src="pageUrl" class="pdf-page" ref="pageImg" @load="onImgLoad" />
+            <div class="hl" v-for="(box,i) in highlights" :key="i" :style="box.style"
+                 :title="box.text"></div>
+            <!-- 透明文本层：视觉完全来自页图，这层只负责「可选、可点」。
+                 容器必须显式给宽高（pt），否则绝对定位的子元素不撑开父级，
+                 容器会是 0×0，几何校验和某些浏览器的选择行为都会出问题。 -->
+            <div class="text-layer" v-if="tl.words.length"
+                 :style="{ width: tl.W + 'px', height: tl.H + 'px', transform: `scale(${tl.scale})` }"
+                 @mouseup="onTextSelect">
+              <span v-for="(w,i) in tl.words" :key="i"
+                    class="tw" :class="{ cite: w.cite, refhit: w.refhit }"
+                    :style="w.style"
+                    @click="onWordClick(w, $event)">{{ w.t + ' ' }}</span>
+            </div>
+            <!-- 扫描件没有文本层，如实告知而不是留一片死区 -->
+            <div class="tl-note" v-if="tl.loaded && !tl.words.length">
+              该页为扫描图，无文本层 · 划词翻译不可用
+            </div>
+          </div>
         </div>
         <div v-else class="empty big">选择左侧文献开始阅读</div>
       </div>
@@ -191,6 +215,62 @@
 
         <div v-if="graph.insights && graph.insights.summary" class="graph-insight">
           {{ graph.insights.summary }}
+        </div>
+      </div>
+
+      <!-- 写作 Copilot：idea → 论文框架，References 由服务端从库内元数据生成 -->
+      <div class="write-wrap" v-show="centerView === 'write'">
+        <div class="write-head">
+          <el-input v-model="wr.idea" type="textarea" :rows="2" resize="none"
+                    placeholder="一句话描述你的研究想法，例如：把稀疏注意力用到长文档 RAG 上，降低显存占用同时保持检索质量"></el-input>
+          <div class="write-actions">
+            <span class="write-hint">模型只负责组织论述并标注 [n]；条目文本由服务端按 GB/T 7714 从库内元数据拼出</span>
+            <el-button size="small" type="primary" :loading="wr.loading" @click="genOutline">
+              {{ wr.loading ? '生成中…' : '生成框架' }}
+            </el-button>
+          </div>
+        </div>
+
+        <div class="write-body">
+          <div v-if="wr.error" class="write-error">{{ wr.error }}</div>
+          <div v-if="!wr.result" class="empty big">
+            写一句研究想法 → 自动生成 Abstract / Introduction / Related Work / Research Plan<br>
+            <small>References 只引用库内真实文献，编造的条目在结构上无法产生</small>
+          </div>
+
+          <template v-else>
+            <!-- 这排数字就是这个功能的立论，放在最显眼处 -->
+            <div class="write-checks">
+              <span class="wc-item ok">References {{ wr.result.checks.refs_from_library }} 条，全部来自库内</span>
+              <span class="wc-item ok">模型编造条目 {{ wr.result.checks.refs_generated_by_llm }} 条</span>
+              <span class="wc-item" :class="wr.result.checks.citations_invalid.length ? 'bad' : 'ok'">
+                越界引用 {{ wr.result.checks.citations_invalid.length }} 处
+              </span>
+              <span class="wc-item">正文引用 {{ wr.result.checks.citations_total }} 处 · 命中文献 {{ wr.result.checks.cited_refs }} 篇</span>
+            </div>
+
+            <h2 class="write-title">{{ wr.result.title }}</h2>
+
+            <div v-for="s in wr.result.sections" :key="s.key" class="write-sec">
+              <div class="write-sec-head">
+                <span>{{ s.name }}</span>
+                <span class="write-sec-cites" v-if="s.citations.length">{{ s.citations.join(' ') }}</span>
+              </div>
+              <p class="write-sec-text" v-html="citeHtml(s.text)"></p>
+            </div>
+
+            <div class="write-refs">
+              <div class="write-refs-head">
+                References
+                <small>GB/T 7714-2015 · 仅列正文实际引用到的条目</small>
+              </div>
+              <div v-for="r in wr.result.references" :key="r.index" class="write-ref"
+                   :class="{dim: !r.cited}" @click="openFromWrite(r)">
+                <span class="write-ref-idx">[{{ r.index }}]</span>
+                <span class="write-ref-text">{{ r.gbt }}</span>
+              </div>
+            </div>
+          </template>
         </div>
       </div>
     </main>
@@ -302,6 +382,35 @@
                  @click="restoreTrash(t)">恢复</el-button>
     </div>
   </el-dialog>
+
+  <!-- 划词翻译：选中即出现「译」按钮，点一下才发起请求。
+       不自动翻译是因为每次选区都会打一次模型，用户随手一划就烧 token，
+       而且 2 秒的等待没有点击动作承接，会像卡住。 -->
+  <div v-if="sel.visible" class="sel-pop" :style="sel.style">
+    <el-button v-if="!sel.zh" size="small" type="primary" :loading="sel.loading"
+               @click="translateSelection">译</el-button>
+    <div v-else class="sel-card">
+      <div class="sel-src">{{ sel.src.length > 110 ? sel.src.slice(0, 110) + '…' : sel.src }}</div>
+      <div class="sel-zh">{{ sel.zh }}</div>
+      <div class="sel-foot">
+        <span v-if="sel.truncated">选区过长，仅译前 4000 字符</span>
+        <el-button text size="small" @click="sel.visible = false">关闭</el-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 点正文 [11] 后浮出的参考文献详情，让用户不必再滚到 References 区核对 -->
+  <div v-if="citePop.visible" class="cite-pop" :style="citePop.style">
+    <div class="cite-pop-head">
+      <span class="cite-pop-idx">[{{ citePop.index }}]</span>
+      <span class="cite-pop-page">第 {{ citePop.page }} 页 · References</span>
+      <el-button text size="small" @click="citePop.visible = false">×</el-button>
+    </div>
+    <div class="cite-pop-text">{{ citePop.text }}</div>
+    <div class="cite-pop-foot">
+      <el-button text size="small" @click="openRefEntry(citePop)">跳到该条并高亮</el-button>
+    </div>
+  </div>
 </div>
 
 <script src="/static/app.js"></script>

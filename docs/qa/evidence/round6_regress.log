@@ -1,0 +1,16 @@
+[QA] 20261111_185245 BASE=http://127.0.0.1:8013 用例 5 条
+  [PASS  ] A04   a-2 10 条引用溯源准确率 (8%)                   34.4s  溯源命中 10/10
+  [PASS  ] B06   b-3 中英双向同步滚动 (7%)                       2.4s  双栏渲染 OK，已加载段落=5
+英文滚动 700 -&gt; 中文 141
+中文滚动 1300 -&gt; 英文 298 =&gt; 1559
+顶部段落序号 英文=7 中文=7
+RESULT: PASS 双向联动生效且按
+  [PASS  ] B07   b-3 引用一键跳转 (7%)                         2.2s  img.src=/api/documents/dca501d1039dc/page/3.png?dpi=130&amp;t=1794394404355
+高亮框数量=1 页码显示=3 / 15
+RESULT: PASS 锚
+  [PASS  ] C05   c-3 20+ 图谱渲染帧率                          3.3s  图谱节点=37 首帧耗时=250ms canvas=998x672
+1s 内 rAF 回调=1（无头虚拟时钟，仅参考）
+RESULT: PASS 20+ 节点图谱渲染，首帧 250ms
+  [PASS  ] C07B  e-3 前端流式与思考过程可视化 (3%)                   4.7s  RESULT: PASS 流式开关/思考时间线/逐token答案/证据均渲染
+[QA] 证据 -> <repo>\docs\qa\evidence\run_20261111_185245.json
+[QA] 定向回归 5 条，不更新 latest.json

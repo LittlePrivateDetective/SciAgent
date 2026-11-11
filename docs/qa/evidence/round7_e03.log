@@ -1,0 +1,4 @@
+[QA] 20261111_191302 BASE=http://127.0.0.1:8013 用例 1 条
+  [PASS  ] E03   c-3 Docker 配置一致性 + 布局预演                 4.2s  COPY 5 项齐全、15 个第三方依赖全部声明、零密钥 mock 启动 5 接口全 200（has_dotenv=False）
+[QA] 证据 -> <repo>\docs\qa\evidence\run_20261111_191302.json
+[QA] 定向回归 1 条，不更新 latest.json

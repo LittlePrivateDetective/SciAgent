@@ -1,0 +1,5 @@
+[QA] 20261111_190301 BASE=http://127.0.0.1:8013 用例 2 条
+  [PASS  ] F03   f-1 写作 Copilot 无幻觉 References（官方 1      8.2s  8.1s 生成 4 段（5562 字符），References 4 条全部可回指库内文献，编造 0 条、越界引用 0 处
+  [PASS  ] F04   f-1 写作视图前端渲染（官方 1.6.1）                 17.8s  9.8s 渲染 4 段 + 3 条 References；统计条「References 3 条，全部来自库内 / 模型编造条目 0 条」；点 [1] 打开 2205.14135v2.pdf
+[QA] 证据 -> <repo>\docs\qa\evidence\run_20261111_190301.json
+[QA] 定向回归 2 条，不更新 latest.json

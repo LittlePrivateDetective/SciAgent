@@ -60,6 +60,14 @@ const app = createApp({
       sections: [],
       showTree: false,
       highlights: [],
+      // 页内文本层：words 里每项带预处理好的 style，避免每帧现算 200+ 个词的定位。
+      // scale 由图片实际渲染宽度换算，文本层内部一律按 PDF 原始 pt 布局。
+      tl: { words: [], loaded: false, scale: 1, W: 0, H: 0, page: 0 },
+      refIndex: {},   // 引用编号 → {index,page,bbox,text}
+      // 写作 Copilot：模型只写论述 + [n]，References 条目全部由服务端从库内元数据拼出
+      wr: { idea: "", loading: false, result: null, error: "" },
+      sel: { visible: false, loading: false, src: "", zh: "", style: {}, truncated: false, x: 0, y: 0 },
+      citePop: { visible: false, index: 0, page: 1, bbox: null, text: "", style: {}, x: 0, y: 0 },
       messages: [],
       question: "",
       mode: "qa",
@@ -96,7 +104,7 @@ const app = createApp({
   computed: {
     activeDocId() { return this.activeDoc ? this.activeDoc.id : ""; },
     viewTitle() {
-      return { reader: "阅读器", bilingual: "中英对照", graph: "引用图谱" }[this.centerView] || "阅读器";
+      return { reader: "阅读器", bilingual: "中英对照", graph: "引用图谱", write: "写作助手" }[this.centerView] || "阅读器";
     },
     pageUrl() {
       if (!this.activeDoc) return "";
@@ -107,17 +115,33 @@ const app = createApp({
     this.loadInfo();
     this.loadDocs();
     document.addEventListener("click", (e) => {
+      const wc = e.target.closest(".wcite");
+      if (wc) {
+        this.jumpToRef(wc.dataset.i);
+        return;
+      }
       const el = e.target.closest(".anchor");
       if (!el) return;
       const [x0, y0, x1, y1] = el.dataset.bbox.split(",").map(Number);
       this.jump({ page: Number(el.dataset.page), bbox: [x0, y0, x1, y1], doc_id: this.activeDocId });
     });
+    // 点空白处收起划词翻译浮层（浮层自身点击不冒泡到这里）
+    document.addEventListener("mousedown", (e) => {
+      if (this.sel.visible && !e.target.closest(".sel-pop")) this.sel.visible = false;
+      if (this.citePop.visible && !e.target.closest(".cite-pop") && !e.target.closest(".tw.cite")) {
+        this.citePop.visible = false;
+      }
+    });
     // 图谱在容器尺寸变化后必须重算布局，否则窗口一缩节点就叠在左上角
     window.addEventListener("resize", () => {
       if (this.centerView === "graph" && _chart) _chart.resize();
+      this.syncTextScale();
     });
   },
   methods: {
+    // mdToHtml 是模块级函数，模板里访问不到实例外的东西，必须挂到 methods 上
+    mdToHtml,
+
     async loadInfo() {
       const r = await fetch("/api/system/info").then((x) => x.json());
       this.info = r;
@@ -193,6 +217,8 @@ const app = createApp({
       this.bi.segs = [];
       this.bi.loaded = 0;
       this.bi.docId = d.id;
+      this.sel.visible = false;
+      this.citePop.visible = false;
       const [pages, secs] = await Promise.all([
         fetch(`/api/documents/${d.id}/pages`).then((x) => x.json()),
         fetch(`/api/documents/${d.id}/sections`).then((x) => x.json()),
@@ -200,6 +226,9 @@ const app = createApp({
       this.pageSizes = {};
       (pages.pages || []).forEach((p) => (this.pageSizes[p.page] = p));
       this.sections = secs.sections || [];
+      // 引用索引按整篇加载一次即可：正文角标 → References 条目的映射与页码无关
+      await this.loadRefIndex(d.id);
+      this.loadTextLayer();
       // 对照视图下切文献要立刻换成新文献的段落，否则会继续显示上一篇
       if (this.centerView === "bilingual") this.loadBi(true);
     },
@@ -208,17 +237,174 @@ const app = createApp({
       if (p < 1 || p > this.pageCount) return;
       this.page = p;
       this.highlights = [];
+      this.sel.visible = false;
+      this.citePop.visible = false;
+      this.loadTextLayer();
+    },
+
+    /* ---------------- 页内文本层：让页图上的文字可选、角标可点 ---------------- */
+
+    async loadRefIndex(docId) {
+      this.refIndex = {};
+      try {
+        const r = await fetch(`/api/documents/${docId}/references`).then((x) => x.json());
+        const map = {};
+        (r.entries || []).forEach((e) => (map[e.index] = e));
+        this.refIndex = map;
+      } catch (e) {
+        console.warn("引用索引加载失败", e);
+      }
+    },
+
+    async loadTextLayer() {
+      const doc = this.activeDoc;
+      if (!doc) {
+        this.tl = { words: [], loaded: false, scale: 1, W: 0, H: 0, page: 0 };
+        return;
+      }
+      const page = this.page;
+      this.tl = { words: [], loaded: false, scale: this.tl.scale || 1, W: 0, H: 0, page };
+      try {
+        const r = await fetch(`/api/documents/${doc.id}/page/${page}/text`).then((x) => x.json());
+        // 快速翻页时旧请求可能后到：页码或文献对不上就丢弃，否则会出现"第 5 页的
+        // 文字叠在第 6 页图上"，比没有文本层更糟。
+        if (this.page !== page || !this.activeDoc || this.activeDoc.id !== doc.id) return;
+        this.tl.W = r.width || 612;
+        this.tl.H = r.height || 792;
+        this.tl.words = (r.words || []).map((w) => this.makeWord(w));
+        this.tl.loaded = true;
+        this.$nextTick(() => this.syncTextScale());
+      } catch (e) {
+        console.warn("文本层加载失败", e);
+        this.tl.loaded = true;
+      }
+    },
+
+    /// 把一个 PDF 词转成绝对定位的 span 数据。
+    /// 文本层内部一律按 PDF 原始 pt 布局（1pt = 1px），整体再靠 transform: scale
+    /// 缩放到图片实际宽度——这样窗口缩放只需改一个 scale 值，不用重算几百个词的样式。
+    makeWord(w) {
+      const [t, x, y, ww, hh] = w;
+      const h = Math.max(hh, 1);
+      // 正文角标：LaTeX 常见 [11] [3, 7] [11], 三种形态，统一按首个数提取
+      const m = /^\[(\d{1,3})[,\]]/.exec(t);
+      const idx = m ? Number(m[1]) : 0;
+      return {
+        t,
+        cite: !!idx,
+        refIndex: idx,
+        refhit: !!idx && !!this.refIndex[idx],
+        style: {
+          left: x + "px",
+          top: y + "px",
+          width: Math.max(ww, 1) + "px",
+          height: h + "px",
+          fontSize: h + "px",
+          lineHeight: h + "px",
+        },
+      };
+    },
+
+    syncTextScale() {
+      const img = this.$refs.pageImg;
+      if (!img || !img.clientWidth || !this.tl.W) return;
+      this.tl.scale = img.clientWidth / this.tl.W;
+    },
+
+    onWordClick(w, ev) {
+      if (!w.cite) return;
+      ev && ev.stopPropagation();
+      const e = this.refIndex[w.refIndex];
+      if (!e) {
+        // 编号在 References 区找不到（引用编号错乱/OCR 缺失）时如实说明，
+        // 不做"跳到 References 首页"这种假装成功的兜底。
+        ElementPlus.ElMessage.warning(`References 区未找到第 [${w.refIndex}] 条`);
+        return;
+      }
+      this.openRefEntry(e);
+    },
+
+    async openRefEntry(e) {
+      this.citePop = {
+        visible: true,
+        index: e.index,
+        page: e.page,
+        bbox: e.bbox,
+        text: e.text || "",
+        style: {},
+        x: 0,
+        y: 0,
+      };
+      await this.jump({ page: e.page, bbox: e.bbox, doc_id: this.activeDocId, text: e.text });
+    },
+
+    /* ---------------- 划词翻译 ---------------- */
+
+    onTextSelect() {
+      const s = window.getSelection();
+      const txt = (s ? String(s) : "").trim();
+      if (!txt || txt.length < 2) return;
+      // 中文选区不再翻译；纯数字/符号也没意义
+      if (!/[A-Za-z]{2,}/.test(txt)) return;
+      let rect = null;
+      try {
+        rect = s.getRangeAt(0).getBoundingClientRect();
+      } catch (err) {
+        return;
+      }
+      if (!rect || !rect.width) return;
+      const left = Math.min(Math.max(8, rect.left), window.innerWidth - 320);
+      const top = rect.top > 150 ? rect.top - 46 : rect.bottom + 8;
+      this.sel = {
+        visible: true,
+        loading: false,
+        src: txt,
+        zh: "",
+        truncated: false,
+        style: { left: left + "px", top: top + "px" },
+      };
+    },
+
+    async translateSelection() {
+      if (!this.sel.src || this.sel.loading) return;
+      this.sel.loading = true;
+      try {
+        const r = await fetch("/api/translate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: this.sel.src }),
+        }).then((x) => x.json());
+        if (r.ok) {
+          this.sel.zh = r.zh;
+          this.sel.truncated = !!r.truncated;
+        } else {
+          ElementPlus.ElMessage.error(r.error || "翻译失败");
+          this.sel.visible = false;
+        }
+      } catch (e) {
+        ElementPlus.ElMessage.error("翻译请求失败，请检查服务");
+        this.sel.visible = false;
+      } finally {
+        this.sel.loading = false;
+      }
     },
 
     onImgLoad(e) {
       // 已存在的高亮在换页后需要按新尺寸重算
       this.highlights = this.highlights.map((h) => ({ ...h, style: this.boxStyle(h.bbox) }));
+      // 文本层按 pt 布局，缩放比例只能等图片真正渲染出来才知道
+      this.syncTextScale();
     },
 
     boxStyle(bbox) {
       const meta = this.pageSizes[this.page];
       if (!meta || !bbox) return { display: "none" };
-      const [x0, y0, x1, y1] = bbox;
+      // bbox 有两个来源：检索证据给的是数组，数据库/老接口可能是 "x0,y0,x1,y1" 字符串。
+      // 对字符串直接解构会拿到一个个字符（"1","0","8"...），算出 1% 宽的畸形框，
+      // 所以这里统一先归一化成数字数组，非有限值直接不显示。
+      const arr = Array.isArray(bbox) ? bbox : String(bbox).split(",").map(Number);
+      const [x0, y0, x1, y1] = arr;
+      if (![x0, y0, x1, y1].every((v) => Number.isFinite(v))) return { display: "none" };
       return {
         left: (x0 / meta.width) * 100 + "%",
         top: (y0 / meta.height) * 100 + "%",
@@ -233,10 +419,22 @@ const app = createApp({
         if (d) await this.openDoc(d);
       }
       this.page = ev.page;
+      // 跳页不走 goPage，这里要自己把文本层换成目标页，否则会残留上一页的文字
+      if (this.tl.page !== this.page) this.loadTextLayer();
       await nextTick();
       this.highlights = [{ bbox: ev.bbox, text: ev.text || "", style: this.boxStyle(ev.bbox) }];
+      // 必须滚到"高亮框"而不是滚整个阅读区：参考文献条目常在页面底部，
+      // 只让阅读区进入视口的话目标仍在视野外，用户会以为跳转失败了（实测如此）。
+      // 这里用 rect 差值直接算滚动量，不依赖 offsetParent 与 scrollIntoView 的实现差异。
+      await nextTick();
       const stage = document.querySelector(".page-stage");
-      if (stage) stage.scrollIntoView({ behavior: "smooth", block: "center" });
+      const hl = stage && stage.querySelector(".hl");
+      if (stage && hl) {
+        const sr = stage.getBoundingClientRect();
+        const hr = hl.getBoundingClientRect();
+        const delta = hr.top - sr.top - (stage.clientHeight - hr.height) / 2;
+        stage.scrollTo({ top: Math.max(0, stage.scrollTop + delta), behavior: "smooth" });
+      }
     },
 
     async ask(text) {
@@ -371,6 +569,69 @@ const app = createApp({
     onViewChange(v) {
       if (v === "graph") this.loadGraph(false);
       if (v === "bilingual") this.loadBi(true);
+      // 从对照/图谱切回阅读器时，文本层可能还停在旧页
+      if (v === "reader" && this.activeDoc && this.tl.page !== this.page) this.loadTextLayer();
+    },
+
+    /* ---------------- 写作 Copilot（官方 1.6.1） ---------------- */
+
+    /// 正文里的 [n] 变成可点徽章：点一下滚到 References 对应条目。
+    /// 这是"无幻觉"最直观的呈现——读者不用相信模型，自己点过去看条目就行。
+    citeHtml(text) {
+      const html = mdToHtml(text || "");
+      return html.replace(/\[(\d{1,3})\]/g,
+        (m, n) => `<span class="wcite" data-i="${n}">[${n}]</span>`);
+    },
+
+    jumpToRef(idx) {
+      const list = document.querySelectorAll(".write-ref");
+      const target = [...list].find((el) => {
+        const t = el.querySelector(".write-ref-idx");
+        return t && t.textContent.trim() === `[${idx}]`;
+      });
+      if (!target) return;
+      target.scrollIntoView({ behavior: "smooth", block: "center" });
+      target.classList.add("flash");
+      setTimeout(() => target.classList.remove("flash"), 1400);
+    },
+
+    async genOutline() {
+      const idea = (this.wr.idea || "").trim();
+      if (!idea) {
+        ElementPlus.ElMessage.warning("先写一句你的研究想法");
+        return;
+      }
+      if (this.wr.loading) return;
+      this.wr.loading = true;
+      this.wr.error = "";
+      try {
+        const scope = this.selection.length ? this.selection : null;
+        const r = await fetch("/api/write/outline", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ idea, doc_ids: scope || [], top_k: 6 }),
+        }).then((x) => x.json());
+        if (!r.ok) {
+          this.wr.error = r.error || "生成失败";
+          ElementPlus.ElMessage.error(this.wr.error);
+          this.wr.result = null;
+        } else {
+          this.wr.result = r;
+        }
+      } catch (e) {
+        this.wr.error = "请求失败，请检查服务是否在运行";
+        ElementPlus.ElMessage.error(this.wr.error);
+      } finally {
+        this.wr.loading = false;
+      }
+    },
+
+    // 点 References 里的一条 → 打开那篇文献读原文（条目本身就是真实库内文献，所以一定打得开）
+    async openFromWrite(r) {
+      const d = this.docs.find((x) => x.id === r.doc_id);
+      if (!d) return;
+      this.centerView = "reader";
+      await this.openDoc(d);
     },
 
     /* ---------------- 中英对照阅读 ----------------

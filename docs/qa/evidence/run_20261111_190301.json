@@ -1,0 +1,179 @@
+{
+  "run_id": "20261111_190301",
+  "base": "http://127.0.0.1:8013",
+  "timestamp": "2026-11-11T19:03:27.664571",
+  "summary": {
+    "total": 2,
+    "pass": 2,
+    "fail": 0,
+    "blocked": 0
+  },
+  "results": [
+    {
+      "id": "F03",
+      "group": "write",
+      "point": "f-1 写作 Copilot 无幻觉 References（官方 1.6.1）",
+      "steps": "POST /api/write/outline 给一句 idea，检查四段框架、每条 Reference 能否回指库内 doc_id、越界引用数",
+      "expected": "四段均有正文；References 全部有 doc_id 且在库内；模型编造条目=0；越界引用=0",
+      "actual": "8.1s 生成 4 段（5562 字符），References 4 条全部可回指库内文献，编造 0 条、越界引用 0 处",
+      "status": "PASS",
+      "elapsed_s": 8.2,
+      "evidence": {
+        "latency_s": 8.1,
+        "title": "Sparse Attention for Memory-Efficient Long Document Retrieval-Augmented Generation",
+        "sections": {
+          "abstract": 1243,
+          "introduction": 1571,
+          "related_work": 1491,
+          "plan": 1257
+        },
+        "sections_with_cites": {
+          "abstract": [
+            "[1]",
+            "[2]",
+            "[3]"
+          ],
+          "introduction": [
+            "[1]",
+            "[2]",
+            "[3]"
+          ],
+          "related_work": [
+            "[1]",
+            "[2]",
+            "[3]"
+          ],
+          "plan": [
+            "[1]",
+            "[2]",
+            "[3]"
+          ]
+        },
+        "refs": [
+          {
+            "i": 1,
+            "doc_in_library": true,
+            "gbt": "DAO T, FU D Y, ERMON S, et al. FlashAttention: Fast and Memory-Eﬃcient Exact Attention with IO-Awareness[EB/OL]. arXiv:2205.14135v2, 2022."
+          },
+          {
+            "i": 2,
+            "doc_in_library": true,
+            "gbt": "PRINCE S J. Understanding Deep Learning[EB/OL]. 2026."
+          },
+          {
+            "i": 3,
+            "doc_in_library": true,
+            "gbt": "佚名. DeepSeek-V3 Technical Report[EB/OL]. arXiv:2412.19437v1, 2024."
+          },
+          {
+            "i": 4,
+            "doc_in_library": true,
+            "gbt": "佚名. Robust Speech Recognition via Large-Scale Weak Supervision[EB/OL]. arXiv:2212.04356v1, 2022."
+          }
+        ],
+        "checks": {
+          "citations_total": 12,
+          "citations_valid": 3,
+          "citations_invalid": [],
+          "refs_from_library": 4,
+          "refs_generated_by_llm": 0,
+          "cited_refs": 3
+        },
+        "sample": "Retrieval-augmented generation (RAG) systems for long documents face significant memory and computational challenges due to the quadratic complexity of standard attention mechanisms. To address this, "
+      }
+    },
+    {
+      "id": "F04",
+      "group": "write",
+      "point": "f-1 写作视图前端渲染（官方 1.6.1）",
+      "steps": "真实浏览器：切「写作」→ 填 idea → 生成 → 检查四段与 References 渲染，点条目能否打开原文",
+      "expected": "四段渲染完整、统计条正确、点 References 能打开对应文献",
+      "actual": "9.8s 渲染 4 段 + 3 条 References；统计条「References 3 条，全部来自库内 / 模型编造条目 0 条」；点 [1] 打开 2205.14135v2.pdf",
+      "status": "PASS",
+      "elapsed_s": 17.8,
+      "evidence": {
+        "steps": [
+          {
+            "write_view_display": "flex"
+          },
+          {
+            "render": {
+              "err": "",
+              "title": "Sparse Attention for Efficient Long-Document Retrieval-Augmented Generation with Reduced Memory Footprint",
+              "elapsed": {
+                "citations_total": 12,
+                "citations_valid": 3,
+                "citations_invalid": [],
+                "refs_from_library": 3,
+                "refs_generated_by_llm": 0,
+                "cited_refs": 3
+              },
+              "secs": [
+                {
+                  "name": "Abstract · 摘要",
+                  "len": 1324,
+                  "html": "<div class=\"write-sec-head\"><span>Abstract · 摘要</span><span class=\"write-sec-cites\">[1] [2] [3]</span></div><p class=\"write-sec-text\">Retrieval-augmented generation (RAG) for long documents faces significant challenges i"
+                },
+                {
+                  "name": "Introduction · 引言",
+                  "len": 1551,
+                  "html": "<div class=\"write-sec-head\"><span>Introduction · 引言</span><span class=\"write-sec-cites\">[1] [2] [3]</span></div><p class=\"write-sec-text\">Long-document retrieval-augmented generation (RAG) systems are increasingly critic"
+                },
+                {
+                  "name": "Related Work · 相关工作",
+                  "len": 1580,
+                  "html": "<div class=\"write-sec-head\"><span>Related Work · 相关工作</span><span class=\"write-sec-cites\">[1] [2] [3]</span></div><p class=\"write-sec-text\">Efficient attention mechanisms have been widely explored to alleviate the memory"
+                },
+                {
+                  "name": "Research Plan · 研究方案",
+                  "len": 1238,
+                  "html": "<div class=\"write-sec-head\"><span>Research Plan · 研究方案</span><span class=\"write-sec-cites\">[1] [2] [3]</span></div><p class=\"write-sec-text\">Our research plan consists of four phases: (1) Design and implementation of a b"
+                }
+              ],
+              "refs": 3,
+              "refsSample": [
+                {
+                  "idx": "[1]",
+                  "text": "DAO T, FU D Y, ERMON S, et al. FlashAttention: Fast and Memory-Eﬃcient Exact Attention with IO-Awareness[EB/OL]. arXiv:2205.14135v2, 2022."
+                },
+                {
+                  "idx": "[2]",
+                  "text": "PRINCE S J. Understanding Deep Learning[EB/OL]. 2026."
+                }
+              ],
+              "dimRefs": 0,
+              "checksDom": [
+                "References 3 条，全部来自库内",
+                "模型编造条目 0 条",
+                "越界引用 0 处",
+                "正文引用 12 处 · 命中文献 3 篇"
+              ],
+              "allRefsHaveDoc": true,
+              "bodyScroll": 1200,
+              "elapsed_s": 9.8
+            }
+          },
+          {
+            "sections": "PASS"
+          },
+          {
+            "refs_real": "PASS"
+          },
+          {
+            "no_invalid_cite": "PASS"
+          },
+          {
+            "open_ref": {
+              "before": "write",
+              "after": "reader",
+              "doc": "2205.14135v2.pdf",
+              "docId": "d3f2c7ae3da68"
+            }
+          }
+        ],
+        "ok": true,
+        "error": ""
+      }
+    }
+  ]
+}

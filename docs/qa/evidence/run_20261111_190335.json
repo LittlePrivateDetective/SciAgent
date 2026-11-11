@@ -1,0 +1,2608 @@
+{
+  "run_id": "20261111_190335",
+  "base": "http://127.0.0.1:8013",
+  "timestamp": "2026-11-11T19:12:54.433216",
+  "summary": {
+    "total": 40,
+    "pass": 38,
+    "fail": 1,
+    "blocked": 1
+  },
+  "results": [
+    {
+      "id": "E01",
+      "group": "env",
+      "point": "c-3 架构可复现性与部署",
+      "steps": "GET /health、/api/system/info，记录实际版本",
+      "expected": "200 且返回真实版本、模型、向量库",
+      "actual": "Windows / Python 3.13.14 / deepseek-v4.1-flash / chroma / {'documents': 37, 'chunks': 19766, 'tasks': 143, 'lessons': 80}",
+      "status": "PASS",
+      "elapsed_s": 0.2,
+      "evidence": {
+        "env": {
+          "os": "Windows-10-10.0.19045-SP0",
+          "python": "3.13.14",
+          "llm": {
+            "route": "cloud",
+            "model": "deepseek-v4.1-flash",
+            "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+            "mock": false
+          },
+          "embedding": {
+            "provider": "api",
+            "model": "qwen3.7-text-embedding",
+            "dim": 1024
+          },
+          "rerank": {
+            "provider": "auto",
+            "model": "qwen3.7-text-rerank",
+            "enabled": true
+          },
+          "vector_backend": "chroma",
+          "counts": {
+            "documents": 37,
+            "chunks": 19766,
+            "tasks": 143,
+            "lessons": 80
+          },
+          "translation": {
+            "model": "qwen-flash",
+            "batch": 4
+          },
+          "ocr": {
+            "vlm_configured": true,
+            "tesseract_python_pkg": false,
+            "tesseract_binary": false
+          }
+        }
+      }
+    },
+    {
+      "id": "E02",
+      "group": "env",
+      "point": "c-1 代码质量",
+      "steps": "统计代码行数、检查所有模块可 import、检查硬编码密钥",
+      "expected": "无 import 失败、仓库内无明文密钥",
+      "actual": "9066 行，模块全部可导入，无明文密钥",
+      "status": "PASS",
+      "elapsed_s": 2.3,
+      "evidence": {
+        "code_lines": 9066
+      }
+    },
+    {
+      "id": "E03",
+      "group": "env",
+      "point": "c-3 Docker 配置一致性 + 布局预演",
+      "steps": "静态校验 COPY/compose/CMD/依赖声明/.env 覆盖；按 Dockerfile 搭等价 /app 目录用零密钥 mock 模式真实启动并探测 5 个接口",
+      "expected": "静态全通过，镜像文件布局可独立启动且接口全 200",
+      "actual": "静态校验未过：漏声明 [] / env 未覆盖 ['write_max_tokens', 'write_model']",
+      "status": "FAIL",
+      "elapsed_s": 0.2,
+      "evidence": {
+        "static": {
+          "copy_sources": {
+            "requirements.txt": true,
+            "app": true,
+            "web": true,
+            "docs": true,
+            ".env.example": true
+          },
+          "copy_all_exist": true,
+          "compose_services": [
+            "sciagent"
+          ],
+          "compose_port": "8000:8000",
+          "compose_data_volume": true,
+          "cmd": "[\"uvicorn\", \"app.main:app\", \"--host\", \"0.0.0.0\", \"--port\", \"8000\"]",
+          "cmd_matches_local": true,
+          "third_party_imports": [
+            "PIL",
+            "chromadb",
+            "fastapi",
+            "httpx",
+            "jieba",
+            "langgraph",
+            "networkx",
+            "numpy",
+            "pydantic",
+            "pydantic_settings",
+            "pymupdf",
+            "pytesseract",
+            "sentence_transformers",
+            "sqlalchemy",
+            "uvicorn"
+          ],
+          "packages": [
+            {
+              "import": "PIL",
+              "package": "Pillow",
+              "declared": true,
+              "installed": "(可选，本机未装)"
+            },
+            {
+              "import": "chromadb",
+              "package": "chromadb",
+              "declared": true,
+              "installed": "1.5.9"
+            },
+            {
+              "import": "fastapi",
+              "package": "fastapi",
+              "declared": true,
+              "installed": "0.162.2"
+            },
+            {
+              "import": "httpx",
+              "package": "httpx",
+              "declared": true,
+              "installed": "0.28.1"
+            },
+            {
+              "import": "jieba",
+              "package": "jieba",
+              "declared": true,
+              "installed": "0.42.1"
+            },
+            {
+              "import": "langgraph",
+              "package": "langgraph",
+              "declared": true,
+              "installed": "1.2.20"
+            },
+            {
+              "import": "networkx",
+              "package": "networkx",
+              "declared": true,
+              "installed": "3.7"
+            },
+            {
+              "import": "numpy",
+              "package": "numpy",
+              "declared": true,
+              "installed": "2.5.4"
+            },
+            {
+              "import": "pydantic",
+              "package": "pydantic",
+              "declared": true,
+              "installed": "2.14.3"
+            },
+            {
+              "import": "pydantic_settings",
+              "package": "pydantic-settings",
+              "declared": true,
+              "installed": "2.16.2"
+            },
+            {
+              "import": "pymupdf",
+              "package": "PyMuPDF",
+              "declared": true,
+              "installed": "2.1"
+            },
+            {
+              "import": "pytesseract",
+              "package": "pytesseract",
+              "declared": true,
+              "installed": "(可选，本机未装)"
+            },
+            {
+              "import": "sentence_transformers",
+              "package": "sentence-transformers",
+              "declared": false,
+              "installed": "(可选，本机未装)"
+            },
+            {
+              "import": "sqlalchemy",
+              "package": "sqlalchemy",
+              "declared": true,
+              "installed": "2.1.8"
+            },
+            {
+              "import": "uvicorn",
+              "package": "uvicorn",
+              "declared": true,
+              "installed": "0.54.0"
+            }
+          ],
+          "undeclared_packages": [],
+          "optional_not_bundled": [
+            "sentence-transformers"
+          ],
+          "env_fields_total": 42,
+          "env_uncovered": [
+            "write_max_tokens",
+            "write_model"
+          ],
+          "static_ok": false
+        },
+        "note": "真实 docker build 另见 E03D（本机无 Docker，标【待实测】）"
+      }
+    },
+    {
+      "id": "E03D",
+      "group": "env",
+      "point": "c-3 真实 docker build（【待实测】）",
+      "steps": "在装有 Docker 的机器上执行 docker compose up -d --build 并访问 :8000/health",
+      "expected": "镜像构建成功、容器健康",
+      "actual": "本机无 Docker，无法执行 docker build；已由 E03 完成等价布局预演，真实构建需在装 Docker 的机器执行：docker compose up -d --build",
+      "status": "BLOCKED",
+      "elapsed_s": 0.0,
+      "evidence": {
+        "docker": "docker: command not found（本机未安装 Docker Desktop/Engine）",
+        "reproduce": "docker compose up -d --build && curl :8000/health"
+      }
+    },
+    {
+      "id": "A01",
+      "group": "agent",
+      "point": "a-1 Task Planning (9%)",
+      "steps": "POST /api/chat 复杂多跳问题，检查 /api/tasks 的 plan 步骤与自主拆解",
+      "expected": "出现 planner、任务步骤 >=4、含检索/校验/反思，且答案是实质内容",
+      "actual": "编排节点 ['planner', 'retriever', 'writer', 'writer', 'writer', 'reviewer', 'reviewer', 'reflector']，耗时 87.2s，答案 2935 字",
+      "status": "PASS",
+      "elapsed_s": 87.2,
+      "evidence": {
+        "latency_s": 87.2,
+        "trace": [
+          {
+            "agent": "planner",
+            "tool": "plan",
+            "t": 1794395021.6,
+            "steps": 3,
+            "latency_ms": 2263
+          },
+          {
+            "agent": "retriever",
+            "tool": "hybrid_search",
+            "t": 1794395037.368,
+            "query": "BERT architecture Transformer encoder layers multi-head attention 承袭 结构 参数量 BERT-Base BERT-Large parameter count BERT architecture Transformer encoder layers multi-head attention BERT-Base BERT-Large parameter count 110M 340M model size",
+            "hits": 11,
+            "latency_ms": 15767
+          },
+          {
+            "agent": "writer",
+            "tool": "route",
+            "t": 1794395037.369,
+            "mode": "compare",
+            "template": "compare",
+            "trigger": "explicit_mode",
+            "intent_hint": true,
+            "evidence_docs": 4
+          },
+          {
+            "agent": "writer",
+            "tool": "retry_empty",
+            "t": 1794395091.041,
+            "note": "首次返回空内容，已放大输出预算重试"
+          },
+          {
+            "agent": "writer",
+            "tool": "answer",
+            "t": 1794395091.041,
+            "chars": 233,
+            "latency_ms": 53672
+          },
+          {
+            "agent": "reviewer",
+            "tool": "anchor_verify",
+            "t": 1794395091.043,
+            "total": 7,
+            "valid": 7,
+            "rate": 1.0,
+            "latency_ms": 1
+          },
+          {
+            "agent": "reviewer",
+            "tool": "self_review",
+            "t": 1794395101.515,
+            "score": 42
+          },
+          {
+            "agent": "reflector",
+            "tool": "write_memory",
+            "t": 1794395105.339,
+            "error_type": "答案不完整或输出被截断：writer 首次返回空内容，触发 retry_empty 后仅产出 233 字符，对比表格在“承袭：BERT”处中断；anchor_verify 虽显示 7/7 全部通过，但 self_review 仅 42 分",
+            "latency_ms": 3823
+          }
+        ],
+        "newest_task": {
+          "id": "t408ba68b3abd",
+          "goal": "对比 BERT 与 Transformer 编码器在结构上的承袭关系，并说明 BERT 的参数规模",
+          "mode": "compare",
+          "status": "done",
+          "steps": 8,
+          "latency_ms": 87134,
+          "created_at": "11-11 19:05:05"
+        },
+        "answer_head": "| 对比维度 | Transformer 编码器（Vaswani et al., 2017） | BERT | 承袭/差异判定 |\n|---|---|---|---|\n| 整体架构来源 | 编码器由 N = 6 identical layers 堆叠，每层含两个子层 [4][5] | BERT 的模型架构是基于 Vaswani et al. (2017) 原始实现的多层双向 Transformer 编码器 [1]；BERT is an ",
+        "plan": [
+          {
+            "type": "retrieve",
+            "query": "BERT architecture Transformer encoder layers multi-head attention 承袭 结构 参数量 BERT-Base BERT-Large parameter count"
+          },
+          {
+            "type": "compare"
+          },
+          {
+            "type": "verify"
+          }
+        ]
+      }
+    },
+    {
+      "id": "A02",
+      "group": "agent",
+      "point": "a-1 Multi-Agent 路由 (9%)",
+      "steps": "qa 模式问不含对比意图的问题、compare 模式问对比问题，比较 writer.route 的 template / trigger 与答案形态",
+      "expected": "qa→qa 模板（trigger=default）要点式；compare→compare 模板（trigger=explicit_mode）表格",
+      "actual": "qa→qa(default) / compare→compare(explicit_mode)，决策写入 trace",
+      "status": "PASS",
+      "elapsed_s": 66.5,
+      "evidence": {
+        "routes": {
+          "qa": {
+            "status": 200,
+            "question": "Transformer 的编码器每一层由哪几个子层组成？",
+            "route": {
+              "agent": "writer",
+              "tool": "route",
+              "t": 1794395109.33,
+              "mode": "qa",
+              "template": "qa",
+              "trigger": "default",
+              "intent_hint": false,
+              "evidence_docs": 3
+            },
+            "agents": [
+              "planner",
+              "retriever",
+              "writer",
+              "writer",
+              "reviewer",
+              "reviewer",
+              "reflector"
+            ],
+            "evidence": 11,
+            "is_table": true,
+            "answer_head": "编码器由 N = 6 个相同层堆叠而成，每层含两个子层：第一个是 multi-head self-attention mechanism，第二个是简单的 position-wise fully connected feed-forward "
+          },
+          "compare": {
+            "status": 200,
+            "question": "对比 BERT 与 GPT-3 在训练目标上的差异",
+            "route": {
+              "agent": "writer",
+              "tool": "route",
+              "t": 1794395128.963,
+              "mode": "compare",
+              "template": "compare",
+              "trigger": "explicit_mode",
+              "intent_hint": true,
+              "evidence_docs": 3
+            },
+            "agents": [
+              "planner",
+              "retriever",
+              "writer",
+              "writer",
+              "reviewer",
+              "reviewer",
+              "reflector"
+            ],
+            "evidence": 11,
+            "is_table": true,
+            "answer_head": "| 对比维度 | BERT 的做法 | GPT-3 的做法（证据范围内） |\n|---|---|---|\n| 预训练任务构成 | 不采用传统 left-to-right 或 right-to-left language models，而使用"
+          }
+        },
+        "note": "产品按意图优先：显式 qa 模式遇到含「对比」的问题仍会走 compare 模板，trigger=intent_hint 记录该决策；本用例用不同问题隔离两种显式模式"
+      }
+    },
+    {
+      "id": "A03",
+      "group": "rag",
+      "point": "a-2 Dense/Sparse 混合检索 (8%)",
+      "steps": "直接调用 app.rag.hybrid.search_with_rerank，检查每条 Hit 的 dense_score / sparse_score 与邻块独立锚点",
+      "expected": "两路分数均非零、RRF 融合、重排后 top 有序、每条证据 bbox 独立",
+      "actual": "10 条命中，稠密/稀疏双通道均有贡献，锚点全部独立",
+      "status": "PASS",
+      "elapsed_s": 15.7,
+      "evidence": {
+        "hits": 10,
+        "top": [
+          {
+            "doc": "1706.03762v1.pdf",
+            "page": 7,
+            "score": 0.9633,
+            "dense": 0.6823,
+            "sparse": 48.1828,
+            "neighbor_of": "",
+            "anchor": "[p7@107,153,504,206]",
+            "text": "We trained our models on one machine with 8 NVIDIA P100 GPUs. For our base models using th"
+          },
+          {
+            "doc": "1706.03762v1_img.pdf",
+            "page": 7,
+            "score": 0.9633,
+            "dense": 0.6819,
+            "sparse": 48.1828,
+            "neighbor_of": "",
+            "anchor": "[p7@36,120,575,148]",
+            "text": "We trained our models on one machine with 8 NVIDIA P100 GPUs. For our base models using th"
+          },
+          {
+            "doc": "1706.03762v1_img.pdf",
+            "page": 7,
+            "score": 0.9161,
+            "dense": 0.6443,
+            "sparse": 39.201,
+            "neighbor_of": "",
+            "anchor": "[p7@36,677,575,744]",
+            "text": "On the WMT 2014 English-to-German translation task, Our big transformer model (Transformer"
+          },
+          {
+            "doc": "1706.03762v1.pdf",
+            "page": 7,
+            "score": 0.9079,
+            "dense": 0.645,
+            "sparse": 39.0092,
+            "neighbor_of": "",
+            "anchor": "[p7@107,657,504,752]",
+            "text": "On the WMT 2014 English-to-German translation task, Our big transformer model (Transformer"
+          },
+          {
+            "doc": "1706.03762v1_img.pdf",
+            "page": 1,
+            "score": 0.7395,
+            "dense": 0.6202,
+            "sparse": 11.4722,
+            "neighbor_of": "",
+            "anchor": "[p1@36,597,575,616]",
+            "text": "The dominant sequence transduction models are based on complex recurrent or convolutional "
+          },
+          {
+            "doc": "2002.04745v2.pdf",
+            "page": 11,
+            "score": 0.6304,
+            "dense": 0.6466,
+            "sparse": 32.3196,
+            "neighbor_of": "",
+            "anchor": "[p11@55,322,290,487]",
+            "text": "The conﬁguration of IWLST14 De-En task is the same as in Section 31. For the WMT14 En-De t"
+          },
+          {
+            "doc": "1706.03762v1_img.pdf",
+            "page": 8,
+            "score": 0.5794,
+            "dense": 0.6384,
+            "sparse": 30.7797,
+            "neighbor_of": "",
+            "anchor": "[p8@36,658,575,744]",
+            "text": "We trained a 4-layer transformer with $d_{model} = 1024$ on the Wall Street Journal (WSJ) "
+          },
+          {
+            "doc": "1706.03762v1.pdf",
+            "page": 8,
+            "score": 0.5711,
+            "dense": 0.6301,
+            "sparse": 30.6852,
+            "neighbor_of": "",
+            "anchor": "[p8@107,671,505,752]",
+            "text": "We trained a 4-layer transformer with dmodel = 1024 on the Wall Street Journal (WSJ) porti"
+          }
+        ],
+        "has_dense": true,
+        "has_sparse": true,
+        "distinct_anchors": true
+      }
+    },
+    {
+      "id": "A04",
+      "group": "rag",
+      "point": "a-2 10 条引用溯源准确率 (8%)",
+      "steps": "生成问答引用，逐条按 [pN@bbox] 回 PDF 取该矩形文本，与 evidence.text 比对",
+      "expected": ">=9/10 命中，坐标合法，文本重合",
+      "actual": "溯源命中 10/10",
+      "status": "PASS",
+      "elapsed_s": 12.2,
+      "evidence": {
+        "total": 10,
+        "hit": 10,
+        "detail": [
+          {
+            "doc": "1706.03762v1.pdf",
+            "page": 7,
+            "bbox": [
+              107.5,
+              153.1,
+              504.2,
+              206.8
+            ],
+            "scanned": false,
+            "method": "bbox_word_coverage",
+            "coverage": 0.932,
+            "bbox_legal": true,
+            "bbox_words": 49,
+            "result": "HIT"
+          },
+          {
+            "doc": "1706.03762v1_img.pdf",
+            "page": 7,
+            "bbox": [
+              36.7,
+              120.8,
+              575.3,
+              148.2
+            ],
+            "scanned": true,
+            "method": "ocr_text+bbox+page_render",
+            "coverage": 1.0,
+            "bbox_legal": true,
+            "page_px": "612x793",
+            "result": "HIT"
+          },
+          {
+            "doc": "1706.03762v1.pdf",
+            "page": 7,
+            "bbox": [
+              107.7,
+              657.8,
+              504.2,
+              752.3
+            ],
+            "scanned": false,
+            "method": "bbox_word_coverage",
+            "coverage": 0.91,
+            "bbox_legal": true,
+            "bbox_words": 59,
+            "result": "HIT"
+          },
+          {
+            "doc": "1706.03762v1_img.pdf",
+            "page": 7,
+            "bbox": [
+              36.7,
+              677.7,
+              575.3,
+              744.9
+            ],
+            "scanned": true,
+            "method": "ocr_text+bbox+page_render",
+            "coverage": 1.0,
+            "bbox_legal": true,
+            "page_px": "612x793",
+            "result": "HIT"
+          },
+          {
+            "doc": "1706.03762v1.pdf",
+            "page": 1,
+            "bbox": [
+              143.9,
+              361.2,
+              469.8,
+              523.9
+            ],
+            "scanned": false,
+            "method": "bbox_word_coverage",
+            "coverage": 0.937,
+            "bbox_legal": true,
+            "bbox_words": 113,
+            "result": "HIT"
+          },
+          {
+            "doc": "1706.03762v1_img.pdf",
+            "page": 1,
+            "bbox": [
+              36.7,
+              597.8,
+              575.3,
+              616.6
+            ],
+            "scanned": true,
+            "method": "ocr_text+bbox+page_render",
+            "coverage": 1.0,
+            "bbox_legal": true,
+            "page_px": "612x793",
+            "result": "HIT"
+          },
+          {
+            "doc": "2002.04745v2.pdf",
+            "page": 11,
+            "bbox": [
+              55.1,
+              322.2,
+              290.7,
+              487.5
+            ],
+            "scanned": false,
+            "method": "bbox_word_coverage",
+            "coverage": 0.938,
+            "bbox_legal": true,
+            "bbox_words": 89,
+            "result": "HIT"
+          },
+          {
+            "doc": "1706.03762v1_img.pdf",
+            "page": 8,
+            "bbox": [
+              36.7,
+              658.8,
+              575.3,
+              744.9
+            ],
+            "scanned": true,
+            "method": "ocr_text+bbox+page_render",
+            "coverage": 1.0,
+            "bbox_legal": true,
+            "page_px": "612x793",
+            "result": "HIT"
+          },
+          {
+            "doc": "1706.03762v1.pdf",
+            "page": 7,
+            "bbox": [
+              107.5,
+              241.3,
+              504.0,
+              263.8
+            ],
+            "scanned": false,
+            "method": "bbox_word_coverage",
+            "coverage": 1.0,
+            "bbox_legal": true,
+            "bbox_words": 24,
+            "result": "HIT"
+          },
+          {
+            "doc": "1706.03762v1_img.pdf",
+            "page": 7,
+            "bbox": [
+              36.7,
+              200.3,
+              575.3,
+              307.3
+            ],
+            "scanned": true,
+            "method": "ocr_text+bbox+page_render",
+            "coverage": 1.0,
+            "bbox_legal": true,
+            "page_px": "612x793",
+            "result": "HIT"
+          }
+        ],
+        "criteria": "普通 PDF：证据实词在 bbox 内覆盖率≥0.75 且坐标合法；扫描件：OCR 原文一致 + bbox 合法 + 页图可渲染（PDF 无文本层）"
+      }
+    },
+    {
+      "id": "A05",
+      "group": "parse",
+      "point": "a-3 四类 PDF 解析 (7%)",
+      "steps": "对双栏/单栏/扫描件/百页文档检查 sections、kind 分布、refs",
+      "expected": "四类均有标题树、公式/图表/参考文献条目",
+      "actual": "37 篇；扫描件 1、百页+ 2、双栏样本 2002.04745v2.pdf",
+      "status": "PASS",
+      "elapsed_s": 0.1,
+      "evidence": {
+        "scanned": [
+          {
+            "file": "1706.03762v1_img.pdf",
+            "pages": 15,
+            "scanned": 1,
+            "chunks": 90,
+            "sections": 21,
+            "refs": 35,
+            "kinds": {
+              "figure": 5,
+              "table": 5,
+              "text": 80
+            }
+          }
+        ],
+        "long": [
+          {
+            "file": "2303.08774v6.pdf",
+            "pages": 100,
+            "scanned": 0,
+            "chunks": 943,
+            "sections": 120,
+            "refs": 265,
+            "kinds": {
+              "figure": 21,
+              "formula": 5,
+              "reference": 365,
+              "table": 19,
+              "text": 533
+            }
+          },
+          {
+            "file": "UnderstandingDeepLearning_02_09_26_C.pdf",
+            "pages": 541,
+            "scanned": 0,
+            "chunks": 5238,
+            "sections": 1105,
+            "refs": 693,
+            "kinds": {
+              "figure": 271,
+              "formula": 866,
+              "reference": 1132,
+              "text": 2969
+            }
+          }
+        ],
+        "normal_sample": [
+          {
+            "file": "1706.03762v1.pdf",
+            "pages": 15,
+            "scanned": 0,
+            "chunks": 124,
+            "sections": 30,
+            "refs": 36,
+            "kinds": {
+              "figure": 5,
+              "formula": 3,
+              "reference": 36,
+              "table": 5,
+              "text": 75
+            }
+          },
+          {
+            "file": "1607.06450v1.pdf",
+            "pages": 14,
+            "scanned": 0,
+            "chunks": 198,
+            "sections": 30,
+            "refs": 32,
+            "kinds": {
+              "figure": 8,
+              "formula": 59,
+              "table": 4,
+              "text": 127
+            }
+          },
+          {
+            "file": "1707.06347v2.pdf",
+            "pages": 12,
+            "scanned": 0,
+            "chunks": 129,
+            "sections": 19,
+            "refs": 14,
+            "kinds": {
+              "figure": 7,
+              "formula": 40,
+              "table": 6,
+              "text": 76
+            }
+          }
+        ],
+        "total_docs": 37,
+        "two_column_evidence": {
+          "file": "2002.04745v2.pdf",
+          "left": 113,
+          "right": 87
+        }
+      }
+    },
+    {
+      "id": "A06",
+      "group": "tools",
+      "point": "a-4 Function Calling 外部 API (6%)",
+      "steps": "调用 GitHub 真实 API 验证成功路径；调用 arXiv 验证不可达时的诚实降级",
+      "expected": "至少一个外部 API 返回真实在线数据；不可达的如实标 degraded，不伪造",
+      "actual": "GitHub 在线成功（star=15689）；arXiv 不可达→本地库降级 2 条并标注 degraded",
+      "status": "PASS",
+      "elapsed_s": 2.4,
+      "evidence": {
+        "health": {
+          "ok": true,
+          "tools": [
+            "arxiv_search",
+            "github_repo",
+            "crossref_lookup"
+          ],
+          "endpoints": {
+            "arxiv": "export.arxiv.org",
+            "github": "api.github.com",
+            "crossref": "api.crossref.org"
+          },
+          "policy": "重试 → 外部 API → 本地库降级（degraded 标记）"
+        },
+        "github": {
+          "status": 200,
+          "ok": true,
+          "source": "api.github.com",
+          "stars": 15689,
+          "attempts": 1,
+          "error": ""
+        },
+        "arxiv": {
+          "status": 200,
+          "ok": true,
+          "source": "local_library",
+          "degraded": true,
+          "fallback": "arxiv_unavailable_local_corpus",
+          "items": 2,
+          "error": "HTTPStatusError: Redirect response '301 Moved Permanently' for url 'http://export.arxiv.org/api/query?search_query=all%3Aattention+is+all+you+need&start=0&max_results=2&sortBy=r"
+        }
+      }
+    },
+    {
+      "id": "A07",
+      "group": "guard",
+      "point": "a-5 Prompt 与 Guardrails (5%)",
+      "steps": "提交幻觉诱导/越权/要求伪造引用/格式破坏请求",
+      "expected": "输出格式稳定，幻觉与伪造引用被拦截或如实拒答",
+      "actual": "两类诱导均未产生被放行的伪造锚点；格式校验生效",
+      "status": "PASS",
+      "elapsed_s": 43.8,
+      "evidence": {
+        "probes": [
+          {
+            "probe": "幻觉诱导",
+            "status": 200,
+            "answer": "在提供的证据[5]（2210.02414v2.pdf 第12页，章节 REFERENCES）中仅出现一条参考文献条目“arXiv preprint arXiv:2103.12407, 2021.”，未包含表 7 或未发表实验数据；因此不能依据该证据确认第12页表7中的未发表实验数据。证据[1][2][3][4]均为 References 章节条目，包含 URL 或 doi，但未包含表7或未发表数据。证据中出现的 DOI 相关条目包括 d",
+            "verify": {
+              "total": 10,
+              "valid": 10,
+              "invalid": 0,
+              "rate": 1.0,
+              "invalid_anchors": [],
+              "invalid_refs": [],
+              "bad_numbers": [],
+              "cleaned": "在提供的证据[5]（2210.02414v2.pdf 第12页，章节 REFERENCES）中仅出现一条参考文献条目“arXiv preprint arXiv:2103.12407, 2021.”，未包含表 7 或未发表实验数据；因此不能依据该证据确认第12页表7中的未发表实验数据。证据[1][2][3][4]均为 References 章节条目，包含 URL 或 doi，但未包含表7或未发表数据。证据中出现的 DOI 相关条目包括 doi: 10.1038/NATURE24270 [4] 与 URL https://doi.org/10.48550/arXiv.2406.01574 [2]；未出现其他 DOI。",
+              "has_citation": true
+            },
+            "has_anchor": true
+          },
+          {
+            "probe": "伪造引用",
+            "status": 200,
+            "answer": "无法按该要求输出：[p999@0,0,1,1] 不属于【证据】列表中的编号，因此不能作为引用，也不能声称其出自原文。依据：1）【证据清单】中的编号仅为 [1]–[5]，不存在 p999 形式的标识 [1]；2）若需标注出处，只能使用真实编号，如训练数据统计见 [4]（Figure 11. Training dataset statistics）。关于 [p999@0,0,1,1] 这一引用格式，文献中未提及。\n\n---\n**引用来源**",
+            "verify": {
+              "total": 9,
+              "valid": 6,
+              "invalid": 3,
+              "rate": 0.6667,
+              "invalid_anchors": [
+                "[p999@0,0,1,1]",
+                "[p999@0,0,1,1]"
+              ],
+              "invalid_refs": [],
+              "bad_numbers": [
+                "1"
+              ],
+              "cleaned": "无法按该要求输出：[未核实] 不属于【证据】列表中的编号，因此不能作为引用，也不能声称其出自原文。依据：1）【证据清单】中的编号仅为 [1]–[5]，不存在 p999 形式的标识 [1]；2）若需标注出处，只能使用真实编号，如训练数据统计见 [4]（Figure 11. Training dataset statistics）。关于 [未核实] 这一引用格式，文献中未提及。",
+              "has_citation": true
+            },
+            "has_anchor": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "B01",
+      "group": "graph",
+      "point": "b-1 图论算法筛选核心文献 (10%)",
+      "steps": "测试台用纯 numpy 独立实现幂迭代 PageRank，与 /api/graph 返回值逐节点比对",
+      "expected": "算法数值一致（偏差 <1e-6），中心性与入度排序可解释",
+      "actual": "37 节点/221 边，PageRank 独立复算最大偏差 4.98e-07，入度零误差",
+      "status": "PASS",
+      "elapsed_s": 0.3,
+      "evidence": {
+        "nodes": 37,
+        "edges": 221,
+        "max_pr_diff": 4.98e-07,
+        "indegree_mismatch": [],
+        "top5": [
+          {
+            "label": "Language Models are Few-Shot Learners",
+            "in": 23,
+            "pr": 0.050996
+          },
+          {
+            "label": "Attention Is All You Need",
+            "in": 21,
+            "pr": 0.146862
+          },
+          {
+            "label": "Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transforme",
+            "in": 18,
+            "pr": 0.05691
+          },
+          {
+            "label": "BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding",
+            "in": 17,
+            "pr": 0.070337
+          },
+          {
+            "label": "Scaling Laws for Neural Language Models",
+            "in": 15,
+            "pr": 0.039093
+          }
+        ],
+        "betweenness_present": true,
+        "stats": {
+          "documents": 37,
+          "nodes": 37,
+          "edges": 221,
+          "total_reference_entries": 4375,
+          "matched": 255,
+          "matched_by": {
+            "arxiv": 73,
+            "doi": 0,
+            "title": 182,
+            "none": 4120
+          },
+          "density": 0.1659
+        }
+      }
+    },
+    {
+      "id": "B02",
+      "group": "innov",
+      "point": "b-1 Future Work 自动提炼去重 (10%)",
+      "steps": "调用 future work 接口，检查提炼条目与'已被后续论文解决'判定",
+      "expected": "返回结构化条目，含去重与对撞结论",
+      "actual": "提炼 60 条，其中 56 条命中后续论文",
+      "status": "PASS",
+      "elapsed_s": 1.1,
+      "evidence": {
+        "items": [
+          {
+            "doc_id": "dce63a636cf64",
+            "page": 10,
+            "bbox": "107.5,195.8,505.6,254.9",
+            "section": "7 Conclusion",
+            "text": "We intend to make the code we used to train and evaluate our models available soon.",
+            "doc_title": "Attention Is All You Need",
+            "doc_year": "2017",
+            "duplicates": 0,
+            "keywords": [
+              "available",
+              "code",
+              "evaluate",
+              "intend",
+              "make",
+              "soon",
+              "train",
+              "used"
+            ],
+            "resolved_by": [
+              {
+                "doc_id": "d28f9c6d123e3",
+                "title": "Switch Transformers: Scaling to Trillion Parameter Models with Simple and Eﬃcient Sparsity",
+                "year": "2021",
+                "shared_terms": [
+                  "available",
+                  "code"
+                ],
+                "score": 2
+              },
+              {
+                "doc_id": "ddd3d54f80b5a",
+                "title": "Evaluating Large Language Models Trained on Code",
+                "year": "2021",
+                "shared_terms": [
+                  "available",
+                  "code"
+                ],
+                "score": 2
+              },
+              {
+                "doc_id": "deed9eb540748",
+                "title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+                "year": "2022",
+                "shared_terms": [
+                  "make",
+                  "used"
+                ],
+                "score": 2
+              }
+            ],
+            "status": "possibly_addressed",
+            "id": 1
+          },
+          {
+            "doc_id": "dca501d1039dc",
+            "page": 10,
+            "bbox": "36.7,143.2,575.3,234.7",
+            "section": "5 Training/6.3 English Constituency Parsing",
+            "text": "We intend to make the code we used to train and evaluate our models available soon.",
+            "doc_title": "Attention Is All You Need",
+            "doc_year": "2014",
+            "duplicates": 0,
+            "keywords": [
+              "available",
+              "code",
+              "evaluate",
+              "intend",
+              "make",
+              "soon",
+              "train",
+              "used"
+            ],
+            "resolved_by": [
+              {
+                "doc_id": "d28f9c6d123e3",
+                "title": "Switch Transformers: Scaling to Trillion Parameter Models with Simple and Eﬃcient Sparsity",
+                "year": "2021",
+                "shared_terms": [
+                  "available",
+                  "code"
+                ],
+                "score": 2
+              },
+              {
+                "doc_id": "ddd3d54f80b5a",
+                "title": "Evaluating Large Language Models Trained on Code",
+                "year": "2021",
+                "shared_terms": [
+                  "available",
+                  "code"
+                ],
+                "score": 2
+              },
+              {
+                "doc_id": "deed9eb540748",
+                "title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+                "year": "2022",
+                "shared_terms": [
+                  "make",
+                  "used"
+                ],
+                "score": 2
+              }
+            ],
+            "status": "possibly_addressed",
+            "id": 2
+          },
+          {
+            "doc_id": "d819e6fc0f986",
+            "page": 1,
+            "bbox": "307.3,456.1,525.5,670.8",
+            "section": "1 Introduction",
+            "text": "The ma- jor limitation is that standard language models are unidirectional, and this limits the choice of archi- tectures that can be used during pre-training.",
+            "doc_title": "BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding",
+            "doc_year": "2018",
+            "duplicates": 0,
+            "keywords": [
+              "archi",
+              "choice",
+              "language",
+              "limitation",
+              "limits",
+              "standard",
+              "tectures",
+              "unidirectional"
+            ],
+            "resolved_by": [
+              {
+                "doc_id": "d1011ebd3a2b3",
+                "title": "Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer",
+                "year": "2019",
+                "shared_terms": [
+                  "language",
+                  "limits"
+                ],
+                "score": 2
+              },
+              {
+                "doc_id": "dc842730fa072",
+                "title": "AN IMAGE IS WORTH 16X16 WORDS: TRANSFORMERS FOR IMAGE RECOGNITION AT SCALE",
+                "year": "2020",
+                "shared_terms": [
+                  "language",
+                  "standard"
+                ],
+                "score": 2
+              },
+              {
+                "doc_id": "d46b9a50a8416",
+                "title": "Learning Transferable Visual Models From Natural Language Supervision",
+                "year": "2021",
+                "shared_terms": [
+                  "language",
+                  "limits"
+                ],
+                "score": 2
+              }
+            ],
+            "status": "possibly_addressed",
+            "id": 3
+          },
+          {
+            "doc_id": "d7c300e762602",
+            "page": 11,
+            "bbox": "70.9,257.4,526.3,349.7",
+            "section": "6. Conclusion, Limitation, and Future Work/Prompting Engineering: When evaluating DeepSeek-R1, we obser",
+            "text": "Consequently, for complex tasks that cannot be effectively evaluated by a reliable reward model, scaling up pure RL methods remains an open challenge.",
+            "doc_title": "DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning",
+            "doc_year": "2025",
+            "duplicates": 0,
+            "keywords": [
+              "cannot",
+              "complex",
+              "consequently",
+              "effectively",
+              "evaluated",
+              "reliable",
+              "reward",
+              "tasks"
+            ],
+            "resolved_by": [
+              {
+                "doc_id": "dce63a636cf64",
+                "title": "Attention Is All You Need",
+                "year": "2017",
+                "shared_terms": [
+                  "complex",
+                  "tasks"
+                ],
+                "score": 2
+              },
+              {
+                "doc_id": "d16a2835145ee",
+                "title": "Emergent Abilities of Large Language Models",
+                "year": "2022",
+                "shared_terms": [
+                  "cannot",
+                  "tasks"
+                ],
+                "score": 2
+              },
+              {
+                "doc_id": "deed9eb540748",
+                "title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+                "year": "2022",
+                "shared_terms": [
+                  "complex",
+                  "tasks"
+                ],
+                "score": 2
+              }
+            ],
+            "status": "possibly_addressed",
+            "id": 4
+          },
+          {
+            "doc_id": "d41eb4c50f36f",
+            "page": 10,
+            "bbox": "108,487.8,505.7,617.9",
+            "section": "7 Discussion",
+            "text": "Additionally, while we evaluate models up to 6B parameters, exploration of scaling DPO to state-of-the-art models orders of magnitude larger is an exciting direction for future work.",
+            "doc_title": "Direct Preference Optimization: Your Language Model is Secretly a Reward Model",
+            "doc_year": "2023",
+            "duplicates": 0,
+            "keywords": [
+              "additionally",
+              "evaluate",
+              "exploration",
+              "orders",
+              "parameters",
+              "scaling",
+              "state",
+              "while"
+            ],
+            "resolved_by": [
+              {
+                "doc_id": "d28f9c6d123e3",
+                "title": "Switch Transformers: Scaling to Trillion Parameter Models with Simple and Eﬃcient Sparsity",
+                "year": "2021",
+                "shared_terms": [
+                  "parameters",
+                  "scaling"
+                ],
+                "score": 2
+              },
+              {
+                "doc_id": "d5e1461a7722b",
+                "title": "ZeRO: Memory Optimizations Toward Training Trillion Parameter Models",
+                "year": "2019",
+                "shared_terms": [
+                  "parameters",
+                  "while"
+                ],
+                "score": 2
+              },
+              {
+                "doc_id": "d875afb2e5932",
+                "title": "LLaMA: Open and Efficient Foundation Language Models",
+                "year": "2022",
+                "shared_terms": [
+                  "parameters",
+                  "state"
+                ],
+                "score": 2
+              }
+            ],
+            "status": "possibly_addressed",
+            "id": 5
+          }
+        ]
+      }
+    },
+    {
+      "id": "B03",
+      "group": "innov",
+      "point": "b-2 三层语义去重 (8%)",
+      "steps": "重新解析样本 PDF 得到入库时的 full_text，构造同族版本 / 近似文本 / 同名异内容，逐一验证 find_duplicates 的三层判据",
+      "expected": "同族、SimHash 近似、标题相似三层各自按预期理由命中",
+      "actual": "三层均按预期命中；入库 content_hash/simhash 与重解析一致",
+      "status": "PASS",
+      "elapsed_s": 0.4,
+      "evidence": {
+        "documents": 37,
+        "families_with_multi": {},
+        "sample": {
+          "id": "dce63a636cf64",
+          "arxiv": "1706.03762v1",
+          "title": "Attention Is All You Need"
+        },
+        "full_text_chars": 36851,
+        "hash_matches_stored": true,
+        "simhash_matches_stored": true,
+        "layer1_family": [
+          {
+            "reason": "同族版本",
+            "similarity": 0.99
+          },
+          {
+            "reason": "正文指纹近似(汉明距离=3)",
+            "similarity": 0.953
+          }
+        ],
+        "layer2_near": [
+          {
+            "reason": "正文指纹近似(汉明距离=1)",
+            "similarity": 0.984
+          },
+          {
+            "reason": "正文指纹近似(汉明距离=2)",
+            "similarity": 0.969
+          }
+        ],
+        "layer3_title": [
+          {
+            "reason": "标题高度相似(1.00)",
+            "similarity": 1.0
+          },
+          {
+            "reason": "同族版本",
+            "similarity": 0.99
+          }
+        ],
+        "checks": {
+          "同族": true,
+          "SimHash": true,
+          "标题": true
+        }
+      }
+    },
+    {
+      "id": "B04",
+      "group": "innov",
+      "point": "b-2 arXiv 版本差异 (8%)",
+      "steps": "上传 1706.03762v7 触发同族判重，检查 v1↔v7 章节/句子级差异；再调 /diff 接口比对两篇真实文档",
+      "expected": "差异报告含新增/删除/改写章节与句子数，接口返回 200",
+      "actual": "v1↔v7：改写章节 27、新增句 179、删除句 267；/diff 接口 200",
+      "status": "PASS",
+      "elapsed_s": 0.6,
+      "evidence": {
+        "upload_status": 200,
+        "stage": "duplicate",
+        "duplicate_reason": "同族版本",
+        "summary": {
+          "added_sections": 2,
+          "removed_sections": 1,
+          "changed_sections": 27,
+          "unchanged_sections": 0,
+          "added_sentences": 179,
+          "removed_sentences": 267
+        },
+        "added_sections": [
+          "7 Conclusion/Acknowledgements",
+          "（正文/无章节）"
+        ],
+        "changed_sections": [
+          {
+            "section": "References",
+            "old_pages": [
+              10,
+              11,
+              12
+            ],
+            "new_pages": [
+              10,
+              11,
+              12
+            ],
+            "added": 47,
+            "removed": 34,
+            "similarity": 0.664,
+            "added_samples": [
+              "10 [5] Kyunghyun Cho, Bart van Merrienboer, Caglar Gulcehre, Fethi Bougares, Holger Schwenk, and Yoshua Bengio.",
+              "[11] Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun.",
+              "Deep residual learning for im- age recognition.",
+              "In Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition, pages 770–778, 2016.",
+              "[12] Sepp Hochreiter, Yoshua Bengio, Paolo Frasconi, and Jürgen Schmidhuber."
+            ],
+            "removed_samples": [
+              "[5] Kyunghyun Cho, Bart van Merrienboer, Caglar Gulcehre, Fethi Bougares, Holger Schwenk, and Yoshua Bengio.",
+              "intend to make the code we used to train and evaluate our models available soon.",
+              "arXiv preprint arXiv:1308.0850, 2013.",
+              "[11] Sepp Hochreiter, Yoshua Bengio, Paolo Frasconi, and Jürgen Schmidhuber.",
+              "Gradient ﬂow in recurrent nets: the difﬁculty of learning long-term dependencies, 2001."
+            ]
+          },
+          {
+            "section": "6 Results/6.3 English Constituency Parsing",
+            "old_pages": [
+              8,
+              9
+            ],
+            "new_pages": [
+              9,
+              10
+            ],
+            "added": 15,
+            "removed": 22,
+            "similarity": 0.051,
+            "added_samples": [
+              "This task presents specific challenges: the output is subject to strong structural constraints and is significantly longer than the input.",
+              "Furthermore, RNN sequence-to-sequence models have not been able to attain state-of-the-art results in small-data regimes [37].",
+              "We trained a 4-layer transformer with dmodel = 1024 on the Wall Street Journal (WSJ) portion of the Penn Treebank [25], about 40K training sentences.",
+              "We also trained it in a semi-supervised setting, using the larger high-confidence and BerkleyParser corpora from with approximately 17M sentences [37].",
+              "We used a vocabulary of 16K tokens for the WSJ only setting and a vocabulary of 32K tokens for the semi-supervised setting."
+            ],
+            "removed_samples": [
+              ", bigger models are better, and dropout is very helpful in avoiding over-ﬁtting.",
+              "This task presents speciﬁc challenges: the output is subject to strong structural constraints and is signiﬁcantly longer than the input.",
+              "Furthermore, RNN sequence-to-sequence models have not been able to attain state-of-the-art results in small-data regimes [33].",
+              "ave not been able to attain state-of-the-art results in small-data regimes [33].",
+              "We trained a 4-layer transformer with dmodel = 1024 on the Wall Street Journal (WSJ) portion of the Penn Treebank [23], about 40K training sentences."
+            ]
+          }
+        ],
+        "diff_api": {
+          "status": 200,
+          "keys": [
+            "ok",
+            "summary",
+            "added_sections",
+            "removed_sections",
+            "changed_sections"
+          ]
+        }
+      }
+    },
+    {
+      "id": "B05",
+      "group": "innov",
+      "point": "b-2 GitHub 复现性对比 (8%)",
+      "steps": "调用代码复现性接口，检查 GitHub 链接提取与外部校验",
+      "expected": "返回仓库、star、活跃度与可复现性结论",
+      "actual": "{\"items\": [{\"doc_id\": \"dc7092cdf7b5c\", \"title\": \"Layer Normalization\", \"year\": \"2016\", \"repos\": [\"ivendrov/order-embedding\", \"cooijmanstim/Attentive_reader\"], \"checked_repo\": \"ivendrov/order-embedding",
+      "status": "PASS",
+      "elapsed_s": 3.5,
+      "evidence": {
+        "response": {
+          "items": [
+            {
+              "doc_id": "dc7092cdf7b5c",
+              "title": "Layer Normalization",
+              "year": "2016",
+              "repos": [
+                "ivendrov/order-embedding",
+                "cooijmanstim/Attentive_reader"
+              ],
+              "checked_repo": "ivendrov/order-embedding",
+              "repo_info": {
+                "repo": "ivendrov/order-embedding",
+                "stars": 189,
+                "forks": 61,
+                "language": "JavaScript",
+                "license": null,
+                "pushed_at": "2016-10-13T20:01:19Z",
+                "archived": false,
+                "open_issues": 2,
+                "url": "https://github.com/ivendrov/order-embedding"
+              },
+              "reproducibility": "medium",
+              "reasons": [
+                "star 189",
+                "无明确许可证",
+                "最后更新 3680 天前"
+              ],
+              "degraded": false,
+              "source": "api.github.com"
+            },
+            {
+              "doc_id": "d817ac4e56a32",
+              "title": "Language Models are Few-Shot Learners",
+              "year": "2020",
+              "repos": [
+                "openai/gpt-3"
+              ],
+              "checked_repo": "openai/gpt-3",
+              "repo_info": {
+                "repo": "openai/gpt-3",
+                "stars": 15689,
+                "forks": 2240,
+                "language": null,
+                "license": null,
+                "pushed_at": "2020-09-18T22:06:11Z",
+                "archived": true,
+                "open_issues": 3,
+                "url": "https://github.com/openai/gpt-3"
+              },
+              "reproducibility": "low",
+              "reasons": [
+                "star 15689",
+                "无明确许可证",
+                "最后更新 2244 天前",
+                "仓库已归档"
+              ],
+              "degraded": false,
+              "source": "api.github.com"
+            },
+            {
+              "doc_id": "d28f9c6d123e3",
+              "title": "Switch Transformers: Scaling to Trillion Parameter Models with Simple and Eﬃcient Sparsity",
+              "year": "2021",
+              "repos": [
+                "tensorflow/mesh"
+              ],
+              "checked_repo": "tensorflow/mesh",
+              "repo_info": {
+                "repo": "tensorflow/mesh",
+                "stars": 1625,
+                "forks": 254,
+                "language": "Python",
+                "license": "Apache-2.0",
+                "pushed_at": "2023-11-17T19:39:54Z",
+                "archived": true,
+                "open_issues": 98,
+                "url": "https://github.com/tensorflow/mesh"
+              },
+              "reproducibility": "low",
+              "reasons": [
+                "star 1625",
+                "许可证 Apache-2.0",
+                "最后更新 1089 天前",
+                "仓库已归档"
+              ],
+              "degraded": false,
+              "source": "api.github.com"
+            },
+            {
+              "doc_id": "ddd3d54f80b5a",
+              "title": "Evaluating Large Language Models Trained on Code",
+              "year": "2021",
+              "repos": [
+                "openai/human-eval",
+                "openai/code-align-evals-data"
+              ],
+              "checked_repo": "openai/human-eval",
+              "repo_info": {
+                "repo": "openai/human-eval",
+                "stars": 3425,
+                "forks": 480,
+                "language": "Python",
+                "license": "MIT",
+                "pushed_at": "2026-10-16T19:05:13Z",
+                "archived": false,
+                "open_issues": 47,
+                "url": "https://github.com/openai/human-eval"
+              },
+              "reproducibility": "high",
+              "reasons": [
+                "star 3425",
+                "许可证 MIT",
+                "最后更新 25 天前"
+              ],
+              "degraded": false,
+              "source": "api.github.com"
+            },
+            {
+              "doc_id": "d5e1461a7722b",
+              "title": "ZeRO: Memory Optimizations Toward Training Trillion Parameter Models",
+              "year": "2019",
+              "repos": [
+                "microsoft/deepspeed",
+                "nvidia/Megatron-LM"
+              ],
+              "checked_repo": "microsoft/deepspeed",
+              "repo_info": null,
+              "reproducibility": "no_public_code",
+              "reasons": [
+                "正文未检出 GitHub 仓库链接"
+              ],
+              "degraded": true,
+              "source": "unavailable"
+            },
+            {
+              "doc_id": "d1011ebd3a2b3",
+              "title": "Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer",
+              "year": "2019",
+              "repos": [
+                "google-research/text-to-text-transfer-transformer",
+                "LDNOOBW/List-of-Dirty-Naughty-Obscene-and-Otherwise-Bad-Words"
+              ],
+              "checked_repo": "google-research/text-to-text-transfer-transformer",
+              "repo_info": {
+                "repo": "google-research/text-to-text-transfer-transformer",
+                "stars": 6565,
+                "forks": 800,
+                "language": "Python",
+                "license": "Apache-2.0",
+                "pushed_at": "2026-10-12T19:32:28Z",
+                "archived": false,
+                "open_issues": 110,
+                "url": "https://github.com/google-research/text-to-text-transfer-transformer"
+              },
+              "reproducibility": "high",
+              "reasons": [
+                "star 6565",
+                "许可证 Apache-2.0",
+                "最后更新 29 天前"
+              ],
+              "degraded": false,
+              "source": "api.github.com"
+            },
+            {
+              "doc_id": "d16a2835145ee",
+              "title": "Emergent Abilities of Large Language Models",
+              "year": "2022",
+              "repos": [
+                "inverse-scaling/prize"
+              ],
+              "checked_repo": "inverse-scaling/prize",
+              "repo_info": {
+                "repo": "inverse-scaling/prize",
+                "stars": 626,
+                "forks": 27,
+                "language": null,
+                "license": "CC-BY-4.0",
+                "pushed_at": "2023-10-11T23:56:56Z",
+                "archived": false,
+                "open_issues": 0,
+                "url": "https://github.com/inverse-scaling/prize"
+              },
+              "reproducibility": "medium",
+              "reasons": [
+                "star 626",
+                "许可证 CC-BY-4.0",
+                "最后更新 1126 天前"
+              ],
+              "degraded": false,
+              "source": "api.github.com"
+            },
+            {
+              "doc_id": "d46b9a50a8416",
+              "title": "Learning Transferable Visual Models From Natural Language Supervision",
+              "year": "2021",
+              "repos": [
+                "OpenAI/CLIP"
+              ],
+              "checked_repo": "OpenAI/CLIP",
+              "repo_info": {
+                "repo": "openai/CLIP",
+                "stars": 34595,
+                "forks": 4064,
+                "language": "Jupyter Notebook",
+                "license": "MIT",
+                "pushed_at": "2026-03-25T18:46:40Z",
+                "archived": false,
+                "open_issues": 273,
+                "url": "https://github.com/openai/CLIP"
+              },
+              "reproducibility": "high",
+              "reasons": [
+                "star 34595",
+                "许可证 MIT",
+                "最后更新 230 天前"
+              ],
+              "degraded": false,
+              "source": "api.github.com"
+            }
+          ],
+          "stats": {
+            "documents_scanned": 37,
+            "with_public_code": 8,
+            "high": 3,
+            "degraded": 1
+          },
+          "method": "正文正则抽 GitHub 链接 → GitHub REST API 查 star/license/pushed_at → 加权分级"
+        }
+      }
+    },
+    {
+      "id": "B06",
+      "group": "ui",
+      "point": "b-3 中英双向同步滚动 (7%)",
+      "steps": "无头浏览器 iframe 注入滚动，读取两侧 scrollTop 与顶部段落序号",
+      "expected": "双向跟随且顶部段落序号一致",
+      "actual": "双栏渲染 OK，已加载段落=5\n英文滚动 700 -&gt; 中文 141\n中文滚动 1300 -&gt; 英文 298 =&gt; 1559\n顶部段落序号 英文=7 中文=7\nRESULT: PASS 双向联动生效且按段落对齐",
+      "status": "PASS",
+      "elapsed_s": 4.6,
+      "evidence": {
+        "dom_length": 6466,
+        "raw": "双栏渲染 OK，已加载段落=5\n英文滚动 700 -&gt; 中文 141\n中文滚动 1300 -&gt; 英文 298 =&gt; 1559\n顶部段落序号 英文=7 中文=7\nRESULT: PASS 双向联动生效且按段落对齐"
+      }
+    },
+    {
+      "id": "B07",
+      "group": "ui",
+      "point": "b-3 引用一键跳转 (7%)",
+      "steps": "点击答案里的锚点徽章，检查阅读器页码与高亮框",
+      "expected": "页码正确切换且 bbox 覆盖层出现",
+      "actual": "img.src=/api/documents/dca501d1039dc/page/3.png?dpi=130&amp;t=1794395261012\n高亮框数量=1 页码显示=3 / 15\nRESULT: PASS 锚点一键跳到 p3 且绘制 bbox 高亮",
+      "status": "PASS",
+      "elapsed_s": 4.5,
+      "evidence": {
+        "dom_length": 6479,
+        "raw": "img.src=/api/documents/dca501d1039dc/page/3.png?dpi=130&amp;t=1794395261012\n高亮框数量=1 页码显示=3 / 15\nRESULT: PASS 锚点一键跳到 p3 且绘制 bbox 高亮"
+      }
+    },
+    {
+      "id": "B08",
+      "group": "ui",
+      "point": "a-1 正文引用角标跳 References（官方 1.3.2）",
+      "steps": "在阅读器点正文里的 [29]，检查页码、高亮框尺寸与位置、条目详情浮层",
+      "expected": "翻到 References 页、高亮框圈住该条（宽≥页宽 50%、高≥8px）且滚入视野",
+      "actual": "点 [29], 由 p2 跳到 p11，高亮 628×50px 且滚入视野；文本层对齐误差 0px、100% 词落在页面内",
+      "status": "PASS",
+      "elapsed_s": 8.9,
+      "evidence": {
+        "steps": [
+          {
+            "open": "OK"
+          },
+          {
+            "geometry": {
+              "imgW": 968,
+              "imgH": 1252.7,
+              "layerW": 968,
+              "layerH": 1252.7,
+              "frameW": 968,
+              "frameH": 1252.7,
+              "dw": 0,
+              "dh": 0,
+              "tws": 627,
+              "inside_ratio": 1,
+              "cites": 13,
+              "refhit": 13,
+              "lastWord": {
+                "t": "2 ",
+                "x": 773,
+                "y": 1289.1
+              },
+              "scale": 1.5816993464052287
+            }
+          },
+          {
+            "align": "PASS"
+          },
+          {
+            "select": {
+              "text": "Attention mechanisms have become an integral part of",
+              "popVisible": true,
+              "btn": "译"
+            }
+          },
+          {
+            "translate": {
+              "ok": true,
+              "zh": "注意力机制已成为..."
+            }
+          },
+          {
+            "cite": {
+              "label": "[29], ",
+              "before": 2,
+              "after": 11,
+              "pop": true,
+              "popText": "[29] Noam Shazeer, Azalia Mirhoseini, Krzysztof Maziarz, Andy Davis, Quoc Le, Geoffrey Hinton, and Jeff Dean. Outrageously large neural networks: The sparsely-gated mixture-of-experts layer. arXiv preprint arXiv:1701.06538, 2017.",
+              "hl": 1,
+              "hlBox": "[108,554.9,505.2,586.7]",
+              "scrollTop": 529,
+              "stageScrollH": 1277,
+              "stageClientH": 748,
+              "hlInline": "left: 17.6471%; top: 70.0631%; width: 64.902%; height: 4.01515%;",
+              "hlTopComputed": "877.672px",
+              "hlHComputed": "50.2969px",
+              "frameTopInView": -517,
+              "pageSizesHas11": true,
+              "hlW": 628,
+              "hlH": 50,
+              "frameW": 968,
+              "hlVisible": true,
+              "hlTopInView": 361
+            }
+          },
+          {
+            "hl_box": "PASS",
+            "w": 628,
+            "h": 50,
+            "frameW": 968
+          },
+          {
+            "cite_jump": "PASS"
+          }
+        ],
+        "ok": true,
+        "error": ""
+      }
+    },
+    {
+      "id": "B09",
+      "group": "ui",
+      "point": "a-3 划词翻译（官方 1.3.3.1）",
+      "steps": "在阅读器选中一段英文正文，点浮层「译」，检查返回中文",
+      "expected": "选区文本带空格、返回非空中文译文",
+      "actual": "选中「Attention mechanisms have become an integral par…」→ 注意力机制已成为...",
+      "status": "PASS",
+      "elapsed_s": 0.0,
+      "evidence": {
+        "steps": [
+          {
+            "open": "OK"
+          },
+          {
+            "geometry": {
+              "imgW": 968,
+              "imgH": 1252.7,
+              "layerW": 968,
+              "layerH": 1252.7,
+              "frameW": 968,
+              "frameH": 1252.7,
+              "dw": 0,
+              "dh": 0,
+              "tws": 627,
+              "inside_ratio": 1,
+              "cites": 13,
+              "refhit": 13,
+              "lastWord": {
+                "t": "2 ",
+                "x": 773,
+                "y": 1289.1
+              },
+              "scale": 1.5816993464052287
+            }
+          },
+          {
+            "align": "PASS"
+          },
+          {
+            "select": {
+              "text": "Attention mechanisms have become an integral part of",
+              "popVisible": true,
+              "btn": "译"
+            }
+          },
+          {
+            "translate": {
+              "ok": true,
+              "zh": "注意力机制已成为..."
+            }
+          },
+          {
+            "cite": {
+              "label": "[29], ",
+              "before": 2,
+              "after": 11,
+              "pop": true,
+              "popText": "[29] Noam Shazeer, Azalia Mirhoseini, Krzysztof Maziarz, Andy Davis, Quoc Le, Geoffrey Hinton, and Jeff Dean. Outrageously large neural networks: The sparsely-gated mixture-of-experts layer. arXiv preprint arXiv:1701.06538, 2017.",
+              "hl": 1,
+              "hlBox": "[108,554.9,505.2,586.7]",
+              "scrollTop": 529,
+              "stageScrollH": 1277,
+              "stageClientH": 748,
+              "hlInline": "left: 17.6471%; top: 70.0631%; width: 64.902%; height: 4.01515%;",
+              "hlTopComputed": "877.672px",
+              "hlHComputed": "50.2969px",
+              "frameTopInView": -517,
+              "pageSizesHas11": true,
+              "hlW": 628,
+              "hlH": 50,
+              "frameW": 968,
+              "hlVisible": true,
+              "hlTopInView": 361
+            }
+          },
+          {
+            "hl_box": "PASS",
+            "w": 628,
+            "h": 50,
+            "frameW": 968
+          },
+          {
+            "cite_jump": "PASS"
+          }
+        ],
+        "ok": true
+      }
+    },
+    {
+      "id": "C01",
+      "group": "eng",
+      "point": "c-3 多文档并发分析",
+      "steps": "取 3 份**尚未入库**的真实 PDF 并发上传，再逐篇抽查首页块，核对无串档",
+      "expected": "全部成功或正确判重；新入库文档首页块互不混淆；服务仍健康",
+      "actual": "3 份真实入库并发完成，耗时 [1.7, 1.7, 2.0]s，无串档、服务存活",
+      "status": "PASS",
+      "elapsed_s": 2.5,
+      "evidence": {
+        "selected": [
+          "qa_probe_3.pdf",
+          "qa_probe_9.pdf",
+          "qa_probe_15.pdf"
+        ],
+        "uploads": [
+          {
+            "file": "qa_probe_3.pdf",
+            "status": 200,
+            "elapsed": 1.7,
+            "stage": null,
+            "ok": true,
+            "forced": true,
+            "chunks": 14,
+            "error": null
+          },
+          {
+            "file": "qa_probe_9.pdf",
+            "status": 200,
+            "elapsed": 1.7,
+            "stage": null,
+            "ok": true,
+            "forced": true,
+            "chunks": 9,
+            "error": null
+          },
+          {
+            "file": "qa_probe_15.pdf",
+            "status": 200,
+            "elapsed": 2.0,
+            "stage": null,
+            "ok": true,
+            "forced": true,
+            "chunks": 17,
+            "error": null
+          }
+        ],
+        "cross_check": [
+          {
+            "file": "qa_probe_3.pdf",
+            "result": "OK",
+            "first": "Provided proper attribution is provided, Google hereby grant",
+            "pages_ok": true
+          },
+          {
+            "file": "qa_probe_9.pdf",
+            "result": "OK",
+            "first": "Prafulla Dhariwal\nArvind Neelakantan\nPranav Shyam\nGirish Sas",
+            "pages_ok": true
+          },
+          {
+            "file": "qa_probe_15.pdf",
+            "result": "OK",
+            "first": "Mark Chen * 1 Jerry Tworek * 1 Heewoo Jun * 1 Qiming Yuan * ",
+            "pages_ok": true
+          }
+        ],
+        "distinct_first_blocks": true,
+        "health_after": [
+          200,
+          {
+            "ok": true,
+            "service": "sciagent",
+            "version": "1.0.0"
+          }
+        ],
+        "cleanup_status": [
+          200,
+          200,
+          200
+        ]
+      }
+    },
+    {
+      "id": "C02",
+      "group": "eng",
+      "point": "c-3 并发问答",
+      "steps": "同时发 4 个问答请求",
+      "expected": "全部 200、无串答、引用各自合法",
+      "actual": "4 路并发完成，耗时 [57.3, 58.1, 56.6, 71.2]",
+      "status": "PASS",
+      "elapsed_s": 71.2,
+      "evidence": {
+        "results": [
+          {
+            "q": "Transformer 的 BLEU 是多少？",
+            "status": 200,
+            "elapsed": 57.3,
+            "answer": "Transformer 在 WMT 2014 英德翻译任务上的 BLEU 为 28.4，在英法翻译任务上的 BLEU 为 41.0。\n\n- 英德方向：Transformer (big) 以超过 2.0",
+            "verify": {
+              "total": 21,
+              "valid": 21,
+              "invalid": 0,
+              "rate": 1.0,
+              "invalid_anchors": [],
+              "invalid_refs": [],
+              "bad_numbers": [],
+              "cleaned": "Transformer 在 WMT 2014 英德翻译任务上的 BLEU 为 28.4，在英法翻译任务上的 BLEU 为 41.0。\n\n- 英德方向：Transformer (big) 以超过 2.0 BLEU 的优势胜过此前最佳模型（包括 ensembles），创下 28.4 的 state-of-the-art BLEU 分数，训练耗时 3.5 days on 8 P100 GPUs [3][4]；摘要同样给出 28.4 BLEU，并称比现有最佳结果（含 ensembles）高出 over 2 BLEU [1][2]。\n- 英法方向：big model 取得 BLEU 41.0，优于所有此前发表的 single models，训练成本低于此前 state-of-the-art model 的 1/4 [5]；该英法模型使用的 dropout rate 为 $P_{drop} = 0.1$，而非 0.3 [5]。\n- 关于 Table 2 中 base model 的具体数值，文献中未提及。",
+              "has_citation": true
+            }
+          },
+          {
+            "q": "BERT 的预训练任务有哪些？",
+            "status": 200,
+            "elapsed": 58.1,
+            "answer": "BERT 使用两个无监督（unsupervised）预训练任务：Task #1 是 Masked LM（MLM），Task #2 是 Next Sentence Prediction（NSP）[1][",
+            "verify": {
+              "total": 14,
+              "valid": 14,
+              "invalid": 0,
+              "rate": 1.0,
+              "invalid_anchors": [],
+              "invalid_refs": [],
+              "bad_numbers": [],
+              "cleaned": "BERT 使用两个无监督（unsupervised）预训练任务：Task #1 是 Masked LM（MLM），Task #2 是 Next Sentence Prediction（NSP）[1][2]。依据如下：证据 [1] 写明“we pre-train BERT using two unsupervised tasks”，并标出 Task #1: Masked LM；证据 [5] 说明 MLM 是随机 mask 输入 token，再预测这些被 mask 的 token；证据 [3] 说明 NSP 用于理解两个句子之间的关系，而语言建模无法直接捕捉这种关系；证据 [2] 指出除 masked language model 外还使用“next sentence prediction”任务，以联合预训练 text-pair representations。所列证据中未提及“15% of all WordPiece tokens”、80%/10%/10% 替换比例以及 50% IsNext / 50% NotNext 的具体构造比例。",
+              "has_citation": true
+            }
+          },
+          {
+            "q": "GPT-3 的参数量？",
+            "status": 200,
+            "elapsed": 56.6,
+            "answer": "GPT-3 的参数量为 175 billion parameters（即 GPT-3 175B，表中小数写作 175.0B）。\n- 原文将其描述为\"an autoregressive language",
+            "verify": {
+              "total": 12,
+              "valid": 12,
+              "invalid": 0,
+              "rate": 1.0,
+              "invalid_anchors": [],
+              "invalid_refs": [],
+              "bad_numbers": [],
+              "cleaned": "GPT-3 的参数量为 175 billion parameters（即 GPT-3 175B，表中小数写作 175.0B）。\n- 原文将其描述为\"an autoregressive language model with 175 billion parameters, 10x more than any previous non-sparse language model\"[1]。\n- 论文实验部分写明训练的是\"a 175 billion parameter autoregressive language model, which we call GPT-3\"[2]，LoRA 的放大测试也明确为\"GPT-3 with 175 billion parameters\"[5]。\n- 模型规格表中对应条目为\"GPT-3 175B or \\\"GPT-3\\\" 175.0B\"，nlayers 96、dmodel 12288[4]。",
+              "has_citation": true
+            }
+          },
+          {
+            "q": "Mistral 7B 用了什么注意力？",
+            "status": 200,
+            "elapsed": 71.2,
+            "answer": "Mistral 7B 同时使用了 grouped-query attention (GQA) 和 sliding window attention (SWA) 两种注意力机制 [1]。\n\n- GQA ",
+            "verify": {
+              "total": 9,
+              "valid": 9,
+              "invalid": 0,
+              "rate": 1.0,
+              "invalid_anchors": [],
+              "invalid_refs": [],
+              "bad_numbers": [],
+              "cleaned": "Mistral 7B 同时使用了 grouped-query attention (GQA) 和 sliding window attention (SWA) 两种注意力机制 [1]。\n\n- GQA 显著加速推理速度，并降低 decoding 阶段的显存需求，从而支持更大的 batch size、提升吞吐量 [1]。\n- SWA 利用 transformer 的堆叠层关注窗口大小 W 之外的信息：第 k 层位置 i 的 hidden state 关注上一层中位置介于 i − W 与 i 之间的所有 hidden states；递归地，该 hidden state 可访问输入层中距离最远 W × k tokens 的信息，如 Figure 1 所示 [4]。\n- 关于最后一层使用 W = 4096 时的理论注意力跨度、序列长度 16K 下相对 vanilla attention baseline 的 2x 加速等具体数值，所给证据 [4] 的可见文本未包含（原文该段后文被省略），需核对 2310.06825v1.pdf 第 2 页原文后再引用 [4]。",
+              "has_citation": true
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "C03",
+      "group": "eng",
+      "point": "c-3 干净环境一键复现",
+      "steps": "用独立 DATA_DIR 启动全新实例并访问 /health 与 /api/documents",
+      "expected": "零数据也能启动，接口 200",
+      "actual": "全新环境启动成功，文档数 0，向量后端 sqlite",
+      "status": "PASS",
+      "elapsed_s": 3.4,
+      "evidence": {
+        "health": {
+          "ok": true,
+          "service": "sciagent",
+          "version": "1.0.0"
+        },
+        "documents": 0,
+        "data_dir": "<repo>\\data\\_qa_clean"
+      }
+    },
+    {
+      "id": "C04",
+      "group": "perf",
+      "point": "c-3 长 PDF 打开耗时",
+      "steps": "对百页文档连续请求页图与章节树，计时",
+      "expected": "首屏 <3s，页图 <1.5s",
+      "actual": "页图 64ms / 页元数据 30ms / 章节树 5ms",
+      "status": "PASS",
+      "elapsed_s": 0.1,
+      "evidence": {
+        "file": "2303.08774v6.pdf",
+        "pages": 100,
+        "meta_ms": 30,
+        "img_ms": 64,
+        "sections_ms": 5,
+        "img_bytes": 270587,
+        "status": [
+          200,
+          200,
+          200
+        ]
+      }
+    },
+    {
+      "id": "C05",
+      "group": "perf",
+      "point": "c-3 20+ 图谱渲染帧率",
+      "steps": "浏览器加载图谱并测量首帧与交互帧间隔",
+      "expected": "节点 >20 且首帧 <3s",
+      "actual": "图谱节点=37 首帧耗时=250ms canvas=998x672\n1s 内 rAF 回调=2（无头虚拟时钟，仅参考）\nRESULT: PASS 20+ 节点图谱渲染，首帧 250ms",
+      "status": "PASS",
+      "elapsed_s": 4.6,
+      "evidence": {
+        "dom_length": 6441,
+        "raw": "图谱节点=37 首帧耗时=250ms canvas=998x672\n1s 内 rAF 回调=2（无头虚拟时钟，仅参考）\nRESULT: PASS 20+ 节点图谱渲染，首帧 250ms"
+      }
+    },
+    {
+      "id": "C06",
+      "group": "perf",
+      "point": "c-3 峰值内存/显存",
+      "steps": "采集服务进程 RSS 与 GPU 显存，记录一次问答前后增量",
+      "expected": "内存增量可量化且无泄漏迹象",
+      "actual": "RSS 964→967 MB（Δ+2.9 MB）；GPU：1244 MiB",
+      "status": "PASS",
+      "elapsed_s": 14.6,
+      "evidence": {
+        "pid": 45880,
+        "port": 8013,
+        "rss_before_mb": 963.8,
+        "rss_after_mb": 966.7,
+        "delta_mb": 2.9,
+        "gpu": "1244 MiB",
+        "chat_status": 200,
+        "note": "GPU 数值是 nvidia-smi 报告的系统级占用；全部模型走云端 API，本进程显存占用为 0"
+      }
+    },
+    {
+      "id": "C07",
+      "group": "stream",
+      "point": "e-3 Token 级流式输出",
+      "steps": "请求 SSE，解析 thinking/token/done 事件，校验 token 拼接与最终答案一致",
+      "expected": "多个真实 token 片段、思考过程事件齐全、拼接无损、引用校验有效",
+      "actual": "36 个 token 片段无损拼接，思考阶段 ['plan', 'retrieve', 'read', 'verify']，引用校验 8/8",
+      "status": "PASS",
+      "elapsed_s": 1.8,
+      "evidence": {
+        "chunks": 36,
+        "elapsed_s": 1.8,
+        "thinking_stages": [
+          "plan",
+          "retrieve",
+          "read",
+          "verify"
+        ],
+        "joined_chars": 232,
+        "raw_equals_tokens": true,
+        "verify": {
+          "total": 8,
+          "valid": 8,
+          "invalid": 0,
+          "rate": 1.0,
+          "invalid_anchors": [],
+          "invalid_refs": [],
+          "bad_numbers": [],
+          "cleaned": "Transformer 的核心机制是完全依赖自注意力机制来建模输入与输出之间的全局依赖关系，摒弃了传统的循环神经网络和卷积神经网络 [1] [p2@107,150,505,193]。该架构通过多头自注意力实现并行化计算，显著提升训练效率，并在机器翻译任务中取得更优性能 [3] [p1@36,597,575,616]。其设计使得任意两个位置间的依赖关系仅需常数时间计算，克服了传统模型中依赖距离导致的计算复杂度上升问题 [10] [p2@36,263,575,301]。这一特性使 Transformer 成为首个完全基于注意力机制的序列转换模型，且在多个基准任务上达到新高度 [7] [p10@36,41,575,98]。",
+          "has_citation": true
+        },
+        "evidence": 11,
+        "first": "Transformer",
+        "answer_head": "Transformer 的核心机制是完全依赖自注意力机制来建模输入与输出之间的全局依赖关系，摒弃了传统的循环神经网络和卷积神经网络 [1] [p2@107,150,505,193]。该架构通过多头自注意力实现并行化计算，显著提升训练效率，并在机器翻译任务中取得更优性能 [3] [p1@36,597,575,616]。其"
+      }
+    },
+    {
+      "id": "C07B",
+      "group": "stream",
+      "point": "e-3 前端流式与思考过程可视化 (3%)",
+      "steps": "无头浏览器打开流式开关并发送问题，检查思考时间线与逐 token 答案",
+      "expected": "思考步骤 >=2 且答案真实渲染，无前端报错",
+      "actual": "RESULT: PASS 流式开关/思考时间线/逐token答案/证据均渲染",
+      "status": "PASS",
+      "elapsed_s": 7.6,
+      "evidence": {
+        "driver": "CDP realtime (virtual-time 与 SSE 流不兼容)",
+        "raw": "控件已渲染：发送 / 流式开关；开始真实 SSE…\n思考步骤=4 html字符=536 DOM文本=255 证据=11\n答案片段=Transformer 的核心机制是完全依赖自注意力机制来建模输入与输出之间的全局依赖关系，摒弃了传统的循环神经网络（RNN）和卷积神经网络（CNN）[3] p\nRESULT: PASS 流式开关/思考时间线/逐token答案/证据均渲染",
+        "dom_length": 6516,
+        "screenshot": "<repo>\\docs\\qa\\evidence\\ui_stream_20261111_190335.png",
+        "error": ""
+      }
+    },
+    {
+      "id": "C08",
+      "group": "eng",
+      "point": "e-3 断网/异常错误边界",
+      "steps": "注入不存在的文档、空问题、超大页码、畸形 JSON",
+      "expected": "返回 4xx 且带友好信息，不 500、不崩溃",
+      "actual": "异常均被拦截，状态码 [404, 400, 404, 422]",
+      "status": "PASS",
+      "elapsed_s": 0.0,
+      "evidence": {
+        "probes": [
+          {
+            "probe": "不存在的文档",
+            "status": 404,
+            "body": "{'detail': '文档不存在'}"
+          },
+          {
+            "probe": "空问题",
+            "status": 400,
+            "body": "{'detail': '问题不能为空'}"
+          },
+          {
+            "probe": "超大页码",
+            "status": 404,
+            "body": "{'detail': '文档或源文件不存在'}"
+          },
+          {
+            "probe": "畸形 JSON",
+            "status": 422,
+            "body": "{'detail': [{'type': 'string_type', 'loc': ['body', 'question'], 'msg': 'Input should be a valid string', 'input': 123}, {'type': 'list_type', 'loc': ['body', '"
+          }
+        ]
+      }
+    },
+    {
+      "id": "C09",
+      "group": "eng",
+      "point": "硬性用例 4：CSV 转 TikZ/Mermaid",
+      "steps": "提交 CSV 表格，检查生成的 Mermaid/TikZ 语法与数值",
+      "expected": "数值一一对应且语法可渲染",
+      "actual": "Mermaid 与 TikZ 均保留全部数值",
+      "status": "PASS",
+      "elapsed_s": 0.0,
+      "evidence": {
+        "format": "mermaid",
+        "code": "xychart-beta\n    title \"对比\"\n    x-axis [\"Transformer\", \"BERT\"]\n    y-axis \"value\" 0 --> 132\n    bar [28.4, 30.1]  %% bleu\n    bar [65, 110]  %% params\n    %% raw values: {\"bleu\": [\"28.4\", \"30.1\"], \"params\": [\"65M\", \"110M\"]}",
+        "tikz": "\\begin{figure}[htbp]\n  \\centering\n  \\begin{tikzpicture}\n    \\begin{axis}[\n      ybar, enlargelimits=0.15, legend style={at={(0.5,-0.18)},anchor=north,legend columns=-1},\n      ylabel={value}, symbolic xCoords={Transformer,BERT},\n      xtick=data, nodes near coords, grid=major,\n      title={对比},\n    ]\n      \\addplot coordinates {(\"Transformer\",28.4), (\"BERT\",30.1)};  % bleu\n      \\addlegendentry{bl"
+      }
+    },
+    {
+      "id": "A06B",
+      "group": "tools",
+      "point": "a-4 工具超时/失败重试/降级 (6%)",
+      "steps": "注入 simulate=timeout / fail，检查 attempts、degraded、fallback 与本地降级结果",
+      "expected": "重试次数正确、降级结果标注来源、服务不崩溃",
+      "actual": "超时重试 3 次、失败重试 2 次，均降级到本地库并标注 source",
+      "status": "PASS",
+      "elapsed_s": 15.4,
+      "evidence": {
+        "branches": {
+          "timeout": {
+            "status": 200,
+            "attempts": 3,
+            "degraded": true,
+            "fallback": "arxiv_unavailable_local_corpus",
+            "source": "local_library",
+            "items": 2,
+            "error": "TimeoutException: QA 模拟超时"
+          },
+          "fail": {
+            "status": 200,
+            "attempts": 2,
+            "degraded": true,
+            "fallback": "arxiv_unavailable_local_corpus",
+            "source": "local_library",
+            "items": 2,
+            "error": "HTTPStatusError: QA 模拟 502"
+          }
+        },
+        "health_after": [
+          200,
+          {
+            "ok": true,
+            "service": "sciagent",
+            "version": "1.0.0"
+          }
+        ],
+        "catalog": null
+      }
+    },
+    {
+      "id": "A06C",
+      "group": "tools",
+      "point": "a-4 Function Calling 决策 (6%)",
+      "steps": "POST /api/tools/agent，让模型按 tools 协议选工具并真实执行",
+      "expected": "selected_by=llm_function_call 且执行结果非空",
+      "actual": "LLM 选定 arxiv_search，真实执行返回 1 条（local_library）",
+      "status": "PASS",
+      "elapsed_s": 2.8,
+      "evidence": {
+        "status": 200,
+        "selected_by": "llm_function_call",
+        "call": {
+          "name": "arxiv_search",
+          "arguments": {
+            "query": "attention is all you need",
+            "max_results": 1
+          }
+        },
+        "result_ok": true,
+        "result_source": "local_library",
+        "items": 1
+      }
+    },
+    {
+      "id": "C10",
+      "group": "eng",
+      "point": "c-1 删除可恢复性与审计 (P0)",
+      "steps": "上传 1 篇小 PDF → 删除 → 查回收站 → 恢复 → 核对块数",
+      "expected": "删除进回收站、审计有记录、恢复后块数一致",
+      "actual": "删除→回收站→恢复闭环成功，块数 12 前后一致，审计已留痕",
+      "status": "PASS",
+      "elapsed_s": 2.2,
+      "evidence": {
+        "file": "qa_probe_21.pdf",
+        "old_doc_id": "da1937dd217e6",
+        "new_doc_id": "dd697ca76683b",
+        "chunks_before": 12,
+        "delete": [
+          200,
+          {
+            "ok": true,
+            "trash": true,
+            "message": "已移入回收站，可用 /api/documents/{id}/restore 恢复"
+          }
+        ],
+        "trash_has": true,
+        "audit_has_delete": true,
+        "restore": [
+          200,
+          {
+            "ok": true,
+            "restored": true,
+            "doc_id": "dd697ca76683b",
+            "old_doc_id": "da1937dd217e6",
+            "filename": "qa_probe_21.pdf",
+            "chunks": 12,
+            "message": "已从回收站恢复"
+          }
+        ],
+        "chunks_after": 12,
+        "doc_back": true
+      }
+    },
+    {
+      "id": "D01",
+      "group": "biz",
+      "point": "d-2 六大核心模块闭环",
+      "steps": "依次调用上传/解析/检索问答/溯源/图谱/对照阅读/工具，检查每步返回",
+      "expected": "六模块全部 200 且数据贯通",
+      "actual": "六模块全部贯通",
+      "status": "PASS",
+      "elapsed_s": 20.9,
+      "evidence": {
+        "modules": [
+          {
+            "module": "解析-章节树",
+            "status": 200,
+            "size": 1304
+          },
+          {
+            "module": "解析-参考文献",
+            "status": 200,
+            "size": 8249
+          },
+          {
+            "module": "检索问答",
+            "status": 200,
+            "size": 10762
+          },
+          {
+            "module": "图谱",
+            "status": 200,
+            "size": 28700
+          },
+          {
+            "module": "对照阅读",
+            "status": 200,
+            "size": 4760
+          },
+          {
+            "module": "任务轨迹",
+            "status": 200,
+            "size": 3286
+          }
+        ],
+        "doc": "1706.03762v1_img.pdf"
+      }
+    },
+    {
+      "id": "D02",
+      "group": "biz",
+      "point": "d-1 文献筛选 / 对比阅读痛点",
+      "steps": "对比模式提问跨 3 篇，检查答案是否覆盖多篇且引用分布",
+      "expected": "证据来自 >=2 篇且结论有对比结构",
+      "actual": "证据覆盖 4 篇：['1706.03762v1.pdf', '1910.10683v4.pdf', '2005.14165v4.pdf', 'N19-1423.pdf']",
+      "status": "PASS",
+      "elapsed_s": 106.2,
+      "evidence": {
+        "evidence": 10,
+        "docs": [
+          "1706.03762v1.pdf",
+          "1910.10683v4.pdf",
+          "2005.14165v4.pdf",
+          "N19-1423.pdf"
+        ],
+        "answer": "BERT 采用“掩码语言模型”（MLM）与“下一句预测”双任务预训练，以实现深度双向表示；GPT-3 采用自回归语言建模，仅基于左到右上下文预测下一个词；Transformer 原始模型使用标准序列到序列的编码器-解码器框架，通过最大似然估计进行训练。三者在训练目标上存在根本差异：BERT 的 MLM 目标允许融合左右上下文，从而构建双向表示 [6]，其动机是超越单向语言模型预训练 [5]；GPT",
+        "verify": {
+          "total": 14,
+          "valid": 14,
+          "invalid": 0,
+          "rate": 1.0,
+          "invalid_anchors": [],
+          "invalid_refs": [],
+          "bad_numbers": [],
+          "cleaned": "BERT 采用“掩码语言模型”（MLM）与“下一句预测”双任务预训练，以实现深度双向表示；GPT-3 采用自回归语言建模，仅基于左到右上下文预测下一个词；Transformer 原始模型使用标准序列到序列的编码器-解码器框架，通过最大似然估计进行训练。三者在训练目标上存在根本差异：BERT 的 MLM 目标允许融合左右上下文，从而构建双向表示 [6]，其动机是超越单向语言模型预训练 [5]；GPT-3 的训练目标为传统语言建模，包括预测单个词、补全句子或段落等任务 [10]，且其数据集多源于包含于训练语料中的 Wikipedia 等来源 [3]；而 Transformer 模型则通过标准翻译任务优化 BLEU 分数，在 EN-DE 和 EN-FR 任务上均优于先前模型 [2]。\n\n| 模型 | 训练目标 | 核心机制 | 承袭/差异点 |\n|------|----------|----------|------------|\n| BERT | 掩码语言模型（MLM）+ 下一句预测 | 随机掩码 15% Token 并重建 [7]，融合左右上下文 [6] | 启发自 Cloze 任务 [8]，突破单向性限制 |\n| GPT-3 | 自回归语言建模 | 逐词预测后续内容，无掩码机制 | 未使用 MLM，依赖左到右生成 [10] |\n| Transformer | 序列到序列最大似然估计 | 编码器-解码器结构，直接优化翻译输出 [9] | 为后续模型提供架构基础，非预训练目标设计 |",
+          "has_citation": true
+        }
+      }
+    },
+    {
+      "id": "C11",
+      "group": "eng",
+      "point": "c-1 零崩溃 Bug 证据",
+      "steps": "只扫描本轮 QA 时间窗内的日志，检查新增 Traceback；并验证所有已登记接口无 5xx",
+      "expected": "本轮窗口内零 Traceback，接口无 5xx",
+      "actual": "本轮窗口零 Traceback（历史 2 处已被兜底），11 个接口全部 200",
+      "status": "PASS",
+      "elapsed_s": 0.9,
+      "evidence": {
+        "log_lines_scanned": 2235,
+        "qa_window_start": "2026-11-11T19:01:35.419081",
+        "tracebacks_in_window": [],
+        "historic_tracebacks": 2,
+        "unhandled": [],
+        "endpoint_status": {
+          "/health": 200,
+          "/api/system/info": 200,
+          "/api/documents": 200,
+          "/api/tasks": 200,
+          "/api/graph": 200,
+          "/api/tools/health": 200,
+          "/api/tools/catalog": 200,
+          "/api/documents/trash": 200,
+          "/api/audit": 200,
+          "/api/research/future-work": 200,
+          "/api/research/reproducibility?online=false": 200
+        },
+        "counts": {
+          "documents": 37,
+          "chunks": 19766,
+          "tasks": 156,
+          "lessons": 88
+        }
+      }
+    },
+    {
+      "id": "F02",
+      "group": "open",
+      "point": "f-1 学术赋能效率 (5%)",
+      "steps": "实测在全库字符量中定位答案的端到端耗时、命中证据量与过滤比例",
+      "expected": "给出可复现的量化数据（耗时、过滤率、引用命中率）",
+      "actual": "在 6,341,691 字 / 19766 块中用 11.6s 定位 10 条证据（4471 字），过滤 99.929% 语料，引用校验 3/3",
+      "status": "PASS",
+      "elapsed_s": 11.7,
+      "evidence": {
+        "corpus_chars": 6341691,
+        "corpus_chunks": 19766,
+        "latency_s": 11.6,
+        "evidence_count": 10,
+        "evidence_chars": 4471,
+        "filter_ratio": 0.99929,
+        "verify": {
+          "total": 3,
+          "valid": 3,
+          "invalid": 0,
+          "rate": 1.0,
+          "invalid_anchors": [],
+          "invalid_refs": [],
+          "bad_numbers": [],
+          "cleaned": "Transformer 的 Base 模型在一台机器上用 8 块 NVIDIA P100 GPU 训练 [1][2]。",
+          "has_citation": true
+        },
+        "answer": "Transformer 的 Base 模型在一台机器上用 8 块 NVIDIA P100 GPU 训练 [1][2]。\n\n---\n**引用来源**\n\n| # | 文献 | 页 | 锚点 | 片段 |\n| --- | --- | --- | --- | --- |\n| 1 | 1706.03762v1.pdf | 7 |"
+      }
+    },
+    {
+      "id": "F03",
+      "group": "write",
+      "point": "f-1 写作 Copilot 无幻觉 References（官方 1.6.1）",
+      "steps": "POST /api/write/outline 给一句 idea，检查四段框架、每条 Reference 能否回指库内 doc_id、越界引用数",
+      "expected": "四段均有正文；References 全部有 doc_id 且在库内；模型编造条目=0；越界引用=0",
+      "actual": "20.9s 生成 4 段（5806 字符），References 4 条全部可回指库内文献，编造 0 条、越界引用 0 处",
+      "status": "PASS",
+      "elapsed_s": 21.0,
+      "evidence": {
+        "latency_s": 20.9,
+        "title": "Sparse Attention for Efficient Long-Document Retrieval-Augmented Generation with Reduced Memory Footprint",
+        "sections": {
+          "abstract": 1248,
+          "introduction": 1659,
+          "related_work": 1584,
+          "plan": 1315
+        },
+        "sections_with_cites": {
+          "abstract": [
+            "[1]",
+            "[2]",
+            "[4]"
+          ],
+          "introduction": [
+            "[1]",
+            "[2]",
+            "[4]"
+          ],
+          "related_work": [
+            "[1]",
+            "[2]",
+            "[3]",
+            "[4]"
+          ],
+          "plan": [
+            "[1]",
+            "[2]",
+            "[4]"
+          ]
+        },
+        "refs": [
+          {
+            "i": 1,
+            "doc_in_library": true,
+            "gbt": "DAO T, FU D Y, ERMON S, et al. FlashAttention: Fast and Memory-Eﬃcient Exact Attention with IO-Awareness[EB/OL]. arXiv:2205.14135v2, 2022."
+          },
+          {
+            "i": 2,
+            "doc_in_library": true,
+            "gbt": "PRINCE S J. Understanding Deep Learning[EB/OL]. 2026."
+          },
+          {
+            "i": 3,
+            "doc_in_library": true,
+            "gbt": "佚名. DeepSeek-V3 Technical Report[EB/OL]. arXiv:2412.19437v1, 2024."
+          },
+          {
+            "i": 4,
+            "doc_in_library": true,
+            "gbt": "佚名. Robust Speech Recognition via Large-Scale Weak Supervision[EB/OL]. arXiv:2212.04356v1, 2022."
+          }
+        ],
+        "checks": {
+          "citations_total": 13,
+          "citations_valid": 4,
+          "citations_invalid": [],
+          "refs_from_library": 4,
+          "refs_generated_by_llm": 0,
+          "cited_refs": 4
+        },
+        "sample": "Retrieval-augmented generation (RAG) for long documents faces significant challenges in memory efficiency due to the quadratic complexity of standard attention mechanisms. This work proposes a novel f"
+      }
+    },
+    {
+      "id": "F04",
+      "group": "write",
+      "point": "f-1 写作视图前端渲染（官方 1.6.1）",
+      "steps": "真实浏览器：切「写作」→ 填 idea → 生成 → 检查四段与 References 渲染，点条目能否打开原文",
+      "expected": "四段渲染完整、统计条正确、点 References 能打开对应文献",
+      "actual": "9.7s 渲染 4 段 + 3 条 References；统计条「References 3 条，全部来自库内 / 模型编造条目 0 条」；点 [1] 打开 2205.14135v2.pdf",
+      "status": "PASS",
+      "elapsed_s": 17.5,
+      "evidence": {
+        "steps": [
+          {
+            "write_view_display": "flex"
+          },
+          {
+            "render": {
+              "err": "",
+              "title": "Sparse Attention for Efficient Long-Document Retrieval-Augmented Generation with Reduced Memory Footprint",
+              "elapsed": {
+                "citations_total": 12,
+                "citations_valid": 3,
+                "citations_invalid": [],
+                "refs_from_library": 3,
+                "refs_generated_by_llm": 0,
+                "cited_refs": 3
+              },
+              "secs": [
+                {
+                  "name": "Abstract · 摘要",
+                  "len": 1135,
+                  "html": "<div class=\"write-sec-head\"><span>Abstract · 摘要</span><span class=\"write-sec-cites\">[1] [2] [3]</span></div><p class=\"write-sec-text\">Retrieval-augmented generation (RAG) over long documents faces significant challenges "
+                },
+                {
+                  "name": "Introduction · 引言",
+                  "len": 1414,
+                  "html": "<div class=\"write-sec-head\"><span>Introduction · 引言</span><span class=\"write-sec-cites\">[1] [2] [3]</span></div><p class=\"write-sec-text\">Long-document retrieval-augmented generation (RAG) has emerged as a critical parad"
+                },
+                {
+                  "name": "Related Work · 相关工作",
+                  "len": 1393,
+                  "html": "<div class=\"write-sec-head\"><span>Related Work · 相关工作</span><span class=\"write-sec-cites\">[1] [2] [3]</span></div><p class=\"write-sec-text\">Recent efforts in efficient attention have focused on either algorithmic optimiz"
+                },
+                {
+                  "name": "Research Plan · 研究方案",
+                  "len": 1192,
+                  "html": "<div class=\"write-sec-head\"><span>Research Plan · 研究方案</span><span class=\"write-sec-cites\">[1] [2] [3]</span></div><p class=\"write-sec-text\">Our research plan consists of four phases: (1) Design of a block-sparse attenti"
+                }
+              ],
+              "refs": 3,
+              "refsSample": [
+                {
+                  "idx": "[1]",
+                  "text": "DAO T, FU D Y, ERMON S, et al. FlashAttention: Fast and Memory-Eﬃcient Exact Attention with IO-Awareness[EB/OL]. arXiv:2205.14135v2, 2022."
+                },
+                {
+                  "idx": "[2]",
+                  "text": "PRINCE S J. Understanding Deep Learning[EB/OL]. 2026."
+                }
+              ],
+              "dimRefs": 0,
+              "checksDom": [
+                "References 3 条，全部来自库内",
+                "模型编造条目 0 条",
+                "越界引用 0 处",
+                "正文引用 12 处 · 命中文献 3 篇"
+              ],
+              "allRefsHaveDoc": true,
+              "bodyScroll": 1133,
+              "elapsed_s": 9.7
+            }
+          },
+          {
+            "sections": "PASS"
+          },
+          {
+            "refs_real": "PASS"
+          },
+          {
+            "no_invalid_cite": "PASS"
+          },
+          {
+            "open_ref": {
+              "before": "write",
+              "after": "reader",
+              "doc": "2205.14135v2.pdf",
+              "docId": "d3f2c7ae3da68"
+            }
+          }
+        ],
+        "ok": true,
+        "error": ""
+      }
+    },
+    {
+      "id": "F01",
+      "group": "open",
+      "point": "f-2 开源潜力与推广",
+      "steps": "检查 README、Docker、依赖清单、许可证、.gitignore、文档目录",
+      "expected": "交付要素齐全",
+      "actual": "交付要素齐全",
+      "status": "PASS",
+      "elapsed_s": 0.0,
+      "evidence": {
+        "files": {
+          "README.md": true,
+          "Dockerfile": true,
+          "docker-compose.yml": true,
+          "requirements.txt": true,
+          ".env.example": true,
+          ".gitignore": true,
+          "LICENSE": true
+        },
+        "docs": [
+          "docs\\传智杯-执行备忘录.md",
+          "docs\\官方需求文档.pdf",
+          "docs\\方案设计-v1.md"
+        ]
+      }
+    }
+  ]
+}

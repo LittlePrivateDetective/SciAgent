@@ -39,6 +39,13 @@ class Settings(BaseSettings):
     trans_workers: int = 3        # 一页内的批量任务并发数
     trans_max_pages: int = 60     # 超过这个页数不做"整篇翻译"，只按需翻
 
+    # ---------- 写作 Copilot ----------
+    # 与翻译同因：写作用主模型（带思维链）会偶发返回空 JSON——推理过程把
+    # max_tokens 吃光，正文一个字都没吐出来（实测复现过：四段全空、title 退回 idea）。
+    # 写作不需要长链推理，用非推理模型既稳定又快（120 tok/s）。
+    write_model: str = "qwen-flash"
+    write_max_tokens: int = 6000  # 四段合计约 1600–2400 token，留足余量
+
     # ---------- 视觉模型（扫描件 OCR）----------
     vlm_base_url: str = ""
     vlm_api_key: str = ""

@@ -1,0 +1,192 @@
+{
+  "run_id": "20261111_185231",
+  "base": "http://127.0.0.1:8013",
+  "timestamp": "2026-11-11T18:52:38.024512",
+  "summary": {
+    "total": 2,
+    "pass": 2,
+    "fail": 0,
+    "blocked": 0
+  },
+  "results": [
+    {
+      "id": "B08",
+      "group": "ui",
+      "point": "a-1 正文引用角标跳 References（官方 1.3.2）",
+      "steps": "在阅读器点正文里的 [29]，检查页码、高亮框尺寸与位置、条目详情浮层",
+      "expected": "翻到 References 页、高亮框圈住该条（宽≥页宽 50%、高≥8px）且滚入视野",
+      "actual": "点 [29], 由 p2 跳到 p11，高亮 628×50px 且滚入视野；文本层对齐误差 0px、100% 词落在页面内",
+      "status": "PASS",
+      "elapsed_s": 6.6,
+      "evidence": {
+        "steps": [
+          {
+            "open": "OK"
+          },
+          {
+            "geometry": {
+              "imgW": 968,
+              "imgH": 1252.7,
+              "layerW": 968,
+              "layerH": 1252.7,
+              "frameW": 968,
+              "frameH": 1252.7,
+              "dw": 0,
+              "dh": 0,
+              "tws": 627,
+              "inside_ratio": 1,
+              "cites": 13,
+              "refhit": 13,
+              "lastWord": {
+                "t": "2 ",
+                "x": 773,
+                "y": 1289.1
+              },
+              "scale": 1.5816993464052287
+            }
+          },
+          {
+            "align": "PASS"
+          },
+          {
+            "select": {
+              "text": "Attention mechanisms have become an integral part of",
+              "popVisible": true,
+              "btn": "译"
+            }
+          },
+          {
+            "translate": {
+              "ok": true,
+              "zh": "注意力机制已成为不可或缺的一部分"
+            }
+          },
+          {
+            "cite": {
+              "label": "[29], ",
+              "before": 2,
+              "after": 11,
+              "pop": true,
+              "popText": "[29] Noam Shazeer, Azalia Mirhoseini, Krzysztof Maziarz, Andy Davis, Quoc Le, Geoffrey Hinton, and Jeff Dean. Outrageously large neural networks: The sparsely-gated mixture-of-experts layer. arXiv preprint arXiv:1701.06538, 2017.",
+              "hl": 1,
+              "hlBox": "[108,554.9,505.2,586.7]",
+              "scrollTop": 529,
+              "stageScrollH": 1277,
+              "stageClientH": 748,
+              "hlInline": "left: 17.6471%; top: 70.0631%; width: 64.902%; height: 4.01515%;",
+              "hlTopComputed": "877.672px",
+              "hlHComputed": "50.2969px",
+              "frameTopInView": -517,
+              "pageSizesHas11": true,
+              "hlW": 628,
+              "hlH": 50,
+              "frameW": 968,
+              "hlVisible": true,
+              "hlTopInView": 361
+            }
+          },
+          {
+            "hl_box": "PASS",
+            "w": 628,
+            "h": 50,
+            "frameW": 968
+          },
+          {
+            "cite_jump": "PASS"
+          }
+        ],
+        "ok": true,
+        "error": ""
+      }
+    },
+    {
+      "id": "B09",
+      "group": "ui",
+      "point": "a-3 划词翻译（官方 1.3.3.1）",
+      "steps": "在阅读器选中一段英文正文，点浮层「译」，检查返回中文",
+      "expected": "选区文本带空格、返回非空中文译文",
+      "actual": "选中「Attention mechanisms have become an integral par…」→ 注意力机制已成为不可或缺的一部分",
+      "status": "PASS",
+      "elapsed_s": 0.0,
+      "evidence": {
+        "steps": [
+          {
+            "open": "OK"
+          },
+          {
+            "geometry": {
+              "imgW": 968,
+              "imgH": 1252.7,
+              "layerW": 968,
+              "layerH": 1252.7,
+              "frameW": 968,
+              "frameH": 1252.7,
+              "dw": 0,
+              "dh": 0,
+              "tws": 627,
+              "inside_ratio": 1,
+              "cites": 13,
+              "refhit": 13,
+              "lastWord": {
+                "t": "2 ",
+                "x": 773,
+                "y": 1289.1
+              },
+              "scale": 1.5816993464052287
+            }
+          },
+          {
+            "align": "PASS"
+          },
+          {
+            "select": {
+              "text": "Attention mechanisms have become an integral part of",
+              "popVisible": true,
+              "btn": "译"
+            }
+          },
+          {
+            "translate": {
+              "ok": true,
+              "zh": "注意力机制已成为不可或缺的一部分"
+            }
+          },
+          {
+            "cite": {
+              "label": "[29], ",
+              "before": 2,
+              "after": 11,
+              "pop": true,
+              "popText": "[29] Noam Shazeer, Azalia Mirhoseini, Krzysztof Maziarz, Andy Davis, Quoc Le, Geoffrey Hinton, and Jeff Dean. Outrageously large neural networks: The sparsely-gated mixture-of-experts layer. arXiv preprint arXiv:1701.06538, 2017.",
+              "hl": 1,
+              "hlBox": "[108,554.9,505.2,586.7]",
+              "scrollTop": 529,
+              "stageScrollH": 1277,
+              "stageClientH": 748,
+              "hlInline": "left: 17.6471%; top: 70.0631%; width: 64.902%; height: 4.01515%;",
+              "hlTopComputed": "877.672px",
+              "hlHComputed": "50.2969px",
+              "frameTopInView": -517,
+              "pageSizesHas11": true,
+              "hlW": 628,
+              "hlH": 50,
+              "frameW": 968,
+              "hlVisible": true,
+              "hlTopInView": 361
+            }
+          },
+          {
+            "hl_box": "PASS",
+            "w": 628,
+            "h": 50,
+            "frameW": 968
+          },
+          {
+            "cite_jump": "PASS"
+          }
+        ],
+        "ok": true
+      }
+    }
+  ]
+}

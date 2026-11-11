@@ -3,6 +3,9 @@
 __pycache__/
 *.pyc
 data/pdf/
+# 根目录 pdf/ 是官方测试集原件（126 MB、39 篇），与 data/pdf 内容相同。
+# 论文版权归原作者，只用于本地赛事测试，不进仓库；复现时把测试集放进 data/pdf 即可。
+pdf/
 data/uploads/
 data/pages/
 data/exports/

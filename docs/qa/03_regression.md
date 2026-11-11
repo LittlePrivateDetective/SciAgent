@@ -1,23 +1,23 @@
 # SciAgent 最终回归报告
 
-- 生成时间：`2026-11-11T14:57:13`
-- 证据来源：`docs/qa/evidence/run_20261111_144615.json`
+- 生成时间：`2026-11-11T19:22:28`
+- 证据来源：`docs/qa/evidence/run_20261111_191313.json`
 - 服务地址：`http://127.0.0.1:8013`
 
 ## 汇总
 
 | 指标 | 数值 |
 | --- | --- |
-| 用例总数 | 36 |
-| PASS | 35 |
+| 用例总数 | 40 |
+| PASS | 39 |
 | FAIL | 0 |
 | BLOCKED（等价【待实测】） | 1 |
-| 通过率（PASS / 可测项） | 35/35 = 100.0% |
+| 通过率（PASS / 可测项） | 39/39 = 100.0% |
 
 ## 零崩溃 Bug 证据
 
 - 状态：**PASS**；本轮窗口零 Traceback（历史 2 处已被兜底），11 个接口全部 200
-- 日志扫描行数：1984；Traceback 数：0
+- 日志扫描行数：2360；Traceback 数：0
 - 接口状态码：{"/health": 200, "/api/system/info": 200, "/api/documents": 200, "/api/tasks": 200, "/api/graph": 200, "/api/tools/health": 200, "/api/tools/catalog": 200, "/api/documents/trash": 200, "/api/audit": 200, "/api/research/future-work": 200, "/api/research/reproducibility?online=false": 200}
 
 ## 失败项

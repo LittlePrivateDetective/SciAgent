@@ -27,7 +27,9 @@ SciAgent 让模型**只能引用检索到的 chunk**，服务端把 chunk 换成
 | 多 Agent 编排 | ✅ | LangGraph 七节点 + 条件边动态重规划 + Reflector 写长期记忆 |
 | 引用图谱 | ✅ | 三级引用匹配（arXiv/DOI/标题）+ PageRank（幂迭代自实现）+ 介数中心性 + 社区发现 + ECharts 前端 |
 | 领域综述 | ✅ | 基于图谱影响力排序，自动生成带 `[n]` 引用的四段式迷你综述 |
-| 阅读器 | ✅ | 页图 + bbox 高亮 + 一~三级章节树；任意证据/译文可一键跳回原文同页同框 |
+| 阅读器 | ✅ | 页图 + **词级透明文本层**（文字可选、角标可点）+ bbox 高亮 + 一~三级章节树 |
+| 文内引用跳转 | ✅ | 点正文 `[11]` 直达 References 第 11 条并高亮，浮层同步显示条目全文（官方 1.3.2） |
+| 划词翻译 | ✅ | 选中英文即出现「译」按钮，走独立非推理模型；扫描件无文本层时如实提示（官方 1.3.3.1） |
 | 中英对照 | ✅ | 双栏双向联动滚动（按段落锚点对齐）、按页懒翻译 + 落库缓存、`#bi` 深链 |
 | 外部工具链 | ✅ | Function Calling 选工具 → arXiv / GitHub / Crossref 真实 API；重试 → 降级 → 如实标注 |
 | 学术图表 | ✅ | CSV 实验表格无损转 Mermaid xychart / TikZ(pgfplots) |
@@ -35,7 +37,8 @@ SciAgent 让模型**只能引用检索到的 chunk**，服务端把 chunk 换成
 | 代码复现性 | ✅ | 正文抽 GitHub 仓库 → star/许可证/最后更新/归档状态加权分级 |
 | 流式输出 | ✅ | SSE token 级增量 + 思考过程时间线 + 完成事件带证据与校验 |
 | 数据安全 | ✅ | 删除进回收站（可恢复）+ 审计日志 + 前端二次确认 |
-| 写作 Copilot / 多用户推荐 | ⏳ 未开始 | P2 排期见 `docs/方案设计-v1.md` |
+| 写作 Copilot | ✅ | idea → Abstract / Introduction / Related Work / Research Plan；**References 由服务端按 GB/T 7714 从库内元数据生成，模型只能写 `[n]`**，编造条目结构上不可能（官方 1.6.1） |
+| 多用户 / 协同过滤推荐 | ⏳ 未开始 | 单机单用户定位；`DEMO_ACCESS_TOKEN` 仅留字段 |
 
 ## 架构
 
@@ -120,6 +123,10 @@ tests/         qa_suite 回归台 / qa_report 报告 / browser_cdp 浏览器驱�
 | POST | `/api/graph/survey` | 基于图谱影响力排序生成带引用的领域综述 |
 | POST | `/api/library/rescan` | 批量导入官方测试集 |
 | GET | `/api/system/info` | 模型路由/向量后端/OCR 能力自检 |
+| GET | `/api/documents/{id}/page/{n}/text` | 页内词级文本层（划词与角标点击的底座） |
+| GET | `/api/documents/{id}/references` | References 逐条索引：编号 → 页码 + bbox |
+| POST | `/api/translate` | 划词翻译（即译即返，不落库） |
+| POST | `/api/write/outline` | 写作 Copilot：idea → 四段框架 + 无幻觉 References |
 | GET/POST | `/api/documents/{id}/bilingual[/translate]` | 中英对照段落 / 按需翻译 |
 | POST | `/api/chat/stream` | SSE 流式问答（thinking / token / done 事件） |
 | GET/POST | `/api/tools/*` | 工具健康检查、schema、显式调用、LLM Function Calling 决策 |
@@ -170,7 +177,10 @@ docker compose up -d --build     # 单容器，数据挂 ./data
 - 541 页书籍首次解析实测 **260 秒**（其中向量化 246 秒），走后台任务不阻塞 UI；
 - 本机无 Docker，`docker build` 与真机图谱帧率标【待实测】，详见 `docs/qa/05_delivery.md`；
 - arXiv 导出 API 在本机网络不可达，工具层自动降级到本地语料并标注 `degraded=true`；
-- 前端 PDF.js 画布渲染（当前为页图 + bbox 覆盖层）、写作 Copilot、多用户推荐仍在 P2 排期。
+- 阅读器用页图 + 词级透明文本层，不引 PDF.js：排版 100% 还原、无 worker/CMap 依赖，
+  但正文文字位置由 PyMuPDF 的词框决定，个别花体字/连字会略有偏移；
+- 扫描件没有文本层，划词翻译与角标跳转不可用（页面上会明确提示，不假装支持）；
+- 多用户与协同过滤推荐未做：当前是单机单用户定位。
 
 ## 许可证
 
