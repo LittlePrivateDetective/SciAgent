@@ -385,17 +385,27 @@
 
   <!-- 划词翻译：选中即出现「译」按钮，点一下才发起请求。
        不自动翻译是因为每次选区都会打一次模型，用户随手一划就烧 token，
-       而且 2 秒的等待没有点击动作承接，会像卡住。 -->
-  <div v-if="sel.visible" class="sel-pop" :style="sel.style">
-    <el-button v-if="!sel.zh" size="small" type="primary" :loading="sel.loading"
-               @click="translateSelection">译</el-button>
-    <div v-else class="sel-card">
-      <div class="sel-src">{{ sel.src.length > 110 ? sel.src.slice(0, 110) + '…' : sel.src }}</div>
-      <div class="sel-zh">{{ sel.zh }}</div>
-      <div class="sel-foot">
-        <span v-if="sel.truncated">选区过长，仅译前 4000 字符</span>
-        <el-button text size="small" @click="sel.visible = false">关闭</el-button>
-      </div>
+       而且 2 秒的等待没有点击动作承接，会像卡住。
+       浮框默认停在选区上方，很容易压住正在读的那一行，所以标题栏兼作拖动手柄：
+       pointerdown 起手、window 级 pointermove 跟手，拖到哪儿就停在哪儿，直到下一次划词。 -->
+  <div v-if="sel.visible" class="sel-pop" :class="{ dragging: sel.dragging }" :style="sel.style">
+    <div class="sel-head" @pointerdown="startSelDrag" title="按住拖到不挡字的位置">
+      <span class="sel-grip"></span>
+      <span class="sel-head-t">划词翻译</span>
+      <button type="button" class="sel-x" title="关闭"
+              @pointerdown.stop @click="sel.visible = false">×</button>
+    </div>
+    <div class="sel-body">
+      <el-button v-if="!sel.zh" size="small" type="primary" :loading="sel.loading"
+                 @click="translateSelection">翻译这段</el-button>
+      <template v-else>
+        <div class="sel-src">{{ sel.src.length > 110 ? sel.src.slice(0, 110) + '…' : sel.src }}</div>
+        <div class="sel-zh">{{ sel.zh }}</div>
+        <div class="sel-foot">
+          <span v-if="sel.truncated">选区过长，仅译前 4000 字符</span>
+          <span v-else class="sel-tip">拖动标题栏可移开</span>
+        </div>
+      </template>
     </div>
   </div>
 

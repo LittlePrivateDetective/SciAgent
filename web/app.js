@@ -66,7 +66,7 @@ const app = createApp({
       refIndex: {},   // 引用编号 → {index,page,bbox,text}
       // 写作 Copilot：模型只写论述 + [n]，References 条目全部由服务端从库内元数据拼出
       wr: { idea: "", loading: false, result: null, error: "" },
-      sel: { visible: false, loading: false, src: "", zh: "", style: {}, truncated: false, x: 0, y: 0 },
+      sel: { visible: false, loading: false, src: "", zh: "", style: {}, truncated: false, dragging: false, x: 0, y: 0 },
       citePop: { visible: false, index: 0, page: 1, bbox: null, text: "", style: {}, x: 0, y: 0 },
       messages: [],
       question: "",
@@ -377,6 +377,8 @@ const app = createApp({
         if (r.ok) {
           this.sel.zh = r.zh;
           this.sel.truncated = !!r.truncated;
+          // 译文比按钮态高得多，靠近视口底部时会被截在屏幕外，译完先收进来
+          this.keepSelInView();
         } else {
           ElementPlus.ElMessage.error(r.error || "翻译失败");
           this.sel.visible = false;
@@ -387,6 +389,58 @@ const app = createApp({
       } finally {
         this.sel.loading = false;
       }
+    },
+
+    // 浮框拖动：以「按下点相对浮框左上角的偏移」为锚，移动时只换算新左上角，
+    // 所以抓手按在标题栏任意位置都不会跳一下。边界用 offsetWidth/Height 现取，
+    // 译文折行改变高度后也仍能整框留在视口内。
+    startSelDrag(e) {
+      if (e.button) return;              // 只认左键，右键/中键不参与
+      const el = e.currentTarget.closest(".sel-pop");
+      if (!el) return;
+      e.preventDefault();                // 拖动时不许顺带选中页面文字
+      const r = el.getBoundingClientRect();
+      const offX = e.clientX - r.left;
+      const offY = e.clientY - r.top;
+      this.sel.dragging = true;
+      document.body.classList.add("is-dragging");
+      const move = (ev) => {
+        const w = el.offsetWidth;
+        const h = el.offsetHeight;
+        const x = Math.min(Math.max(4, ev.clientX - offX), Math.max(4, window.innerWidth - w - 4));
+        const y = Math.min(Math.max(4, ev.clientY - offY), Math.max(4, window.innerHeight - h - 4));
+        this.sel.x = x;
+        this.sel.y = y;
+        this.sel.style = { left: x + "px", top: y + "px" };
+      };
+      const up = () => {
+        this.sel.dragging = false;
+        document.body.classList.remove("is-dragging");
+        window.removeEventListener("pointermove", move);
+        window.removeEventListener("pointerup", up);
+        window.removeEventListener("pointercancel", up);
+      };
+      // 监听挂在 window 上：鼠标甩出浮框（甚至甩出窗口）也不会丢事件
+      window.addEventListener("pointermove", move);
+      window.addEventListener("pointerup", up);
+      window.addEventListener("pointercancel", up);
+    },
+
+    keepSelInView() {
+      this.$nextTick(() => {
+        const el = document.querySelector(".sel-pop");
+        if (!el) return;
+        const r = el.getBoundingClientRect();
+        let left = r.left;
+        let top = r.top;
+        if (r.bottom > window.innerHeight - 8) top = Math.max(8, window.innerHeight - r.height - 8);
+        if (r.right > window.innerWidth - 8) left = Math.max(8, window.innerWidth - r.width - 8);
+        if (left !== r.left || top !== r.top) {
+          this.sel.x = left;
+          this.sel.y = top;
+          this.sel.style = { left: left + "px", top: top + "px" };
+        }
+      });
     },
 
     onImgLoad(e) {

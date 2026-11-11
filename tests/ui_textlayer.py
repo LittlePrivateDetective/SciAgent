@@ -170,14 +170,16 @@ def run(url: str = BASE + "/", shot_dir: Path = OUT) -> dict:
             new MouseEvent('mouseup', {bubbles:true, clientX:100, clientY:100}));
           await new Promise(r=>setTimeout(r,300));
           const pop = document.querySelector('.sel-pop');
-          return {text, popVisible: !!pop, btn: pop ? (pop.querySelector('button')||{}).textContent : ''};
+          const btnEl = pop ? pop.querySelector('.sel-body button') : null;
+          return {text, popVisible: !!pop, btn: btnEl ? btnEl.textContent.trim() : ''};
         })()""")
         result["steps"].append({"select": sel})
         if not sel or not sel.get("popVisible"):
             result["error"] = "选中后未弹出翻译按钮"
             return result
 
-        js("document.querySelector('.sel-pop button').click()")
+        # 浮层头部现在还有一个关闭按钮 ×，必须点「译」那个，按位置取会误关浮层
+        js("(()=>{const b=document.querySelector('.sel-body button'); if(b) b.click();})()")
         got = wait_for("(()=>{const z=document.querySelector('.sel-zh');return z && z.textContent.trim().length>2;})()", 90)
         zh = js("(document.querySelector('.sel-zh')||{}).textContent||''") if got else ""
         result["steps"].append({"translate": {"ok": got, "zh": (zh or "")[:120]}})

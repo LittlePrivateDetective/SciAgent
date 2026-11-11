@@ -400,21 +400,63 @@ body {
   padding: 3px 10px; border-radius: 10px; white-space: nowrap; pointer-events: none;
 }
 
-/* 划词翻译浮层 */
-.sel-pop { position: fixed; z-index: 3000; max-width: 340px; }
-.sel-card {
+/* 划词翻译浮层：整体就是一张卡片，标题栏是拖动手柄。
+   之所以不用 el-dialog：浮层要贴着选区原地出现，模态遮罩会打断阅读。 */
+.sel-pop {
+  position: fixed; z-index: 3000; width: 320px; max-width: calc(100vw - 16px);
   background: #fff; border: 1px solid var(--line); border-radius: 10px;
-  box-shadow: 0 8px 24px rgba(20, 30, 60, .16); padding: 9px 11px;
+  box-shadow: 0 10px 28px rgba(20, 30, 60, .18);
+  overflow: hidden;
 }
+.sel-pop.dragging {
+  box-shadow: 0 18px 44px rgba(20, 30, 60, .28);
+  border-color: #c3d0ef;
+}
+/* 拖动全程禁掉文字选择，否则会把正文一起刷蓝 */
+body.is-dragging, body.is-dragging * { user-select: none !important; }
+
+.sel-head {
+  display: flex; align-items: center; gap: 6px;
+  height: 28px; padding: 0 5px 0 9px;
+  background: #f4f6fb; border-bottom: 1px solid var(--line);
+  cursor: grab; touch-action: none;   /* 触屏上拖动不和页面滚动抢手势 */
+}
+.sel-pop.dragging .sel-head { cursor: grabbing; background: #eef2fe; }
+.sel-grip {
+  flex: none; width: 10px; height: 14px;
+  background-image: radial-gradient(circle, #b9c2d4 1.1px, transparent 1.2px);
+  background-size: 5px 5px; background-position: 0 1px;
+}
+.sel-head-t {
+  flex: 1; font-size: 11px; color: #6b7484; letter-spacing: .2px;
+  user-select: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.sel-x {
+  flex: none; width: 18px; height: 18px; padding: 0; border: 0; border-radius: 4px;
+  background: transparent; color: #9aa4b2; font-size: 15px; line-height: 1; cursor: pointer;
+}
+.sel-x:hover { background: #e2e7f2; color: #3a4250; }
+
+/* 长选区（接口上限 4000 字符）译完可能有上千字，不加高度上限会变成一整屏的白块：
+   框内滚动，框本身永远不超过半屏，拖起来也仍然可控 */
+.sel-body { padding: 9px 11px 8px; max-height: 46vh; overflow-y: auto; }
+/* 系统隐藏滚动条时用户不知道下面还有字，给一条常驻的细条当"还有内容"的信号 */
+.sel-body::-webkit-scrollbar { width: 8px; }
+.sel-body::-webkit-scrollbar-track { background: transparent; }
+.sel-body::-webkit-scrollbar-thumb {
+  background: #d3dbec; border-radius: 4px; border: 2px solid #fff;
+}
+.sel-body::-webkit-scrollbar-thumb:hover { background: #b9c4dc; }
 .sel-src {
   font-size: 11px; color: #9aa4b2; line-height: 1.5; margin-bottom: 5px;
   border-left: 2px solid #dbe3f5; padding-left: 6px;
 }
 .sel-zh { font-size: 13px; color: #1c1f26; line-height: 1.7; }
 .sel-foot {
-  display: flex; align-items: center; justify-content: space-between;
+  display: flex; align-items: center; justify-content: flex-end;
   margin-top: 6px; font-size: 10.5px; color: #b0b8c4;
 }
+.sel-tip { cursor: default; }
 
 /* 参考文献详情浮层：点正文 [11] 后出现，内容与高亮同时到位 */
 .cite-pop {
