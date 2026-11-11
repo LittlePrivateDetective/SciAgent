@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import json
+import re
 import time
 import uuid
 from pathlib import Path
@@ -17,8 +18,15 @@ from app.core.config import settings
 from app.core.logger import get_logger
 from app.db.models import Chunk, Citation, Document, Section
 from app.parse.ocr import ocr_page
-from app.parse.structure import Block, ParsedDoc, build_section_paths, parse_pdf
+from app.parse.structure import (
+    Block,
+    ParsedDoc,
+    build_section_paths,
+    finalize_ocr_structure,
+    parse_pdf,
+)
 from app.rag.chunker import build_chunks
+from app.rag.citation_graph import invalidate as invalidate_graph
 from app.rag.dedup import content_hash, family_key, find_duplicates, simhash64
 from app.rag.embed import embed_texts, to_bytes
 from app.rag.hybrid import invalidate_cache
@@ -38,40 +46,165 @@ def save_upload(data: bytes, filename: str) -> Path:
     return path
 
 
+def _year_from_arxiv(arxiv_id: str) -> str:
+    """arXiv 编号前两位就是年份：1706.03762 → 2017。"""
+    m = re.match(r"^(\d{2})\d{2}\.", arxiv_id or "")
+    if not m:
+        return ""
+    yy = int(m.group(1))
+    return str(2000 + yy)
+
+
+def _year_from_text(text: str) -> str:
+    """兜底：从首页文本里找 19xx/20xx 的年份（排除 arXiv 水印里的编号）。"""
+    years = [int(y) for y in re.findall(r"\b(199\d|20[0-2]\d)\b", text or "")]
+    if not years:
+        return ""
+    # 取出现次数最多的年份，避免误取参考文献里的年份
+    return str(max(set(years), key=years.count))
+
+
 def _ocr_fill(parsed: ParsedDoc, path: Path) -> ParsedDoc:
-    """扫描件：逐页 OCR，把每页结果作为整页区块塞回 blocks。"""
+    """扫描件：逐页 OCR，并按版面位置把整页文本还原成带层级的区块。
+
+    为什么不能"整页一个块"：锚点校验靠 bbox 回查，整页块等于所有引用都指向
+    同一块；标题层级也会全部丢失。这里按 OCR 输出的 Markdown 标题语法反推层级，
+    再按行序把文本摊回页面坐标（纵向等分，宽度占满正文区），
+    使扫描件同样具备「章节树 + 可定位锚点」。
+    """
+    import pymupdf
+
     pages = min(parsed.page_count, OCR_PAGE_LIMIT)
     log.info("检测到扫描件，开始 OCR：共 %d 页（上限 %d）", parsed.page_count, OCR_PAGE_LIMIT)
+
+    # 取每页真实尺寸：扫描件也要按实际纸张宽度算 bbox
+    rects: dict[int, tuple[float, float]] = {}
+    try:
+        with pymupdf.open(str(path)) as doc:
+            for i, page in enumerate(doc, start=1):
+                rects[i] = (page.rect.width, page.rect.height)
+    except Exception as exc:  # noqa: BLE001
+        log.warning("读取页面尺寸失败，使用默认尺寸：%s", exc)
 
     new_blocks: list[Block] = []
     got = 0
     for pno in range(1, pages + 1):
         text = ocr_page(str(path), pno)
-        if not text:
+        if not text.strip():
             continue
         got += 1
-        new_blocks.append(
-            Block(
-                page=pno,
-                order=len(new_blocks),
-                col=0,
-                text=text,
-                bbox=(0.0, 0.0, 600.0, 800.0),
-                kind="text",
-                size=10.0,
-            )
-        )
+        w, h = rects.get(pno, (595.0, 842.0))
+        new_blocks.extend(_ocr_text_to_blocks(text, pno, w, h, len(new_blocks)))
 
     if new_blocks:
         parsed.blocks = new_blocks
         parsed.char_count = sum(len(b.text) for b in new_blocks)
-        # 扫描件通常拿不到可靠标题，用文件名兜底
-        if not parsed.title:
+        parsed = finalize_ocr_structure(parsed)
+        # 扫描件 OCR 出不来标题时（首页没抓到标题行），退到文件名
+        if not parsed.title or parsed.title.strip() == "":
             parsed.title = path.stem
-        log.info("OCR 完成：%d/%d 页有文本", got, pages)
+        log.info("OCR 完成：%d/%d 页有文本，还原 %d 个区块", got, pages, len(new_blocks))
     else:
         log.warning("OCR 未取得任何文本，请检查 VLM 配置或 tesseract 安装")
     return parsed
+
+
+_RE_MD_HEAD = re.compile(r"^(#{1,4})\s+(.{1,180})$")
+_RE_FIGCAP = re.compile(r"^(figure|fig\.)\s*\d+", re.I)
+_RE_TABCAP = re.compile(r"^table\s*\d+", re.I)
+
+
+def _ocr_text_to_blocks(text: str, page_no: int, width: float, height: float, order0: int) -> list[Block]:
+    """把一页 OCR 文本按行序摊回页面坐标。
+
+    纵向按行数等分（上下各留 6% 页边距），横向占正文区 88%。
+    坐标不是像素级精确，但足以让前端在扫描页上画出定位框，也足以让锚点校验
+    在同一页内区分不同段落——这比"整页一个块"强一个量级。
+
+    空行必须保留语义：先前的实现把空行全过滤掉，导致标题/作者/邮箱被粘成
+    一个块，标题回填时因含 "@" 被跳过，整篇文献的标题就退化成了文件名。
+    """
+    raw = [ln.rstrip() for ln in text.splitlines()]
+    if not any(ln.strip() for ln in raw):
+        return []
+
+    top, bottom = height * 0.052, height * 0.94
+    margin_x = width * 0.06
+    # 空行按半行高度计，用来还原段间距
+    weight_total = sum(1.0 if ln.strip() else 0.45 for ln in raw)
+    line_h = (bottom - top) / max(weight_total, 1.0)
+
+    blocks: list[Block] = []
+    buf: list[str] = []
+    y_cursor = top
+    buf_y0 = top
+
+    def flush(y_end: float) -> None:
+        nonlocal buf
+        body = " ".join(x.strip() for x in buf).strip()
+        if body:
+            kind = "text"
+            if _RE_FIGCAP.match(body):
+                kind = "figure"
+            elif _RE_TABCAP.match(body):
+                kind = "table"
+            blocks.append(
+                Block(
+                    page=page_no,
+                    order=order0 + len(blocks),
+                    col=0,
+                    text=body,
+                    bbox=(margin_x, buf_y0, width - margin_x, max(y_end, buf_y0 + line_h * 0.6)),
+                    kind=kind,
+                    size=10.0,
+                )
+            )
+        buf = []
+
+    for ln in raw:
+        stripped = ln.strip()
+        if not stripped:
+            # 空行 = 段落边界
+            if buf:
+                flush(y_cursor)
+            y_cursor += line_h * 0.45
+            buf_y0 = y_cursor
+            continue
+
+        m = _RE_MD_HEAD.match(stripped)
+        if m:
+            if buf:
+                flush(y_cursor)
+            level = len(m.group(1))
+            blocks.append(
+                Block(
+                    page=page_no,
+                    order=order0 + len(blocks),
+                    col=0,
+                    text=m.group(2).strip(),
+                    bbox=(margin_x, y_cursor, width - margin_x, y_cursor + line_h),
+                    kind="heading",
+                    level=level,
+                    size=10.0 + (4 - level) * 1.5,
+                    bold=True,
+                )
+            )
+            y_cursor += line_h
+            buf_y0 = y_cursor
+            continue
+
+        if not buf:
+            buf_y0 = y_cursor
+        buf.append(stripped)
+        y_cursor += line_h
+
+        # 参考文献条目形如 [12] ... 单独成块，便于后续引用抽取
+        if re.match(r"^\[\d+\]", stripped) and len(buf) > 1:
+            flush(y_cursor)
+
+    if buf:
+        flush(y_cursor)
+    return blocks
 
 
 def ingest(
@@ -168,6 +301,7 @@ def ingest(
         abstract=(parsed.abstract or "")[:8000],
         arxiv_id=arxiv_id,
         doi=parsed.doi,
+        year=_year_from_arxiv(arxiv_id) or _year_from_text(full_text[:4000]),
         page_count=parsed.page_count,
         char_count=parsed.char_count,
         is_scanned=int(parsed.is_scanned),
@@ -239,6 +373,7 @@ def ingest(
 
     db.commit()
     invalidate_cache()
+    invalidate_graph()
 
     # Chroma 双写（如果用 Chroma 后端）
     try:
@@ -277,6 +412,7 @@ def delete_document(db: Session, doc_id: str) -> bool:
     db.delete(doc)
     db.commit()
     invalidate_cache()
+    invalidate_graph()
     try:
         get_store().delete_by_doc(doc_id)
     except Exception as exc:  # noqa: BLE001 向量库清理失败不影响主流程

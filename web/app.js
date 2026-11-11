@@ -5,6 +5,9 @@
 
 const { createApp, reactive, nextTick } = Vue;
 
+// ECharts 实例放在组件外：它持有大量 DOM 引用，放进响应式对象会被深度代理拖慢
+let _chart = null;
+
 /* ---------- 极简 Markdown 渲染（够用即止：表格 / 粗体 / 行内代码 / 换行） ---------- */
 function mdToHtml(md) {
   if (!md) return "";
@@ -57,9 +60,15 @@ const app = createApp({
       messages: [],
       question: "",
       mode: "qa",
+      scope: "all",
       loading: false,
       rescanning: false,
+      centerView: "reader",
+      graph: { nodes: [], edges: [], stats: null, insights: null, clusters: [] },
+      graphLoading: false,
+      selectedNode: null,
       dup: { visible: false, message: "", items: [], pendingId: "" },
+      survey: { visible: false, html: "", papers: [], loading: false },
       samples: [
         "Attention Is All You Need 的第 6 作者是谁，在哪个机构？",
         "Transformer 训练 Base 模型用了多少块 GPU，什么型号？",
@@ -83,6 +92,10 @@ const app = createApp({
       if (!el) return;
       const [x0, y0, x1, y1] = el.dataset.bbox.split(",").map(Number);
       this.jump({ page: Number(el.dataset.page), bbox: [x0, y0, x1, y1], doc_id: this.activeDocId });
+    });
+    // 图谱在容器尺寸变化后必须重算布局，否则窗口一缩节点就叠在左上角
+    window.addEventListener("resize", () => {
+      if (this.centerView === "graph" && _chart) _chart.resize();
     });
   },
   methods: {
@@ -147,6 +160,7 @@ const app = createApp({
 
     async openDoc(d) {
       this.activeDoc = d;
+      this.scope = "doc";
       this.page = 1;
       this.pageCount = d.page_count || 1;
       this.highlights = [];
@@ -202,7 +216,12 @@ const app = createApp({
       this.loading = true;
       this.scrollChat();
 
-      const docIds = this.selection.length ? this.selection : [];
+      // 检索范围：勾选了文献就用勾选的；否则按"当前文献"限定时只用正在读的那篇。
+      // 没有这个约束，库内 37 篇时问"这篇论文的第六作者"会被别的文献抢答。
+      let docIds = this.selection.length ? this.selection : [];
+      if (!docIds.length && this.scope === "doc" && this.activeDoc) {
+        docIds = [this.activeDoc.id];
+      }
       try {
         const r = await fetch("/api/chat", {
           method: "POST",
@@ -233,6 +252,135 @@ const app = createApp({
     },
 
     toggleTree() { this.showTree = !this.showTree; },
+
+    /* ---------------- 引用图谱 ---------------- */
+    onViewChange(v) {
+      if (v === "graph") this.loadGraph(false);
+    },
+
+    async loadGraph(force) {
+      this.graphLoading = true;
+      try {
+        const r = await fetch(`/api/graph${force ? "?refresh=true" : ""}`).then((x) => x.json());
+        this.graph = r;
+        await nextTick();
+        this.renderGraph();
+        if (force) ElementPlus.ElMessage.success("已重算图谱");
+      } catch (e) {
+        ElementPlus.ElMessage.error("图谱加载失败：" + e);
+      } finally {
+        this.graphLoading = false;
+      }
+    },
+
+    renderGraph() {
+      const el = this.$refs.graphEl;
+      if (!el || !window.echarts) return;
+      if (!_chart) _chart = window.echarts.init(el, null, { renderer: "canvas" });
+      _chart.resize();
+
+      const roleColor = {
+        cornerstone: "#d94f4f",
+        bridge: "#8a63d2",
+        normal: "#4a7fd4",
+        peripheral: "#9aa4b2",
+      };
+      const nodes = (this.graph.nodes || []).map((n) => ({
+        id: n.id,
+        name: n.label,
+        symbolSize: n.size,
+        value: n,
+        itemStyle: { color: roleColor[n.role] || "#4a7fd4" },
+        // 只给核心节点常显标签，40 篇的图上全显会糊成一团
+        label: { show: n.role === "cornerstone" || n.role === "bridge" || n.in_degree >= 2 },
+        category: n.cluster,
+      }));
+
+      _chart.setOption(
+        {
+          tooltip: {
+            formatter: (p) => {
+              if (p.dataType !== "node") return "";
+              const v = p.data.value;
+              return `<b>${v.label}</b><br/>被引 ${v.in_degree} · 引文 ${v.out_degree}<br/>PageRank ${v.pagerank}`;
+            },
+          },
+          series: [
+            {
+              type: "graph",
+              layout: "force",
+              roam: true,
+              draggable: true,
+              force: { repulsion: 260, edgeLength: [60, 160], gravity: 0.08 },
+              emphasis: { focus: "adjacency", lineStyle: { width: 2.5 } },
+              label: { position: "right", fontSize: 11, formatter: (p) => (p.name || "").slice(0, 26) },
+              lineStyle: { color: "#c2c9d4", width: 1, curveness: 0.12, opacity: 0.75 },
+              edgeSymbol: ["none", "arrow"],
+              edgeSymbolSize: [0, 6],
+              data: nodes,
+              links: (this.graph.edges || []).map((e) => ({ source: e.source, target: e.target })),
+            },
+          ],
+          animationDuration: 700,
+        },
+        true
+      );
+
+      _chart.off("click");
+      _chart.on("click", (p) => {
+        if (p.dataType === "node") this.selectedNode = p.data.value;
+      });
+    },
+
+    roleName(role) {
+      return { cornerstone: "基石论文", bridge: "桥接论文", peripheral: "边缘论文", normal: "普通" }[role] || role;
+    },
+
+    async genSurvey() {
+      if (!this.graph.nodes || !this.graph.nodes.length) {
+        ElementPlus.ElMessage.warning("文献库为空，先导入文献");
+        return;
+      }
+      this.survey.loading = true;
+      try {
+        const r = await fetch("/api/graph/survey", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ max_papers: 8 }),
+        }).then((x) => x.json());
+        if (r.detail) {
+          ElementPlus.ElMessage.error(r.detail);
+          return;
+        }
+        this.survey.html = mdToHtml(r.survey || "");
+        this.survey.papers = (r.papers || []).map((p) => ({
+          ...p,
+          title: p.title || "（无标题）",
+        }));
+        this.survey.visible = true;
+      } catch (e) {
+        ElementPlus.ElMessage.error("综述生成失败：" + e);
+      } finally {
+        this.survey.loading = false;
+      }
+    },
+
+    async openFromGraph(node) {
+      const d = this.docs.find((x) => x.id === node.id);
+      this.centerView = "reader";
+      if (d) {
+        await this.openDoc(d);
+      } else {
+        this.activeDoc = {
+          id: node.id,
+          filename: node.filename || node.label,
+          title: node.label,
+          page_count: node.pages || 1,
+        };
+        this.pageCount = node.pages || 1;
+        this.page = 1;
+      }
+    },
 
     async removeDoc(d) {
       await fetch(`/api/documents/${d.id}`, { method: "DELETE" });

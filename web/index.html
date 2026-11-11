@@ -9,6 +9,7 @@
   <script src="https://cdn.jsdelivr.net/npm/vue@3.4.31/dist/vue.global.prod.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/element-plus@2.7.6/dist/index.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/element-plus@2.7.6/dist/locale/zh-cn.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 </head>
 <body>
 <div id="app" v-cloak>
@@ -62,19 +63,31 @@
       </div>
     </aside>
 
-    <!-- 中：阅读器 -->
+    <!-- 中：阅读器 / 图谱 -->
     <main class="panel center">
       <div class="panel-head">
-        <span>阅读器 <small v-if="activeDoc">{{ activeDoc.filename }}</small></span>
+        <span>{{ centerView === 'graph' ? '引用图谱' : '阅读器' }}
+          <small v-if="centerView === 'reader' && activeDoc">{{ activeDoc.filename }}</small>
+        </span>
         <div class="viewer-tools">
-          <el-button size="small" text @click="toggleTree">章节树</el-button>
-          <el-button size="small" text :disabled="page<=1" @click="goPage(page-1)">上一页</el-button>
-          <span class="pager">{{ page }} / {{ pageCount }}</span>
-          <el-button size="small" text :disabled="page>=pageCount" @click="goPage(page+1)">下一页</el-button>
+          <el-radio-group v-model="centerView" size="small" @change="onViewChange">
+            <el-radio-button label="reader">阅读</el-radio-button>
+            <el-radio-button label="graph">图谱</el-radio-button>
+          </el-radio-group>
+          <template v-if="centerView === 'reader'">
+            <el-button size="small" text @click="toggleTree">章节树</el-button>
+            <el-button size="small" text :disabled="page<=1" @click="goPage(page-1)">上一页</el-button>
+            <span class="pager">{{ page }} / {{ pageCount }}</span>
+            <el-button size="small" text :disabled="page>=pageCount" @click="goPage(page+1)">下一页</el-button>
+          </template>
+          <template v-else>
+            <el-button size="small" text @click="loadGraph(false)">刷新</el-button>
+            <el-button size="small" text @click="loadGraph(true)">重算</el-button>
+          </template>
         </div>
       </div>
 
-      <div class="viewer-wrap">
+      <div class="viewer-wrap" v-show="centerView === 'reader'">
         <div v-if="showTree" class="tree">
           <div class="tree-title">章节导航</div>
           <div v-for="(s,i) in sections" :key="i" class="tree-item" :style="{paddingLeft: (8 + (s.level-1)*12) + 'px'}"
@@ -90,16 +103,57 @@
         </div>
         <div v-else class="empty big">选择左侧文献开始阅读</div>
       </div>
+
+      <!-- 引用图谱视图 -->
+      <div class="graph-wrap" v-show="centerView === 'graph'">
+        <div class="graph-bar">
+          <span v-if="graph.stats" class="graph-stat">
+            {{ graph.stats.nodes }} 篇 · {{ graph.stats.edges }} 条互引边 ·
+            参考文献 {{ graph.stats.total_reference_entries }} 条，命中库内 {{ graph.stats.matched }} 条
+          </span>
+          <span class="legend">
+            <i class="dot cornerstone"></i>基石
+            <i class="dot bridge"></i>桥接
+            <i class="dot normal"></i>普通
+            <i class="dot peripheral"></i>边缘
+          </span>
+          <el-button size="small" text @click="genSurvey" :loading="survey.loading">生成领域综述</el-button>
+          <span v-if="graphLoading" class="graph-loading">计算中…</span>
+        </div>
+
+        <div class="graph-body">
+          <div ref="graphEl" class="graph-canvas"></div>
+          <div v-if="selectedNode" class="node-card">
+            <div class="node-title">{{ selectedNode.label }}</div>
+            <div class="node-row"><span>被库内引用</span><b>{{ selectedNode.in_degree }}</b></div>
+            <div class="node-row"><span>引用库内</span><b>{{ selectedNode.out_degree }}</b></div>
+            <div class="node-row"><span>PageRank</span><b>{{ selectedNode.pagerank }}</b></div>
+            <div class="node-row"><span>介数中心性</span><b>{{ selectedNode.betweenness }}</b></div>
+            <div class="node-row"><span>角色</span><b>{{ roleName(selectedNode.role) }}</b></div>
+            <el-button size="small" text @click="openFromGraph(selectedNode)">打开这篇</el-button>
+          </div>
+        </div>
+
+        <div v-if="graph.insights && graph.insights.summary" class="graph-insight">
+          {{ graph.insights.summary }}
+        </div>
+      </div>
     </main>
 
     <!-- 右：对话 -->
     <section class="panel right">
       <div class="panel-head">
         <span>智能问答</span>
-        <el-radio-group v-model="mode" size="small">
-          <el-radio-button label="qa">问答</el-radio-button>
-          <el-radio-button label="compare">多篇对比</el-radio-button>
-        </el-radio-group>
+        <div class="chat-tools">
+          <el-select v-model="scope" size="small" style="width:96px">
+            <el-option label="当前文献" value="doc" :disabled="!activeDoc" />
+            <el-option label="全部文献" value="all" />
+          </el-select>
+          <el-radio-group v-model="mode" size="small">
+            <el-radio-button label="qa">问答</el-radio-button>
+            <el-radio-button label="compare">对比</el-radio-button>
+          </el-radio-group>
+        </div>
       </div>
 
       <div class="chat-list" ref="chatList">
@@ -136,6 +190,19 @@
       </div>
     </section>
   </div>
+
+  <!-- 领域综述 -->
+  <el-dialog v-model="survey.visible" title="领域综述（基于图谱影响力排序）" width="720px">
+    <div class="survey-body md" v-html="survey.html"></div>
+    <div v-if="survey.papers.length" class="survey-refs">
+      <div class="evid-title">引用文献</div>
+      <div v-for="(p,i) in survey.papers" :key="i" class="evid-item" @click="openFromGraph({id:p.doc_id, label:p.title, filename:p.title})">
+        <span class="evid-idx">[{{ p.index }}]</span>
+        <span class="evid-doc">{{ p.year || '-' }}</span>
+        <span class="evid-txt">{{ p.title }}（被引 {{ p.in_degree }}）</span>
+      </div>
+    </div>
+  </el-dialog>
 
   <!-- 去重确认 -->
   <el-dialog v-model="dup.visible" title="检测到重复文献" width="520px">

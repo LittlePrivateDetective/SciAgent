@@ -18,6 +18,8 @@ from app.core.logger import get_logger
 from app.db.models import Chunk, Citation, Document, Lesson, Section, Task
 from app.db.session import get_db
 from app.parse.ocr import ocr_available
+from app.rag.citation_graph import build_graph as build_citation_graph
+from app.rag.citation_graph import invalidate as invalidate_graph
 from app.parse.structure import render_page_png
 from app.pipeline.ingest import delete_document, ingest, rescan_library, save_upload
 from app.rag.store import get_store
@@ -275,79 +277,98 @@ def list_tasks(limit: int = 20, db: Session = Depends(get_db)):
 
 # ---------------- 图谱 ----------------
 @router.get("/graph")
-def citation_graph(db: Session = Depends(get_db)):
-    """引用图谱 + 图算法（PageRank / 入度），用于识别基石论文。"""
-    import networkx as nx
+def citation_graph(db: Session = Depends(get_db), refresh: bool = Query(False, description="true=跳缓存重算")):
+    """引用图谱 + 图算法（PageRank / 介数中心性 / 社区发现），识别基石与桥接论文。"""
+    return build_citation_graph(db, force=refresh)
 
-    docs = list(db.scalars(select(Document)).all())
-    by_id = {d.id: d for d in docs}
 
-    edges = list(db.scalars(select(Citation)).all())
-    g = nx.DiGraph()
-    for d in docs:
-        g.add_node(d.id, label=d.title or d.filename, year=d.year, page_count=d.page_count)
+class SurveyRequest(BaseModel):
+    cluster_id: int | None = Field(None, description="只综述某个聚类；不传则综述全库")
+    max_papers: int = Field(8, ge=3, le=20)
+    focus: str = Field("", description="可选：希望侧重的角度，如'训练效率'")
 
-    matched = 0
-    for e in edges:
-        # 未匹配的引用：按标题模糊匹配库内文献
-        if e.dst_doc_id is None:
-            target = _match_reference(e.raw_text, docs)
-            if target:
-                e.dst_doc_id = target
-                e.matched_by = "title_fuzzy"
-        if e.dst_doc_id and e.dst_doc_id in by_id and e.dst_doc_id != e.src_doc_id:
-            g.add_edge(e.src_doc_id, e.dst_doc_id)
-            matched += 1
-    db.commit()
 
-    nodes = []
-    if g.number_of_nodes():
-        pr = nx.pagerank(g, alpha=0.85) if g.number_of_edges() else {n: 0 for n in g.nodes}
-        indeg = dict(g.in_degree())
-        betw = nx.betweenness_centrality(g) if g.number_of_edges() > 2 else {n: 0 for n in g.nodes}
-        for n, data in g.nodes(data=True):
-            nodes.append(
-                {
-                    "id": n,
-                    "label": (data.get("label") or n)[:60],
-                    "pagerank": round(float(pr.get(n, 0)), 6),
-                    "in_degree": int(indeg.get(n, 0)),
-                    "betweenness": round(float(betw.get(n, 0)), 6),
-                    "size": 10 + int(120 * float(pr.get(n, 0)) * max(len(docs), 1)),
-                }
-            )
-        nodes.sort(key=lambda x: x["pagerank"], reverse=True)
+SURVEY_PROMPT = """你是学术综述作者。下面是文献库中按引用影响力筛出的论文（含摘要）。
+
+{papers}
+
+请写一篇中文迷你综述，严格遵循：
+1. 四个小节：**领域脉络**、**主要技术路线**、**关键分歧**、**开放问题**。
+2. 每个结论句末尾必须标注来源编号，如 [1][3]；编号只能来自上面列表。
+3. 不要编造列表之外的方法、数据或结论；列表没提的就不要写。
+4. 总长 350-450 字，四节都要写完整并收尾，不要写"本文将综述……"这类套话，直接给内容。
+{focus_line}"""
+
+
+@router.post("/graph/survey")
+def graph_survey(req: SurveyRequest, db: Session = Depends(get_db)):
+    """基于图谱影响力排序，自动生成带引用的领域综述（P1 功能 8）。"""
+    g = build_citation_graph(db)
+    nodes = g.get("nodes") or []
+    if not nodes:
+        raise HTTPException(status_code=400, detail="文献库为空，先导入文献")
+
+    pool = [n for n in nodes if req.cluster_id is None or n["cluster"] == req.cluster_id]
+    if not pool:
+        raise HTTPException(status_code=400, detail=f"聚类 {req.cluster_id} 不存在")
+
+    picked = sorted(pool, key=lambda n: (n.get("in_degree", 0), n.get("pagerank", 0)), reverse=True)[
+        : req.max_papers
+    ]
+    ids = [n["id"] for n in picked]
+    docs = {d.id: d for d in db.scalars(select(Document).where(Document.id.in_(ids))).all()}
+
+    lines = []
+    for i, n in enumerate(picked, start=1):
+        d = docs.get(n["id"])
+        if not d:
+            continue
+        lines.append(
+            f"[{i}] {d.title or d.filename}（{d.year or '年份未知'}，"
+            f"被库内引用 {n.get('in_degree', 0)} 次）\n摘要：{(d.abstract or '无摘要')[:300]}"
+        )
+    papers_block = "\n\n".join(lines)
+
+    focus_line = f"5. 侧重角度：{req.focus}\n" if req.focus else ""
+    messages = [
+        {"role": "system", "content": "你是严谨的学术综述作者，只依据给定材料写作。"},
+        {"role": "user", "content": SURVEY_PROMPT.format(papers=papers_block, focus_line=focus_line)},
+    ]
+
+    # 推理模型会把预算先花在思维链上，2000 tokens 在大提示词下经常不够，
+    # 表现为"接口 200 但正文为空"。这里按 4000 → 8000 递增重试。
+    text = ""
+    last_err = ""
+    try:
+        for budget in (8000, 12000):
+            res = gateway.chat(messages, temperature=0.3, max_tokens=budget)
+            text = (res.text or "").strip()
+            if text:
+                break
+            last_err = f"模型返回空内容（预算 {budget} tokens 已被推理耗尽）"
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=502, detail=f"综述生成失败：{exc}") from exc
+
+    if not text:
+        raise HTTPException(status_code=502, detail=f"综述生成失败：{last_err}，请调小 max_papers 后重试")
 
     return {
-        "nodes": nodes,
-        "edges": [{"source": u, "target": v} for u, v in g.edges()],
-        "stats": {
-            "documents": len(docs),
-            "edges": g.number_of_edges(),
-            "matched_citations": matched,
-            "total_reference_entries": len(edges),
-        },
-        "top_papers": nodes[:5],
+        "ok": True,
+        "survey": text,
+        "cluster_id": req.cluster_id,
+        "papers": [
+            {
+                "index": i,
+                "doc_id": n["id"],
+                "title": (docs.get(n["id"]).title if docs.get(n["id"]) else n["label"]) or n["label"],
+                "year": docs.get(n["id"]).year if docs.get(n["id"]) else n.get("year"),
+                "in_degree": n.get("in_degree", 0),
+                "pagerank": n.get("pagerank", 0),
+            }
+            for i, n in enumerate(picked, start=1)
+        ],
+        "stats": g.get("stats"),
     }
-
-
-def _match_reference(raw: str, docs: list[Document]) -> str | None:
-    """参考文献条目 → 库内文献：标题模糊匹配（阈值 0.78，宁缺毋滥）。"""
-    from difflib import SequenceMatcher
-
-    if not raw:
-        return None
-    text = raw.lower()
-    best, best_ratio = None, 0.0
-    for d in docs:
-        title = (d.title or "").lower().strip()
-        if len(title) < 12:
-            continue
-        r = SequenceMatcher(None, title, text).find_longest_match(0, len(title), 0, len(text))
-        ratio = r.size / len(title)
-        if ratio > best_ratio:
-            best, best_ratio = d.id, ratio
-    return best if best_ratio >= 0.78 else None
 
 
 # ---------------- 批量导入 ----------------

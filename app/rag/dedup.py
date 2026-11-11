@@ -55,7 +55,9 @@ def simhash64(text: str) -> int:
     for i in range(64):
         if weights[i] > 0:
             out |= 1 << i
-    return out
+    # SQLite 的 INTEGER 是有符号 64 位，超过 2^63-1 会直接抛 OverflowError。
+    # 这里转成有符号表示后再入库；hamming() 里统一按位掩码还原，语义不变。
+    return out - (1 << 64) if out > (1 << 63) - 1 else out
 
 
 def hamming(a: int, b: int) -> int:
@@ -69,9 +71,19 @@ def family_key(arxiv_id: str, title: str, source_text: str) -> str:
     m = re.search(r"10\.\d{4,9}/[-._;()/:A-Za-z0-9]+", source_text)
     if m:
         return "doi:" + m.group(0).lower().rstrip(".")
-    if title:
-        return "title:" + hashlib.md5(normalize(title)[:120].encode()).hexdigest()[:16]
-    return ""
+    raw = (title or "").strip()
+    if len(raw) < 8:
+        return ""
+    # 文件名式"标题"（1706.03762v1_img / paper_v2）不能当同族依据：
+    # 不同文献的文件名常只差后缀，靠它判重会把不相关的文档判成一族。
+    # 注意要在原始标题上判断——normalize() 会把空格全删掉，英文标题也会变成
+    # "attentionisallyouneed" 这种连写形式，拿它判"是否文件名"必然误伤。
+    if " " not in raw and re.fullmatch(r"[0-9A-Za-z._\-]+", raw):
+        return ""
+    t = normalize(raw)
+    if not t:
+        return ""
+    return "title:" + hashlib.md5(t[:120].encode()).hexdigest()[:16]
 
 
 @dataclass

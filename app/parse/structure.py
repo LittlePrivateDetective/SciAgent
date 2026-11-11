@@ -26,8 +26,15 @@ RE_NUM_HEADING = re.compile(r"^(\d{1,2}(?:\.\d{1,2}){0,3})\.?\s+\S")
 RE_APPENDIX = re.compile(r"^(Appendix|APPENDIX)\s*[A-Z0-9]?", re.I)
 RE_FIGURE = re.compile(r"^(Figure|Fig\.)\s*\d+", re.I)
 RE_TABLE = re.compile(r"^Table\s*\d+", re.I)
-RE_REF_HEAD = re.compile(r"^\s*(References|REFERENCES|Bibliography|BIBLIOGRAPHY)\s*$")
-RE_REF_ITEM = re.compile(r"^\s*\[(\d{1,3})\]|^\s*(\d{1,3})\.\s+[A-Z]")
+RE_REF_HEAD = re.compile(
+    r"^\s*(?:\d{1,2}(?:\.\d{1,3})*\.?\s+)?"
+    r"(references|reference|bibliography|literature cited|works cited)\s*:?\s*$",
+    re.I,
+)
+# 条目编号样式：数字 [12] / "12. " / 作者键 [SLA+18] / [RNSS18]
+RE_REF_ITEM = re.compile(r"^\s*\[(\d{1,3})\]|^\s*(\d{1,3})\.\s+[A-Z]|^\s*\[[A-Z][A-Za-z0-9+.\-]{1,14}\]")
+# 单独成块的引用标签（[SLA+18] 这种），需要粘回下一条正文
+RE_REF_LABEL = re.compile(r"^\s*\[[A-Za-z][A-Za-z0-9+.\-]{0,14}\]\s*$")
 RE_ARXIV = re.compile(r"arXiv:\s*(\d{4}\.\d{4,5})(v\d+)?", re.I)
 RE_DOI = re.compile(r"10\.\d{4,9}/[-._;()/:A-Za-z0-9]+")
 RE_EMAIL = re.compile(r"[\w.+-]+@[\w-]+\.[\w.]+")
@@ -325,14 +332,16 @@ def classify(blocks: list[Block], body: float) -> list[Block]:
         if ok:
             b.kind, b.level = "heading", lvl
             # 进入参考文献区后，形如 [12] / "12. " 的条目单独归类
-            if re.match(r"^(appendix|references|bibliography)", txt.lower()):
-                in_refs = txt.lower().startswith("references") or txt.lower().startswith("bibliography")
-            if txt.lower().startswith("appendix"):
+            if re.match(r"^(appendix|supplementary|a\s+appendix)", txt.lower()):
                 in_refs = False
             continue
 
-        if in_refs and RE_REF_ITEM.match(txt):
-            b.kind = "reference"
+        # 参考文献区：不同出版社的编号样式差异极大（[12] / [SLA+18] / 作者-年份），
+        # 逐条按正则判会漏一大半。既然已经进入 References 区，就整段视为条目，
+        # 由 _extract_references 按长度和标签再清洗。
+        if in_refs:
+            if len(txt) >= 25 and not re.fullmatch(r"[\d\W]{0,8}", txt):
+                b.kind = "reference"
             continue
 
         if RE_FIGURE.match(txt):
@@ -476,28 +485,55 @@ def _extract_meta(
             parsed.abstract = " ".join(buf).strip()
             break
 
-    full = parsed.body_text()
-    m = RE_ARXIV.search(full)
+    # arXiv 号 / DOI 只从首页取：全文搜索会命中参考文献里"被引论文"的编号，
+    # 把本文误判成另一篇的同族版本（扫描件 OCR 后尤其容易踩到，页眉水印常被糊掉）。
+    head = " ".join(b.text for b in page1_blocks)[:4000]
+    m = RE_ARXIV.search(head)
     if m:
         parsed.arxiv_id = m.group(1) + (m.group(2) or "")
-    m = RE_DOI.search(full[:8000])
+    m = RE_DOI.search(head)
     if m:
         parsed.doi = m.group(0).rstrip(".")
 
 
 def _extract_references(blocks: list[Block]) -> list[dict]:
+    """从已标记为 reference 的区块里清洗出参考文献条目。
+
+    出版社差异：有的用 [12]、有的用 [SLA+18]、有的纯作者-年份。
+    这里不依赖编号样式，改用"含四位年份 / 含方括号标签"做判定，
+    再把单独成块的标签（[SLA+18] 独占一块）粘回下一条正文。
+    """
     refs: list[dict] = []
+    pending_label = ""
+
     for b in blocks:
         if b.kind != "reference":
             continue
         txt = b.text.strip()
-        m = RE_REF_ITEM.match(txt)
-        try:
-            idx = int(m.group(1) or m.group(2)) if m else len(refs) + 1
-        except (TypeError, ValueError):
-            idx = len(refs) + 1
-        if len(txt) < 15:
+
+        if RE_REF_LABEL.match(txt):
+            pending_label = txt
             continue
+
+        if len(txt) < 25:
+            continue
+        if re.fullmatch(r"[\d\s.\-–—]+", txt):  # 纯页码 / 目录行
+            continue
+        if not re.search(r"(?:19|20)\d{2}", txt) and not txt.startswith("["):
+            continue
+
+        if pending_label and not txt.startswith("["):
+            txt = f"{pending_label} {txt}"
+        pending_label = ""
+
+        idx = len(refs) + 1
+        m = RE_REF_ITEM.match(txt)
+        if m:
+            for g in m.groups():
+                if g and g.isdigit():
+                    idx = int(g)
+                    break
+
         refs.append(
             {
                 "index": idx,
@@ -586,6 +622,73 @@ def parse_pdf(path: str, max_pages: int | None = None) -> ParsedDoc:
         "解析完成 %s：%d 页 / %d 区块 / %d 标题 / %d 参考文献 / 扫描件=%s",
         path.split("/")[-1], parsed.page_count, len(parsed.blocks),
         len(parsed.sections), len(parsed.references), parsed.is_scanned,
+    )
+    return parsed
+
+
+def finalize_ocr_structure(parsed: ParsedDoc) -> ParsedDoc:
+    """OCR 回填后的结构重建：保留标题层级，补分类 / 章节树 / 参考文献 / 元信息。
+
+    不能直接复用 parse_pdf 里的分类流程：那套逻辑靠字号加粗判标题，
+    而 OCR 的层级来自 Markdown 标记（更可靠），所以这里保留既有 heading，
+    只对正文块做图表 / 参考文献归类。
+    """
+    # 1) 参考文献区：从 "References" 标题之后的 [n] 条目整段标记
+    in_refs = False
+    for b in parsed.blocks:
+        t = b.text.strip()
+        if b.kind == "heading" and RE_REF_HEAD.match(t):
+            in_refs = True
+            continue
+        if b.kind == "heading" and in_refs and re.match(r"^(appendix|a\.|supplementary)", t.lower()):
+            in_refs = False
+            continue
+        if in_refs and RE_REF_ITEM.match(t):
+            b.kind = "reference"
+        elif b.kind == "text":
+            if RE_FIGURE.match(t):
+                b.kind = "figure"
+            elif RE_TABLE.match(t):
+                b.kind = "table"
+
+    # 2) 章节树
+    parsed.sections = []
+    for b in parsed.blocks:
+        if b.kind == "heading":
+            parsed.sections.append(
+                {
+                    "level": max(1, b.level),
+                    "title": b.text.strip()[:300],
+                    "page": b.page,
+                    "order": b.order,
+                    "bbox": [round(v, 1) for v in b.bbox],
+                    "anchor": b.anchor,
+                }
+            )
+
+    # 3) 参考文献
+    parsed.references = _extract_references(parsed.blocks)
+
+    # 4) 标题 / 作者 / 摘要：首页区块（OCR 文本前几行就是标题与作者）
+    page1 = [b for b in parsed.blocks if b.page == 1]
+    if page1:
+        try:
+            _extract_meta(parsed, page1, 10.0, [])
+        except Exception as exc:  # noqa: BLE001 元信息抽不到不能挡住入库
+            log.warning("扫描件元信息抽取失败：%s", exc)
+
+    # OCR 输出的标题往往没有 # 标记（模型只给章节加），字号全是 10，
+    # 靠字号判标题会落空。这里退一步：取首页前几个块里最像标题的一行。
+    if not (parsed.title or "").strip():
+        for b in page1[:4]:
+            t = b.text.strip()
+            if 8 <= len(t) <= 200 and not t.lower().startswith("arxiv") and "@" not in t:
+                parsed.title = t
+                break
+
+    log.info(
+        "扫描件结构重建：%d 区块 / %d 标题 / %d 参考文献",
+        len(parsed.blocks), len(parsed.sections), len(parsed.references),
     )
     return parsed
 

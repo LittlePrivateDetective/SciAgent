@@ -123,14 +123,45 @@ class BM25:
 _BM25_CACHE: dict[str, tuple[BM25, list[str]]] = {}
 
 
-def _load_corpus(doc_ids: list[str] | None) -> tuple[list[Chunk], dict[str, str]]:
+@dataclass(slots=True)
+class CorpusRow:
+    """轻量语料行：只带检索需要的字段，不带 embedding。
+
+    Chunk 表里 embedding 是 1024 维浮点的 BLOB（每块约 4KB）。
+    39 篇 5000+ 块时，每次查询都把它们整体读进内存会拖到几十秒——
+    检索根本用不到这些向量（向量走 Chroma），删掉它们是纯收益。
+    """
+
+    id: str
+    doc_id: str
+    idx: int
+    page: int
+    bbox: str
+    text: str
+    section_path: str
+    kind: str
+
+
+_CORPUS_CACHE: dict[str, tuple[list[CorpusRow], dict[str, str]]] = {}
+
+
+def _load_corpus(doc_ids: list[str] | None) -> tuple[list[CorpusRow], dict[str, str]]:
+    key = ",".join(sorted(doc_ids or ["*"]))
+    hit = _CORPUS_CACHE.get(key)
+    if hit:
+        return hit
+
     with SessionLocal() as db:
-        stmt = select(Chunk)
+        stmt = select(
+            Chunk.id, Chunk.doc_id, Chunk.idx, Chunk.page, Chunk.bbox,
+            Chunk.text, Chunk.section_path, Chunk.kind,
+        )
         if doc_ids:
             stmt = stmt.where(Chunk.doc_id.in_(doc_ids))
-        chunks = list(db.scalars(stmt).all())
+        rows = [CorpusRow(*r) for r in db.execute(stmt).all()]
         names = {d.id: d.filename for d in db.scalars(select(Document)).all()}
-    return chunks, names
+    _CORPUS_CACHE[key] = (rows, names)
+    return rows, names
 
 
 def _get_bm25(doc_ids: list[str] | None):
@@ -150,7 +181,9 @@ def _get_bm25(doc_ids: list[str] | None):
 
 
 def invalidate_cache() -> None:
+    """入库/删除文献后清空 BM25 与语料缓存，避免检索到已删除的块。"""
     _BM25_CACHE.clear()
+    _CORPUS_CACHE.clear()
 
 
 _STOP = {

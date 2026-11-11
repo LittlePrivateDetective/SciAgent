@@ -19,13 +19,14 @@ SciAgent 让模型**只能引用检索到的 chunk**，服务端把 chunk 换成
 | 模块 | 状态 | 说明 |
 | --- | --- | --- |
 | 版面感知解析 | ✅ | 双栏/单栏阅读顺序还原、字号层级建章节树、图/表/公式/参考文献分块 |
-| 细粒度结构 | ✅ | 标题、作者（8 位全中）、单位、摘要、一~三级标题、参考文献条目、arXiv/DOI |
-| 内容级去重 | ✅ | arXiv 同族 + SimHash 指纹 + 标题相似三层判定，含"保留哪个版本"建议 |
-| 扫描件兜底 | ✅ | 无文本层自动转 OCR（VLM 优先 / tesseract 兜底） |
-| 混合检索 | ✅ | BM25 + 稠密向量 + RRF 融合 + 规则重排 |
-| 锚点校验 | ✅ | 页码 + bbox 容差回查，越界比例 >20% 触发重规划 |
+| 细粒度结构 | ✅ | 标题、作者、单位、摘要、一~三级标题、参考文献条目、arXiv/DOI、年份 |
+| 内容级去重 | ✅ | arXiv 同族 + SimHash 指纹 + 标题相似三层判定，附**章节级版本差异报告** |
+| 扫描件兜底 | ✅ | 无文本层自动走视觉模型 OCR（`qwen3.5-ocr`），Markdown 标题反推层级 |
+| 混合检索 | ✅ | BM25 + 稠密向量 + RRF 融合 + cross-encoder 重排（API 优先，本地规则兜底） |
+| 锚点校验 | ✅ | 引用编号 / 坐标 / 数字溯源三重校验，越界比例 >20% 触发重规划 |
 | 多 Agent 编排 | ✅ | LangGraph 七节点 + 条件边动态重规划 + Reflector 写长期记忆 |
-| 引用图谱 | ⏳ 算法通 | NetworkX + PageRank 已可用，缺前端可视化 |
+| 引用图谱 | ✅ | 三级引用匹配（arXiv/DOI/标题）+ PageRank（幂迭代自实现）+ 介数中心性 + 社区发现 + ECharts 前端 |
+| 领域综述 | ✅ | 基于图谱影响力排序，自动生成带 `[n]` 引用的四段式迷你综述 |
 | 阅读器 | ⏳ 基础版 | 页图 + bbox 高亮 + 章节树；PDF.js 画布渲染待接 |
 | 翻译/写作/推荐 | ⏳ 未开始 | P1/P2 排期见 `docs/方案设计-v1.md` |
 
@@ -98,14 +99,23 @@ docs/          方案设计、官方需求文档、执行备忘录
 
 | 方法 | 路径 | 说明 |
 | --- | --- | --- |
-| POST | `/api/documents/upload` | 上传 PDF（命中重复会返回三选一决策） |
+| POST | `/api/documents/upload` | 上传 PDF（命中重复会返回三选一决策 + 版本差异报告） |
 | POST | `/api/documents/resolve` | keep_new / keep_old / both |
+| GET | `/api/documents/{id}/diff` | 与库内旧版本的章节级差异 |
 | GET | `/api/documents/{id}/page/{n}.png` | 渲染单页，供阅读器与高亮 |
 | GET | `/api/documents/{id}/sections` | 章节树 |
 | POST | `/api/chat` | 多 Agent 问答（返回答案+证据+校验+trace） |
-| GET | `/api/graph` | 引用图谱 + PageRank |
+| GET | `/api/graph` | 引用图谱 + PageRank/介数/社区（`?refresh=true` 跳缓存） |
+| POST | `/api/graph/survey` | 基于图谱影响力排序生成带引用的领域综述 |
 | POST | `/api/library/rescan` | 批量导入官方测试集 |
 | GET | `/api/system/info` | 模型路由/向量后端/OCR 能力自检 |
+
+## 批量脚本
+
+```bash
+python scripts/bulk_import.py        # 批量导入 data/pdf（断点续传，逐文件计时）
+python scripts/rebuild_citations.py  # 解析器升级后刷新引用表（不重算向量）
+```
 
 ## 设计取舍（为什么这么写）
 

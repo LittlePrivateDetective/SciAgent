@@ -20,6 +20,10 @@ REF_RE = re.compile(r"\[(\d{1,3})\]")
 _QUOTE_RE = re.compile(r'"[^"]{0,500}"|“[^”]{0,500}”|「[^」]{0,500}」')
 # 数字：前后不能紧邻字母（排除 beta1、p7、WMT2014 里的粘连同字母），支持 1,000 / 28.4
 _NUM_RE = re.compile(r"(?<![^\W\d_])(?<![0-9.])\d+(?:[.,]\d+)*(?![^\W\d_])")
+# 出处前缀里的 arXiv 号（1706.03762v1 / arXiv:2001.08361）不是答案数字
+_RE_ARXIV_LIKE = re.compile(r"(?:arxiv[:\s]*)?\b\d{4}\.\d{4,5}(?:v\d+)?\b", re.I)
+# 文件名同理（2001.08361v1.pdf / N19-1423.pdf）
+_RE_FILENAME = re.compile(r"[\w.\-]+\.pdf", re.I)
 TOL = 3.0
 
 
@@ -46,8 +50,12 @@ def _numbers(text: str) -> list[tuple[str, float]]:
     """抽取文中的量化数字，返回 (原始写法, 数值)。
 
     先剥掉锚点和引用编号，否则 [p7@107,153,504,206] 会被当成 107、153 等数字。
+    再剥掉 arXiv 号与文件名：答案里常带「1706.03762v1 第7页」这样的出处前缀，
+    其中的 1706.0376 会被当成"答案里的数字"，造成大量溯源误报。
     """
     body = REF_RE.sub(" ", ANCHOR_RE.sub(" ", text))
+    body = _RE_ARXIV_LIKE.sub(" ", body)
+    body = _RE_FILENAME.sub(" ", body)
     out: list[tuple[str, float]] = []
     for m in _NUM_RE.finditer(body):
         v = _to_float(m.group(0))

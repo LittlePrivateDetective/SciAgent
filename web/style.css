@@ -152,3 +152,41 @@ body {
 @media (max-width: 1280px) {
   .layout { grid-template-columns: 220px 1fr 320px; }
 }
+
+/* ---------- 引用图谱 ---------- */
+.graph-wrap { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.graph-bar {
+  display: flex; align-items: center; gap: 14px;
+  padding: 7px 12px; border-bottom: 1px solid var(--line); font-size: 12px; color: var(--muted);
+}
+.graph-stat { color: var(--text); }
+.graph-loading { color: var(--warn); }
+.legend { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+.legend .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-left: 8px; }
+.legend .dot:first-child { margin-left: 0; }
+.dot.cornerstone { background: #d94f4f; }
+.dot.bridge { background: #8a63d2; }
+.dot.normal { background: #4a7fd4; }
+.dot.peripheral { background: #9aa4b2; }
+
+.graph-body { position: relative; flex: 1; min-height: 0; }
+.graph-canvas { width: 100%; height: 100%; min-height: 320px; }
+
+.node-card {
+  position: absolute; right: 12px; top: 12px; width: 250px;
+  background: #fff; border: 1px solid var(--line); border-radius: 8px;
+  padding: 10px 12px; box-shadow: 0 6px 18px rgba(20, 24, 34, .08); font-size: 12px;
+}
+.node-title { font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+.node-row { display: flex; justify-content: space-between; padding: 3px 0; color: var(--muted); }
+.node-row b { color: var(--text); font-weight: 500; }
+
+.graph-insight {
+  padding: 8px 12px; border-top: 1px solid var(--line);
+  font-size: 12px; color: var(--muted); line-height: 1.6;
+}
+
+/* 领域综述弹窗 */
+.survey-body { max-height: 420px; overflow-y: auto; line-height: 1.75; font-size: 13px; }
+.survey-body b { color: var(--brand); }
+.survey-refs { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 8px; }
