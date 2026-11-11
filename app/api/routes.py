@@ -33,7 +33,9 @@ from app.parse.ocr import ocr_available
 from app.rag.bilingual import (
     build_segments,
     cached_ratio,
+    en_status,
     job_status,
+    start_en_job,
     start_job,
     translate_pages,
     translate_selection,
@@ -484,6 +486,7 @@ def get_translate_status(doc_id: str, db: Session = Depends(get_db)):
 
 class TranslateIn(BaseModel):
     text: str = Field(min_length=1, max_length=8000)
+    to: str = ""   # "" = 按源语言自动判方向；"zh" / "en" 强制方向
 
 
 @router.post("/translate")
@@ -492,8 +495,45 @@ def translate_arbitrary(body: TranslateIn):
 
     与整篇翻译分开做，是因为整篇走后台任务 + translations 表缓存（按页、可续传），
     而划词是"用户手指还按着"的交互，必须同步返回，且选区内容不值得缓存。
+
+    `to` 留空即自动判方向：英→中（官方 1.3.3.1）、中→英（官方 1.6.4）共用这一条通道。
     """
-    return translate_selection(body.text)
+    target = body.to if body.to in {"zh", "en"} else ""
+    return translate_selection(body.text, target)
+
+
+# ---------------- 整篇中译英（官方 1.6.4） ----------------
+@router.post("/documents/{doc_id}/translate-en")
+def start_translate_en(doc_id: str, db: Session = Depends(get_db)):
+    """启动整篇中译英：后台线程跑，前端轮询进度。
+
+    整篇中文论文动辄两三万字，同步接口一定超时；这里按 ~1200 字分批、3 路并发，
+    产出 Markdown 落到 `data/exports/{doc_id}_en.md`，同时把正文留在内存供预览。
+    """
+    doc = db.get(Document, doc_id)
+    if not doc:
+        raise HTTPException(404, "文档不存在")
+    return start_en_job(db, doc_id)
+
+
+@router.get("/documents/{doc_id}/translate-en")
+def get_translate_en(doc_id: str, db: Session = Depends(get_db)):
+    if not db.get(Document, doc_id):
+        raise HTTPException(404, "文档不存在")
+    return en_status(db, doc_id)
+
+
+@router.get("/documents/{doc_id}/translate-en.md")
+def download_translate_en(doc_id: str):
+    """下载英文版 Markdown。走文件而不是重新生成：重复点不该再烧一次模型额度。"""
+    path = Path(settings.db_path).parent / "exports" / f"{doc_id}_en.md"
+    if not path.exists():
+        raise HTTPException(404, "还没有生成英文版，请先点「译英」")
+    return Response(
+        content=path.read_text(encoding="utf-8"),
+        media_type="text/markdown; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="{doc_id}_en.md"'},
+    )
 
 
 # ---------------- 问答 ----------------

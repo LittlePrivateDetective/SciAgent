@@ -632,3 +632,19 @@ body.is-dragging, body.is-dragging * { user-select: none !important; }
 .job-bad { color: #a32d2d; flex: none; }
 .job-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .job-err { color: #a32d2d; font-size: 10.5px; }
+
+/* ---------- 整篇中译英（官方 1.6.4） ---------- */
+.en-head-actions { display: flex; align-items: center; gap: 2px; flex: none; }
+.en-progress { padding: 6px 0 12px; }
+.en-preview {
+  border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px;
+  background: #fcfdff; font-size: 13px; line-height: 1.75; color: #23272f;
+  max-height: calc(100vh - 210px); overflow-y: auto;
+}
+.en-preview h1 { font-size: 18px; font-weight: 600; margin: 0 0 10px; line-height: 1.4; }
+.en-preview h2 { font-size: 14px; font-weight: 600; margin: 16px 0 6px; color: #1c1f26; }
+.en-preview h3 { font-size: 13px; font-weight: 500; margin: 12px 0 4px; }
+.en-preview p { margin: 0 0 9px; }
+.en-preview hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
+.en-preview::-webkit-scrollbar { width: 8px; }
+.en-preview::-webkit-scrollbar-thumb { background: #d3dbec; border-radius: 4px; border: 2px solid #fff; }

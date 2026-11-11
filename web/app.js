@@ -35,6 +35,15 @@ function mdToHtml(md) {
     }
     if (inTable) { html += "</tbody></table></div>"; inTable = false; }
     if (!line) { html += "<br>"; continue; }
+    // 标题与分隔线：中译英产出的英文版是 Markdown 文档（# 标题 / ## 小节），
+    // 不认 `#` 的话预览区就是一堆带井号的裸文本
+    const h = /^(#{1,3})\s+(.+)$/.exec(line);
+    if (h) {
+      const lv = h[1].length;
+      html += `<h${lv}>${h[2].replace(/\*\*(.+?)\*\*/g, "<b>$1</b>")}</h${lv}>`;
+      continue;
+    }
+    if (/^(-{3,}|_{3,})$/.test(line)) { html += "<hr>"; continue; }
     html += line.replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/`(.+?)`/g, "<code>$1</code>") + "<br>";
   }
   if (inTable) html += "</tbody></table></div>";
@@ -83,6 +92,12 @@ const app = createApp({
         recLoading: false, recItems: [], recTopics: [], recDays: 180, recNote: "",
         importing: "",
       },
+      // 整篇中译英（官方 1.6.4）：后台任务 + 轮询，产出 Markdown
+      en: {
+        visible: false, running: false, done: 0, total: 0, error: "",
+        text: "", chars: 0, ms: 0, segments: 0, skipped: 0,
+        docId: "", docTitle: "", timer: null,
+      },
       loading: false,
       rescanning: false,
       centerView: "reader",
@@ -118,6 +133,9 @@ const app = createApp({
     pageUrl() {
       if (!this.activeDoc) return "";
       return `/api/documents/${this.activeDoc.id}/page/${this.page}.png?dpi=130&t=${Date.now()}`;
+    },
+    enHtml() {
+      return mdToHtml(this.en.text || "");
     },
   },
   mounted() {
@@ -155,6 +173,86 @@ const app = createApp({
       const r = await fetch("/api/system/info").then((x) => x.json());
       this.info = r;
     },
+    /* ---------------- 整篇中译英（官方 1.6.4） ---------------- */
+
+    openEn() {
+      this.en.visible = true;
+      if (!this.activeDoc) return;
+      // 已经生成过就直接展示，没有才开始跑——重复点不该再烧一次模型额度
+      if (this.en.docId === this.activeDoc.id && this.en.chars) return;
+      this.checkEnStatus(true);
+    },
+
+    async checkEnStatus(autoStart) {
+      const doc = this.activeDoc;
+      if (!doc) return;
+      this.en.docId = doc.id;
+      this.en.docTitle = doc.title || doc.filename;
+      try {
+        const s = await fetch(`/api/documents/${doc.id}/translate-en`).then((x) => x.json());
+        this.applyEn(s);
+        if (s.running) this.pollEn(doc.id);
+        else if (!s.chars && autoStart) this.startEn();
+      } catch (e) {
+        this.en.error = "读取英文版状态失败";
+      }
+    },
+
+    applyEn(s) {
+      this.en.running = !!s.running;
+      this.en.done = s.done || 0;
+      this.en.total = s.total || 0;
+      this.en.error = s.error || "";
+      this.en.chars = s.chars || 0;
+      this.en.ms = s.ms || 0;
+      this.en.segments = s.segments || 0;
+      this.en.skipped = s.skipped || 0;
+      if (s.preview) this.en.text = s.preview;
+    },
+
+    async startEn() {
+      const doc = this.activeDoc;
+      if (!doc || this.en.running) return;
+      this.en.visible = true;
+      this.en.docId = doc.id;
+      this.en.docTitle = doc.title || doc.filename;
+      this.en.error = "";
+      this.en.text = "";
+      this.en.chars = 0;
+      try {
+        const r = await fetch(`/api/documents/${doc.id}/translate-en`, { method: "POST" }).then((x) => x.json());
+        this.applyEn(r);
+        this.pollEn(doc.id);
+      } catch (e) {
+        this.en.error = "启动译英失败，请检查服务";
+      }
+    },
+
+    pollEn(docId) {
+      clearInterval(this.en.timer);
+      const tick = async () => {
+        try {
+          const s = await fetch(`/api/documents/${docId}/translate-en`).then((x) => x.json());
+          this.applyEn(s);
+          if (!s.running) {
+            clearInterval(this.en.timer);
+            this.en.timer = null;
+            if (s.error) ElementPlus.ElMessage.error(s.error);
+            else if (s.chars) ElementPlus.ElMessage.success(`英文版已生成（${s.chars} 字符）`);
+          }
+        } catch (e) {
+          /* 轮询抖动不打断，下一轮再取 */
+        }
+      };
+      tick();
+      this.en.timer = setInterval(tick, 1500);
+    },
+
+    downloadEn() {
+      if (!this.en.docId) return;
+      window.open(`/api/documents/${this.en.docId}/translate-en.md`, "_blank", "noopener");
+    },
+
     /* ---------------- 论文发现与推荐（官方 1.4） ---------------- */
 
     openDiscover(tab) {
@@ -528,8 +626,11 @@ const app = createApp({
       const s = window.getSelection();
       const txt = (s ? String(s) : "").trim();
       if (!txt || txt.length < 2) return;
-      // 中文选区不再翻译；纯数字/符号也没意义
-      if (!/[A-Za-z]{2,}/.test(txt)) return;
+      // 英文选区 → 译中；中文选区 → 译英（官方 1.6.4 的划词形态）。
+      // 纯数字/符号仍然没意义，直接忽略。
+      const hasEn = /[A-Za-z]{2,}/.test(txt);
+      const hasZh = /[\u4e00-\u9fff]{2,}/.test(txt);
+      if (!hasEn && !hasZh) return;
       let rect = null;
       try {
         rect = s.getRangeAt(0).getBoundingClientRect();
@@ -560,7 +661,8 @@ const app = createApp({
           body: JSON.stringify({ text: this.sel.src }),
         }).then((x) => x.json());
         if (r.ok) {
-          this.sel.zh = r.zh;
+          this.sel.zh = r.text || r.zh;
+          this.sel.title = r.to === "en" ? "译成英文" : "划词翻译";
           this.sel.truncated = !!r.truncated;
           // 译文比按钮态高得多，靠近视口底部时会被截在屏幕外，译完先收进来
           this.keepSelInView();

@@ -87,6 +87,9 @@
             <el-button size="small" text :disabled="page<=1" @click="goPage(page-1)">上一页</el-button>
             <span class="pager">{{ page }} / {{ pageCount }}</span>
             <el-button size="small" text :disabled="page>=pageCount" @click="goPage(page+1)">下一页</el-button>
+            <el-button size="small" text :loading="en.running" @click="openEn" title="把中文论文译成学术英文（官方 1.6.4）">
+              {{ en.running ? `译英 ${en.done}/${en.total}` : '译英' }}
+            </el-button>
           </template>
           <template v-else-if="centerView === 'bilingual'">
             <el-switch v-model="bi.sync" size="small" active-text="联动" style="margin:0 8px"></el-switch>
@@ -531,6 +534,42 @@
         </div>
       </el-tab-pane>
     </el-tabs>
+  </el-drawer>
+
+  <!-- 整篇中译英（官方 1.6.4）：中文论文 → 学术英文 Markdown，可预览可下载 -->
+  <el-drawer v-model="en.visible" size="720px" :with-header="false">
+    <div class="disc-head">
+      <div>
+        <div class="disc-title">英文版（中译英）</div>
+        <div class="disc-sub">
+          {{ en.docTitle || activeDoc && (activeDoc.title || activeDoc.filename) }}
+          <span v-if="en.segments"> · {{ en.segments }} 段正文，其中 {{ en.total }} 段中文送去翻译</span>
+        </div>
+      </div>
+      <div class="en-head-actions">
+        <el-button v-if="en.chars" size="small" text @click="downloadEn">下载 Markdown</el-button>
+        <el-button size="small" text :loading="en.running" @click="startEn">重新生成</el-button>
+        <el-button text @click="en.visible = false">关闭</el-button>
+      </div>
+    </div>
+
+    <div v-if="en.running" class="en-progress">
+      <el-progress :percentage="en.total ? Math.round(en.done / en.total * 100) : 0" />
+      <div class="disc-meta">
+        正在翻译 {{ en.done }} / {{ en.total || '…' }} 段 · 每批 3 路并发，中文越长越慢
+      </div>
+    </div>
+    <div v-else-if="en.error" class="write-error">{{ en.error }}</div>
+    <div v-else-if="!en.chars" class="empty big">
+      点「重新生成」开始翻译；整篇按 ~1200 字分批、3 路并发，一般论文 30–90 秒
+    </div>
+    <template v-else>
+      <div class="disc-meta">
+        {{ en.chars }} 字符 · 用时 {{ (en.ms / 1000).toFixed(1) }}s
+        <span v-if="en.skipped"> · {{ en.skipped }} 段非中文（英文摘要/公式/代码）原样保留</span>
+      </div>
+      <div class="en-preview" v-html="enHtml"></div>
+    </template>
   </el-drawer>
 
   <!-- 划词翻译：选中即出现「译」按钮，点一下才发起请求。
