@@ -12,6 +12,7 @@ class SciState(TypedDict, total=False):
     task_id: str
     goal: str
     mode: str                 # qa / compare / survey / review
+    thinking: bool | None     # 本次任务是否开思维链；None=跟随后台全局设置
     doc_ids: list[str]
     plan: list[dict]
     cursor: int

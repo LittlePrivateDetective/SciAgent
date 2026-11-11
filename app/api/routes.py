@@ -15,7 +15,7 @@ from sqlalchemy.orm import Session
 
 from app.agents.graph import run as run_agent
 from app.core.config import settings
-from app.core.llm import gateway
+from app.core.llm import gateway, want_thinking
 from app.core.logger import get_logger
 from app.db.models import (
     AuditLog,
@@ -93,6 +93,8 @@ def system_info(db: Session = Depends(get_db)):
         },
         # 对照阅读的翻译模型与缓存进度（前端据此决定是否提示"整篇翻译"）
         "translation": {"model": settings.trans_model, "batch": settings.trans_batch},
+        # 前端「快速 / 深思」按钮的初始状态跟着这里走
+        "thinking": bool(settings.llm_thinking),
         "keepalive": _keepalive_status(),
         "official_pdfs": len(list(settings.pdf_dir.glob("*.pdf"))),
     }
@@ -715,6 +717,8 @@ class ChatIn(BaseModel):
     question: str
     doc_ids: list[str] = Field(default_factory=list)
     mode: str = "qa"
+    # None=跟随后台全局设置；True=深思（开思维链）；False=快速
+    thinking: bool | None = None
 
 
 @router.post("/chat")
@@ -730,7 +734,10 @@ def chat(body: ChatIn, db: Session = Depends(get_db)):
             "evidence": [],
             "verify": {},
         }
-    res = run_agent(body.question.strip(), body.doc_ids, mode=body.mode)
+    res = run_agent(body.question.strip(), body.doc_ids, mode=body.mode,
+                    thinking=body.thinking)
+    # 把"这次实际用的是哪种模式"回给前端，回答上方才标得出「深思 · 3.4s」
+    res["meta"] = {"thinking": want_thinking(body.thinking), "model": settings.llm_model}
     # 句级定位：chunk 往往是一整段，直接把 bbox 画成大矩形既挡字也看不出重点，
     # 这里按问题与答案挑出真正作答的句子，前端据此画成贴行的小框。
     annotate_focus(res.get("evidence") or [], body.question.strip(), res.get("answer") or "")
@@ -986,6 +993,7 @@ class StreamIn(BaseModel):
     question: str
     doc_ids: list[str] = Field(default_factory=list)
     mode: str = "qa"
+    thinking: bool | None = None
 
 
 @router.post("/chat/stream")
@@ -1004,6 +1012,13 @@ def chat_stream(body: StreamIn, db: Session = Depends(get_db)):
     def gen():
         def emit(event: str, **data) -> str:
             return "data: " + json.dumps({"event": event, **data}, ensure_ascii=False) + "\n\n"
+
+        # 快速=trans_model（非推理模型，最快）；深思=主模型 + 开思维链。
+        # 这个接口原本固定用 trans_model，等于流式和非流式跑的不是一个模型；
+        # 加开关后两条路径才对得上。
+        deep = want_thinking(body.thinking)
+        model = settings.llm_model if deep else settings.trans_model
+        reason_chars = 0
 
         try:
             yield emit("thinking", stage="plan", text="任务规划：拆解问题与检索目标")
@@ -1030,8 +1045,20 @@ def chat_stream(body: StreamIn, db: Session = Depends(get_db)):
                 {"role": "user", "content": f"【证据】\n{block}\n\n【问题】\n{q}\n\n"
                                             f"要求：第一句给结论，200 字以内，正文带 [编号] 引用。"},
             ]
+            if deep:
+                yield emit("thinking", stage="depth",
+                           text=f"深思模式：用 {model} 先推理再作答，会多花几秒")
             buf: list[str] = []
-            for piece in gateway.chat_stream(msgs, model=settings.trans_model):
+            t_reason = time.time()
+            for kind, piece in gateway.chat_stream(msgs, model=model, thinking=body.thinking):
+                if kind == "reason":
+                    reason_chars += len(piece)
+                    continue
+                if reason_chars and not buf:
+                    # 推理片段不逐字推给前端（刷屏且无信息量），只报一句"想完了"
+                    yield emit("thinking", stage="depth_done",
+                               text=f"推理完成（{reason_chars} 字），开始作答",
+                               latency_ms=int((time.time() - t_reason) * 1000))
                 buf.append(piece)
                 yield emit("token", text=piece)
             answer = "".join(buf).strip()
@@ -1042,7 +1069,9 @@ def chat_stream(body: StreamIn, db: Session = Depends(get_db)):
                        text=f"引用校验 {v.get('valid')}/{v.get('total')} 命中",
                        rate=v.get("rate"))
             yield emit("done", answer=rendered, raw_answer=answer,
-                       evidence=evidence, verify=v)
+                       evidence=evidence, verify=v,
+                       meta={"thinking": deep, "model": model,
+                             "reasoning_chars": reason_chars})
         except Exception as exc:  # noqa: BLE001 流内异常也要给前端可渲染的事件，不能断流
             log.exception("流式回答失败")
             yield emit("error", text=f"生成中断：{type(exc).__name__}: {str(exc)[:160]}")

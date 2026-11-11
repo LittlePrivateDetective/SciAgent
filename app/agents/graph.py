@@ -105,6 +105,7 @@ def run(
     doc_ids: list[str] | None = None,
     mode: str = "qa",
     on_step: Callable[[dict], None] | None = None,
+    thinking: bool | None = None,
 ) -> dict:
     """执行一次完整任务，落库任务轨迹，返回结构化结果。"""
     t0 = time.time()
@@ -112,6 +113,7 @@ def run(
         "goal": goal,
         "mode": mode,
         "doc_ids": doc_ids or [],
+        "thinking": thinking,
         "retries": 0,
         "trace": [],
     }

@@ -246,7 +246,32 @@ body {
   flex: 1 1 0; min-width: 0;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-.ask-bar { display: flex; gap: 6px; padding: 8px; border-top: 1px solid var(--line); }
+.ask-bar { display: flex; gap: 6px; padding: 8px; border-top: 1px solid var(--line); align-items: center; }
+.ask-bar .el-input { flex: 1; }
+
+/* 快速 / 深思：把"多想一会儿"做成一个可以现场切换的开关。
+   默认灰（快速），开启后染成品牌蓝 + 小圆点发光，一眼能看出当前在哪个模式。 */
+.think-btn {
+  flex: none; display: inline-flex; align-items: center; gap: 5px;
+  height: 30px; padding: 0 10px; border-radius: 7px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--panel);
+  font-size: 12px; color: var(--muted); user-select: none;
+  transition: background .15s, color .15s, border-color .15s;
+}
+.think-btn:hover:not(:disabled) { background: #f2f4f8; color: var(--text); }
+.think-btn:disabled { opacity: .55; cursor: not-allowed; }
+.think-btn .think-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: #c3c9d4;
+  transition: background .15s, box-shadow .15s;
+}
+.think-btn.on { background: #eaf0fe; border-color: #c9d6f8; color: var(--brand); font-weight: 600; }
+.think-btn.on .think-dot { background: var(--brand); box-shadow: 0 0 0 3px rgba(47, 91, 215, .14); }
+
+/* 回答上方的模式与耗时。用等宽数字，多问几条并排看时不跳动 */
+.msg-meta {
+  font-size: 11px; color: #8a93a3; margin: -2px 0 6px;
+  font-variant-numeric: tabular-nums; letter-spacing: .2px;
+}
 
 /* 去重弹窗 */
 .dup-msg { margin: 0 0 8px; color: #374151; }

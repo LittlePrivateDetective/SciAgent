@@ -25,6 +25,7 @@ SciAgent 让模型**只能引用检索到的 chunk**，服务端把 chunk 换成
 | 混合检索 | ✅ | BM25 + 稠密向量 + RRF 融合 + cross-encoder 重排（API 优先，本地规则兜底） |
 | 锚点校验 | ✅ | 引用编号 / 坐标 / 数字溯源三重校验，越界比例 >20% 触发重规划 |
 | 多 Agent 编排 | ✅ | LangGraph 七节点 + 条件边动态重规划 + Reflector 写长期记忆 |
+| 快速 / 深思 | ✅ | 对话框一键切换：快速=非推理模型直答（首字 ~1.3s），深思=主模型先推理（多 ~2.6s）；回答上方标出模式与耗时；单条请求覆盖，不改全局 |
 | 引用图谱 | ✅ | 三级引用匹配（arXiv/DOI/标题）+ PageRank（幂迭代自实现）+ 介数中心性 + 社区发现 + ECharts 前端 |
 | 领域综述 | ✅ | 基于图谱影响力排序，自动生成带 `[n]` 引用的四段式迷你综述 |
 | 阅读器 | ✅ | 页图 + **词级透明文本层**（文字可选、角标可点）+ 一~三级章节树 |
@@ -125,7 +126,7 @@ tests/         qa_suite 回归台 / qa_report 报告 / browser_cdp 浏览器驱�
 | GET | `/api/documents/{id}/diff` | 与库内旧版本的章节级差异 |
 | GET | `/api/documents/{id}/page/{n}.png` | 渲染单页，供阅读器与高亮 |
 | GET | `/api/documents/{id}/sections` | 章节树 |
-| POST | `/api/chat` | 多 Agent 问答（返回答案+证据+校验+trace） |
+| POST | `/api/chat` | 多 Agent 问答（返回答案+证据+校验+trace；`thinking` 可选 true/false 覆盖本次模式） |
 | GET | `/api/graph` | 引用图谱 + PageRank/介数/社区（`?refresh=true` 跳缓存） |
 | POST | `/api/graph/survey` | 基于图谱影响力排序生成带引用的领域综述 |
 | POST | `/api/library/rescan` | 批量导入官方测试集 |
@@ -155,7 +156,7 @@ tests/         qa_suite 回归台 / qa_report 报告 / browser_cdp 浏览器驱�
 | POST | `/api/write/outline` | 写作 Copilot：idea → 四段框架 + 无幻觉 References |
 | POST | `/api/write/topology` | idea（或大纲）→ 架构拓扑图，一次返回 Mermaid / DOT / TikZ / Matplotlib |
 | GET/POST | `/api/documents/{id}/bilingual[/translate]` | 中英对照段落 / 按需翻译 |
-| POST | `/api/chat/stream` | SSE 流式问答（thinking / token / done 事件） |
+| POST | `/api/chat/stream` | SSE 流式问答（thinking / token / done 事件；`thinking=true` 时推理片段不逐字推，只报"推理完成（N 字）"） |
 | GET/POST | `/api/tools/*` | 工具健康检查、schema、显式调用、LLM Function Calling 决策 |
 | POST | `/api/tools/csv2chart` | CSV → 柱状/折线/雷达/三线表 × Mermaid / TikZ / Matplotlib / LaTeX / Markdown + Figure Caption |
 | GET | `/api/research/future-work` | Future Work 提炼去重与后续论文对撞 |

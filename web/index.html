@@ -488,6 +488,7 @@
         </div>
         <div v-for="(m,i) in messages" :key="i" class="msg" :class="m.role">
           <div class="bubble">
+            <div v-if="m.meta" class="msg-meta">{{ m.meta }}</div>
             <div v-if="m.thinking && m.thinking.length" class="think-timeline">
               <div v-for="(t,j) in m.thinking" :key="j" class="think-step">
                 <span class="think-dot"></span>{{ t }}
@@ -523,6 +524,13 @@
       </div>
 
       <div class="ask-bar">
+        <button class="think-btn" :class="{ on: thinkDeep }" :disabled="loading"
+                :title="thinkDeep
+                  ? '深思：模型先推理再作答，慢 2–3 秒，概念辨析题更准'
+                  : '快速：直接作答，最快，适合查数值 / 列举 / 结构化抽取'"
+                @click="toggleThink()">
+          <span class="think-dot"></span>{{ thinkDeep ? "深思" : "快速" }}
+        </button>
         <el-input v-model="question" placeholder="问点什么…（Enter 发送）" @keyup.enter="ask()" :disabled="loading"></el-input>
         <el-button type="primary" :loading="loading" @click="ask()">发送</el-button>
       </div>

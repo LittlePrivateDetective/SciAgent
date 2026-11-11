@@ -148,6 +148,9 @@ const app = createApp({
       // scale 由图片实际渲染宽度换算，文本层内部一律按 PDF 原始 pt 布局。
       tl: { words: [], sents: [], loaded: false, scale: 1, W: 0, H: 0, page: 0, zhLoading: false },
       refIndex: {},   // 引用编号 → {index,page,bbox,text}
+      // 对话模式：false=快速（直接作答），true=深思（模型先推理再作答）。
+      // 初值在 mounted 里按 /api/system/info 的 thinking 对齐，之后由用户自己切。
+      thinkDeep: false,
       // 写作 Copilot：模型只写论述 + [n]，References 条目全部由服务端从库内元数据拼出
       wr: { idea: "", loading: false, result: null, error: "", tab: "outline" },
       // 架构拓扑图（1.6.2）+ 数据图表与图注（1.6.3）：两块共用一套代码/预览布局
@@ -244,6 +247,13 @@ const app = createApp({
     },
   },
   mounted() {
+    // 「快速 / 深思」的初值跟随后台设置，之后由用户自己切——不写进 localStorage：
+    // 否则上次为了某道题点了深思，下次进来所有问题都变慢，用户还不知道为什么
+    fetch("/api/system/info")
+      .then((r) => r.json())
+      .then((d) => { if (d && typeof d.thinking === "boolean") this.thinkDeep = d.thinking; })
+      .catch(() => {});
+
     // Mermaid 用 startOnLoad:false —— 让它在切换 tab / 点生成时按需渲染，
     // 否则页面一进来就去扫全站 DOM，白白多一次布局。
     if (window.mermaid) {
@@ -1317,11 +1327,13 @@ const app = createApp({
       if (!docIds.length && this.mode !== "compare" && this.scope === "doc" && this.activeDoc) {
         docIds = [this.activeDoc.id];
       }
+      const t0 = Date.now();
       try {
         const r = await fetch("/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ question: q, doc_ids: docIds, mode: this.mode }),
+          body: JSON.stringify({ question: q, doc_ids: docIds, mode: this.mode,
+                                 thinking: this.thinkDeep }),
         }).then((x) => x.json());
 
         this.messages.push({
@@ -1330,6 +1342,7 @@ const app = createApp({
           evidence: r.evidence || [],
           verify: r.verify || {},
           trace: r.trace || [],
+          meta: this.modeLabel(((Date.now() - t0) / 1000).toFixed(1)),
         });
       } catch (e) {
         this.messages.push({ role: "assistant", html: "请求失败：" + e });
@@ -1337,6 +1350,22 @@ const app = createApp({
         this.loading = false;
         this.scrollChat();
       }
+    },
+
+    toggleThink() {
+      this.thinkDeep = !this.thinkDeep;
+      ElementPlus.ElMessage({
+        message: this.thinkDeep
+          ? "深思：模型先推理再作答，慢约 2–3 秒，概念辨析题更准"
+          : "快速：直接作答，适合查数值、列举、结构化抽取",
+        type: "info", duration: 2000,
+      });
+    },
+
+    // 标签显示在回答上方。把耗时写出来是有意的：让"深思换到了什么"变成看得见的东西
+    modeLabel(seconds, meta) {
+      const deep = meta && typeof meta.thinking === "boolean" ? meta.thinking : this.thinkDeep;
+      return `${deep ? "深思" : "快速"} · ${seconds}s`;
     },
 
     docIdsFor() {
@@ -1354,12 +1383,14 @@ const app = createApp({
       const msg = { role: "assistant", html: "", evidence: [], verify: {}, trace: [], thinking: [] };
       this.messages.push(msg);
       this.loading = true;
+      const t0 = Date.now();
       let raw = "";
       try {
         const resp = await fetch("/api/chat/stream", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ question: q, doc_ids: this.docIdsFor(), mode: this.mode }),
+          body: JSON.stringify({ question: q, doc_ids: this.docIdsFor(), mode: this.mode,
+                                 thinking: this.thinkDeep }),
         });
         if (!resp.ok) throw new Error("HTTP " + resp.status);
         const reader = resp.body.getReader();
@@ -1387,6 +1418,7 @@ const app = createApp({
               msg.html = mdToHtml(ev.answer || raw);
               msg.evidence = ev.evidence || [];
               msg.verify = ev.verify || {};
+              msg.meta = this.modeLabel(((Date.now() - t0) / 1000).toFixed(1), ev.meta);
             } else if (ev.event === "error") {
               msg.thinking.push("错误边界 · " + ev.text);
               if (!msg.html) msg.html = mdToHtml("生成中断，已安全降级：" + ev.text);

@@ -61,6 +61,15 @@ def _mock_reply(json_mode: bool) -> str:
     return MOCK_HINT + "请在 .env 中配置 LLM_BASE_URL / LLM_API_KEY / LLM_MODEL 后重试。"
 
 
+def want_thinking(override: bool | None = None) -> bool:
+    """本次调用要不要思维链：请求里带了就用请求的，否则跟随后台全局设置。
+
+    前端「快速 / 深思」按钮走这里。它只是覆盖**这一次**提问，不改全局——
+    否则用户在页面上点一下，后台配置就被悄悄改掉，下次别人进来还以为系统变慢了。
+    """
+    return bool(settings.llm_thinking) if override is None else bool(override)
+
+
 class LLMGateway:
     """对外唯一入口：chat() / chat_stream() / chat_json()。"""
 
@@ -115,6 +124,7 @@ class LLMGateway:
         max_tokens: int | None = None,
         model: str | None = None,
         retries: int = 2,
+        thinking: bool | None = None,
     ) -> LLMResult:
         route = self.route()
         started = time.time()
@@ -128,7 +138,7 @@ class LLMGateway:
                 if route == "local":
                     res = self._chat_ollama(messages, json_mode, temperature, max_tokens)
                 else:
-                    res = self._chat_cloud(messages, json_mode, temperature, max_tokens, model)
+                    res = self._chat_cloud(messages, json_mode, temperature, max_tokens, model, thinking)
                 res.latency_ms = int((time.time() - started) * 1000)
                 log.info(
                     "LLM route=%s model=%s latency=%dms tokens=%d",
@@ -150,6 +160,7 @@ class LLMGateway:
         temperature: float | None,
         max_tokens: int | None,
         model: str | None = None,
+        thinking: bool | None = None,
     ) -> LLMResult:
         model_name = model or settings.llm_model
         payload: dict = {
@@ -163,7 +174,7 @@ class LLMGateway:
             payload["response_format"] = {"type": "json_object"}
         # DashScope 兼容层认 enable_thinking。只在显式关掉时才发这个字段：
         # 不认这个参数的供应商（或老模型）会直接 400，默认不发就不改变原有行为。
-        if not bool(settings.llm_thinking):
+        if not want_thinking(thinking):
             payload["enable_thinking"] = False
 
         resp = self.client.post(
@@ -219,14 +230,20 @@ class LLMGateway:
         )
 
     # ---------------- 流式 ----------------
-    def chat_stream(self, messages: Sequence[dict], *, model: str | None = None) -> Iterator[str]:
-        """逐段产出文本，用于前端 SSE 的"流式思考"。"""
+    def chat_stream(self, messages: Sequence[dict], *, model: str | None = None,
+                    thinking: bool | None = None) -> Iterator[tuple[str, str]]:
+        """逐段产出 ``(kind, text)``：``kind="reason"`` 是思维链，``kind="text"`` 是正文。
+
+        为什么要区分：深思模式下推理模型会先吐 ``reasoning_content``。如果把它当成
+        正文推给前端，用户看到的是"先说一堆废话、最后再重说一遍答案"。分开之后前端
+        可以把推理片段显示成"正在推理…"，正文照常逐字输出。
+        """
         route = self.route()
         model_name = model or settings.llm_model
         if route == "mock":
             text = _mock_reply(False)
             for i in range(0, len(text), 12):
-                yield text[i : i + 12]
+                yield "text", text[i : i + 12]
             return
 
         if route == "local":
@@ -246,7 +263,7 @@ class LLMGateway:
                 "temperature": settings.llm_temperature,
                 "stream": True,
             }
-            if not bool(settings.llm_thinking):
+            if not want_thinking(thinking):
                 payload["enable_thinking"] = False
             headers = {"Authorization": f"Bearer {settings.llm_api_key}"}
 
@@ -259,22 +276,30 @@ class LLMGateway:
                         continue
                     if route == "local":
                         obj = json.loads(line)
-                        piece = (obj.get("message") or {}).get("content", "")
-                    else:
-                        if line.startswith("data: "):
-                            line = line[6:]
-                        if line.strip() == "[DONE]":
-                            break
-                        obj = json.loads(line)
-                        piece = (obj.get("choices") or [{}])[0].get("delta", {}).get("content", "")
+                        msg = obj.get("message") or {}
+                        if msg.get("thinking"):
+                            yield "reason", msg["thinking"]
+                        piece = msg.get("content", "")
+                        if piece:
+                            yield "text", piece
+                        continue
+                    if line.startswith("data: "):
+                        line = line[6:]
+                    if line.strip() == "[DONE]":
+                        break
+                    obj = json.loads(line)
+                    delta = (obj.get("choices") or [{}])[0].get("delta") or {}
+                    if delta.get("reasoning_content"):
+                        yield "reason", delta["reasoning_content"]
+                    piece = delta.get("content") or ""
                     if piece:
-                        yield piece
+                        yield "text", piece
         except Exception as exc:  # noqa: BLE001
             log.warning("流式调用失败，降级为整体返回: %s", exc)
             try:
-                yield self.chat(messages, model=model_name).text
+                yield "text", self.chat(messages, model=model_name, thinking=thinking).text
             except LLMError as e:
-                yield f"[服务异常] {e}"
+                yield "text", f"[服务异常] {e}"
 
     # ---------------- Function Calling ----------------
     def function_call(
@@ -342,9 +367,11 @@ class LLMGateway:
         temperature: float | None = None,
         max_tokens: int | None = None,
         model: str | None = None,
+        thinking: bool | None = None,
     ) -> dict:
         """要求模型输出 JSON，并做容错解析（剥离 ``` 包裹、截取首尾花括号）。"""
-        res = self.chat(messages, json_mode=True, temperature=temperature, max_tokens=max_tokens, model=model)
+        res = self.chat(messages, json_mode=True, temperature=temperature, max_tokens=max_tokens,
+                        model=model, thinking=thinking)
         return parse_json_loose(res.text)
 
 

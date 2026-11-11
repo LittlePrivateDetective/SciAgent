@@ -85,6 +85,7 @@ def node_plan(state: dict) -> dict:
                 },
             ],
             temperature=0.1,
+            thinking=state.get("thinking"),
         )
         steps = data.get("steps") or []
         reasoning = data.get("reasoning", "")
@@ -162,6 +163,9 @@ def _expand_query(question: str) -> str:
             ],
             temperature=0,
             max_tokens=120,
+            # 改写只要一串关键词、预算 120 token，思维链会把它吃光并返回空串，
+            # 所以这里不看用户选择，直接关掉
+            thinking=False,
         )
         kw = (data.get("keywords") or "").strip()
         return f"{question} {kw}".strip() if kw else question
@@ -275,7 +279,9 @@ def node_answer(state: dict) -> dict:
     ]
 
     try:
-        data = gateway.chat_json(msgs, temperature=0.2, max_tokens=4096 if is_compare else None)
+        data = gateway.chat_json(msgs, temperature=0.2,
+                                max_tokens=4096 if is_compare else None,
+                                thinking=state.get("thinking"))
     except LLMError as exc:
         data = {"answer": f"作答失败：{exc}", "confidence": "low", "missing": ""}
 
@@ -284,7 +290,8 @@ def node_answer(state: dict) -> dict:
     # 结果 content 为空。这里再放大预算重试一次，仍为空才报错。
     if not answer:
         try:
-            data = gateway.chat_json(msgs, temperature=0.2, max_tokens=4096)
+            data = gateway.chat_json(msgs, temperature=0.2, max_tokens=4096,
+                                    thinking=state.get("thinking"))
             answer = (data.get("answer") or data.get("_raw") or "").strip()
             _step(state, "writer", "retry_empty", note="首次返回空内容，已放大输出预算重试")
         except LLMError as exc:
@@ -373,6 +380,7 @@ def node_review(state: dict) -> dict:
                 },
             ],
             temperature=0.1,
+            thinking=state.get("thinking"),
         )
         state["review"] = data
         if data.get("fixed_answer") and (data.get("score", 100) < 60):
@@ -420,6 +428,7 @@ def node_reflect(state: dict) -> dict:
                 },
             ],
             temperature=0.3,
+            thinking=state.get("thinking"),
         )
     except LLMError:
         data = {}
