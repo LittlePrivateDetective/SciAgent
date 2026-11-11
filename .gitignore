@@ -34,3 +34,8 @@ docs/qa/evidence/_qa_ui_check.js
 # 技术文档的 HTML 是 PDF 的中间产物，由 scripts/build_doc.py 生成
 # 提交物是 .md（源）与 .pdf（成稿），HTML 不进仓库
 docs/技术文档.html
+/科研小助手Agent-AI大模型.pdf
+
+# 参赛材料与内部笔记：赛方需求文档、执行策略、自评分，不进公开仓库
+_private/
+.workbuddy/

@@ -36,7 +36,7 @@ CSV 图表用标准库 `csv`。第三轮静态校验（`tests/container_rehearsa
 ## 2. 从零启动（本机实测通过）
 
 ```bash
-cd <repo>
+cd sciagent
 python -m venv .venv
 ./.venv/Scripts/python.exe -m pip install -r requirements.txt
 cp .env.example .env          # 填入 LLM_API_KEY / VLM_API_KEY / EMB_API_KEY / RERANK_API_KEY

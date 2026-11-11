@@ -114,7 +114,7 @@ app/
 └── api/       routes 全部 HTTP 接口
 web/           Vue3 + Element Plus 单页（CDN，无构建链）
 data/          pdf 测试集 / uploads 上传 / pages 页图 / chroma 向量 / sciagent.db
-docs/          方案设计、官方需求文档、执行备忘录、qa/ 全套测试交付物
+docs/          技术文档（技术文档.pdf）/ 方案设计 / 测评报告 / qa 全套测试交付物
 tests/         qa_suite 回归台 / qa_report 报告 / browser_cdp 浏览器驱动 /
                container_rehearsal 容器布局预演 / restore_scanned 扫描件恢复
 ```

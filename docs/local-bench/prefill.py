@@ -13,6 +13,7 @@
 from __future__ import annotations
 
 import json
+import os
 import time
 from datetime import datetime
 from pathlib import Path
@@ -20,6 +21,8 @@ from pathlib import Path
 import httpx
 
 ROOT = Path(__file__).resolve().parent
+# 同 bench.py：不写死盘符，换机器 clone 下来也能跑
+PROJ = Path(os.environ.get("SCIAGENT_HOME") or ROOT.parents[1])
 LEVELS = [512, 1024, 2048, 4096, 8192]
 FILLER = (
     "检索增强生成把外部知识引入生成模型以缓解幻觉。流水线包含解析、分块、向量化、索引、"
@@ -111,7 +114,7 @@ def call_cloud(prompt: str, env: dict) -> dict:
 
 def load_env() -> dict:
     env = {}
-    for line in (Path(r"<repo>") / ".env").read_text(encoding="utf-8").splitlines():
+    for line in (PROJ / ".env").read_text(encoding="utf-8").splitlines():
         if "=" in line and not line.strip().startswith("#"):
             k, v = line.split("=", 1)
             env[k.strip()] = v.strip()

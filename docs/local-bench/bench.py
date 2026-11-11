@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import statistics
 import subprocess
@@ -27,7 +28,9 @@ from pathlib import Path
 import httpx
 
 ROOT = Path(__file__).resolve().parent
-PROJ = Path(r"<repo>")
+# 项目根目录：优先环境变量 SCIAGENT_HOME，否则按"本目录在 docs/local-bench 下"推断。
+# 不写死盘符，仓库换台机器 clone 下来也能跑。
+PROJ = Path(os.environ.get("SCIAGENT_HOME") or ROOT.parents[1])
 sys.path.insert(0, str(ROOT))
 from prompts import all_cases  # noqa: E402
 

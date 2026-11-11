@@ -6,8 +6,8 @@ Building prefix dict from the default dictionary ...
   [PASS  ] A01   a-1 Task Planning (9%)                 75.4s  编排节点 ['planner', 'retriever', 'writer', 'writer', 'reviewer', 'reviewer', 'reflector']，耗时 75.4s，答案 3477 字
   [FAIL  ] A02   a-1 Multi-Agent 路由 (9%)               112.8s  路由模板未分化 qa=compare compare=compare
 12:22:45 | DEBUG   | jieba                    | Building prefix dict from the default dictionary ...
-Loading model from cache <user>\AppData\Local\Temp\jieba.cache
-12:22:45 | DEBUG   | jieba                    | Loading model from cache <user>\AppData\Local\Temp\jieba.cache
+Loading model from cache <temp>\jieba.cache
+12:22:45 | DEBUG   | jieba                    | Loading model from cache <temp>\jieba.cache
 Loading model cost 0.689 seconds.
 12:22:46 | DEBUG   | jieba                    | Loading model cost 0.689 seconds.
 Prefix dict has been built successfully.

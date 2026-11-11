@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import base64
 import json
+import os
 import subprocess
 import sys
 import time
@@ -31,10 +32,15 @@ try:
 
     ADMIN_PWD = (_s.admin_password or "").strip()
 except Exception:  # noqa: BLE001
-    ADMIN_PWD = "<ADMIN_PASSWORD>"
+    # 不写死口令：仓库是公开的，口令只能来自 .env 或环境变量
+    ADMIN_PWD = (os.environ.get("ADMIN_PASSWORD") or "").strip()
 
 
 def run() -> dict:
+    if not ADMIN_PWD:
+        # 没配口令时后台本就不鉴权；这条用例是在验"口令保护"，无从验起，如实跳过
+        return {"ok": False, "skipped": True,
+                "error": "未设置 ADMIN_PASSWORD（.env 或环境变量），跳过后台口令用例"}
     port = 9711 + (int(time.time()) % 60)
     profile = OUT / f"_p_admin_{int(time.time())}"
     profile.mkdir(parents=True, exist_ok=True)

@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 import time
@@ -32,7 +33,8 @@ try:
 
     ADMIN_PWD = (_s.admin_password or "").strip()
 except Exception:  # noqa: BLE001
-    ADMIN_PWD = "<ADMIN_PASSWORD>"
+    # 不写死口令：仓库是公开的，口令只能来自 .env 或环境变量
+    ADMIN_PWD = (os.environ.get("ADMIN_PASSWORD") or "").strip()
 
 _jar = http.cookiejar.CookieJar()
 _op = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(_jar))
@@ -75,6 +77,10 @@ def ollama_ps() -> str:
 
 def run(skip_warm: bool) -> dict:
     res: dict = {"ok": False, "steps": [], "checks": {}}
+    if not ADMIN_PWD:
+        # 保活自检要改后台参数，必须登录；没配口令就没法验，如实跳过而不是假装通过
+        return {"ok": False, "skipped": True,
+                "error": "未设置 ADMIN_PASSWORD（.env 或环境变量），跳过保活自检"}
     original = {"keepalive_interval": None, "keepalive_enabled": 1, "llm_route": None}
 
     call("/api/admin/login", {"password": ADMIN_PWD})

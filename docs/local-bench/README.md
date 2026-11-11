@@ -1,12 +1,12 @@
 # 本地模型实测脚本（归档副本）
 
-> 这是 `<bench-dir>` 的归档副本，方便随仓库一起交付。
+> 这是独立跑分目录 `sciagent-localbench` 的归档副本，方便随仓库一起交付。
 > 实际跑建议复制到仓库外的独立目录（脚本会把 `results/` 写到自身旁边），
 > 结论见 [`docs/本地模型实测.md`](../本地模型实测.md)。
 
 # 本地模型 vs 云端模型：实测目录
 
-这是 `<repo>` 的**旁路测试目录**，只做一件事：把项目里的模型换成
+这是主仓库的**旁路测试目录**，只做一件事：把项目里的模型换成
 本地 3B 模型，用同一批题目跟云端模型比，看清楚差在哪、哪些功能还能用。
 
 主仓库不动，`data/` 是空的独立目录——测试不会写脏演示库。
@@ -30,8 +30,8 @@ charts/           生成的图
 ollama serve                   # 另开一个窗口
 ollama pull qwen2.5:3b         # 约 1.9GB，Q4_K_M
 
-cd <bench-dir>
-C:\...\sciagent\.venv\Scripts\python.exe bench.py --models local,cloud-fast,cloud-main
+cd sciagent-localbench
+../sciagent/.venv/Scripts/python.exe bench.py --models local,cloud-fast,cloud-main
 python concurrency.py --models local,cloud-fast --workers 4 --n 8
 python charts.py
 ```
