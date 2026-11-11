@@ -66,12 +66,13 @@
     <!-- 中：阅读器 / 图谱 -->
     <main class="panel center">
       <div class="panel-head">
-        <span>{{ centerView === 'graph' ? '引用图谱' : '阅读器' }}
-          <small v-if="centerView === 'reader' && activeDoc">{{ activeDoc.filename }}</small>
+        <span>{{ viewTitle }}
+          <small v-if="centerView !== 'graph' && activeDoc">{{ activeDoc.filename }}</small>
         </span>
         <div class="viewer-tools">
           <el-radio-group v-model="centerView" size="small" @change="onViewChange">
             <el-radio-button label="reader">阅读</el-radio-button>
+            <el-radio-button label="bilingual">对照</el-radio-button>
             <el-radio-button label="graph">图谱</el-radio-button>
           </el-radio-group>
           <template v-if="centerView === 'reader'">
@@ -79,6 +80,12 @@
             <el-button size="small" text :disabled="page<=1" @click="goPage(page-1)">上一页</el-button>
             <span class="pager">{{ page }} / {{ pageCount }}</span>
             <el-button size="small" text :disabled="page>=pageCount" @click="goPage(page+1)">下一页</el-button>
+          </template>
+          <template v-else-if="centerView === 'bilingual'">
+            <el-switch v-model="bi.sync" size="small" active-text="联动" style="margin:0 8px" />
+            <el-button size="small" text @click="translateAll" :loading="bi.job.running">
+              {{ bi.job.running ? `翻译中 ${bi.job.done}/${bi.job.total}` : '整篇翻译' }}
+            </el-button>
           </template>
           <template v-else>
             <el-button size="small" text @click="loadGraph(false)">刷新</el-button>
@@ -102,6 +109,50 @@
                :title="box.text"></div>
         </div>
         <div v-else class="empty big">选择左侧文献开始阅读</div>
+      </div>
+
+      <!-- 中英对照：左原文右译文，任一侧滚动另一侧跟随 -->
+      <div class="bi-wrap" v-show="centerView === 'bilingual'">
+        <div class="bi-head">
+          <span class="bi-hint">
+            左原文 · 右译文 · 拖动任一侧另一侧自动跟随 · 点段落可跳回原文
+          </span>
+          <span class="bi-progress" v-if="bi.cached.total">
+            已译 {{ bi.cached.done }}/{{ bi.cached.total }} 段（{{ Math.round(bi.cached.ratio*100) }}%）
+          </span>
+        </div>
+
+        <div class="bi-body" v-if="activeDoc">
+          <div class="bi-pane" ref="biEn" @scroll="onBiScroll('en')">
+            <div class="bi-col-title">EN · 原文</div>
+            <div v-for="s in bi.segs" :key="'en'+s.chunk_id" class="bi-seg" :data-i="s.i"
+                 :class="{cur: bi.cur === s.i}" @click="biJump(s)">
+              <div class="bi-meta">
+                <span class="bi-page" :title="'跳到原文第 ' + s.page + ' 页'">p{{ s.page }}</span>
+                <span class="bi-sec" v-if="s.section">{{ s.section }}</span>
+              </div>
+              <p class="bi-text">{{ s.en }}</p>
+            </div>
+            <div class="bi-more" v-if="bi.loadingMore">正在载入第 {{ bi.loaded + 1 }} 页…</div>
+            <div class="bi-end" v-else-if="bi.loaded >= pageCount && bi.segs.length">— 全文结束 —</div>
+          </div>
+
+          <div class="bi-pane zh" ref="biZh" @scroll="onBiScroll('zh')">
+            <div class="bi-col-title">ZH · 译文</div>
+            <div v-for="s in bi.segs" :key="'zh'+s.chunk_id" class="bi-seg" :data-i="s.i"
+                 :class="{cur: bi.cur === s.i}" @click="biJump(s)">
+              <div class="bi-meta">
+                <span class="bi-page" :title="'跳到原文第 ' + s.page + ' 页'">p{{ s.page }}</span>
+                <span class="bi-sec" v-if="s.section">{{ s.section }}</span>
+              </div>
+              <p class="bi-text zh" v-if="s.zh">{{ s.zh }}</p>
+              <p class="bi-text pending" v-else-if="s.kind === 'reference'">参考文献条目 · 保留原文不译</p>
+              <p class="bi-text pending" v-else>译文生成中…</p>
+            </div>
+            <div class="bi-more" v-if="bi.loadingMore">正在翻译…</div>
+          </div>
+        </div>
+        <div v-else class="empty big">选择左侧文献开始对照阅读</div>
       </div>
 
       <!-- 引用图谱视图 -->

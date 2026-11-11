@@ -29,6 +29,16 @@ class Settings(BaseSettings):
     llm_timeout: int = 90
     llm_mock: int = 1
 
+    # ---------- 翻译模型（中英对照阅读专用）----------
+    # 单独配一个**非推理**模型：主模型若带思维链，逐段翻译会被推理过程吃掉
+    # 输出预算，大面积返回空串（实测 deepseek-v4.1-flash 必现）。
+    # 选 flash 而不是 plus：同样质量下吞吐 120 tok/s vs 43 tok/s，
+    # 一页正文的译完时间从 20 秒降到 5 秒，这个差别直接决定"能不能边滚边读"。
+    trans_model: str = "qwen-flash"
+    trans_batch: int = 4          # 一次请求译几段
+    trans_workers: int = 3        # 一页内的批量任务并发数
+    trans_max_pages: int = 60     # 超过这个页数不做"整篇翻译"，只按需翻
+
     # ---------- 视觉模型（扫描件 OCR）----------
     vlm_base_url: str = ""
     vlm_api_key: str = ""

@@ -112,6 +112,25 @@ class Chunk(Base):
         return f"[p{self.page}@{int(float(x0))},{int(float(y0))},{int(float(x1))},{int(float(y1))}]"
 
 
+class Translation(Base):
+    """段落译文缓存（中英对照阅读）。
+
+    主键就是 chunk_id：译文与检索块一一对应，不另建切分，
+    这样"用户读到的段落"和"答案引用的段落"永远是同一个锚点。
+    """
+
+    __tablename__ = "translations"
+
+    chunk_id: Mapped[str] = mapped_column(
+        ForeignKey("chunks.id", ondelete="CASCADE"), primary_key=True
+    )
+    doc_id: Mapped[str] = mapped_column(String(24), index=True)
+    page: Mapped[int] = mapped_column(Integer, default=1, index=True)
+    zh: Mapped[str] = mapped_column(Text, default="")
+    model: Mapped[str] = mapped_column(String(64), default="")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+
+
 class Section(Base):
     """章节树节点（一/二/三级标题），前端树状导航直接吃这个表。"""
 

@@ -190,3 +190,43 @@ body {
 .survey-body { max-height: 420px; overflow-y: auto; line-height: 1.75; font-size: 13px; }
 .survey-body b { color: var(--brand); }
 .survey-refs { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 8px; }
+
+/* ---------- 中英对照阅读 ----------
+ * 两栏各自独立滚动（不是同一个滚动容器切两半），
+ * 这样任一侧都能被拖动，联动由 JS 按"段落锚点"驱动。
+ */
+.bi-wrap { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.bi-head {
+  height: 28px; display: flex; align-items: center; justify-content: space-between;
+  padding: 0 10px; border-bottom: 1px solid var(--line);
+  font-size: 11.5px; color: var(--muted); background: #fafbfd;
+}
+.bi-hint { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bi-progress { color: var(--brand); flex: none; margin-left: 8px; }
+
+.bi-body { flex: 1; display: grid; grid-template-columns: 1fr 1fr; overflow: hidden; }
+.bi-pane { position: relative; overflow-y: auto; scroll-behavior: auto; }
+.bi-pane.zh { border-left: 1px solid var(--line); background: #fbfcfe; }
+.bi-col-title {
+  position: sticky; top: 0; z-index: 3;
+  padding: 5px 10px; background: #fff; border-bottom: 1px solid var(--line);
+  font-size: 10.5px; color: #8a93a3; letter-spacing: .6px;
+}
+.bi-pane.zh .bi-col-title { background: #fbfcfe; }
+
+.bi-seg { padding: 8px 10px 10px; border-bottom: 1px dashed #eef0f4; cursor: pointer; }
+.bi-seg:hover { background: #f6f9ff; }
+.bi-seg.cur { background: #edf3ff; box-shadow: inset 3px 0 0 var(--brand); }
+.bi-meta { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; font-size: 10.5px; color: #9aa4b2; }
+.bi-page {
+  flex: none; color: var(--brand); background: #eef2fe; border-radius: 4px;
+  padding: 0 4px; font-variant-numeric: tabular-nums;
+}
+.bi-sec { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bi-text {
+  margin: 0; font-size: 12.5px; line-height: 1.62; color: #2a2f38;
+  white-space: pre-wrap; word-break: break-word;
+}
+.bi-text.zh { font-size: 13px; line-height: 1.78; color: #1c1f26; }
+.bi-text.pending { color: #b9c0cb; font-style: italic; }
+.bi-more, .bi-end { padding: 12px; text-align: center; font-size: 11.5px; color: var(--muted); }

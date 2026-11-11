@@ -64,6 +64,17 @@ const app = createApp({
       loading: false,
       rescanning: false,
       centerView: "reader",
+      // 中英对照状态：segs 是"已加载的段落序列"，按页追加
+      bi: {
+        segs: [],
+        loaded: 0,
+        loadingMore: false,
+        sync: true,
+        cur: 0,
+        cached: { total: 0, done: 0, ratio: 0 },
+        job: { running: false, done: 0, total: 0, error: "" },
+        docId: "",
+      },
       graph: { nodes: [], edges: [], stats: null, insights: null, clusters: [] },
       graphLoading: false,
       selectedNode: null,
@@ -79,6 +90,9 @@ const app = createApp({
   },
   computed: {
     activeDocId() { return this.activeDoc ? this.activeDoc.id : ""; },
+    viewTitle() {
+      return { reader: "阅读器", bilingual: "中英对照", graph: "引用图谱" }[this.centerView] || "阅读器";
+    },
     pageUrl() {
       if (!this.activeDoc) return "";
       return `/api/documents/${this.activeDoc.id}/page/${this.page}.png?dpi=130&t=${Date.now()}`;
@@ -106,7 +120,14 @@ const app = createApp({
     async loadDocs() {
       const r = await fetch("/api/documents").then((x) => x.json());
       this.docs = (r.documents || []).map((d) => ({ ...d, _sel: this.selection.includes(d.id) }));
-      if (!this.activeDoc && this.docs.length) this.openDoc(this.docs[0]);
+      if (!this.activeDoc && this.docs.length) {
+        await this.openDoc(this.docs[0]);
+        // 深链：#bi 直接进对照视图，评审可以收藏链接直接演示
+        if (location.hash === "#bi") {
+          this.centerView = "bilingual";
+          this.loadBi(true);
+        }
+      }
     },
     syncSelection() {
       this.selection = this.docs.filter((d) => d._sel).map((d) => d.id);
@@ -164,6 +185,9 @@ const app = createApp({
       this.page = 1;
       this.pageCount = d.page_count || 1;
       this.highlights = [];
+      this.bi.segs = [];
+      this.bi.loaded = 0;
+      this.bi.docId = d.id;
       const [pages, secs] = await Promise.all([
         fetch(`/api/documents/${d.id}/pages`).then((x) => x.json()),
         fetch(`/api/documents/${d.id}/sections`).then((x) => x.json()),
@@ -171,6 +195,8 @@ const app = createApp({
       this.pageSizes = {};
       (pages.pages || []).forEach((p) => (this.pageSizes[p.page] = p));
       this.sections = secs.sections || [];
+      // 对照视图下切文献要立刻换成新文献的段落，否则会继续显示上一篇
+      if (this.centerView === "bilingual") this.loadBi(true);
     },
 
     goPage(p) {
@@ -257,6 +283,157 @@ const app = createApp({
     /* ---------------- 引用图谱 ---------------- */
     onViewChange(v) {
       if (v === "graph") this.loadGraph(false);
+      if (v === "bilingual") this.loadBi(true);
+    },
+
+    /* ---------------- 中英对照阅读 ----------------
+     * 联动策略：不做"滚动比例同步"（比例同步在两栏长度不同时会持续漂移），
+     * 而是以"视口顶部所在段落"为锚：找到源栏顶部那一段，把目标栏滚到同一段，
+     * 并保留段内相对位置。段落高度不同也不影响对应关系，因为对应关系是按段落算的。
+     */
+    _biLock() {
+      // 程序性滚动会再次触发 scroll 事件，用时间戳护栏防回环
+      this._biLockUntil = performance.now() + 140;
+    },
+
+    onBiScroll(side) {
+      const src = side === "en" ? this.$refs.biEn : this.$refs.biZh;
+      const dst = side === "en" ? this.$refs.biZh : this.$refs.biEn;
+      if (!src) return;
+
+      // 触底预取：先判断，避免快速滑动时漏掉
+      if (src.scrollTop + src.clientHeight > src.scrollHeight - 500) this.loadBi(false);
+
+      if (!this.bi.sync || !dst || performance.now() < (this._biLockUntil || 0)) return;
+      const segs = src.querySelectorAll(".bi-seg");
+      if (!segs.length) return;
+
+      // 二分找"顶部第一条与视口相交的段落"
+      const top = src.scrollTop + 4;
+      let lo = 0, hi = segs.length - 1, idx = 0;
+      while (lo <= hi) {
+        const mid = (lo + hi) >> 1;
+        if (segs[mid].offsetTop <= top) { idx = mid; lo = mid + 1; } else { hi = mid - 1; }
+      }
+      const s = segs[idx];
+      const ratio = Math.min(1, Math.max(0, (src.scrollTop - s.offsetTop) / Math.max(s.offsetHeight, 1)));
+      const t = dst.querySelector(`.bi-seg[data-i="${s.dataset.i}"]`);
+      if (t) {
+        this._biLock();
+        dst.scrollTop = t.offsetTop + ratio * t.offsetHeight;
+      }
+      this.bi.cur = Number(s.dataset.i);
+    },
+
+    async loadBi(reset) {
+      const doc = this.activeDoc;
+      if (!doc) return;
+      const docId = doc.id;
+      if (reset) {
+        this.bi.segs = [];
+        this.bi.loaded = 0;
+        this.bi.cur = 0;
+        this.bi.docId = docId;
+      }
+      if (this.bi.loadingMore) return;
+      if (this.bi.loaded >= this.pageCount) return;
+
+      const from = this.bi.loaded + 1;
+      this.bi.loadingMore = true;
+      try {
+        // 第一段请求先不翻译（快），英文立刻可见；译文随后补齐
+        const r = await fetch(
+          `/api/documents/${docId}/bilingual?page=${from}&pages=1&translate=0`
+        ).then((x) => x.json());
+        if (this.bi.docId !== docId) return; // 期间切换了文献
+        if (r.detail) { ElementPlus.ElMessage.error(r.detail); return; }
+
+        const base = this.bi.segs.length;
+        const add = (r.segments || []).map((s, k) => ({ ...s, i: base + k }));
+        this.bi.segs = this.bi.segs.concat(add);
+        this.bi.loaded = r.page_to || from;
+        this.bi.cached = r.cached || this.bi.cached;
+
+        // 译文补齐（异步，不挡渲染）
+        if (add.some((s) => !s.zh)) this.fillZh(docId, from, this.bi.loaded);
+      } catch (e) {
+        ElementPlus.ElMessage.error("对照加载失败：" + e);
+      } finally {
+        this.bi.loadingMore = false;
+      }
+    },
+
+    async fillZh(docId, pageFrom, pageTo) {
+      try {
+        await fetch(`/api/documents/${docId}/bilingual/translate`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ page_from: pageFrom, page_to: pageTo, all: false }),
+        });
+        if (this.bi.docId !== docId) return;
+        const r = await fetch(
+          `/api/documents/${docId}/bilingual?page=${pageFrom}&pages=${Math.max(1, pageTo - pageFrom + 1)}&translate=0`
+        ).then((x) => x.json());
+        const zh = {};
+        (r.segments || []).forEach((s) => (zh[s.chunk_id] = s.zh));
+        this.bi.segs = this.bi.segs.map((s) => (zh[s.chunk_id] ? { ...s, zh: zh[s.chunk_id] } : s));
+        this.bi.cached = r.cached || this.bi.cached;
+        // 注意：这里**不能**顺手预取下一页。预取一旦写在"翻译完成"回调里，
+        // 就会形成 loadBi→fillZh→loadBi 的无限链，用户只是打开一页，
+        // 后台却把整篇（乃至 541 页的书）全译完，模型账单直接失控。
+        // 下一页只在用户真的滚动到底部时才加载（见 onBiScroll）。
+      } catch (e) {
+        console.warn("译文补齐失败", e);
+      }
+    },
+
+    async translateAll() {
+      const doc = this.activeDoc;
+      if (!doc) return;
+      const r = await fetch(`/api/documents/${doc.id}/bilingual/translate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ all: true }),
+      }).then((x) => x.json());
+
+      if (r.job && r.job.error) {
+        ElementPlus.ElMessage.warning(r.job.error);
+        return;
+      }
+      this.bi.job = r.job || { running: true, done: 0, total: this.pageCount };
+      ElementPlus.ElMessage.info(r.message || "已开始整篇翻译");
+
+      const timer = setInterval(async () => {
+        const st = await fetch(`/api/documents/${doc.id}/bilingual/status`).then((x) => x.json());
+        this.bi.job = st.job || this.bi.job;
+        this.bi.cached = st.cached || this.bi.cached;
+        if (!this.bi.job.running) {
+          clearInterval(timer);
+          // 译完把已加载的段落整体刷新一次，保持滚动位置不跳
+          if (this.bi.loaded) this.refreshLoaded();
+          if (this.bi.job.error) ElementPlus.ElMessage.error(this.bi.job.error);
+          else ElementPlus.ElMessage.success("整篇翻译完成");
+        }
+      }, 1500);
+    },
+
+    async refreshLoaded() {
+      const docId = this.bi.docId;
+      const zh = {};
+      for (let p = 1; p <= this.bi.loaded; p += 4) {
+        const r = await fetch(
+          `/api/documents/${docId}/bilingual?page=${p}&pages=${Math.min(4, this.bi.loaded - p + 1)}&translate=0`
+        ).then((x) => x.json());
+        (r.segments || []).forEach((s) => (zh[s.chunk_id] = s.zh));
+      }
+      this.bi.segs = this.bi.segs.map((s) => (zh[s.chunk_id] ? { ...s, zh: zh[s.chunk_id] } : s));
+    },
+
+    // 点段落 → 回到原文同一页同一 bbox：对照阅读与锚点溯源共用一套坐标
+    async biJump(seg) {
+      const [x0, y0, x1, y1] = (seg.bbox || "0,0,0,0").split(",").map(Number);
+      this.centerView = "reader";
+      await this.jump({ page: seg.page, bbox: [x0, y0, x1, y1], doc_id: this.activeDocId, text: seg.en });
     },
 
     async loadGraph(force) {

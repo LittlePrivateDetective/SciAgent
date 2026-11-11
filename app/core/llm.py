@@ -100,6 +100,7 @@ class LLMGateway:
         json_mode: bool = False,
         temperature: float | None = None,
         max_tokens: int | None = None,
+        model: str | None = None,
         retries: int = 2,
     ) -> LLMResult:
         route = self.route()
@@ -114,7 +115,7 @@ class LLMGateway:
                 if route == "local":
                     res = self._chat_ollama(messages, json_mode, temperature, max_tokens)
                 else:
-                    res = self._chat_cloud(messages, json_mode, temperature, max_tokens)
+                    res = self._chat_cloud(messages, json_mode, temperature, max_tokens, model)
                 res.latency_ms = int((time.time() - started) * 1000)
                 log.info(
                     "LLM route=%s model=%s latency=%dms tokens=%d",
@@ -135,9 +136,11 @@ class LLMGateway:
         json_mode: bool,
         temperature: float | None,
         max_tokens: int | None,
+        model: str | None = None,
     ) -> LLMResult:
+        model_name = model or settings.llm_model
         payload: dict = {
-            "model": settings.llm_model,
+            "model": model_name,
             "messages": list(messages),
             "temperature": settings.llm_temperature if temperature is None else temperature,
             "max_tokens": settings.llm_max_tokens if max_tokens is None else max_tokens,
@@ -260,9 +263,10 @@ class LLMGateway:
         *,
         temperature: float | None = None,
         max_tokens: int | None = None,
+        model: str | None = None,
     ) -> dict:
         """要求模型输出 JSON，并做容错解析（剥离 ``` 包裹、截取首尾花括号）。"""
-        res = self.chat(messages, json_mode=True, temperature=temperature, max_tokens=max_tokens)
+        res = self.chat(messages, json_mode=True, temperature=temperature, max_tokens=max_tokens, model=model)
         return parse_json_loose(res.text)
 
 

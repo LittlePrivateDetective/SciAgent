@@ -18,6 +18,13 @@ from app.core.logger import get_logger
 from app.db.models import Chunk, Citation, Document, Lesson, Section, Task
 from app.db.session import get_db
 from app.parse.ocr import ocr_available
+from app.rag.bilingual import (
+    build_segments,
+    cached_ratio,
+    job_status,
+    start_job,
+    translate_pages,
+)
 from app.rag.citation_graph import build_graph as build_citation_graph
 from app.rag.citation_graph import invalidate as invalidate_graph
 from app.parse.structure import render_page_png
@@ -55,6 +62,8 @@ def system_info(db: Session = Depends(get_db)):
             "tasks": db.scalar(select(func.count(Task.id))) or 0,
             "lessons": db.scalar(select(func.count(Lesson.id))) or 0,
         },
+        # 对照阅读的翻译模型与缓存进度（前端据此决定是否提示"整篇翻译"）
+        "translation": {"model": settings.trans_model, "batch": settings.trans_batch},
         "official_pdfs": len(list(settings.pdf_dir.glob("*.pdf"))),
     }
 
@@ -231,6 +240,67 @@ def get_references(doc_id: str, db: Session = Depends(get_db)):
             for r in rows
         ]
     }
+
+
+# ---------------- 中英对照阅读 ----------------
+@router.get("/documents/{doc_id}/bilingual")
+def get_bilingual(
+    doc_id: str,
+    page: int = Query(1, ge=1),
+    pages: int = Query(1, ge=1, le=8),
+    translate: int = Query(1, ge=0, le=1),
+    db: Session = Depends(get_db),
+):
+    """取 [page, page+pages) 区间的英中对照段落。
+
+    默认 translate=1：缺译文的段落当场翻译后返回（一页约 1–2 次模型调用）。
+    前端滚动时只预取下一页，所以响应时间可控在 2–3 秒内。
+    """
+    doc = db.get(Document, doc_id)
+    if not doc:
+        raise HTTPException(404, "文档不存在")
+
+    from_page, to_page = page, min(page + pages - 1, max(doc.page_count, 1))
+    segs = build_segments(db, doc_id, from_page, to_page)
+    translated = 0
+    if translate and any(not s["zh"] for s in segs):
+        translated = translate_pages(db, doc_id, from_page, to_page)
+        if translated:
+            segs = build_segments(db, doc_id, from_page, to_page)
+
+    return {
+        "doc_id": doc_id,
+        "page_from": from_page,
+        "page_to": to_page,
+        "page_count": doc.page_count,
+        "translated": translated,
+        "cached": cached_ratio(db, doc_id),
+        "segments": segs,
+    }
+
+
+class TranslateIn(BaseModel):
+    page_from: int = 1
+    page_to: int = 1
+    all: bool = False
+
+
+@router.post("/documents/{doc_id}/bilingual/translate")
+def post_translate(doc_id: str, body: TranslateIn, db: Session = Depends(get_db)):
+    doc = db.get(Document, doc_id)
+    if not doc:
+        raise HTTPException(404, "文档不存在")
+
+    if body.all:
+        return {"ok": True, "job": start_job(doc_id), "message": "整篇翻译已在后台开始"}
+
+    n = translate_pages(db, doc_id, max(body.page_from, 1), min(body.page_to, doc.page_count or 1))
+    return {"ok": True, "translated": n, "cached": cached_ratio(db, doc_id)}
+
+
+@router.get("/documents/{doc_id}/bilingual/status")
+def get_translate_status(doc_id: str, db: Session = Depends(get_db)):
+    return {"job": job_status(doc_id), "cached": cached_ratio(db, doc_id)}
 
 
 # ---------------- 问答 ----------------
