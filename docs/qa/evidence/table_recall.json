@@ -1,0 +1,191 @@
+{
+  "ok": 6,
+  "total": 6,
+  "rows": [
+    {
+      "q": "多头注意力的计算复杂度是多少",
+      "note": "Transformer Table 1",
+      "hit": true,
+      "matched": [
+        "O(n2",
+        "Complexity per Layer"
+      ],
+      "tables_in_top8": 1,
+      "ms": 21556,
+      "top": [
+        {
+          "kind": "text",
+          "page": 4,
+          "doc": "1706.03762v1.pdf",
+          "head": "MultiHead(Q, K, V ) = Concat(head1, ..., headh) where headi = Attentio"
+        },
+        {
+          "kind": "text",
+          "page": 12,
+          "doc": "2407.21783v3.pdf",
+          "head": " attention, such as the document mask; and (2) the exposed all-gather "
+        },
+        {
+          "kind": "text",
+          "page": 6,
+          "doc": "1706.03762v1.pdf",
+          "head": "As noted in Table 1, a self-attention layer connects all positions wit"
+        }
+      ]
+    },
+    {
+      "q": "Transformer big 模型在 EN-DE 上的 BLEU 是多少",
+      "note": "Transformer Table 2",
+      "hit": true,
+      "matched": [
+        "41.16",
+        "28.4"
+      ],
+      "tables_in_top8": 1,
+      "ms": 1452,
+      "top": [
+        {
+          "kind": "text",
+          "page": 7,
+          "doc": "1706.03762v1_img.pdf",
+          "head": "On the WMT 2014 English-to-German translation task, Our big transforme"
+        },
+        {
+          "kind": "text",
+          "page": 7,
+          "doc": "1706.03762v1.pdf",
+          "head": "On the WMT 2014 English-to-German translation task, Our big transforme"
+        },
+        {
+          "kind": "table",
+          "page": 8,
+          "doc": "1706.03762v1.pdf",
+          "head": "Table 2: The Transformer achieves better BLEU scores than previous sta"
+        }
+      ]
+    },
+    {
+      "q": "BERT 在 GLUE 上的平均分是多少",
+      "note": "BERT Table 1/2",
+      "hit": true,
+      "matched": [
+        "80.5",
+        "GLUE"
+      ],
+      "tables_in_top8": 2,
+      "ms": 858,
+      "top": [
+        {
+          "kind": "text",
+          "page": 1,
+          "doc": "N19-1423.pdf",
+          "head": "BERT is conceptually simple and empirically powerful. It obtains new s"
+        },
+        {
+          "kind": "text",
+          "page": 6,
+          "doc": "N19-1423.pdf",
+          "head": "Both BERTBASE and BERTLARGE outperform all sys- tems on all tasks by a"
+        },
+        {
+          "kind": "table",
+          "page": 22,
+          "doc": "1910.10683v4.pdf",
+          "head": "Table 4: Performance of the three disparate pre-training objectives de"
+        }
+      ]
+    },
+    {
+      "q": "GPT-3 用了多少块 GPU 训练",
+      "note": "GPT-3 训练配置",
+      "hit": true,
+      "matched": [
+        "V100",
+        "1024"
+      ],
+      "tables_in_top8": 1,
+      "ms": 893,
+      "top": [
+        {
+          "kind": "text",
+          "page": 2,
+          "doc": "2210.02414v2.pdf",
+          "head": "ion GLM-130B GPT-3 175B OPT-175B Bias & Toxicity Evaluation BLOOM 176B"
+        },
+        {
+          "kind": "text",
+          "page": 77,
+          "doc": "2307.09288v2.pdf",
+          "head": "We used custom training libraries, Meta’s Research Super Cluster, and "
+        },
+        {
+          "kind": "text",
+          "page": 46,
+          "doc": "2005.14165v4.pdf",
+          "head": "3.82E+02 3.30E+22 11,000 1,000 BERT-Base 1.89E+00 1.64E+20 109 250 BER"
+        }
+      ]
+    },
+    {
+      "q": "LoRA 的可训练参数占比是多少",
+      "note": "LoRA 参数量表",
+      "hit": true,
+      "matched": [
+        "10,000"
+      ],
+      "tables_in_top8": 1,
+      "ms": 1326,
+      "top": [
+        {
+          "kind": "text",
+          "page": 4,
+          "doc": "2305.14314v1.pdf",
+          "head": "Parameter Efficient Finetuning (PEFT) method, most of the memory footp"
+        },
+        {
+          "kind": "text",
+          "page": 1,
+          "doc": "2106.09685v2.pdf",
+          "head": "An important paradigm of natural language processing consists of large"
+        },
+        {
+          "kind": "text",
+          "page": 21,
+          "doc": "2106.09685v2.pdf",
+          "head": "er BitFit LoRA AdamW 128 2 250,000 Linear 1.00E-04 1.6E-03 1.00E-04 2."
+        }
+      ]
+    },
+    {
+      "q": "ViT 在 ImageNet 上的准确率是多少",
+      "note": "ViT Table",
+      "hit": true,
+      "matched": [
+        "88.55",
+        "88.5"
+      ],
+      "tables_in_top8": 1,
+      "ms": 889,
+      "top": [
+        {
+          "kind": "text",
+          "page": 2,
+          "doc": "2010.11929v2.pdf",
+          "head": "However, the picture changes if the models are trained on larger datas"
+        },
+        {
+          "kind": "text",
+          "page": 15,
+          "doc": "2010.11929v2.pdf",
+          "head": "Published as a conference paper at ICLR 2021 ViT-B/16 ImageNet CIFAR-1"
+        },
+        {
+          "kind": "table",
+          "page": 15,
+          "doc": "2010.11929v2.pdf",
+          "head": "Table 5: Top1 accuracy (in %) of Vision Transformer on various dataset"
+        }
+      ]
+    }
+  ]
+}

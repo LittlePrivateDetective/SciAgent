@@ -96,6 +96,60 @@ def _looks_like_grid(txt: str) -> bool:
     return short / len(lines) >= 0.6 and ends <= max(1, len(lines) // 6)
 
 
+def _render_grid(blocks: list[Block]) -> str:
+    """把表格块 + 网格块渲染成"按行对齐"的文本。
+
+    为什么不能直接按阅读顺序拼：网格行被切成一个个单行块后，阅读顺序是
+    "先左栏后右栏"，拼出来是
+
+        Layer Type / Maximum Path Length Operations Self-Attention /
+        Complexity per Layer / O(n2 · d) / O(1) Recurrent / O(1) ...
+
+    列名和数值交错，模型读不出 "O(n2 · d)" 属于 Self-Attention 那一行，
+    于是明明有答案也说"证据未给出"。
+
+    这里用 bbox 的 y 中心把同一行的格子聚在一起，行内按 x 排序，用 " | " 分隔：
+
+        Self-Attention | O(n2 · d) | O(1) | O(1)
+
+    这不是完整的表格结构还原（没有合并单元格、没有跨页续表的合并），
+    但足以让模型把"哪一列属于哪一行"对上。第一块是表题，单独保留。
+    """
+    if not blocks:
+        return ""
+    head = blocks[0].text.strip()
+    cells = blocks[1:]
+    if not cells:
+        return head
+
+    rows: list[dict] = []
+    for b in cells:
+        t = b.text.strip()
+        if not t:
+            continue
+        if "\n" in t:                      # 多行网格块：原样成行，不参与对齐
+            for ln in t.split("\n"):
+                if ln.strip():
+                    rows.append({"y": None, "x": 0.0, "t": ln.strip()})
+            continue
+        yc = (b.bbox[1] + b.bbox[3]) / 2
+        for r in rows:
+            if r["y"] is not None and abs(r["y"] - yc) <= 6:
+                r["cells"].append((b.bbox[0], t))
+                break
+        else:
+            rows.append({"y": yc, "x": b.bbox[0], "t": t, "cells": [(b.bbox[0], t)]})
+
+    lines = [head]
+    for r in rows:
+        if r["y"] is None:
+            lines.append(r["t"])
+        else:
+            cells_sorted = [t for _, t in sorted(r["cells"], key=lambda c: c[0])]
+            lines.append(" | ".join(cells_sorted))
+    return "\n".join(lines)
+
+
 def build_chunks(parsed: ParsedDoc, max_chars: int | None = None, overlap: int | None = None) -> list[dict]:
     max_chars = max_chars or settings.chunk_max_chars
     overlap = settings.chunk_overlap if overlap is None else overlap
@@ -157,10 +211,11 @@ def build_chunks(parsed: ParsedDoc, max_chars: int | None = None, overlap: int |
             body = txt
             box = [round(v, 1) for v in b.bbox]
 
-            # 表格：把紧随其后的网格行吃进来。
+            # 表格：把紧随其后的网格行吃进来，并按 y 坐标重排成行。
             # 只吃同页、同类型的正文块，且累计不超过 1800 字——
             # 超过这个量通常已经把下一段论述也拖进来了。
             if b.kind == "table":
+                grid = [b]
                 j = i + 1
                 taken = 0
                 while j < len(blocks) and taken < 40:
@@ -168,11 +223,11 @@ def build_chunks(parsed: ParsedDoc, max_chars: int | None = None, overlap: int |
                     ntxt = nb.text.strip()
                     if not ntxt or nb.page != b.page or nb.kind != "text":
                         break
-                    if len(body) + len(ntxt) > 1800:
+                    if sum(len(g.text) for g in grid) + len(ntxt) > 1800:
                         break
                     if not (_looks_like_grid(ntxt) or _is_grid_fragment(ntxt)):
                         break
-                    body = f"{body}\n{ntxt}"
+                    grid.append(nb)
                     box = [
                         min(box[0], round(nb.bbox[0], 1)),
                         min(box[1], round(nb.bbox[1], 1)),
@@ -182,6 +237,7 @@ def build_chunks(parsed: ParsedDoc, max_chars: int | None = None, overlap: int |
                     taken += 1
                     i = j
                     j += 1
+                body = _render_grid(grid)
 
             chunks.append(
                 {

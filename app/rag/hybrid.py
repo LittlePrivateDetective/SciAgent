@@ -626,22 +626,34 @@ def _ensure_table_candidates(query: str, hits: list[Hit], doc_ids: list[str] | N
         chunks, names = _load_corpus(doc_ids)
         if len(chunks) != len(ids):
             return hits
-        scores = bm25.scores(tokenize(query))
         have = {h.chunk_id for h in hits}
-        cand: list[tuple[float, int]] = [
-            (float(scores[i]), i)
-            for i, c in enumerate(chunks)
-            if c.kind == "table" and c.id not in have and scores[i] > 0
-        ]
-        cand.sort(key=lambda x: -x[0])
+        by_id = {c.id: (i, c) for i, c in enumerate(chunks)}
+
+        # 两路都要看：中文问句问英文表格时 BM25 命中的是 0（"复杂度" vs "complexity"），
+        # 只有向量分能把表挑出来；反过来术语型提问（"BLEU 41.16"）BM25 更准。
+        sparse = bm25.scores(tokenize(query))
+        dense = dict(get_store().search(embed_query(query), doc_ids, top_k=200))
+
+        scored: list[tuple[float, float, int]] = []
+        for cid, (i, c) in by_id.items():
+            if c.kind != "table" or cid in have:
+                continue
+            d = float(dense.get(cid, 0.0))
+            s = float(sparse[i])
+            if d <= 0 and s <= 0:
+                continue
+            # 归一到 0–1 再相加：向量余弦 0.5–0.8 与 BM25 的几十，量纲差两个数量级
+            scored.append((d + min(s / 40.0, 1.0) * 0.5, s, i))
+        scored.sort(key=lambda x: -x[0])
+
         extra: list[Hit] = []
-        for sc, i in cand[:limit]:
+        for _, s, i in scored[:limit]:
             c = chunks[i]
             extra.append(
                 Hit(
                     chunk_id=c.id, doc_id=c.doc_id, doc_name=names.get(c.doc_id, c.doc_id),
                     page=c.page, bbox=c.bbox, text=c.text, section_path=c.section_path,
-                    kind=c.kind, score=sc, sparse_score=sc, idx=int(c.idx),
+                    kind=c.kind, score=s, sparse_score=s, idx=int(c.idx),
                 )
             )
         if extra:
@@ -650,6 +662,33 @@ def _ensure_table_candidates(query: str, hits: list[Hit], doc_ids: list[str] | N
     except Exception:  # noqa: BLE001 补召回失败不能影响主链路
         log.debug("表格定向补召回失败", exc_info=True)
     return hits
+
+
+def _ensure_table_slot(query: str, final: list[Hit], pool: list[Hit], top_k: int) -> list[Hit]:
+    """数值类问题的证据里，保证至少有一张表。
+
+    cross-encoder 判的是"这段文字像不像在回答问题"，而表格的字面观感很差
+    （一堆列名和符号），所以它总输给"顺着讲这件事"的正文段落——哪怕答案
+    就在表格里。实测「多头注意力的计算复杂度」重排 top1 是公式块（0.952），
+    Table 1 连前 8 都进不去，模型只能回答"证据未给出"。
+
+    这里不跟重排较劲，而是留一个位置：问数值时，如果 8 条证据里一张表都没有，
+    就用候选池里分数最高的表格块替掉最后一条。代价是 1/8 的证据位，
+    换来"数值题不再空手而归"。
+    """
+    if not _NUMERIC_HINT.search(query) or not pool:
+        return final
+    if any(h.kind == "table" for h in final):
+        return final
+    best = next((h for h in pool if h.kind == "table"), None)
+    if best is None:
+        return final
+    if len(final) < top_k:
+        return final + [best]
+    out = list(final)
+    out[-1] = best
+    log.debug("数值题补一个表格位：p%d %s", best.page, best.text[:40])
+    return out
 
 
 def search_with_rerank(query: str, doc_ids: list[str] | None = None, top_k: int | None = None) -> list[Hit]:
@@ -671,9 +710,20 @@ def search_with_rerank(query: str, doc_ids: list[str] | None = None, top_k: int 
     hits = _drop_shadowed_scans(hits, doc_ids)
     hits = _ensure_table_candidates(query, hits, doc_ids)
 
-    remote = _api_rerank(query, hits, top_k)
+    # 重排多要一些：后面要从中挑"分数最高的表格"补位，只拿 8 条往往里面没有表
+    remote = _api_rerank(query, hits, min(max(top_k * 3, 24), len(hits)))
     if remote:
         final = _ensure_mentioned_docs(remote[:top_k], query, top_k)
+        # 补位用的表格池：优先用重排给过分数的，其次退回召回阶段的词法分。
+        # 不能只从 remote 里挑——实测 Table 1 在重排前 24 名之外，
+        # 只认 remote 的话这条规则等于没生效（D-67 复测发现的第二轮问题）。
+        r_score = {h.chunk_id: h.score for h in remote}
+        tables = sorted(
+            (h for h in hits if h.kind == "table"),
+            key=lambda h: r_score.get(h.chunk_id, 0) * 1000 + h.sparse_score,
+            reverse=True,
+        )
+        final = _ensure_table_slot(query, final, tables or remote, top_k)
         return _stitch(final)
 
     q_tokens = set(tokenize(query))
@@ -685,11 +735,12 @@ def search_with_rerank(query: str, doc_ids: list[str] | None = None, top_k: int 
         sparse_norm = min(h.sparse_score / max_sparse, 1.0)
         # 摘要/前几页信息密度更高；图表块在"具体数值"类问题上更可能有答案
         prior = 1.05 if h.page <= 5 else 1.0
-        kind_bonus = 1.05 if h.kind in ("table", "figure") else 1.0
+        kind_bonus = 1.12 if h.kind in ("table", "figure") else 1.0
         return (0.6 * cover + 0.4 * sparse_norm) * prior * kind_bonus
 
     reranked = sorted(hits, key=local_score, reverse=True)
     for h in reranked:
         h.score = local_score(h)
     out = _ensure_mentioned_docs(reranked[:top_k], query, top_k)
+    out = _ensure_table_slot(query, out, reranked, top_k)
     return _stitch(out)

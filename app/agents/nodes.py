@@ -228,12 +228,21 @@ def _evidence_block(evidence: list[dict], max_chars_each: int = 1600, query: str
             if p > max_chars_each * 0.6:
                 cut = cut[: p + 1]
             body = cut + " …（本段后文省略）"
-        body = body.replace("\n", " ")
+        body = body.replace("\n", " ／ ")
         sec = ev.get("section_path") or ""
         sec_info = f"（章节：{sec}）" if sec else ""
+        # 表格块的文字是按行拼出来的"列 | 值"，不说明的话模型会当成乱码散文
+        # （实测：证据里明明有 O(n2 · d)，它仍回答"证据未给出"）
+        kind_hint = ""
+        if ev.get("kind") == "table":
+            kind_hint = "【表格：按行给出，单元格之间用 ｜ 分隔，同一行的值属于同一列组合】"
+        elif ev.get("kind") == "figure":
+            kind_hint = "【图注】"
         key = _key_sentences(ev.get("text") or "", query) if query else []
         key_line = ("▸ 关键句：" + " ｜ ".join(key) + "\n") if key else ""
-        lines.append(f"[{i}] 来源：{ev.get('doc_name')} 第{ev.get('page')}页{sec_info} | {body}\n{key_line}")
+        lines.append(
+            f"[{i}] 来源：{ev.get('doc_name')} 第{ev.get('page')}页{sec_info}{kind_hint} | {body}\n{key_line}"
+        )
     return "\n".join(lines) if lines else "（无检索结果）"
 
 
