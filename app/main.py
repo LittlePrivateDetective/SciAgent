@@ -72,6 +72,17 @@ async def _startup() -> None:
     except Exception:  # noqa: BLE001 保活起不来不能挡住服务
         log.warning("保活循环启动失败", exc_info=True)
 
+    # 冷启动预热：云平台沙箱唤醒后第一个请求实测 37 s（热态 15 s）。
+    # 放后台线程，/health 立刻可通，不等它跑完；失败也只记日志。
+    try:
+        import threading
+
+        from app.core.warmup import warm_once
+
+        threading.Thread(target=warm_once, kwargs={"tag": "startup"}, daemon=True).start()
+    except Exception:  # noqa: BLE001
+        log.warning("启动预热未生效", exc_info=True)
+
     # 论文定期追踪（官方 1.4.2）：默认关，后台「论文追踪」组打开后按间隔扫 arXiv
     try:
         from app.research import watcher

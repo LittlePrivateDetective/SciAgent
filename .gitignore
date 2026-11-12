@@ -42,3 +42,6 @@ _private/
 
 # 提交包由 git archive 生成，代码一变就过期，不进仓库
 dist/
+
+# 云端发布目录：含真实 API Key 与 230MB 数据，绝不进仓库
+deploy/

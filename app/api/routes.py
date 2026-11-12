@@ -124,6 +124,14 @@ def keepalive_beat():
     return {"ok": True, **keepalive.beat(manual=True)}
 
 
+@router.get("/warm")
+def warm():
+    """预热：让第一个真实提问不再承担冷启动成本（逻辑见 app/core/warmup.py）。"""
+    from app.core.warmup import warm_once
+
+    return warm_once(tag="http")
+
+
 # ---------------- 文档 ----------------
 @router.post("/system/reembed")
 def system_reembed():
