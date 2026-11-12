@@ -46,6 +46,11 @@ let _topoChart = null;
 let _chartChart = null;   // 数据图表预览（自己画，不用 mermaid）
 
 /* ---------- 极简 Markdown 渲染（够用即止：表格 / 粗体 / 行内代码 / 换行） ---------- */
+function escHtml(s) {
+  return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
 function mdToHtml(md) {
   if (!md) return "";
   const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -206,8 +211,9 @@ const app = createApp({
       imgNonce: 0,          // 重试用：拼在 URL 上绕开浏览器缓存
       refIndex: {},   // 引用编号 → {index,page,bbox,text}
       // 对话模式：false=快速（直接作答），true=深思（模型先推理再作答）。
-      // 初值在 mounted 里按 /api/system/info 的 thinking 对齐，之后由用户自己切。
-      thinkDeep: false,
+      // 默认深思：官方要求展示思考过程，而快速模式下模型不产出推理内容，
+      // 界面上就只剩几条管线阶段——那不叫"思考"。觉得慢可以点一下切成快速。
+      thinkDeep: true,
       // 写作 Copilot：模型只写论述 + [n]，References 条目全部由服务端从库内元数据拼出
       wr: { idea: "", loading: false, result: null, error: "", tab: "outline" },
       // 架构拓扑图（1.6.2）+ 数据图表与图注（1.6.3）：两块共用一套代码/预览布局
@@ -319,12 +325,11 @@ const app = createApp({
       .catch(() => {})
       .finally(() => { clearTimeout(warmTimer); this.warmHint = false; });
 
-    // 「快速 / 深思」的初值跟随后台设置，之后由用户自己切——不写进 localStorage：
-    // 否则上次为了某道题点了深思，下次进来所有问题都变慢，用户还不知道为什么
-    fetch("/api/system/info")
-      .then((r) => r.json())
-      .then((d) => { if (d && typeof d.thinking === "boolean") this.thinkDeep = d.thinking; })
-      .catch(() => {});
+    // 「快速 / 深思」默认深思（要看得到推理），不再跟随后端的 LLM_THINKING 覆盖：
+    // 那个开关控制的是"默认要不要思维链"，是给批处理/脚本用的；界面上的默认值
+    // 要服从"评委打开就能看到思考过程"这个目标。用户点了就只对本次生效，
+    // 不写 localStorage——否则上次为某道题开了深思，下次所有问题都变慢。
+    fetch("/api/system/info").catch(() => {});
 
     // Mermaid 用 startOnLoad:false —— 让它在切换 tab / 点生成时按需渲染，
     // 否则页面一进来就去扫全站 DOM，白白多一次布局。
@@ -1517,7 +1522,16 @@ const app = createApp({
     /* SSE 流式问答：thinking 事件渲染为思考时间线，token 事件逐字追加。
      * 不套 JSON 包裹，所以拿到的是模型真实 delta；done 事件再补证据与校验。 */
     async askStream(q) {
-      const msg = { role: "assistant", html: "", evidence: [], verify: {}, trace: [], thinking: [] };
+      // 必须是 reactive：push 进 this.messages 之后，模板渲染读的是数组里的代理，
+      // 而我们手里这个变量是原始对象——直接改原始对象的属性不会触发重新渲染，
+      // 所有中间态（逐字正文、推理增量、阶段状态）都会被吞掉，直到 done 时才
+      // 因为 loading 变化一次性画出来。这正是"流式看不出来"的真正原因。
+      const msg = reactive({
+        role: "assistant", html: "", evidence: [], verify: {}, trace: [], thinking: [],
+        // 推理原文（深思模式下模型真的在想什么），逐段追加；完成前默认展开
+        reasonText: "", reasonChars: 0, reasonOpen: true,
+        _raw: "", _timer: null,
+      });
       this.messages.push(msg);
       this.loading = true;
       const t0 = Date.now();
@@ -1548,29 +1562,69 @@ const app = createApp({
             try { ev = JSON.parse(payload); } catch (e) { continue; }
             if (ev.event === "token") {
               raw += ev.text || "";
-              msg.html = mdToHtml(raw);
+              msg._raw = raw;
+              this.scheduleStream(msg);
+            } else if (ev.event === "reason") {
+              // 推理原文：直接追加，不走 Markdown（推理里没有结构化内容，
+              // 逐段跑 md 解析只会拖慢刷新）
+              msg.reasonText += ev.text || "";
+              msg.reasonChars = ev.chars || msg.reasonText.length;
+              this.scrollChat();
             } else if (ev.event === "thinking") {
-              msg.thinking.push(`${ev.stage} · ${ev.text}`);
+              this.upsertThinking(msg, ev);
+              this.scrollChat();
             } else if (ev.event === "done") {
+              if (msg._timer) { clearTimeout(msg._timer); msg._timer = null; }
               msg.html = mdToHtml(ev.answer || raw);
               msg.evidence = ev.evidence || [];
               msg.verify = ev.verify || {};
               msg.meta = this.modeLabel(((Date.now() - t0) / 1000).toFixed(1), ev.meta);
+              // 答完就把推理收起来：它是过程，不是结论；要看还能再展开
+              msg.reasonOpen = false;
             } else if (ev.event === "error") {
-              msg.thinking.push("错误边界 · " + ev.text);
+              if (msg._timer) { clearTimeout(msg._timer); msg._timer = null; }
+              this.upsertThinking(msg, { stage: "error", text: ev.text, state: "done" });
               if (!msg.html) msg.html = mdToHtml("生成中断，已安全降级：" + ev.text);
             }
-            this.scrollChat();
           }
         }
         if (!msg.html) msg.html = mdToHtml("（未收到有效内容）");
       } catch (e) {
-        msg.thinking.push("错误边界 · " + e);
+        if (msg._timer) { clearTimeout(msg._timer); msg._timer = null; }
+        this.upsertThinking(msg, { stage: "error", text: String(e), state: "done" });
         msg.html = mdToHtml("请求失败：" + e);
       } finally {
+        if (msg._timer) { clearTimeout(msg._timer); msg._timer = null; }
         this.loading = false;
         this.scrollChat();
       }
+    },
+
+    /// 阶段事件按 stage 归并：同一个阶段先"进行中"后"完成"，只占时间线上的一行，
+    /// 否则检索那一行会变成两行重复的话。
+    upsertThinking(msg, ev) {
+      const LABEL = { plan: "规划", retrieve: "检索", read: "通读", depth: "深思",
+                      depth_done: "推理", verify: "校验", generate: "生成", error: "错误" };
+      const next = { stage: ev.stage, label: LABEL[ev.stage] || ev.stage,
+                     text: ev.text || "", state: ev.state || "done" };
+      const item = (msg.thinking || []).find((x) => x && x.stage === ev.stage);
+      if (item) Object.assign(item, next);
+      else msg.thinking.push(next);
+    },
+
+    /// 流式期间的渲染节流。
+    ///
+    /// 原来是"每个 token 重建整篇 Markdown"：38 个 token 在 0.9 秒里到齐，
+    /// 浏览器把这些重排合并成一次绘制，肉眼看到的就变成"一下子全出来"。
+    /// 现在改成 40ms 合并一次、且只做转义 + 换行（不跑 md 解析），
+    /// 字才会真的一个个往外冒；收尾时再用 mdToHtml 定型（引用徽章、公式）。
+    scheduleStream(msg) {
+      if (msg._timer) return;
+      msg._timer = setTimeout(() => {
+        msg._timer = null;
+        msg.html = '<p class="streaming">' + escHtml(msg._raw).replace(/\n/g, "<br>") + "</p>";
+        this.scrollChat();
+      }, 40);
     },
 
     async openTrash() {

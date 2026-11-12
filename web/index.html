@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SciAgent · 科研智能体</title>
   <link rel="stylesheet" href="/static/vendor/element-plus.css" />
-  <link rel="stylesheet" href="/static/style.css?v=11" />
+  <link rel="stylesheet" href="/static/style.css?v=12" />
   <link rel="stylesheet" href="/static/vendor/katex.min.css" />
   <script src="/static/vendor/katex.min.js"></script>
   <script src="/static/vendor/katex-auto-render.min.js"></script>
@@ -526,9 +526,22 @@
           <div class="bubble">
             <div v-if="m.meta" class="msg-meta">{{ m.meta }}</div>
             <div v-if="m.thinking && m.thinking.length" class="think-timeline">
-              <div v-for="(t,j) in m.thinking" :key="j" class="think-step">
-                <span class="think-dot"></span>{{ t }}
+              <div v-for="(t,j) in m.thinking" :key="j" class="think-step"
+                   :class="{ running: t.state === 'run' }">
+                <span class="think-dot"></span>
+                <span class="think-stage">{{ t.label }}</span>
+                <span class="think-text">{{ t.text }}</span>
               </div>
+            </div>
+            <!-- 深思模式下模型的推理原文：这才是"思考过程"，上面那几行是管线阶段。
+                 生成中默认展开（能看到在动），答完自动收起，点标题可再展开。 -->
+            <div v-if="m.reasonText" class="reason">
+              <button class="reason-head" @click="m.reasonOpen = !m.reasonOpen">
+                <span class="reason-title">推理过程</span>
+                <span class="reason-meta">{{ m.reasonChars }} 字</span>
+                <span class="reason-toggle">{{ m.reasonOpen ? "收起" : "展开" }}</span>
+              </button>
+              <div class="reason-body" v-show="m.reasonOpen">{{ m.reasonText }}</div>
             </div>
             <div class="md" v-math v-html="m.html"></div>
             <div v-if="m.verify && m.verify.total" class="verify">
@@ -556,7 +569,10 @@
             </div>
           </div>
         </div>
-        <div v-if="loading" class="msg assistant"><div class="bubble loading">Agent 正在执行…</div></div>
+        <!-- 只在"还没有任何正文"时显示等待气泡：流式期间正文已经在写了，
+             底下再挂一个"Agent 正在执行…"会让人以为卡住了 -->
+        <div v-if="loading && !(messages.length && messages[messages.length-1].html)"
+             class="msg assistant"><div class="bubble loading">Agent 正在执行…</div></div>
       </div>
 
       <div class="ask-bar">
@@ -903,6 +919,6 @@
   </nav>
 </div>
 
-<script src="/static/app.js?v=11"></script>
+<script src="/static/app.js?v=12"></script>
 </body>
 </html>

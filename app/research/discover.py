@@ -125,14 +125,43 @@ def _sim(a: str, b: str) -> float:
 
 
 def download_pdf(arxiv_id: str) -> bytes:
-    url = ARXIV_PDF.format(id=arxiv_id)
-    with httpx.Client(timeout=90, follow_redirects=True) as client:
-        resp = client.get(url)
-        resp.raise_for_status()
-        data = resp.content
-    if not data.startswith(b"%PDF-"):
-        raise ValueError("下载到的内容不是 PDF（arXiv 可能返回了说明页）")
-    return data
+    """下载 arXiv PDF，能处理"不带版本号就 404"的那些老论文。
+
+    实测 `https://arxiv.org/pdf/1202.4918` 返回 **404**（不是重定向到最新版），
+    而 `.../1202.4918v1` 是 200。新论文带不带版本号都能下，所以这个坑一直没暴露，
+    直到有人在「论文发现」里点了 2012 年那篇《Quantum decision making by social agents》。
+    现在按「原编号 → v1/v2/v3 → export 镜像」依次试，并校验真的拿到 PDF
+    （arXiv 出错时会给一页 HTML，存下来会变成一篇打不开的文献）。
+    """
+    aid = (arxiv_id or "").strip()
+    if not aid:
+        raise ValueError("缺少 arXiv 编号")
+    base = re.sub(r"v\d+$", "", aid, flags=re.I)
+    cands = [aid]
+    if not re.search(r"v\d+$", aid, flags=re.I):
+        cands += [f"{base}v1", f"{base}v2", f"{base}v3"]
+
+    tried: list[str] = []
+    with httpx.Client(timeout=90, follow_redirects=True,
+                      headers={"User-Agent": "SciAgent/1.0 (+arxiv-pdf-fetch)"}) as client:
+        for cid in cands:
+            for host in ("https://arxiv.org/pdf", "https://export.arxiv.org/pdf"):
+                url = f"{host}/{cid}"
+                try:
+                    resp = client.get(url)
+                except Exception as exc:  # noqa: BLE001 网络异常换下一个地址
+                    tried.append(f"{url} → {type(exc).__name__}")
+                    continue
+                if resp.status_code >= 400:
+                    tried.append(f"{url} → HTTP {resp.status_code}")
+                    continue
+                data = resp.content
+                if not data.startswith(b"%PDF-"):
+                    tried.append(f"{url} → 不是 PDF（{resp.headers.get('content-type')}）")
+                    continue
+                log.info("arXiv %s 下载成功：%s（%d KB）", aid, url, len(data) // 1024)
+                return data
+    raise ValueError("no-pdf：" + "；".join(tried[:6]))
 
 
 def _base_id(aid: str) -> str:
@@ -175,7 +204,13 @@ def import_paper(db: Session, arxiv_id: str, title: str = "", *, force: bool = F
         data = download_pdf(arxiv_id)
     except Exception as exc:  # noqa: BLE001
         log.warning("下载 arXiv %s 失败：%s", arxiv_id, exc)
-        return {"ok": False, "stage": "download", "error": f"下载失败：{str(exc)[:160]}"}
+        detail = str(exc)
+        if detail.startswith("no-pdf"):
+            # 这不是网络问题，是 arXiv 上确实没有可下的 PDF（撤稿/仅摘要/编号写错）。
+            # 把"重试也没用"和"网络抖动"分开说，否则用户会一直点重试。
+            return {"ok": False, "stage": "download",
+                    "error": f"arXiv 上没有 {arxiv_id} 的公开 PDF。可以点「arXiv 页面」自己下载后再上传。"}
+        return {"ok": False, "stage": "download", "error": f"下载失败：{detail[:160]}"}
 
     slug = re.sub(r"[^A-Za-z0-9]+", "_", (title or arxiv_id))[:60].strip("_") or arxiv_id
     path = save_upload(data, f"{arxiv_id}_{slug}.pdf")

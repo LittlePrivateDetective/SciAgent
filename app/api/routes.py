@@ -751,14 +751,16 @@ def chat(body: ChatIn, db: Session = Depends(get_db)):
     if not body.question.strip():
         raise HTTPException(400, "问题不能为空")
     if not body.doc_ids:
-        # 未指定文献 → 全库检索
-        body.doc_ids = [d.id for d in db.scalars(select(Document)).all()]
-    if not body.doc_ids:
-        return {
-            "answer": "文献库还是空的。请先上传 PDF，或用「一键导入官方测试集」把 data/pdf 下的 39 篇论文入库。",
-            "evidence": [],
-            "verify": {},
-        }
+        # 未指定文献 → 全库检索。这里保持 None 而不是铺开成 id 列表：
+        # 检索层靠"没给范围"来判定能不能用分词/BM25 缓存，铺开之后每次都重算一遍，
+        # 单次问答要多等 14 秒（实测 15.3s → 0.9s）。
+        if not db.scalar(select(func.count()).select_from(Document)):
+            return {
+                "answer": "文献库还是空的。请先上传 PDF，或用「一键导入官方测试集」把 data/pdf 下的 39 篇论文入库。",
+                "evidence": [],
+                "verify": {},
+            }
+        body.doc_ids = None
     res = run_agent(body.question.strip(), body.doc_ids, mode=body.mode,
                     thinking=body.thinking)
     # 把"这次实际用的是哪种模式"回给前端，回答上方才标得出「深思 · 3.4s」
@@ -1014,6 +1016,23 @@ def write_topology(body: TopologyIn):
 
 
 # ==================================================================== Token 级流式 + 思考过程
+def _intent_of(q: str, mode: str) -> str:
+    """粗略判断问题类型，只用于「规划」那一步的展示。
+
+    不追求分类准确——它的作用是把"我按什么思路在检索"说清楚，
+    比一句固定的"任务规划：拆解问题与检索目标"更有信息量，也经得起追问。
+    """
+    if mode == "compare":
+        return "跨文献对比"
+    if re.search(r"多少|几[个块倍张层]|BLEU|参数量|FLOPs|占比|比例|分数|准确率|复杂度|大小", q):
+        return "数值抽取"
+    if re.search(r"区别|不同|关系|为什么|原理|机制|怎么实现|如何", q):
+        return "概念辨析"
+    if re.search(r"第\s*\d+\s*作者|是谁|哪个机构|哪一年|哪里", q):
+        return "事实定位"
+    return "资料检索"
+
+
 class StreamIn(BaseModel):
     question: str
     doc_ids: list[str] = Field(default_factory=list)
@@ -1032,7 +1051,10 @@ def chat_stream(body: StreamIn, db: Session = Depends(get_db)):
     q = (body.question or "").strip()
     if not q:
         raise HTTPException(400, "问题不能为空")
-    doc_ids = body.doc_ids or [d.id for d in db.scalars(select(Document)).all()]
+    # None = 全库（与上面的 /chat 同理：给 None 才能命中分词缓存）
+    doc_ids = body.doc_ids or None
+    scope_n = len(body.doc_ids) if body.doc_ids else (
+        db.scalar(select(func.count()).select_from(Document)) or 0)
 
     def gen():
         def emit(event: str, **data) -> str:
@@ -1044,15 +1066,26 @@ def chat_stream(body: StreamIn, db: Session = Depends(get_db)):
         deep = want_thinking(body.thinking)
         model = settings.llm_model if deep else settings.trans_model
         reason_chars = 0
+        reason_buf: list[str] = []
+        reason_sent = 0
 
         try:
-            yield emit("thinking", stage="plan", text="任务规划：拆解问题与检索目标")
+            # 每一步都带**这一步真实发生了什么的数字**，而不是一句固定的流程说明：
+            # 固定文案看两遍就会被认出是装饰，带命中数/耗时/字数才像真的在干活。
+            yield emit("thinking", stage="plan", state="done",
+                       text=f"识别意图：{_intent_of(q, body.mode)} · 检索范围 {scope_n} 篇文献",
+                       scope=scope_n)
+            yield emit("thinking", stage="retrieve", state="run",
+                       text="检索中：BM25 + 稠密向量 + RRF 融合 → 重排")
             t = time.time()
             hits = search_with_rerank(q, doc_ids, top_k=8)
             evidence = [h.to_dict() for h in hits]
-            yield emit("thinking", stage="retrieve",
-                       text=f"BM25 + 稠密向量 + RRF + 重排，命中 {len(evidence)} 条证据",
-                       hits=len(evidence), latency_ms=int((time.time() - t) * 1000))
+            ms = int((time.time() - t) * 1000)
+            doc_names = {e.get("doc_name") for e in evidence}
+            pages = {(e.get("doc_name"), e.get("page")) for e in evidence}
+            yield emit("thinking", stage="retrieve", state="done",
+                       text=f"命中 {len(evidence)} 条证据 · 覆盖 {len(doc_names)} 篇 / {len(pages)} 页 · {ms} ms",
+                       hits=len(evidence), docs=len(doc_names), pages=len(pages), latency_ms=ms)
             if not evidence:
                 yield emit("error", text="文献库中没有检索到相关内容")
                 yield emit("done", answer="没有检索到相关证据。", evidence=[], verify={})
@@ -1062,7 +1095,10 @@ def chat_stream(body: StreamIn, db: Session = Depends(get_db)):
                 f"[{i}] 来源：{e['doc_name']} 第{e['page']}页 | {e['text'][:900]}"
                 for i, e in enumerate(evidence, start=1)
             )
-            yield emit("thinking", stage="read", text="通读证据，定位可引用的原句")
+            chars = sum(len(e.get("text") or "") for e in evidence)
+            yield emit("thinking", stage="read", state="done",
+                       text=f"通读 {len(evidence)} 条证据（{chars:,} 字），按句定位可引用原句",
+                       chars=chars)
             msgs = [
                 {"role": "system", "content": "你是严谨的科研写作助手。只依据给定证据回答，"
                                               "每个论断后带 [编号]；数字原样抄写；"
@@ -1071,17 +1107,32 @@ def chat_stream(body: StreamIn, db: Session = Depends(get_db)):
                                             f"要求：第一句给结论，200 字以内，正文带 [编号] 引用。"},
             ]
             if deep:
-                yield emit("thinking", stage="depth",
-                           text=f"深思模式：用 {model} 先推理再作答，会多花几秒")
+                yield emit("thinking", stage="depth", state="run",
+                           text=f"深思模式：{model} 先推理再作答，推理内容实时可见")
             buf: list[str] = []
             t_reason = time.time()
             for kind, piece in gateway.chat_stream(msgs, model=model, thinking=body.thinking):
                 if kind == "reason":
                     reason_chars += len(piece)
+                    # 推理原文分段推给前端：一次 120 字左右，既看得到"在想什么"，
+                    # 又不会把每一两个字符都当成一次网络往返。总量封顶 6000 字，
+                    # 超长推理只记账不再推（避免前端渲染拖垮流）。
+                    reason_buf.append(piece)
+                    if sum(len(x) for x in reason_buf) >= 120:
+                        chunk = "".join(reason_buf)
+                        reason_buf = []
+                        if reason_sent < 6000:
+                            reason_sent += len(chunk)
+                            yield emit("reason", text=chunk, chars=reason_chars)
                     continue
+                if reason_buf:
+                    if reason_sent < 6000:
+                        chunk = "".join(reason_buf)
+                        reason_sent += len(chunk)
+                        yield emit("reason", text=chunk, chars=reason_chars)
+                    reason_buf = []
                 if reason_chars and not buf:
-                    # 推理片段不逐字推给前端（刷屏且无信息量），只报一句"想完了"
-                    yield emit("thinking", stage="depth_done",
+                    yield emit("thinking", stage="depth_done", state="done",
                                text=f"推理完成（{reason_chars} 字），开始作答",
                                latency_ms=int((time.time() - t_reason) * 1000))
                 buf.append(piece)
@@ -1090,8 +1141,9 @@ def chat_stream(body: StreamIn, db: Session = Depends(get_db)):
             rendered = attach_anchors(answer, evidence)
             annotate_focus(evidence, q, answer)
             v = verify_answer(rendered, evidence, q)
-            yield emit("thinking", stage="verify",
-                       text=f"引用校验 {v.get('valid')}/{v.get('total')} 命中",
+            yield emit("thinking", stage="verify", state="done",
+                       text=(f"引用校验 {v.get('valid')}/{v.get('total')} 命中"
+                             + (f" · {v.get('invalid')} 处未核实" if v.get("invalid") else "")),
                        rate=v.get("rate"))
             yield emit("done", answer=rendered, raw_answer=answer,
                        evidence=evidence, verify=v,

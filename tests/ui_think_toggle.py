@@ -88,12 +88,10 @@ def run() -> dict:
                       cls:b?b.className:'', defStream:defStream}})()""")
         res["steps"].append({"initial": init})
 
-        # 2) 两次点击
-        js("document.querySelector('.think-btn').click()")
-        time.sleep(0.4)
-        after1 = js("""(()=>{const v=window.__sciagent;const b=document.querySelector('.think-btn');
-              return {text:b.textContent.trim(), deep:!!v.thinkDeep, on:b.classList.contains('on')}})()""")
-        res["steps"].append({"click_on": after1})
+        # 2) 默认就是深思：先不动按钮，直接问
+        #    （默认深思是刻意的：快速模式模型不产推理内容，界面上只剩管线阶段，
+        #     那不叫"思考过程"。觉得慢的人点一下就能切快速。）
+        res["steps"].append({"default_mode": {"text": init.get("text"), "deep": init.get("deep")}})
 
         # 3) 深思提问
         js("(()=>{const v=window.__sciagent; v.ask('BERT 和 GPT 的预训练目标有什么不同？'); return 1})()")
@@ -112,16 +110,20 @@ def run() -> dict:
                   return {loading:!!v.loading, meta:a?a.meta:'', metaDom:m?m.textContent.trim():'',
                           chars:a&&a.html?a.html.length:0,
                           thinkSteps:steps?steps.querySelectorAll('.think-step').length:0,
-                          stages:(a&&a.thinking?a.thinking:[]).filter(x=>x.indexOf('depth')>=0)}})()""")
+                          reasonLen:(a&&a.reasonText?a.reasonText.length:0),
+                          reasonHeader:(steps&&steps.querySelector('.reason-title'))
+                            ?steps.querySelector('.reason-title').textContent.trim():'',
+                          stages:(a&&a.thinking?a.thinking:[]).filter(x=>x&&x.stage==='depth')}})()""")
             if isinstance(deep_state, dict) and not deep_state.get("loading") and deep_state.get("meta"):
                 break
         res["steps"].append({"deep_answer": deep_state})
 
-        # 4) 切回快速再问
+        # 4) 切到快速再问
         js("document.querySelector('.think-btn').click()")
         time.sleep(0.3)
         after2 = js("""(()=>{const v=window.__sciagent;const b=document.querySelector('.think-btn');
-              return {text:b.textContent.trim(), deep:!!v.thinkDeep}})()""")
+              return {text:b.textContent.trim(), deep:!!v.thinkDeep,
+                      on:b.classList.contains('on')}})()""")
         js("(()=>{const v=window.__sciagent; v.ask('Mistral 7B 的滑动窗口大小 W 是多少？'); return 1})()")
         fast_state = {}
         t0 = time.time()
@@ -136,7 +138,7 @@ def run() -> dict:
                           chars:a&&a.html?a.html.length:0}})()""")
             if isinstance(fast_state, dict) and not fast_state.get("loading") and fast_state.get("meta"):
                 break
-        res["steps"].append({"click_off": after2, "fast_answer": fast_state})
+        res["steps"].append({"switch_to_fast": after2, "fast_answer": fast_state})
 
         res["errors"] = js("window.__err||[]")
         shot = call("Page.captureScreenshot", {"format": "png", "captureBeyondViewport": True}).get("data")
@@ -145,13 +147,16 @@ def run() -> dict:
 
         res["checks"] = {
             "btn_present": bool(init.get("has")),
-            "init_follows_backend": init.get("text") == "快速" and init.get("deep") is False,
-            "toggle_on": after1.get("text") == "深思" and after1.get("on") is True,
+            # 默认必须是深思：否则界面上没有推理内容可看
+            "default_deep": init.get("text") == "深思" and init.get("deep") is True,
+            "toggle_to_fast": after2.get("text") == "快速" and after2.get("deep") is False,
             "deep_label": "深思" in (deep_state.get("metaDom") or ""),
             "deep_stage": bool(deep_state.get("stages")),
             "stream_on_by_default": init.get("defStream") is True,
             "stream_thinking_visible": (deep_state.get("thinkSteps") or 0) >= 3,
-            "toggle_off": after2.get("text") == "快速" and after2.get("deep") is False,
+            # 深思模式必须真的有推理原文（这才是"思考过程"），而不是只有管线阶段
+            "reasoning_visible": (deep_state.get("reasonLen") or 0) > 40,
+            "reasoning_labeled": "推理过程" in (deep_state.get("reasonHeader") or ""),
             "fast_label": "快速" in (fast_state.get("metaDom") or ""),
             "no_js_error": not res["errors"],
         }

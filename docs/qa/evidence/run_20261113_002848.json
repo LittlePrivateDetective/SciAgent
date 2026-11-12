@@ -1,0 +1,50 @@
+{
+  "run_id": "20261113_002848",
+  "base": "http://127.0.0.1:8013",
+  "timestamp": "2026-11-13T00:28:51.773331",
+  "summary": {
+    "total": 1,
+    "pass": 1,
+    "fail": 0,
+    "blocked": 0
+  },
+  "results": [
+    {
+      "id": "C07",
+      "group": "stream",
+      "point": "e-3 Token 级流式输出",
+      "steps": "请求 SSE，解析 thinking/token/done 事件，校验 token 拼接与最终答案一致",
+      "expected": "多个真实 token 片段、思考过程事件齐全、拼接无损、引用校验有效",
+      "actual": "51 个 token 片段无损拼接，思考阶段 ['plan', 'retrieve', 'retrieve', 'read', 'verify']，引用校验 9/9",
+      "status": "PASS",
+      "elapsed_s": 3.1,
+      "evidence": {
+        "chunks": 51,
+        "elapsed_s": 3.1,
+        "thinking_stages": [
+          "plan",
+          "retrieve",
+          "retrieve",
+          "read",
+          "verify"
+        ],
+        "joined_chars": 314,
+        "raw_equals_tokens": true,
+        "verify": {
+          "total": 9,
+          "valid": 9,
+          "invalid": 0,
+          "rate": 1.0,
+          "invalid_anchors": [],
+          "invalid_refs": [],
+          "bad_numbers": [],
+          "cleaned": "Transformer 的核心机制是完全依赖自注意力（self-attention）来建模输入与输出之间的全局依赖关系，摒弃了循环神经网络（RNN）和卷积神经网络（CNN）[1] [p2@36,152,575,190]。该架构通过多头自注意力机制并行计算所有位置间的依赖关系，使模型在训练时具有更高的并行化能力，显著减少序列计算的开销 [9] [p2@36,263,575,301]。其编码器和解码器均由堆叠的自注意力层和点对点全连接层构成，每层均采用残差连接和层归一化以稳定训练过程 [7] [p3@55,107,291,237]。由于自注意力机制将任意两个位置间的计算复杂度固定为常数，从而克服了传统模型中依赖距离增长而增加计算量的问题 [9]。这一设计使得 Transformer 在机器翻译等任务上实现了更优的性能与更快的训练速度 [4] [p1@143,361,469,523]。",
+          "has_citation": true
+        },
+        "evidence": 11,
+        "first": "Transformer",
+        "answer_head": "Transformer 的核心机制是完全依赖自注意力（self-attention）来建模输入与输出之间的全局依赖关系，摒弃了循环神经网络（RNN）和卷积神经网络（CNN）[1] [p2@36,152,575,190]。该架构通过多头自注意力机制并行计算所有位置间的依赖关系，使模型在训练时具有更高的并行化能力，显著减少"
+      }
+    }
+  ]
+}

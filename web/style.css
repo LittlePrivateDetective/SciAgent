@@ -1069,3 +1069,43 @@ body.is-dragging, body.is-dragging * { user-select: none !important; }
 }
 .img-fail-t { font-size: 14.5px; font-weight: 500; color: #3a4150; }
 .img-fail-s { font-size: 12.5px; line-height: 1.65; max-width: 380px; }
+
+
+/* ---------- 思考过程与流式输出 ---------- */
+/* 流式期间的最后一个光标：字一个个冒出来之外，还要有个"正在写"的信号，
+   否则用户分不清是输出完了还是卡住了 */
+.md p.streaming::after {
+  content: "▍";
+  margin-left: 1px;
+  color: var(--brand);
+  animation: blink 1.05s steps(2, start) infinite;
+}
+@keyframes blink { to { visibility: hidden; } }
+
+.think-stage {
+  display: inline-block; margin-right: 6px; padding: 0 5px;
+  border-radius: 4px; background: #eef1f6; color: #5b6472;
+  font-size: 10.5px; line-height: 16px; vertical-align: 1px;
+}
+.think-step.running .think-stage { background: #e8f0ff; color: var(--brand); }
+.think-step.running .think-dot { animation: pulse 1.1s ease-in-out infinite; }
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: .35; transform: scale(.7); }
+}
+
+/* 推理原文：等宽一点、浅底、限高滚动；它是过程不是结论，不能抢正文 */
+.reason { margin: 6px 0 8px; border: 1px solid #e7eaf0; border-radius: 8px; background: #fafbfd; }
+.reason-head {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+  padding: 6px 10px; border: 0; background: none; cursor: pointer;
+  font-family: inherit; font-size: 11.5px; color: #6b7280; text-align: left;
+}
+.reason-title { color: #4b5563; font-weight: 500; }
+.reason-meta { color: #9aa3b2; font-variant-numeric: tabular-nums; }
+.reason-toggle { margin-left: auto; color: var(--brand); }
+.reason-body {
+  max-height: 180px; overflow-y: auto; padding: 0 10px 9px;
+  font-size: 11.5px; line-height: 1.7; color: #6b7280;
+  white-space: pre-wrap; word-break: break-word;
+}
