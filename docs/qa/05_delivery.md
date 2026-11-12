@@ -141,3 +141,35 @@ curl http://127.0.0.1:8000/health
 
 > 已由 E03 完成「Docker 配置一致性 + 镜像等价布局零密钥启动」实测，C03 完成「干净环境从零启动」实测，
 > 但这两项**不能替代真实镜像构建**，因此 E03D 保持 BLOCKED。
+
+## 8. 云端在线演示（2026-11-12 实测通过）
+
+| 项 | 内容 |
+| --- | --- |
+| 访问地址 | `https://sciagent-research.app.workbuddy.host/?sharecode=CHBCOXLVVO` |
+| 托管方式 | WorkBuddy「发布应用」托管沙箱（非本机隧道，**不依赖演示电脑开机**） |
+| 上传目录 | `deploy/`（由 `scripts/build_deploy.py` 生成，223 MB，已 gitignore） |
+| 启动方式 | `python run.py`（读平台注入的 `PORT`，绑 `0.0.0.0`，chdir 到 deploy 根） |
+| 向量后端 | `VECTOR_BACKEND=sqlite`（不带 Chroma：索引 394 MB，而 `chunks.embedding` 在 SQLite 里本就有一份） |
+| 后台 | 同域 `/admin`，口令在 `deploy/.env` 的 `ADMIN_PASSWORD`（16 位，不入库、不进文档） |
+
+**实测记录（从公网发起，非本机）**
+
+| 项 | 结果 |
+| --- | --- |
+| `GET /` | 200，48 KB，含预热提示条与 `app.js?v=3` |
+| `GET /health` | 200 |
+| `GET /admin` | 200（登录框） |
+| `GET /api/warm` | 200，冷 16.1 s / 热 1.0–1.4 s（检索 340 ms + 模型 640 ms） |
+| 问「多头注意力的计算复杂度」 | **20.5 s**，证据 11 条含 Table 1，答出 `O(n²·d)`，校验 1.0 |
+| 问「Transformer big 的英德 BLEU」 | **8.2 s**，表块 p8/p9，答 `28.4`，校验 1.0 |
+
+**访问门**：平台给的是带 `sharecode` 的分享链接，首次访问需要带码，服务端会种 `__wb_rsc` cookie；
+不带码直接访问返回 403「链接不完整」。等于平台自带一层链接级访问控制，评委拿到完整链接即可用。
+
+**保活**：平台沙箱空闲会休眠，冷启动 15–37 s。已做三层缓解：
+① 启动时后台线程预热；② 页面打开静默打 `/api/warm`；③ 预热超 3 秒前端显示提示条。
+**外部定时器保活尚未配置**（需在 cron-job.org 之类加一条 5 分钟任务，打
+`/api/warm?sharecode=…`），这是唯一还没闭环的一项。
+
+**退路**：若平台侧不可用，可本机 `uvicorn --port 8013` + `cloudflared tunnel --url http://127.0.0.1:8013` 临时顶上。
