@@ -333,3 +333,23 @@
 
 > 顺带把交付截图 `02_answer.png` 重拍成流式版：现在能同时看到"问题 / 四步思考时间线 /
 > 带 [2] 引用的答案 / 13/13 引用校验 / 10 条原文证据"，一张图把可解释性讲完。
+
+## 第二十五轮：公网阅读器整页图打不开（真实故障排查，2026-11-12 23:33–23:55）
+
+用户发来截图：打开《Understanding Deep Learning》（541 页），阅读区只有一个破图标，
+右侧问答正常。这条链路本地一直好好的，所以问题只可能出在"部署到云端之后"。
+
+| 编号 | 分级 | 现象 | 根因 | 改法 | 验证 |
+| --- | --- | --- | --- | --- | --- |
+| D-82 | **P0 → 已修** | 公网阅读器点开某篇 PDF，整页是空白 + 浏览器默认破图标；`/page/1.png` 返回 **500**，`/pages`、`/page/1/text` 同样 500，但 `/api/documents` 列表和问答都正常 | **三层叠在一起**：① 云端 `/workspace/data/sciagent.db` 已损坏（`database disk image is malformed`），凡是"逐行读 documents 表"的接口都炸，而 `count(*)`、列表这类只读索引页的查询还能过——所以看起来像"只有某一篇坏了"；② 库里 `file_path` 是入库那台机器的绝对路径（38 条里 10 条 `D:/projects/...`），另有上传件存成 `uploads/9adc11f5_cn_paper.pdf`（带哈希前缀），换台机器按什么找都找不到；③ 打包时把 `-wal/-shm` 一起拷走了，而主库已经 checkpoint 过——这一对不一致的文件本身就是损坏的源头 | ① 启动自检 `ensure_db_healthy()`：`PRAGMA quick_check` 失败 → 先试 `VACUUM INTO` 抢救 → 不行就用随包 `data/seed/sciagent.db` 顶替，坏库改名留证；② `resolve_doc_file()`：原路径 → 包根 → data → `pdf/<basename>` → `uploads/<basename>`（含 `<hash>_<原名>` 后缀匹配）逐级兜底；③ 打包只带主库并额外生成 seed 快照，不再带 WAL；④ 新增 `/api/admin/diag/{env,files,db-repair}`，把崩溃变成可读数据 | 公网 `/diag/files`：38 篇 **bad=0**；`/page/1.png` 三篇分别 200 / 69KB、140KB、227KB；端到端 CDP 打开该 PDF：`naturalWidth=1105`、文本层 99 词、`imgFailed=false`（截图 `evidence/cloud_reader_ok.png`）；`/diag/db-repair` 返回 `quick_check ok`；本机 api_sweep 47/47、单测 40 条全绿 |
+| — | — | 页图失败时只显示浏览器默认破图标，用户无从判断是网络、文件缺失还是后端崩了 | `<img @error>` 没有任何处理 | 加失败占位（"这一页没加载出来" + 重新加载按钮），失败时清空文本层；`pageUrl` 由 `?t=Date.now()` 改成 `?v=<nonce>`，顺带让重复翻页能吃上 `max-age` 缓存 | 新增 `tests/ui_img_fail.py` 4 项：正常不出现占位、失败时占位+按钮、文本层被清空、点重试后 `v=1` 且重新渲染成功 |
+
+**为什么这件事值得单独记一笔**：它的每一条根因单独看都"不像 bug"——
+坏库还能返回列表、绝对路径在本机跑得好好的、WAL 拷过去在本地也读得出来。
+只有把"部署到另一台机器"当成常态来设计，这三条才会暴露。
+现在这三道防线都在启动/打包路径上，不需要人去记得。
+
+> 附带的运维口径：云端 `data/` 是**持久化**的，重新部署不会覆盖主库，
+> 所以库坏一次就会一直是坏的——必须靠启动自检或 `/api/admin/diag/db-repair` 修。
+> 恢复到 seed 后库里是打包那一刻的 38 篇；用户后来上传的论文文件还在
+> `data/pdf`、`data/uploads` 里，用「重新扫描」可重新入库。

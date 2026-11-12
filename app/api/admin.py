@@ -300,3 +300,170 @@ def audit(limit: int = Query(20, ge=1, le=100), _=Depends(auth.require_admin), d
         {"action": a.action, "doc_id": a.doc_id, "detail": a.detail, "actor": a.actor,
          "at": a.created_at.strftime("%Y-%m-%d %H:%M:%S")} for a in rows
     ]}
+
+
+@router.get("/diag/files")
+def diag_files(_=Depends(auth.require_admin), db: Session = Depends(get_db)):
+    """薄壳：任何异常都变成 200 + traceback。
+
+    云端实例上这个端点自己返回过 500，而平台侧看不到应用日志——只能让
+    "崩溃"本身变成可读的数据，否则永远在猜是缺依赖、路径不对还是权限问题。
+    """
+    import traceback
+
+    try:
+        return _diag_files_impl(db)
+    except Exception as exc:  # noqa: BLE001
+        return {"ok": False, "error": f"{type(exc).__name__}: {exc}",
+                "trace": traceback.format_exc()[-2000:]}
+
+
+def _diag_files_impl(db: Session):
+    """逐篇检查「源文件还在不在、能不能渲染出页图」。
+
+    起因：公网实例上打开某篇 541 页的 PDF，阅读器只有一张破图标。
+    数据库里的 file_path 是入库那台机器写下的绝对路径（`D://projects//...`），
+    换一台机器/换一个系统就等于指到空气——可接口一侧只会回 404/500，
+    从这个响应里看不出是路径问题、文件缺失，还是 PyMuPDF 渲染失败。
+    这里把三者分开报：resolved（解析后的真实路径）、exists、render_ok/error。
+    """
+    from app.core.config import resolve_doc_file
+
+    # 依赖本身先单独探一次：如果 PyMuPDF 在云端没装上，这个诊断端点自己也 500，
+    # 那就白加了——什么信息都拿不到。所以导入失败只是"一条诊断结论"，不是崩溃。
+    render_error = ""
+    renderer = None
+    try:
+        from app.parse.structure import render_page_png
+
+        renderer = render_page_png
+    except Exception as exc:  # noqa: BLE001
+        render_error = f"{type(exc).__name__}: {exc}"
+    try:
+        import pymupdf
+
+        pymupdf_version = getattr(pymupdf, "__version__", "?")
+    except Exception as exc:  # noqa: BLE001
+        pymupdf_version = f"import 失败：{type(exc).__name__}: {exc}"
+
+    rows = []
+    for d in db.scalars(select(Document)).all():
+        try:
+            src = resolve_doc_file(d)
+        except Exception as exc:  # noqa: BLE001
+            # 诊断端点自己也炸过（云端 500、日志还看不到），所以这里连解析都兜住：
+            # 解析失败本身就是一条要报出来的结论。
+            rows.append({"id": d.id, "filename": d.filename, "file_path": d.file_path,
+                         "resolved": None, "exists": False,
+                         "error": f"路径解析异常 {type(exc).__name__}: {exc}"})
+            continue
+        row: dict = {
+            "id": d.id,
+            "filename": d.filename,
+            "file_path": d.file_path,
+            "resolved": str(src) if src else None,
+            "exists": bool(src),
+        }
+        if src:
+            try:
+                row["size_mb"] = round(src.stat().st_size / 1048576, 1)
+            except OSError:
+                pass
+            if renderer is None:
+                row.update(render_ok=False, error=f"渲染器不可用（{render_error}）")
+            else:
+                t0 = time.time()
+                try:
+                    png = renderer(str(src), 1, dpi=72)
+                    row.update(render_ok=True, png_kb=round(len(png) / 1024),
+                               ms=int((time.time() - t0) * 1000))
+                except Exception as exc:  # noqa: BLE001
+                    row.update(render_ok=False, error=f"{type(exc).__name__}: {exc}")
+        rows.append(row)
+
+    bad = [r for r in rows if not r["exists"] or not r.get("render_ok")]
+    return {
+        "ok": True,
+        "total": len(rows),
+        "bad": len(bad),
+        "python": platform.python_version(),
+        "pymupdf": pymupdf_version,
+        "renderer_error": render_error,
+        "data_dir": str(settings.data_path),
+        "pdf_dir": str(settings.pdf_dir),
+        "pdf_dir_exists": settings.pdf_dir.is_dir(),
+        "pdf_count": len(list(settings.pdf_dir.glob("*.pdf"))),
+        "upload_count": len(list(settings.upload_dir.glob("*.pdf"))),
+        "rows": rows,
+    }
+
+
+@router.get("/diag/env")
+def diag_env(_=Depends(auth.require_admin)):
+    import traceback
+
+    try:
+        return _diag_env_impl()
+    except Exception as exc:  # noqa: BLE001
+        return {"ok": False, "error": f"{type(exc).__name__}: {exc}",
+                "trace": traceback.format_exc()[-2000:]}
+
+
+def _diag_env_impl():
+    """极简环境探测：不含数据库、不含路径逻辑。
+
+    用途是二分定位——`/diag/env` 也 500 说明是运行时环境本身有问题；
+    `env` 正常而 `/diag/files` 500，则问题在数据/路径那一层。
+    顺带把几个目录的实际内容数量报出来（云端 data 与开发机不一致时一眼能看出）。
+    """
+    import sys
+
+    out = {"ok": True, "python": platform.python_version(), "executable": sys.executable,
+           "cwd": os.getcwd(), "data_dir": str(settings.data_path)}
+    try:
+        import pymupdf
+
+        out["pymupdf"] = getattr(pymupdf, "__version__", "?")
+    except Exception as exc:  # noqa: BLE001
+        out["pymupdf"] = f"import 失败：{type(exc).__name__}: {exc}"
+    for name in ("pdf_dir", "upload_dir"):
+        d = getattr(settings, name)
+        try:
+            files = sorted(x.name for x in d.glob("*.pdf"))
+            out[name] = {"path": str(d), "exists": d.is_dir(), "pdfs": len(files),
+                         "sample": files[:5]}
+        except Exception as exc:  # noqa: BLE001
+            out[name] = {"path": str(d), "error": f"{type(exc).__name__}: {exc}"}
+    return out
+
+
+@router.post("/diag/db-repair")
+def diag_db_repair(force_seed: bool = Query(False), _=Depends(auth.require_admin)):
+    """手动触发数据库自检/恢复（不重启进程）。
+
+    正常启动时 init_db() 会自动跑一遍；这里是给"服务已经在跑、但库刚刚坏掉"
+    准备的入口——否则只能靠重新部署赌一次重启。
+    force_seed=true 表示跳过抢救、直接用随包 seed 覆盖（库结构完整但数据乱了时用）。
+    """
+    import traceback
+
+    from app.db.session import engine, ensure_db_healthy, init_db
+
+    try:
+        engine.dispose()          # 池里的连接持有旧文件句柄，不放掉换了库也读不到
+        if force_seed:
+            from pathlib import Path as _P
+
+            dbp = settings.db_path
+            for suffix in ("", "-wal", "-shm"):
+                f = _P(str(dbp) + suffix)
+                if f.exists():
+                    f.replace(_P(str(dbp) + ".bak" + suffix))
+            result = ensure_db_healthy()
+        else:
+            result = ensure_db_healthy()
+        init_db()
+        return {"ok": bool(result.get("ok")), **result}
+    except Exception as exc:  # noqa: BLE001
+        return {"ok": False, "error": f"{type(exc).__name__}: {exc}",
+                "trace": traceback.format_exc()[-1500:]}

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SciAgent · 科研智能体</title>
   <link rel="stylesheet" href="/static/vendor/element-plus.css" />
-  <link rel="stylesheet" href="/static/style.css?v=9" />
+  <link rel="stylesheet" href="/static/style.css?v=10" />
   <link rel="stylesheet" href="/static/vendor/katex.min.css" />
   <script src="/static/vendor/katex.min.js"></script>
   <script src="/static/vendor/katex-auto-render.min.js"></script>
@@ -143,10 +143,21 @@
           <!-- page-frame 是唯一定位基准：它恰好等于图片的渲染尺寸。
                高亮框和文本层都用百分比相对它定位，才不会因为 .page-stage 的 padding
                或图片居中出现整体偏移（之前 .hl 直接挂在外层容器上，窄屏会偏 12px）。 -->
-          <div class="page-frame">
+          <div class="page-frame" :class="{ 'is-failed': imgFailed }">
             <!-- draggable=false 必须有：扫描件没有文本层，鼠标一拖浏览器就把整张页图
                  当成可拖动图片拽走（ghost image 跟着光标跑），用户以为"文档被拖走了"。 -->
-            <img :src="pageUrl" class="pdf-page" ref="pageImg" draggable="false" @load="onImgLoad" />
+            <img :src="pageUrl" class="pdf-page" ref="pageImg" draggable="false"
+                 :style="imgFailed ? 'visibility:hidden' : ''" @load="onImgLoad" @error="onImgError" />
+            <!-- 页图加载失败原来只显示一个破图标，用户不知道是网络、文件缺失还是后端崩了。
+                 这里给一句人话 + 重试；具体原因看服务端日志里的「页图渲染失败」。 -->
+            <div class="img-fail" v-if="imgFailed">
+              <div class="img-fail-t">这一页没加载出来</div>
+              <div class="img-fail-s">
+                可能是源文件缺失或渲染失败。可以先点「重新加载」；
+                仍不行就在后台「数据」页确认这份 PDF 还在不在。
+              </div>
+              <el-button size="small" type="primary" plain @click="retryImg">重新加载</el-button>
+            </div>
             <!-- 句级高亮：一句一组的多个小框（贴行），而不是把整段涂成一个大矩形。
                  approx=true 表示没有词级文本层（扫描件），只能退回区块级范围，用虚线区分。 -->
             <div class="hl" v-for="(box,i) in highlights" :key="i" :style="box.style"
@@ -884,6 +895,6 @@
   </nav>
 </div>
 
-<script src="/static/app.js?v=9"></script>
+<script src="/static/app.js?v=10"></script>
 </body>
 </html>

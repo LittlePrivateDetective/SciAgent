@@ -172,3 +172,43 @@ def get_settings() -> Settings:
 
 
 settings = get_settings()
+
+
+def resolve_doc_file(doc) -> Path | None:
+    """把库里记录的 file_path 落成"真实存在"的路径，找不到返回 None。
+
+    为什么需要这一层：file_path 是入库那一刻写下的字符串，它可能来自另一台机器、
+    另一个操作系统，也可能是搬走了的目录。库里就有 10 条写着
+    `D://projects//sciagent//data//pdf//...`——搬到云端后这条路径不存在，
+    阅读器整页图就起不来（页图接口 404/500，前端只剩一个破图标）。
+    所以不能只信这一个字符串：凡是能按文件名在 data/pdf、data/uploads 里对上，
+    就以文件名为准。文件名比整条路径稳定得多，重名由上传时的去重逻辑兜着。
+    """
+    raw = (doc.file_path or "").strip() if doc is not None else ""
+    settings_ = settings
+    cands: list[Path] = []
+
+    def add(p: Path | None) -> None:
+        if p and p not in cands:
+            cands.append(p)
+
+    if raw:
+        add(Path(raw))
+        if not Path(raw).is_absolute():
+            add(BASE_DIR / raw)
+            add(settings_.data_path / raw)
+    # Windows 绝对路径在 Linux 上不是分隔符，Path("D://a//b.pdf").name 会返回整串，
+    # 所以先统一成 "/" 再取 basename。
+    for name in (Path(raw.replace("\\", "/")).name if raw else "",
+                 getattr(doc, "filename", "") or ""):
+        if name:
+            add(settings_.pdf_dir / name)
+            add(settings_.upload_dir / name)
+
+    for c in cands:
+        try:
+            if c.is_file():
+                return c
+        except OSError:      # 路径过长 / 权限不足：换下一个候选，别把整条链打断
+            continue
+    return None

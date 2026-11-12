@@ -14,7 +14,7 @@ from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
 
 from app.agents.graph import run as run_agent
-from app.core.config import settings
+from app.core.config import resolve_doc_file, settings
 from app.core.llm import gateway, want_thinking
 from app.core.logger import get_logger
 from app.db.models import (
@@ -282,11 +282,19 @@ def get_chunks(doc_id: str, page: int | None = None, db: Session = Depends(get_d
 @router.get("/documents/{doc_id}/page/{page}.png")
 def get_page_image(doc_id: str, page: int, dpi: int = Query(130, ge=72, le=220), db: Session = Depends(get_db)):
     doc = db.get(Document, doc_id)
-    if not doc or not Path(doc.file_path).exists():
+    try:
+        src = resolve_doc_file(doc)
+    except Exception as exc:  # noqa: BLE001
+        log.warning("页图：路径解析失败 doc=%s file_path=%r: %s",
+                    doc_id, getattr(doc, "file_path", None), exc)
+        raise HTTPException(404, f"源文件路径解析失败：{exc}") from exc
+    if not doc or src is None:
+        log.warning("页图：源文件找不到 doc=%s file_path=%r", doc_id, getattr(doc, "file_path", None))
         raise HTTPException(404, "文档或源文件不存在")
     try:
-        png = render_page_png(doc.file_path, page, dpi=dpi)
+        png = render_page_png(str(src), page, dpi=dpi)
     except Exception as exc:  # noqa: BLE001
+        log.warning("页图渲染失败 doc=%s page=%s src=%s: %s", doc_id, page, src, exc)
         raise HTTPException(400, f"渲染失败：{exc}") from exc
     return Response(content=png, media_type="image/png", headers={"Cache-Control": "max-age=3600"})
 
@@ -297,10 +305,14 @@ def get_page_meta(doc_id: str, db: Session = Depends(get_db)):
     import pymupdf
 
     doc = db.get(Document, doc_id)
-    if not doc or not Path(doc.file_path).exists():
+    try:
+        src = resolve_doc_file(doc)
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(404, f"源文件路径解析失败：{exc}") from exc
+    if not doc or src is None:
         raise HTTPException(404, "文档不存在")
     out = []
-    with pymupdf.open(doc.file_path) as pdf:
+    with pymupdf.open(str(src)) as pdf:
         for i, page in enumerate(pdf, start=1):
             out.append({"page": i, "width": round(page.rect.width, 2), "height": round(page.rect.height, 2)})
     return {"pages": out}
@@ -321,10 +333,14 @@ def get_page_text(doc_id: str, page: int, db: Session = Depends(get_db)):
     import pymupdf
 
     doc = db.get(Document, doc_id)
-    if not doc or not Path(doc.file_path).exists():
+    try:
+        src = resolve_doc_file(doc)
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(404, f"源文件路径解析失败：{exc}") from exc
+    if not doc or src is None:
         raise HTTPException(404, "文档或源文件不存在")
     try:
-        with pymupdf.open(doc.file_path) as pdf:
+        with pymupdf.open(str(src)) as pdf:
             if not 1 <= page <= len(pdf):
                 raise HTTPException(404, f"页码超出范围（共 {len(pdf)} 页）")
             pg = pdf[page - 1]

@@ -1035,3 +1035,17 @@ body.is-dragging, body.is-dragging * { user-select: none !important; }
   .badges .el-tag:nth-child(3) { display: none; }
   .doc-title { font-size: 13px; }
 }
+
+
+/* 页图加载失败占位：尺寸撑住阅读区，避免整块塌成 0 高让布局跳一下 */
+/* page-frame 原本是 width: fit-content，跟着图片走。图片加载失败时 fit-content
+ * 就等于 0 宽，提示文字会被挤成一列竖排（实测宽度只剩 40px）。失败态给它一个
+ * 明确宽度，顺便把 line-height:0 还原——那是为了消除图片底部空隙设的。 */
+.page-frame.is-failed { width: min(100%, 760px); min-height: 62vh; line-height: normal; }
+.img-fail {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 8px; padding: 24px 18px;
+  text-align: center; color: var(--muted); background: #fafbfd;
+}
+.img-fail-t { font-size: 14.5px; font-weight: 500; color: #3a4150; }
+.img-fail-s { font-size: 12.5px; line-height: 1.65; max-width: 380px; }

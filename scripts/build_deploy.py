@@ -79,6 +79,57 @@ def _checkpoint_db(path: Path) -> None:
         print(f"  [warn] WAL checkpoint 失败（{exc}），将连 -wal 一起拷")
 
 
+def _sync_sources(db_path: Path) -> None:
+    """按库里的引用，把源文件补齐到包内，并把 file_path 改写成包内相对路径。
+
+    这件事以前没人做，于是云端阅读器整页图打不开（前端只显示破图标），两个原因：
+    1. 入库时写的是"那台机器"的绝对路径，实测 38 条里 10 条是
+       D:\\projects\\sciagent\\data\\pdf\\...，换台机器就等于指到空气；
+    2. 上传的 PDF 存在 data/uploads（文件名带 8 位哈希前缀），打包只拷了
+       data/pdf —— cn_paper.pdf 这种就根本没进包，云端自然渲染不出来。
+
+    运行时虽然还有按文件名兜底的 resolve_doc_file()，但那只是补丁；
+    包里本来就该是能直接用的路径和齐全的文件。
+    """
+    import sqlite3
+
+    if not db_path.exists():
+        return
+    con = sqlite3.connect(str(db_path), timeout=10)
+    try:
+        rows = con.execute("SELECT id, filename, file_path FROM documents").fetchall()
+        fixed = copied = missing = 0
+        for doc_id, filename, file_path in rows:
+            # file_path 的 basename 比 filename 更准（上传件带哈希前缀）
+            base = Path((file_path or "").replace("\\", "/")).name or (filename or "")
+            src = rel = None
+            for sub, cand in (("pdf", ROOT / "data" / "pdf" / base),
+                              ("uploads", ROOT / "data" / "uploads" / base)):
+                if cand.is_file():
+                    src, rel = cand, f"data/{sub}/{base}"
+                    break
+            if src is None and filename:
+                cand = ROOT / "data" / "pdf" / filename
+                if cand.is_file():
+                    src, rel = cand, f"data/pdf/{filename}"
+            if src is None:
+                missing += 1
+                print(f"  [warn] 源文件缺失，云端打不开：{filename}")
+                continue
+            dst = DEPT / rel
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            if not dst.exists():
+                shutil.copy2(src, dst)
+                copied += 1
+            con.execute("UPDATE documents SET file_path = ? WHERE id = ?", (rel, doc_id))
+            fixed += 1
+        con.commit()
+        print(f"  file_path 规范化：{fixed}/{len(rows)} 条 -> data/<子目录>/<文件名>"
+              f"（另补拷 {copied} 个上传件，缺失 {missing}）")
+    finally:
+        con.close()
+
+
 def copy_tree(src: Path, dst: Path, ignore=()) -> None:
     shutil.copytree(
         src, dst,
@@ -132,13 +183,24 @@ def main() -> int:
     (DEPT / "data").mkdir()
     _checkpoint_db(ROOT / "data" / "sciagent.db")
     shutil.copy2(ROOT / "data" / "sciagent.db", DEPT / "data" / "sciagent.db")
-    # WAL 里可能还有没落盘的事务。只拷 .db 会静默丢掉最近的入库——
-    # 实测丢过一篇刚上传的论文（本机 38 篇、包里 37 篇），而且不报错。
+    # 只拷主库，不带 -wal/-shm。
+    # 上一版是连 WAL 一起拷的（怕丢最近的入库），但那是在 checkpoint 之后——
+    # 主库已经是最新，再带一个半截 WAL 过去，云端打开就是
+    # `database disk image is malformed`（实测踩到，表现是"列表能打开、点某篇 500"）。
+    # checkpoint 失败时宁可报错，也不要把不一致的一对文件发出去。
     for suffix in ("-wal", "-shm"):
-        side = ROOT / "data" / f"sciagent.db{suffix}"
-        if side.exists() and side.stat().st_size > 0:
-            shutil.copy2(side, DEPT / "data" / f"sciagent.db{suffix}")
+        side = DEPT / "data" / f"sciagent.db{suffix}"
+        if side.exists():
+            side.unlink()
     copy_tree(ROOT / "data" / "pdf", DEPT / "data" / "pdf")
+    _sync_sources(DEPT / "data" / "sciagent.db")
+
+    # seed：打包这一刻的干净快照，运行时若发现主库损坏会自动拿它顶上
+    # （云端 data 目录是持久化的，部署不会覆盖主库，坏一次就一直是坏的）。
+    seed_dir = DEPT / "data" / "seed"
+    seed_dir.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(DEPT / "data" / "sciagent.db", seed_dir / "sciagent.db")
+    print(f"  seed 快照：{(seed_dir / 'sciagent.db').stat().st_size / 1048576:.0f} MB")
 
     # 分词缓存：云端不重跑 jieba 分词（2 万块实测 12 秒 / 云沙箱 26 秒）。
     # 指纹按块 id 序列算，与 DB 一致；拷过去就能直接命中。

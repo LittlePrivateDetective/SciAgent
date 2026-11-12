@@ -200,6 +200,10 @@ const app = createApp({
       // 页内文本层：words 里每项带预处理好的 style，避免每帧现算 200+ 个词的定位。
       // scale 由图片实际渲染宽度换算，文本层内部一律按 PDF 原始 pt 布局。
       tl: { words: [], sents: [], loaded: false, scale: 1, W: 0, H: 0, page: 0, zhLoading: false },
+      // 页图加载失败：原来是浏览器默认的破图标，什么信息都不给。
+      // 换成明确的一句"这一页没加载出来 + 重新加载"，评委知道是环境问题还是内容问题。
+      imgFailed: false,
+      imgNonce: 0,          // 重试用：拼在 URL 上绕开浏览器缓存
       refIndex: {},   // 引用编号 → {index,page,bbox,text}
       // 对话模式：false=快速（直接作答），true=深思（模型先推理再作答）。
       // 初值在 mounted 里按 /api/system/info 的 thinking 对齐，之后由用户自己切。
@@ -283,7 +287,9 @@ const app = createApp({
     },
     pageUrl() {
       if (!this.activeDoc) return "";
-      return `/api/documents/${this.activeDoc.id}/page/${this.page}.png?dpi=130&t=${Date.now()}`;
+      // 原来这里拼的是 Date.now()：每次重算都换 URL，翻回上一页也要重新下载 70KB。
+      // 改成只有点「重新加载」才变（imgNonce），其余交给服务端的 max-age 缓存。
+      return `/api/documents/${this.activeDoc.id}/page/${this.page}.png?dpi=130&v=${this.imgNonce}`;
     },
     enHtml() {
       return mdToHtml(this.en.text || "");
@@ -743,6 +749,7 @@ const app = createApp({
     goPage(p) {
       if (p < 1 || p > this.pageCount) return;
       this.page = p;
+      this.imgFailed = false;
       this.highlights = [];
       this.sel.visible = false;
       this.citePop.visible = false;
@@ -1206,7 +1213,19 @@ const app = createApp({
       }
     },
 
+    onImgError() {
+      this.imgFailed = true;
+      // 顺手把文本层清掉：页图都没出来，叠加一层透明文字只会更混乱
+      this.tl = { ...this.tl, words: [], sents: [], loaded: false };
+    },
+
+    retryImg() {
+      this.imgFailed = false;
+      this.imgNonce += 1;
+    },
+
     onImgLoad(e) {
+      this.imgFailed = false;
       // 已存在的高亮在换页/缩放后需要按新尺寸重算
       this.highlights = this.highlights.map((h) => ({
         ...h,
