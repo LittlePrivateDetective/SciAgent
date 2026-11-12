@@ -13,6 +13,10 @@ data/index/
 data/*.pdf
 .DS_Store
 
+# 评测产物：译文原文一堆，报告与结论在 docs/ 里，中间数据不重复进仓库
+data/trans_eval/
+data/*.log
+
 # 运行期产物（体积大 / 每次运行都变），不进仓库
 data/chroma/
 data/*.db

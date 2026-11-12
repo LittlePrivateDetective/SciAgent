@@ -40,6 +40,11 @@ class Settings(BaseSettings):
     trans_batch: int = 4          # 一次请求译几段
     trans_workers: int = 3        # 一页内的批量任务并发数
     trans_max_pages: int = 60     # 超过这个页数不做"整篇翻译"，只按需翻
+    # 整篇翻译（后台任务、用户愿意等）换更强的模型，滚动阅读仍用 trans_model。
+    # 依据 `tests/trans_bench.py` 的 17 段实测：qwen-flash 每段 1.1s、裁判挑出 1.81 处问题；
+    # qwen3.8-max 每段 2.5s、1.12 处。差距不大但方向一致——快的留在交互路径，好的留给整篇。
+    # 留空表示与 trans_model 相同。
+    trans_model_hq: str = "qwen3.8-max"
 
     # ---------- 写作 Copilot ----------
     # 与翻译同因：写作用主模型（带思维链）会偶发返回空 JSON——推理过程把

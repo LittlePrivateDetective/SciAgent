@@ -123,7 +123,10 @@ _SYS = (
     "规则：\n"
     "1. 输出的段数必须与输入**完全一致**，一段对一段，不合并不拆分；\n"
     "2. 译文里不要带原文序号或任何标记；\n"
-    "3. 术语准确，首次出现的核心术语可在括号内保留英文原词；\n"
+    "3. 术语用学术通行译法，全篇保持一致；英文原词只在两种情况下保留："
+    "缩写与专名（如 Transformer、BLEU、LoRA、LLM）首次出现时可加括号，"
+    "以及原文本身用括号给出英文时；普通名词短语（如 sequence transduction、"
+    "attention mechanism）一律译成中文，不加英文括号注释；\n"
     "4. 数字、公式、变量名、引用编号（如 [27]）原样保留；\n"
     "5. 图注译成「图 N：…」，表注译成「表 N：…」；\n"
     "6. 不省略、不总结、不添加原文没有的内容。"
@@ -171,7 +174,44 @@ def _clean_zh(text: str) -> str:
     return _RE_WS.sub(" ", _RE_LEAD_NUM.sub("", str(text).strip())).strip()
 
 
-def _translate_batch(texts: list[str], to: str = "zh") -> list[str]:
+_RE_CAPTION = re.compile(r"^\s*(图|表)\s*([0-9]+(?:\.[0-9]+)*)\s*([：:\.、]?)\s*")
+
+
+def _fix_caption(zh: str) -> str:
+    """图注/表注统一成「图 N：…」「表 N：…」（官方 1.3.3.2 的格式要求）。
+
+    为什么值得写死：提示词里已经写了这条规则，但实测 qwen-flash 仍然输出
+    「图 2.1 线性回归模型。」——冒号丢了。这类偏差模型自己不会稳定遵守，
+    而它纯粹是标点问题，用一行正则兜住比反复调提示词可靠。
+    """
+    m = _RE_CAPTION.match(zh)
+    if not m:
+        return zh
+    label, num, sep = m.group(1), m.group(2), m.group(3)
+    if sep in ("：", ":"):
+        return zh
+    return f"{label} {num}：{zh[m.end():].strip()}"
+
+
+def _degenerate(src: str, zh: str) -> bool:
+    """译文是否"塌了"——短得不像话，直接丢弃等下次重译。
+
+    实测来源：LayerNorm 第 5 页有一段译文落库成 `"5"`，段数校验通过了
+    （一批四段，模型对其中一段只回了一个页码），于是这句被当成"已译"永久缓存，
+    用户在对照视图里看到右侧只有一个 5，而且再也不会重试。
+    只拦"原文很长而译文极短"这一种：标题、表注本来就短（"表 1：模型架构。"），
+    用绝对长度卡会把它们误伤。
+    """
+    return len(zh.strip()) < 15 and len(src.strip()) >= 80
+
+
+def _hq_model() -> str | None:
+    """整篇翻译用的加强模型；留空或与 trans_model 相同则返回 None（走默认）。"""
+    m = (settings.trans_model_hq or "").strip()
+    return m if m and m != settings.trans_model else None
+
+
+def _translate_batch(texts: list[str], to: str = "zh", model: str | None = None) -> list[str]:
     """一次译若干段，返回严格等长的译文列表；失败返回空列表由调用方降级。
 
     `to="en"` 走中译英提示词（官方 1.6.4）。两个方向的输出预算不同：
@@ -194,7 +234,7 @@ def _translate_batch(texts: list[str], to: str = "zh") -> list[str]:
             ],
             temperature=0.1,
             max_tokens=budget,
-            model=settings.trans_model,
+            model=model or settings.trans_model,
         )
     except LLMError as exc:
         log.warning("翻译请求失败：%s", exc)
@@ -213,7 +253,15 @@ def _translate_batch(texts: list[str], to: str = "zh") -> list[str]:
         # 用户会照着错的译文去理解原文。
         log.warning("译文段数不匹配：期望 %d 实得 %s", len(texts), len(arr) if isinstance(arr, list) else type(arr))
         return []
-    return [_clean_zh(x) for x in arr]
+    out: list[str] = []
+    for src_text, raw in zip(texts, arr):
+        zh = _clean_zh(raw)
+        if _degenerate(src_text, zh):
+            log.warning("译文退化（%d 字，原文 %d 字），丢弃待重译：%r",
+                        len(zh), len(src_text), zh[:20])
+            zh = ""
+        out.append(zh)
+    return out
 
 
 def _save(db: Session, doc_id: str, pairs: list[tuple[Chunk, str]], model: str = "") -> int:
@@ -252,9 +300,15 @@ def keep_verbatim(kind: str, text: str) -> bool:
     判据用"字母密度 + 结构特征"：公式与代码的英文字母占比明显低于自然语言
     （正文约 0.8，公式约 0.5，纯数字表格不会命中 LaTeX 结构所以不受影响）。
     """
-    if kind in {"reference", "formula"}:
+    if kind == "reference":
         return True
     t = (text or "").strip()
+    if kind == "formula":
+        # 解析器会把"夹着希腊字母/符号的整句正文"也标成 formula（实测 61 条原样保留里 5 条
+        # 是完整句子，例如 "We used the Adam optimizer [18] with β1 = 0.9, β2 = 0.98…"）。
+        # 真正该原样保留的公式没有成串的小写英文词，用它区分，比只看 kind 可靠。
+        low = sum(1 for w in re.findall(r"[A-Za-z]{3,}", t) if w.islower())
+        return low < 8
     if len(t) < 12:
         return False
     letters = sum(1 for ch in t if ch.isalpha())
@@ -267,7 +321,8 @@ def keep_verbatim(kind: str, text: str) -> bool:
     return False
 
 
-def translate_pages(db: Session, doc_id: str, page_from: int, page_to: int) -> int:
+def translate_pages(db: Session, doc_id: str, page_from: int, page_to: int,
+                    hq: bool = False) -> int:
     """翻译指定页范围内尚未翻译的段落，返回本次新增条数。
 
     批量任务**并发**发出（默认 3 路）：一页 8–10 段拆成 2–3 批并行，
@@ -304,6 +359,7 @@ def translate_pages(db: Session, doc_id: str, page_from: int, page_to: int) -> i
     if not todo:
         return len(verbatim)
 
+    model = _hq_model() if hq else None
     step = max(1, settings.trans_batch)
     batches = [todo[i : i + step] for i in range(0, len(todo), step)]
     payloads = [[_strip_carry(prev, c.text) for c, prev in b] for b in batches]
@@ -311,7 +367,8 @@ def translate_pages(db: Session, doc_id: str, page_from: int, page_to: int) -> i
     results: list[list[str]] = [[] for _ in batches]
     workers = max(1, min(settings.trans_workers, len(batches)))
     with ThreadPoolExecutor(max_workers=workers) as pool:
-        futures = {pool.submit(_translate_batch, texts): i for i, texts in enumerate(payloads)}
+        futures = {pool.submit(_translate_batch, texts, "zh", model): i
+                   for i, texts in enumerate(payloads)}
         for fut in as_completed(futures):
             idx = futures[fut]
             try:
@@ -327,9 +384,11 @@ def translate_pages(db: Session, doc_id: str, page_from: int, page_to: int) -> i
             # 避免一段超长或格式异常拖垮整页
             out = []
             for t in payload:
-                one = _translate_batch([t])
+                one = _translate_batch([t], model=model)
                 out.append(one[0] if one else "")
-        total += _save(db, doc_id, [(c, zh) for (c, _), zh in zip(batch, out) if zh])
+        pairs = [(c, _fix_caption(zh) if c.kind in {"figure", "table"} else zh)
+                 for (c, _), zh in zip(batch, out) if zh]
+        total += _save(db, doc_id, pairs, model=model or "")
     return total + len(verbatim)
 
 
@@ -462,7 +521,7 @@ def start_job(doc_id: str) -> dict:
         try:
             doc = db.get(Document, doc_id)
             for p in range(1, (doc.page_count or 1) + 1):
-                translate_pages(db, doc_id, p, p)
+                translate_pages(db, doc_id, p, p, hq=True)
                 with _JOBS_LOCK:
                     _JOBS[doc_id]["done"] = p
             with _JOBS_LOCK:
@@ -604,8 +663,9 @@ def _run_en_job(doc_id: str) -> None:
             raise ValueError("这篇没有中文正文，无需译成英文")
 
         out_map: dict[int, str] = {}
+        hq = _hq_model()
         with ThreadPoolExecutor(max_workers=3) as pool:
-            futures = {pool.submit(_translate_batch, [t for _, t in batch], "en"): batch
+            futures = {pool.submit(_translate_batch, [t for _, t in batch], "en", hq): batch
                        for batch in _batch_by_chars(todo)}
             for fut in as_completed(futures):
                 batch = futures[fut]
@@ -628,7 +688,7 @@ def _run_en_job(doc_id: str) -> None:
                 heads.append(sec_raw)
         head_map: dict[str, str] = {}
         if heads:
-            for k, v in zip(heads[:14], _translate_batch(heads[:14], "en") or []):
+            for k, v in zip(heads[:14], _translate_batch(heads[:14], "en", hq) or []):
                 head_map[k] = v
 
         authors = []

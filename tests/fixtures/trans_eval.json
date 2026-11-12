@@ -1,0 +1,429 @@
+{
+ "items": [
+  {
+   "id": "attn-abs",
+   "doc": "dce63a636cf64",
+   "kind": "text",
+   "lang": "en",
+   "src": "The dominant sequence transduction models are based on complex recurrent or convolutional neural networks in an encoder-decoder conﬁguration. The best performing models also connect the encoder and decoder through an attention mechanism. We propose a new simple network architecture, the Transformer, based solely on attention mechanisms, dispensing with recurrence and convolutions entirely. Experiments on two machine translation tasks show these models to be superior in quality while being more parallelizable and requiring signiﬁcantly less time to train. Our model achieves 28.4 BLEU on the WMT 2014 English- to-German translation task, improving over the existing best results, including ensembles by over 2 BLEU. On the WMT 2014 English-to-French translation task, our model establishes a new single-model state-of-the-art BLEU score of 41.0 after training for 3.5 days on eight GPUs, a small fraction of the training costs of the best models from the literature. We show that the Transformer generalizes well to other tasks by applying it successfully to English constituency parsing both with large and limited training data.",
+   "terms": {
+    "sequence transduction": [
+     "序列转换",
+     "序列转导",
+     "序列到序列"
+    ],
+    "attention mechanism": [
+     "注意力机制"
+    ],
+    "encoder": [
+     "编码器"
+    ],
+    "decoder": [
+     "解码器"
+    ]
+   },
+   "note": "摘要首段：术语密集、长句",
+   "title": "Attention Is All You Need"
+  },
+  {
+   "id": "attn-ref",
+   "doc": "dce63a636cf64",
+   "kind": "text",
+   "lang": "en",
+   "src": "Recurrent neural networks, long short-term memory [12] and gated recurrent [7] neural networks in particular, have been ﬁrmly established as state of the art approaches in sequence modeling and transduction problems such as language modeling and machine translation [31, 2, 5]. Numerous efforts have since continued to push the boundaries of recurrent language models and encoder-decoder architectures [34, 22, 14].",
+   "terms": {
+    "long short-term memory": [
+     "长短期记忆",
+     "长短时记忆"
+    ],
+    "state of the art": [
+     "最先进",
+     "最优",
+     "领先"
+    ],
+    "sequence modeling": [
+     "序列建模"
+    ]
+   },
+   "note": "引用密集段：[12] [7] [31, 2, 5] [34, 22, 14]",
+   "title": "Attention Is All You Need"
+  },
+  {
+   "id": "attn-def",
+   "doc": "dce63a636cf64",
+   "kind": "text",
+   "lang": "en",
+   "src": "An attention function can be described as mapping a query and a set of key-value pairs to an output, where the query, keys, values, and output are all vectors. The output is computed as a weighted sum of the values, where the weight assigned to each value is computed by a compatibility function of the query with the corresponding key.",
+   "terms": {
+    "query": [
+     "查询"
+    ],
+    "key-value pairs": [
+     "键值对"
+    ],
+    "weighted sum": [
+     "加权和"
+    ],
+    "compatibility function": [
+     "兼容性函数",
+     "相容函数",
+     "匹配函数"
+    ],
+    "vector": [
+     "向量"
+    ]
+   },
+   "note": "定义句：query / key-value / weighted sum",
+   "title": "Attention Is All You Need"
+  },
+  {
+   "id": "attn-mh",
+   "doc": "dce63a636cf64",
+   "kind": "text",
+   "lang": "en",
+   "src": "Instead of performing a single attention function with dmodel-dimensional keys, values and queries, we found it beneﬁcial to linearly project the queries, keys and values h times with different, learned linear projections to dk, dk and dv dimensions, respectively. On each of these projected versions of queries, keys and values we then perform the attention function in parallel, yielding dv-dimensional output values. These are concatenated, resulting in the ﬁnal values, as depicted in Figure 2 Multi-head attention allows the model to jointly attend to information from different representation subspaces at different positions. With a single attention head, averaging inhibits this.",
+   "terms": {
+    "linear projection": [
+     "线性投影"
+    ],
+    "queries": [
+     "查询"
+    ],
+    "keys": [
+     "键"
+    ],
+    "values": [
+     "值"
+    ],
+    "attention function": [
+     "注意力函数"
+    ]
+   },
+   "note": "变量密集：dmodel / dk / dv 与投影维度",
+   "title": "Attention Is All You Need"
+  },
+  {
+   "id": "ln-abs",
+   "doc": "dc7092cdf7b5c",
+   "kind": "text",
+   "lang": "en",
+   "src": "Training state-of-the-art, deep neural networks is computationally expensive. One way to reduce the training time is to normalize the activities of the neurons. A recently introduced technique called batch normalization uses the distribution of the summed input to a neuron over a mini-batch of training cases to compute a mean and variance which are then used to normalize the summed input to that neuron on each training case. This signiﬁcantly reduces the training time in feed- forward neural networks. However, the effect of batch normalization is dependent on the mini-batch size and it is not obvious how to apply it to recurrent neural net- works. In this paper, we transpose batch normalization into layer normalization by computing the mean and variance used for normalization from all of the summed inputs to the neurons in a layer on a single training case. Like batch normalization, we also give each neuron its own adaptive bias and gain which are applied after the normalization but before the non-linearity. Unlike batch normalization, layer normalization performs exactly the same computation at training and test times. It is also straightforward to apply to recurrent neural networks by computing the normalization statistics separately at each time step. Layer normalization is very effective at stabilizing the hidden state dynamics in recurrent networks. Empiri- cally, we show that layer normalization can substantially reduce the training time compared with previously published techniques.",
+   "terms": {
+    "batch normalization": [
+     "批归一化",
+     "批量归一化"
+    ],
+    "normalize the activities": [
+     "归一化"
+    ],
+    "stochastic gradient descent": [
+     "随机梯度下降"
+    ],
+    "recurrent neural networks": [
+     "循环神经网络"
+    ]
+   },
+   "note": "LayerNorm 摘要：batch normalization 对照术语",
+   "title": "Layer Normalization"
+  },
+  {
+   "id": "lora-notation",
+   "doc": "d3706de3b6864",
+   "kind": "text",
+   "lang": "en",
+   "src": "We use Wq, Wk, Wv, and Wo to refer to the query/key/value/output projection matrices in the self-attention module. W or W0 refers to a pre- trained weight matrix and ∆W its accumulated gradient update during adaptation. We use r to denote the rank of a LoRA module. We follow the conventions set out by (Vaswani et al., 2017; Brown et al., 2020) and use Adam (Loshchilov & Hutter, 2019; Kingma & Ba, 2017) for model optimization and use a Transformer MLP feedforward dimension dffn = 4 × dmodel.",
+   "terms": {
+    "projection matrices": [
+     "投影矩阵"
+    ],
+    "pre-trained weight matrix": [
+     "预训练权重矩阵"
+    ],
+    "rank": [
+     "秩"
+    ],
+    "feedforward dimension": [
+     "前馈维度",
+     "前馈层维度"
+    ]
+   },
+   "note": "符号声明段：Wq/Wk/Wv/Wo、∆W、秩 r、dffn = 4 × dmodel",
+   "title": "LORA: LOW-RANK ADAPTATION OF LARGE LAN- GUAGE MODELS"
+  },
+  {
+   "id": "lora-math",
+   "doc": "d3706de3b6864",
+   "kind": "text",
+   "lang": "en",
+   "src": "composition W0 + ∆W = W0 + BA, where B ∈Rd×r, A ∈Rr×k, and the rank r ≪min(d, k). During training, W0 is frozen and does not receive gradient updates, while A and B contain trainable parameters. Note both W0 and ∆W = BA are multiplied with the same input, and their respective output vectors are summed coordinate-wise. For h = W0x, our modiﬁed forward pass yields:",
+   "terms": {
+    "frozen": [
+     "冻结"
+    ],
+    "gradient updates": [
+     "梯度更新"
+    ],
+    "trainable parameters": [
+     "可训练参数"
+    ],
+    "forward pass": [
+     "前向传播",
+     "前向过程"
+    ]
+   },
+   "note": "含符号分解 W0 + ∆W = W0 + BA 与集合写法，最容易译错的一段",
+   "title": "LORA: LOW-RANK ADAPTATION OF LARGE LAN- GUAGE MODELS"
+  },
+  {
+   "id": "scal-factors",
+   "doc": "d8821b3e541fa",
+   "kind": "text",
+   "lang": "en",
+   "src": "Model performance depends most strongly on scale, which consists of three factors: the number of model parameters N (excluding embed- dings), the size of the dataset D, and the amount of compute C used for training. Within reasonable limits, performance depends very weakly on other architectural hyperparameters such as depth vs. width. (Section 3)\nSmooth power laws:",
+   "terms": {
+    "model parameters": [
+     "模型参数"
+    ],
+    "embeddings": [
+     "嵌入"
+    ],
+    "dataset": [
+     "数据集"
+    ],
+    "compute": [
+     "算力",
+     "计算量"
+    ]
+   },
+   "note": "三个规模因子 N / D / C，模型规模术语",
+   "title": "Scaling Laws for Neural Language Models"
+  },
+  {
+   "id": "scal-compute",
+   "doc": "d8821b3e541fa",
+   "kind": "text",
+   "lang": "en",
+   "src": "When working within a ﬁxed compute budget C but without any other restric- tions on the model size N or available data D, we attain optimal performance by training very large models and stopping signiﬁcantly short of convergence (see Figure 3). Maximally compute-efﬁcient training would therefore be far more sample efﬁcient than one might expect based on training small models to convergence,\nConvergence is inefﬁcient:\nwith data requirements growing very slowly as D ∼C0.27 with training compute. (Section 6)\nOptimal batch size:",
+   "terms": {
+    "compute budget": [
+     "算力预算",
+     "计算预算"
+    ],
+    "convergence": [
+     "收敛"
+    ],
+    "optimal performance": [
+     "最优性能",
+     "最佳性能"
+    ]
+   },
+   "note": "固定算力预算下的最优训练策略：长句 + 数字",
+   "title": "Scaling Laws for Neural Language Models"
+  },
+  {
+   "id": "gpt3-intro",
+   "doc": "d817ac4e56a32",
+   "kind": "text",
+   "lang": "en",
+   "src": "Recent work has demonstrated substantial gains on many NLP tasks and benchmarks by pre-training on a large corpus of text followed by ﬁne-tuning on a speciﬁc task. While typically task-agnostic in architecture, this method still requires task-speciﬁc ﬁne-tuning datasets of thousands or tens of thousands of examples. By contrast, humans can generally perform a new language task from only a few examples or from simple instructions – something which current NLP systems still largely struggle to do. Here we show that scaling up language models greatly improves task-agnostic, few-shot performance, sometimes even reaching competitiveness with prior state-of-the-art ﬁne- tuning approaches. Speciﬁcally, we train GPT-3, an autoregressive language model with 175 billion parameters, 10x more than any previous non-sparse language model, and test its performance in the few-shot setting. For all tasks, GPT-3 is applied without any gradient updates or ﬁne-tuning, with tasks and few-shot demonstrations speciﬁed purely via text interaction with the model. GPT-3 achieves strong performance on many NLP datasets, including translation, question-answering, and cloze tasks, as well as several tasks that require on-the-ﬂy reasoning or domain adaptation, such as unscrambling words, using a novel word in a sentence, or performing 3-digit arithmetic. At the same time, we also identify some datasets where GPT-3’s few-shot learning still struggles, as well as some datasets where GPT-3 faces methodological issues related to training on large web corpora. Finally, we ﬁnd that GPT-3 can generate samples of news articles which human evaluators have difﬁculty distinguishing from articles written by humans. We discuss broader societal impacts of this ﬁnding and of GPT-3 in general.",
+   "terms": {
+    "pre-training": [
+     "预训练"
+    ],
+    "fine-tuning": [
+     "微调"
+    ],
+    "benchmarks": [
+     "基准",
+     "基准测试"
+    ],
+    "corpus": [
+     "语料",
+     "语料库"
+    ]
+   },
+   "note": "GPT-3 引言：pre-training / fine-tuning 术语对照",
+   "title": "Language Models are Few-Shot Learners"
+  },
+  {
+   "id": "dsr1-mixing",
+   "doc": "d7c300e762602",
+   "kind": "text",
+   "lang": "en",
+   "src": "Although DeepSeek-R1-Zero demonstrates excellent reasoning capabilities, it faces chal- lenges such as poor readability and language mixing, occasionally combining English and Chinese within a single chain-of-thought response. Furthermore, the rule-based RL training stage of DeepSeek-R1-Zero is narrowly focused on reasoning tasks, resulting in limited per- formance in broader areas such as writing and open-domain question answering. To address these challenges, we introduce DeepSeek-R1, a model trained through a multi-stage learning framework that integrates rejection sampling, reinforcement learning, and supervised fine- tuning, detailed in Section 3. This training pipeline enables DeepSeek-R1 to inherit the reasoning capabilities of its predecessor, DeepSeek-R1-Zero, while aligning model behavior with human preferences through additional non-reasoning data.",
+   "terms": {
+    "readability": [
+     "可读性"
+    ],
+    "language mixing": [
+     "语言混用",
+     "语言混杂"
+    ],
+    "chain-of-thought": [
+     "思维链",
+     "思维链式"
+    ],
+    "rule-based": [
+     "基于规则"
+    ],
+    "reinforcement learning": [
+     "强化学习"
+    ]
+   },
+   "note": "语言混用 / 可读性：抽象名词多，机翻腔最容易露馅",
+   "title": "DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning"
+  },
+  {
+   "id": "llava-intro",
+   "doc": "d6feedd02fcae",
+   "kind": "text",
+   "lang": "en",
+   "src": "Large language models (LLM), on the other hand, have shown that language can play a wider role: a universal interface for a general-purpose assistant, where various task instructions can be explicitly represented in language and guide the end-to-end trained neural assistant to switch to the task of interest to solve it. For example, the recent success of ChatGPT [35] and GPT-4 [36] have demonstrated the power of aligned LLMs in following human instructions, and have stimulated tremendous interest in developing open-source LLMs. Among them, LLaMA [49] is an open- source LLM that matches the performance of GPT-3. Alpaca [48], Vicuna [9], GPT-4-LLM [38]",
+   "terms": {
+    "large language models": [
+     "大语言模型",
+     "大型语言模型"
+    ],
+    "universal interface": [
+     "通用接口",
+     "统一接口"
+    ],
+    "end-to-end": [
+     "端到端"
+    ],
+    "task instructions": [
+     "任务指令"
+    ]
+   },
+   "note": "多模态：universal interface / end-to-end",
+   "title": "Visual Instruction Tuning"
+  },
+  {
+   "id": "udl-caption",
+   "doc": "d98dddd7a5905",
+   "kind": "figure",
+   "lang": "en",
+   "src": "Figure 2.1 Linear regression model. For a given choice of parameters ϕ = [ϕ0, ϕ1], the model makes a prediction for the out- put (y-axis) based on the input (x-axis). Different choices for the y-intercept ϕ0 and the slope ϕ1 change these predictions (cyan, orange, and gray lines). The lin- ear regression model (equation 2.4) de- fines a family of input/output relations (lines) and the parameters determine the member of the family (the particular line). (Interactive figure)",
+   "terms": {
+    "linear regression": [
+     "线性回归"
+    ],
+    "y-intercept": [
+     "y 轴截距",
+     "纵截距",
+     "截距"
+    ],
+    "slope": [
+     "斜率"
+    ],
+    "prediction": [
+     "预测"
+    ]
+   },
+   "note": "图注：ϕ = [ϕ0, ϕ1]、坐标轴说明，考「图 N：」格式与符号保留",
+   "title": "Understanding Deep Learning"
+  },
+  {
+   "id": "lora-table",
+   "doc": "d3706de3b6864",
+   "kind": "table",
+   "lang": "en",
+   "src": "Table 3: GPT-2 medium (M) and large (L) with different adaptation methods on the E2E NLG Challenge. For all metrics, higher is better. LoRA outperforms several baselines with comparable or fewer trainable parameters. Conﬁdence intervals are shown for experiments we ran. * indicates",
+   "terms": {
+    "adaptation methods": [
+     "适配方法",
+     "自适应方法"
+    ],
+    "baselines": [
+     "基线"
+    ],
+    "trainable parameters": [
+     "可训练参数"
+    ],
+    "confidence intervals": [
+     "置信区间"
+    ]
+   },
+   "note": "表注：指标名 + 置信区间 + 星号脚注",
+   "title": "LORA: LOW-RANK ADAPTATION OF LARGE LAN- GUAGE MODELS"
+  },
+  {
+   "id": "zh-abs",
+   "doc": "d7a55a36",
+   "kind": "text",
+   "lang": "zh",
+   "src": "摘要：本文提出一种面向中文问答的轻量级检索增强方法。该方法在稠密检索之后引入段落 级重排序，并利用注意力机制对证据句进行加权。在三个中文问答数据集上，准确率比强基 线提升 4.2 个百分点，推理延迟仅增加 11 毫秒。消融实验表明，重排序模块贡献了 3.1 个百分点，证据加权贡献了 1.1 个百分点。",
+   "terms": {
+    "检索增强": [
+     "retrieval-augmented",
+     "retrieval augmented",
+     "retrieval augmentation"
+    ],
+    "重排序": [
+     "re-ranking",
+     "reranking",
+     "re-rank"
+    ],
+    "注意力机制": [
+     "attention mechanism"
+    ],
+    "消融实验": [
+     "ablation"
+    ]
+   },
+   "note": "中文摘要：数字 + 百分点表述",
+   "title": "d7a55a36"
+  },
+  {
+   "id": "zh-method",
+   "doc": "d7a55a36",
+   "kind": "text",
+   "lang": "zh",
+   "src": "2 方法\n我们先用双塔模型召回前 50 个段落，再用交叉编码器计算问题与段落的匹配分数，最后按分数加权拼接证据句。训练时 使用对比学习目标，温度系数设为 0.05。",
+   "terms": {
+    "双塔模型": [
+     "two-tower",
+     "dual-tower",
+     "bi-encoder"
+    ],
+    "交叉编码器": [
+     "cross-encoder",
+     "cross encoder"
+    ],
+    "对比学习": [
+     "contrastive learning"
+    ],
+    "温度系数": [
+     "temperature"
+    ]
+   },
+   "note": "中文方法段：双塔 / 交叉编码器 / 对比学习",
+   "title": "d7a55a36"
+  },
+  {
+   "id": "zh-exp",
+   "doc": "d7a55a36",
+   "kind": "text",
+   "lang": "zh",
+   "src": "3 实验\n实验在中文问答基准上进行，评价指标为准确率与平均延迟。基线为 BM25 与稠密检索的组合。结果显示我们的方法在保持低延迟的同时显著提升准确率。",
+   "terms": {
+    "评价指标": [
+     "metric",
+     "evaluation metric"
+    ],
+    "准确率": [
+     "accuracy"
+    ],
+    "基线": [
+     "baseline"
+    ],
+    "平均延迟": [
+     "average latency",
+     "latency"
+    ]
+   },
+   "note": "中文实验段：指标 / 基线",
+   "title": "d7a55a36"
+  }
+ ]
+}
