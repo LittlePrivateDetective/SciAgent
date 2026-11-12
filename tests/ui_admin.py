@@ -177,7 +177,9 @@ def run() -> dict:
         b = json.loads(base)
         # dirty == 0 是一条重要断言：int 型布尔参数（0/1）与 el-switch 的 false
         # 曾经被判成"已修改"，一打开后台就顶着"未保存 1 项"
-        base_ok = (b["params"] >= 30 and b["groups"] == 5 and b["rows"] >= 20
+        # groups 会随功能增加（论文追踪加了第 6 组），断言写成"至少"而不是等号，
+        # 否则每加一组参数就要改一次测试，测试反而成了绊脚石
+        base_ok = (b["params"] >= 30 and b["groups"] >= 6 and b["rows"] >= 20
                    and b["secretValue"] == "" and b["secretSet"] is True
                    and b["dirty"] == 0 and b["overridden"] == 0)
         shot("admin_overview.png")

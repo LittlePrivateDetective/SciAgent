@@ -38,3 +38,6 @@ networkx>=3.3                   # 引用图谱：PageRank/介数/社区发现
 #                想在本机跑生成的脚本再自己装，服务本身不需要它。
 # sentence-transformers -> 仅 EMB_PROVIDER=local 时需要，属于可选档，
 #                          装它要拉 torch（>1GB），默认镜像不装
+
+# 进程常驻内存面板（后台「概览」用）；缺失时退回 Windows tasklist / /proc
+psutil>=5.9

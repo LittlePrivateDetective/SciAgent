@@ -605,14 +605,15 @@ def get_bilingual(
     }
 
 
-class TranslateIn(BaseModel):
+class BilingualTranslateIn(BaseModel):
+    """整篇/按页翻译：这一个是"文档级"的，不要和下面"任意片段"那个混用。"""
     page_from: int = 1
     page_to: int = 1
     all: bool = False
 
 
 @router.post("/documents/{doc_id}/bilingual/translate")
-def post_translate(doc_id: str, body: TranslateIn, db: Session = Depends(get_db)):
+def post_translate(doc_id: str, body: BilingualTranslateIn, db: Session = Depends(get_db)):
     doc = db.get(Document, doc_id)
     if not doc:
         raise HTTPException(404, "文档不存在")
@@ -629,13 +630,13 @@ def get_translate_status(doc_id: str, db: Session = Depends(get_db)):
     return {"job": job_status(doc_id), "cached": cached_ratio(db, doc_id)}
 
 
-class TranslateIn(BaseModel):
+class TextTranslateIn(BaseModel):
     text: str = Field(min_length=1, max_length=8000)
     to: str = ""   # "" = 按源语言自动判方向；"zh" / "en" 强制方向
 
 
 @router.post("/translate")
-def translate_arbitrary(body: TranslateIn):
+def translate_arbitrary(body: TextTranslateIn):
     """划词 / 悬停翻译：任意片段即译即返，不落库。
 
     与整篇翻译分开做，是因为整篇走后台任务 + translations 表缓存（按页、可续传），

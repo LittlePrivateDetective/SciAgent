@@ -157,7 +157,7 @@ def token_cache_status() -> dict:
     return out
 
 
-def _load_tokens(chunks: list["CorpusRow"]) -> list[list[str]]:
+def _load_tokens(chunks: list["CorpusRow"], cache: bool = True) -> list[list[str]]:
     """取分词结果，优先读磁盘缓存。
 
     为什么要缓存：jieba 对 2 万个块（634 万字）分词实测 11.9 秒，
@@ -166,7 +166,14 @@ def _load_tokens(chunks: list["CorpusRow"]) -> list[list[str]]:
 
     格式：首行是指纹，之后一行一个块、词按空格分隔。没用 pickle 是因为
     15.7MB 的 pickle 反序列化并不更快，而纯文本出问题时人能直接打开看。
+
+    `cache=False` 用于"只检索某几篇"的场景：缓存文件只有一份，子集写进去会把
+    全量那份覆盖掉（两者指纹不同），下次全量检索又要重分 12 秒——来回抖动。
+    子集通常只有几十个块，现分也就 0.1 秒，不值得缓存。
     """
+    if not cache:
+        return [tokenize(c.text) for c in chunks]
+
     fp = _corpus_fingerprint(chunks)
     path = _tokens_path()
     try:
@@ -253,7 +260,7 @@ def _get_bm25(doc_ids: list[str] | None):
         return hit
 
     chunks, names = _load_corpus(doc_ids)
-    corpus = _load_tokens(chunks)
+    corpus = _load_tokens(chunks, cache=doc_ids is None)
     bm25 = BM25(corpus)
     entry = (bm25, [c.id for c in chunks])
     # 缓存带上样本量指纹，入库新文档后自然失效
