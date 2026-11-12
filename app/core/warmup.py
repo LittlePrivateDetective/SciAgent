@@ -25,8 +25,11 @@ def warm_once(tag: str = "manual") -> dict:
     t0 = time.time()
 
     try:
-        from app.rag.hybrid import search
+        from app.rag.hybrid import search, token_cache_status
 
+        # 先记录缓存状态：冷启动变慢时，是"缓存没带上去"还是"带了但指纹不符"，
+        # 一看就知道，不用去翻沙箱文件系统
+        out["tokens"] = token_cache_status()
         hits = search("预热查询", None, top_k=3)
         out["retrieval"] = {"ok": bool(hits), "hits": len(hits), "ms": int((time.time() - t0) * 1000)}
     except Exception as exc:  # noqa: BLE001

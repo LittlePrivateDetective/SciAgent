@@ -143,6 +143,20 @@ def _corpus_fingerprint(chunks: list["CorpusRow"]) -> str:
     return h.hexdigest()[:16]
 
 
+def token_cache_status() -> dict:
+    """诊断用：分词缓存此刻是什么状态（排查云端冷启动异常时最直接的一眼）。"""
+    path = _tokens_path()
+    out: dict = {"path": str(path), "exists": path.exists()}
+    if path.exists():
+        try:
+            with path.open("r", encoding="utf-8") as f:
+                head = f.readline().strip()
+            out.update({"mb": round(path.stat().st_size / 1e6, 1), "fingerprint": head})
+        except Exception as exc:  # noqa: BLE001
+            out["error"] = str(exc)[:120]
+    return out
+
+
 def _load_tokens(chunks: list["CorpusRow"]) -> list[list[str]]:
     """取分词结果，优先读磁盘缓存。
 
