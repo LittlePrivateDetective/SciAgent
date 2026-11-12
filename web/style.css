@@ -56,7 +56,7 @@ body {
   font-weight: 500; flex: none;
 }
 .panel-head > span:first-child {
-  flex: none; max-width: 60%;
+  flex: 0 1 auto; min-width: 0; max-width: 100%;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .panel-head small {
@@ -85,6 +85,15 @@ body {
 .panel-head .el-select__wrapper,
 .panel-head .el-radio-button__inner,
 .panel-head .el-button--small { min-height: 24px; }
+/* 左栏 220px 宽时，标题 + 三个文字按钮要 284px，「刷新」会被裁掉（实测 66px）。
+ * 后两个入口改成图标/短词，并收紧横向 padding，任何视口都不再溢出。 */
+.panel.left .panel-head { gap: 8px; }
+.head-tbtn { padding: 0 6px !important; }
+.head-ibtn { width: 26px; min-width: 26px; padding: 0 !important; font-size: 14px; }
+@media (max-width: 1439px) {
+  /* 窄一档时先把篇数省掉：篇数在列表里数得出来，刷新按钮点不到才是真问题 */
+  .panel.left .panel-head small { display: none; }
+}
 /* 头部所有分段按钮统一垂直居中：只给 min-height 不居中，文字会贴着上边缘
  * （line-height 小于字号时还会往上溢出，肉眼就是「顶格」） */
 .panel-head .el-radio-button__inner,
@@ -438,6 +447,17 @@ body {
   user-select: text; pointer-events: auto;
 }
 .tw::selection { background: rgba(64, 120, 255, .30); }
+
+/* 悬停翻译的原句高亮：贴在页图上的一层淡琥珀色，pointer-events:none 保证
+   鼠标还能穿过它落到词上（否则移进去就 leave，气泡会闪）。
+   用琥珀而不是蓝色：蓝色已经被"引用角标可点"和"划词选中"占了，语义会混。 */
+.hsent {
+  position: absolute; pointer-events: none; z-index: 0;
+  background: rgba(255, 202, 74, .34);
+  box-shadow: 0 0 0 1px rgba(214, 158, 20, .28) inset;
+  border-radius: 2px;
+}
+.hover-tip-hint { font-size: 10.5px; color: #9aa3b2; margin-top: 4px; }
 /* 正文角标：hover 时透出一块浅蓝底，告诉用户"这里能点"。
    只用背景不用边框，避免在密集正文里画出一堆方块。 */
 .tw.cite { cursor: pointer; border-radius: 2px; }

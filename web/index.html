@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SciAgent · 科研智能体</title>
   <link rel="stylesheet" href="/static/vendor/element-plus.css" />
-  <link rel="stylesheet" href="/static/style.css?v=10" />
+  <link rel="stylesheet" href="/static/style.css?v=11" />
   <link rel="stylesheet" href="/static/vendor/katex.min.css" />
   <script src="/static/vendor/katex.min.js"></script>
   <script src="/static/vendor/katex-auto-render.min.js"></script>
@@ -45,10 +45,13 @@
     <aside class="panel left">
       <div class="panel-head">
         <span>文献库 <small>{{ docs.length }} 篇</small></span>
+        <!-- 220px 宽的左栏放不下「发现/回收站/刷新」三个文字按钮（实测需要 284px，
+             刷新被裁掉 66px），所以后两个收成图标 + tooltip，窄屏再省掉篇数 -->
         <div class="viewer-tools">
-          <el-button size="small" text @click="openDiscover('search')">发现</el-button>
-          <el-button size="small" text @click="openTrash">回收站</el-button>
-          <el-button size="small" text @click="loadDocs">刷新</el-button>
+          <el-button size="small" text class="head-tbtn" @click="openDiscover('search')">发现</el-button>
+          <el-button size="small" text class="head-tbtn" title="回收站：已删除的文献，可恢复"
+                     @click="openTrash">回收</el-button>
+          <el-button size="small" text class="head-ibtn" title="刷新文献列表" @click="loadDocs">↻</el-button>
         </div>
       </div>
 
@@ -168,6 +171,10 @@
             <div class="text-layer" v-if="tl.words.length"
                  :style="{ width: tl.W + 'px', height: tl.H + 'px', transform: `scale(${tl.scale})` }"
                  @mouseup="onTextSelect">
+              <!-- 悬停翻译时把"正在译的那一句"整句框出来：否则用户只看到弹窗里一段
+                   译文，对不上是原文哪句（尤其句子里有公式/数字时）。按行拆成多条，
+                   不会把行间空白也涂上。 -->
+              <div v-for="(r,i) in hover.rects" :key="'hs'+i" class="hsent" :style="r"></div>
               <span v-for="(w,i) in tl.words" :key="i"
                     class="tw" :class="{ cite: w.cite, refhit: w.refhit }"
                     :style="w.style"
@@ -846,6 +853,7 @@
     <div class="hover-tip-zh" v-if="hover.zh">{{ hover.zh }}</div>
     <div class="hover-tip-load" v-else>翻译中…</div>
     <div class="hover-tip-src">{{ hover.src.length > 90 ? hover.src.slice(0, 90) + '…' : hover.src }}</div>
+    <div class="hover-tip-hint">页面上高亮的就是这一句</div>
   </div>
 
   <!-- 中文译本预览与下载（官方 1.3.3.2）：只读缓存，不重新调模型 -->
@@ -895,6 +903,6 @@
   </nav>
 </div>
 
-<script src="/static/app.js?v=10"></script>
+<script src="/static/app.js?v=11"></script>
 </body>
 </html>

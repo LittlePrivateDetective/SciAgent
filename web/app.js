@@ -223,7 +223,9 @@ const app = createApp({
       citePop: { visible: false, index: 0, page: 1, bbox: null, text: "", style: {}, x: 0, y: 0, cites: [], occ: 0 },
       // 悬停翻译（官方 1.3.3.1）：默认关，打开后鼠标停 0.4 秒译整句。
       // cache 是为了"同一句反复悬停不重复请求"——一页读下来常见句子会被来回扫。
-      hover: { on: false, visible: false, loading: false, src: "", zh: "", style: {}, timer: null, cache: {} },
+      // rects：当前悬停那一句在页面上的矩形（按行拆），用来把原句框出来
+      hover: { on: false, visible: false, loading: false, src: "", zh: "", style: {},
+               timer: null, cache: {}, si: null, rects: [] },
       // 中文译本（官方 1.3.3.2）：读 translations 缓存拼 Markdown，可预览可下载
       zh: {
         visible: false, loading: false, markdown: "", chars: 0, total: 0,
@@ -957,6 +959,13 @@ const app = createApp({
       const sent = w.si != null ? sents[w.si] : null;
       if (!sent || !sent.text || sent.text.length < 8) return;
 
+      // 高亮立刻给，不跟着 380ms 的翻译延迟：先告诉用户"要译的是这句"，
+      // 再出译文，比等译文出来才标位置更符合"悬停即定位"的直觉
+      if (this.hover.si !== w.si) {
+        this.hover.si = w.si;
+        this.hover.rects = this.sentenceRects(w.si);
+      }
+
       clearTimeout(this.hover.timer);
       // 380ms 是实测手感的上限：再短会在移动鼠标时连环触发，
       // 再长用户会以为没反应
@@ -970,6 +979,32 @@ const app = createApp({
       clearTimeout(this.hover.timer);
       // 不立刻隐藏：移到相邻词上会先 leave 再 enter，立刻隐藏会闪一下
       this.hover.timer = setTimeout(() => this.hideHover(), 260);
+    },
+
+    /// 某一句在页面上的矩形（按行拆成多条），坐标是 pt，与文本层同一套。
+    /// 直接合并所有词会得到一个跨行的大方块，把行间空白也涂上；按 y 聚行才像
+    /// 一条"荧光笔划线"。
+    sentenceRects(si) {
+      const words = (this.tl.words || []).filter((w) => w.si === si);
+      if (!words.length) return [];
+      const rows = [];
+      words.forEach((w) => {
+        const row = rows.find((r) => Math.abs(r.y - w.y) < Math.max(3, w.h * 0.5));
+        if (row) {
+          row.words.push(w);
+          row.y = Math.min(row.y, w.y);
+        } else {
+          rows.push({ y: w.y, words: [w] });
+        }
+      });
+      return rows.map((r) => {
+        const x0 = Math.min(...r.words.map((w) => w.x));
+        const x1 = Math.max(...r.words.map((w) => w.x + w.w));
+        const y0 = Math.min(...r.words.map((w) => w.y));
+        const y1 = Math.max(...r.words.map((w) => w.y + w.h));
+        return { left: x0 - 1 + "px", top: y0 - 1 + "px",
+                 width: x1 - x0 + 2 + "px", height: y1 - y0 + 2 + "px" };
+      });
     },
 
     async translateHover(text, cx, cy) {
@@ -1022,6 +1057,9 @@ const app = createApp({
       if (force || !this.hover.loading) {
         this.hover.visible = false;
         this.hover.loading = false;
+        // 高亮和气泡同进同退：气泡收了还留着黄框，用户会以为选中了某个区域
+        this.hover.si = null;
+        this.hover.rects = [];
       }
     },
 
