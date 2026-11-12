@@ -182,6 +182,7 @@ const app = createApp({
   directives: { math: vMath },
   data() {
     return {
+      warmHint: false,          // 冷启动预热中：超过 3 秒还没热完就显示提示条
       info: {},
       docs: [],
       selection: [],
@@ -298,7 +299,10 @@ const app = createApp({
     // 冷启动预热：云平台上服务空闲会休眠，唤醒后第一个请求要多等 20–40 秒。
     // 页面一打开就静默打一次，等用户读完标题点"发送"时后端已经是热的。
     // 不 await、不提示、失败也不打扰（本机跑时它就是一次 200ms 的自我检查）。
-    fetch("/api/warm").catch(() => {});
+    const warmTimer = setTimeout(() => { this.warmHint = true; }, 3000);
+    fetch("/api/warm")
+      .catch(() => {})
+      .finally(() => { clearTimeout(warmTimer); this.warmHint = false; });
 
     // 「快速 / 深思」的初值跟随后台设置，之后由用户自己切——不写进 localStorage：
     // 否则上次为了某道题点了深思，下次进来所有问题都变慢，用户还不知道为什么
