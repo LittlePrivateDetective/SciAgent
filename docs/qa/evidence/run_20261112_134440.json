@@ -1,0 +1,70 @@
+{
+  "run_id": "20261112_134440",
+  "base": "http://127.0.0.1:8013",
+  "timestamp": "2026-11-12T13:44:41.850068",
+  "summary": {
+    "total": 1,
+    "pass": 1,
+    "fail": 0,
+    "blocked": 0
+  },
+  "results": [
+    {
+      "id": "B03",
+      "group": "innov",
+      "point": "b-2 三层语义去重 (8%)",
+      "steps": "重新解析样本 PDF 得到入库时的 full_text，构造同族版本 / 近似文本 / 同名异内容，逐一验证 find_duplicates 的三层判据",
+      "expected": "同族、SimHash 近似、标题相似三层各自按预期理由命中",
+      "actual": "三层均按预期命中；入库 content_hash/simhash 与重解析一致",
+      "status": "PASS",
+      "elapsed_s": 1.4,
+      "evidence": {
+        "documents": 37,
+        "families_with_multi": {},
+        "sample": {
+          "id": "dce63a636cf64",
+          "arxiv": "1706.03762v1",
+          "title": "Attention Is All You Need"
+        },
+        "full_text_chars": 37203,
+        "hash_matches_stored": true,
+        "simhash_matches_stored": true,
+        "layer1_family": [
+          {
+            "reason": "标题高度相似(1.00)",
+            "similarity": 1.0
+          },
+          {
+            "reason": "同族版本",
+            "similarity": 0.99
+          }
+        ],
+        "layer2_near": [
+          {
+            "reason": "正文指纹近似(汉明距离=1)",
+            "similarity": 0.984
+          },
+          {
+            "reason": "正文指纹近似(汉明距离=6，标题相似 1.00)",
+            "similarity": 0.906
+          }
+        ],
+        "layer3_title": [
+          {
+            "reason": "标题高度相似(1.00)",
+            "similarity": 1.0
+          },
+          {
+            "reason": "同族版本",
+            "similarity": 0.99
+          }
+        ],
+        "checks": {
+          "同族": true,
+          "SimHash": true,
+          "标题": true
+        }
+      }
+    }
+  ]
+}

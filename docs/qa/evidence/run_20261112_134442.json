@@ -1,0 +1,253 @@
+{
+  "run_id": "20261112_134442",
+  "base": "http://127.0.0.1:8013",
+  "timestamp": "2026-11-12T13:44:47.959436",
+  "summary": {
+    "total": 1,
+    "pass": 1,
+    "fail": 0,
+    "blocked": 0
+  },
+  "results": [
+    {
+      "id": "E03",
+      "group": "env",
+      "point": "c-3 Docker 配置一致性 + 布局预演",
+      "steps": "静态校验 COPY/compose/CMD/依赖声明/.env 覆盖；按 Dockerfile 搭等价 /app 目录用零密钥 mock 模式真实启动并探测 5 个接口",
+      "expected": "静态全通过，镜像文件布局可独立启动且接口全 200",
+      "actual": "COPY 5 项齐全、16 个第三方依赖全部声明、零密钥 mock 启动 5 接口全 200（has_dotenv=False）",
+      "status": "PASS",
+      "elapsed_s": 5.0,
+      "evidence": {
+        "static": {
+          "copy_sources": {
+            "requirements.txt": true,
+            "app": true,
+            "web": true,
+            "docs": true,
+            ".env.example": true
+          },
+          "copy_all_exist": true,
+          "compose_services": [
+            "sciagent"
+          ],
+          "compose_port": "8000:8000",
+          "compose_data_volume": true,
+          "cmd": "[\"uvicorn\", \"app.main:app\", \"--host\", \"0.0.0.0\", \"--port\", \"8000\"]",
+          "cmd_matches_local": true,
+          "third_party_imports": [
+            "PIL",
+            "chromadb",
+            "fastapi",
+            "httpx",
+            "jieba",
+            "langgraph",
+            "networkx",
+            "numpy",
+            "psutil",
+            "pydantic",
+            "pydantic_settings",
+            "pymupdf",
+            "pytesseract",
+            "sentence_transformers",
+            "sqlalchemy",
+            "uvicorn"
+          ],
+          "packages": [
+            {
+              "import": "PIL",
+              "package": "Pillow",
+              "declared": true,
+              "installed": "13.0.0"
+            },
+            {
+              "import": "chromadb",
+              "package": "chromadb",
+              "declared": true,
+              "installed": "1.5.9"
+            },
+            {
+              "import": "fastapi",
+              "package": "fastapi",
+              "declared": true,
+              "installed": "0.162.2"
+            },
+            {
+              "import": "httpx",
+              "package": "httpx",
+              "declared": true,
+              "installed": "0.28.1"
+            },
+            {
+              "import": "jieba",
+              "package": "jieba",
+              "declared": true,
+              "installed": "0.42.1"
+            },
+            {
+              "import": "langgraph",
+              "package": "langgraph",
+              "declared": true,
+              "installed": "1.2.20"
+            },
+            {
+              "import": "networkx",
+              "package": "networkx",
+              "declared": true,
+              "installed": "3.7"
+            },
+            {
+              "import": "numpy",
+              "package": "numpy",
+              "declared": true,
+              "installed": "2.5.4"
+            },
+            {
+              "import": "psutil",
+              "package": "psutil",
+              "declared": true,
+              "installed": "7.2.2"
+            },
+            {
+              "import": "pydantic",
+              "package": "pydantic",
+              "declared": true,
+              "installed": "2.14.3"
+            },
+            {
+              "import": "pydantic_settings",
+              "package": "pydantic-settings",
+              "declared": true,
+              "installed": "2.16.2"
+            },
+            {
+              "import": "pymupdf",
+              "package": "PyMuPDF",
+              "declared": true,
+              "installed": "2.1"
+            },
+            {
+              "import": "pytesseract",
+              "package": "pytesseract",
+              "declared": true,
+              "installed": "(可选，本机未装)"
+            },
+            {
+              "import": "sentence_transformers",
+              "package": "sentence-transformers",
+              "declared": false,
+              "installed": "(可选，本机未装)"
+            },
+            {
+              "import": "sqlalchemy",
+              "package": "sqlalchemy",
+              "declared": true,
+              "installed": "2.1.8"
+            },
+            {
+              "import": "uvicorn",
+              "package": "uvicorn",
+              "declared": true,
+              "installed": "0.54.0"
+            }
+          ],
+          "undeclared_packages": [],
+          "optional_not_bundled": [
+            "sentence-transformers"
+          ],
+          "env_fields_total": 51,
+          "env_uncovered": [],
+          "static_ok": true
+        },
+        "note": "真实 docker build 另见 E03D（本机无 Docker，标【待实测】）",
+        "boot": {
+          "layout_files": [
+            ".env.example",
+            "app",
+            "data",
+            "docs",
+            "requirements.txt",
+            "web"
+          ],
+          "has_dotenv": false,
+          "port": 52974,
+          "booted": true,
+          "probes": {
+            "/health": {
+              "status": 200,
+              "bytes": 50
+            },
+            "/api/system/info": {
+              "status": 200,
+              "bytes": 720
+            },
+            "/": {
+              "status": 200,
+              "bytes": 49356
+            },
+            "/static/app.js": {
+              "status": 200,
+              "bytes": 88674
+            },
+            "/docs": {
+              "status": 200,
+              "bytes": 1026
+            }
+          },
+          "info": {
+            "ok": true,
+            "llm": {
+              "route": "mock",
+              "model": "mock",
+              "base_url": "https://api.deepseek.com/v1",
+              "mock": true
+            },
+            "vector_backend": "sqlite",
+            "ocr": {
+              "vlm_configured": false,
+              "tesseract_python_pkg": false,
+              "tesseract_binary": false
+            },
+            "embedding": {
+              "provider": "hash",
+              "model": "BAAI/bge-m3",
+              "dim": 1024
+            },
+            "rerank": {
+              "provider": "none",
+              "model": "qwen3.7-text-rerank",
+              "enabled": false
+            },
+            "counts": {
+              "documents": 0,
+              "chunks": 0,
+              "tasks": 0,
+              "lessons": 0
+            },
+            "translation": {
+              "model": "qwen-flash",
+              "batch": 4
+            },
+            "thinking": true,
+            "keepalive": {
+              "enabled": true,
+              "interval_s": 300,
+              "warm_model": true,
+              "warm_cloud": false,
+              "started_at": "2026-11-12T13:44:47",
+              "last_beat_at": null,
+              "next_beat_at": null,
+              "last_ms": null,
+              "beats": 0,
+              "fails": 0,
+              "last_warm": "none",
+              "last_error": ""
+            },
+            "official_pdfs": 0
+          },
+          "all_200": true
+        }
+      }
+    }
+  ]
+}

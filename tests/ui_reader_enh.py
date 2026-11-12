@@ -404,6 +404,9 @@ def run() -> dict:
             verbatim: vm.zh.verbatim,
             fences: (txt.match(/```/g) || []).length,
             hasCmd: txt.indexOf('\\\\begin') >= 0 || txt.indexOf('\\\\frac') >= 0,
+            // 有些论文的公式解析出来是 Unicode 数学（σ μ ∑ ∂ ≈），不是 LaTeX 命令。
+            // 断言"公式没被译成散文"要看这两者之一，只认 \\frac 会把正确结果判成失败。
+            hasSymbols: /[μσΣ√∑∂≈]/.test(txt),
             chars: txt.length
           });
         })()"""
@@ -430,7 +433,7 @@ def run() -> dict:
             and z["h1"] >= 1 and not z["hasRawHash"] and z["drawer"]
             and d["status"] == 200 and d["hasTitle"]
             and fmj.get("verbatim", 0) >= 20 and fmj.get("fences", 0) >= 40
-            and fmj.get("hasCmd") and d["hasFence"]
+            and (fmj.get("hasCmd") or fmj.get("hasSymbols")) and d["hasFence"]
         )
         result["checks"]["zh_export"] = export_ok
         errs = js("window.__err || ''")
