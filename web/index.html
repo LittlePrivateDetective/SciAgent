@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SciAgent · 科研智能体</title>
   <link rel="stylesheet" href="/static/vendor/element-plus.css" />
-  <link rel="stylesheet" href="/static/style.css?v=8" />
+  <link rel="stylesheet" href="/static/style.css?v=9" />
   <link rel="stylesheet" href="/static/vendor/katex.min.css" />
   <script src="/static/vendor/katex.min.js"></script>
   <script src="/static/vendor/katex-auto-render.min.js"></script>
@@ -490,7 +490,10 @@
             <el-radio-button label="qa">问答</el-radio-button>
             <el-radio-button label="compare">对比</el-radio-button>
           </el-radio-group>
-          <el-switch v-model="streamMode" size="small" active-text="流式" class="stream-switch"></el-switch>
+          <el-switch v-model="streamMode" size="small" active-text="流式" class="stream-switch"
+                     :title="streamMode
+                       ? '流式：边检索边输出，能看到规划 / 检索 / 通读 / 推理的过程；关掉则一次性返回整段答案'
+                       : '当前为一次性返回，看不到中间过程；打开可看到检索与推理步骤'"></el-switch>
         </div>
       </div>
 
@@ -881,6 +884,6 @@
   </nav>
 </div>
 
-<script src="/static/app.js?v=8"></script>
+<script src="/static/app.js?v=9"></script>
 </body>
 </html>

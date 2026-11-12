@@ -229,7 +229,10 @@ const app = createApp({
       question: "",
       mode: "qa",
       scope: "all",
-      streamMode: false,
+      // 流式默认开：官方要求能展示思考过程，而检索/通读/推理这几步只有流式
+      // 才逐个推得出来（非流式是一次性返回整段，用户只看到一个 loading 圈）。
+      // 关掉仍可用：一次性返回，适合网络差时兜底。
+      streamMode: true,
       trash: { visible: false, items: [] },
       // 论文发现与推荐（官方 1.4）：三个 tab 各自独立加载，互不阻塞
       disc: {

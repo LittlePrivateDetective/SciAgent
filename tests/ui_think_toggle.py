@@ -80,8 +80,12 @@ def run() -> dict:
         # 1) 按钮存在且跟随后台
         init = js("""(()=>{const v=window.__sciagent;
               const b=document.querySelector('.think-btn');
+              // 这一项要在改任何状态之前读：官方要求能展示思考过程，
+              // 而只有流式推得出「规划→检索→通读→推理」这几步，所以默认必须开
+              const defStream = v.streamMode;
               v.centerView='chat'; v.streamMode=true;
-              return {has:!!b, text:b?b.textContent.trim():'', deep:!!v.thinkDeep, cls:b?b.className:''}})()""")
+              return {has:!!b, text:b?b.textContent.trim():'', deep:!!v.thinkDeep,
+                      cls:b?b.className:'', defStream:defStream}})()""")
         res["steps"].append({"initial": init})
 
         # 2) 两次点击
@@ -102,8 +106,12 @@ def run() -> dict:
                   // 取最后一条：查第一个拿到的是上一条回答的标签
                   const ns=document.querySelectorAll('.msg.assistant .msg-meta');
                   const m=ns[ns.length-1];
+                  // thinkSteps 数的是真画出来的时间线节点，不是状态数组：
+                  // 流式的意义就是这几步用户看得见
+                  const steps=[...document.querySelectorAll('.msg.assistant')].pop();
                   return {loading:!!v.loading, meta:a?a.meta:'', metaDom:m?m.textContent.trim():'',
                           chars:a&&a.html?a.html.length:0,
+                          thinkSteps:steps?steps.querySelectorAll('.think-step').length:0,
                           stages:(a&&a.thinking?a.thinking:[]).filter(x=>x.indexOf('depth')>=0)}})()""")
             if isinstance(deep_state, dict) and not deep_state.get("loading") and deep_state.get("meta"):
                 break
@@ -141,6 +149,8 @@ def run() -> dict:
             "toggle_on": after1.get("text") == "深思" and after1.get("on") is True,
             "deep_label": "深思" in (deep_state.get("metaDom") or ""),
             "deep_stage": bool(deep_state.get("stages")),
+            "stream_on_by_default": init.get("defStream") is True,
+            "stream_thinking_visible": (deep_state.get("thinkSteps") or 0) >= 3,
             "toggle_off": after2.get("text") == "快速" and after2.get("deep") is False,
             "fast_label": "快速" in (fast_state.get("metaDom") or ""),
             "no_js_error": not res["errors"],

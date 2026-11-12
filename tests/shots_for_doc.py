@@ -168,7 +168,11 @@ def main() -> int:
             b.js("""(async()=>{const vm=window.__sciagent;
                   const d=vm.docs.find(x=>x.filename.startsWith('1706.03762'))||vm.docs[0];
                   vm.centerView='reader'; await vm.openDoc(d);
-                  await new Promise(r=>setTimeout(r,600)); return 1;})()""")
+                  // 翻到第 4 页再截：首页那页没有词级文本层（pdf 抽不出词），
+                  // 页面会挂「该页是扫描图」提示条 + 「整页翻译」浮钮压在正文上；
+                  // 而且第 4 页正好是讲复杂度的那张表，和问题对得上
+                  vm.page = 4; await vm.loadTextLayer();
+                  await new Promise(r=>setTimeout(r,900)); return 1;})()""")
             b.js("window.__sciagent.ask('Transformer 论文里，自注意力每层的计算复杂度是多少')")
             b.wait("!window.__sciagent.loading && window.__sciagent.messages.length > 0", 120, 0.6)
             # 回到对话顶部：要的是"问题 + 答案开头 + 引用编号"，滚到底只剩证据列表，

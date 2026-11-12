@@ -75,6 +75,9 @@ body {
 /* 右栏 380px 内要塞下标题+下拉+两段切换+开关，宽度必须卡死，
  * 否则 select 会被 flex 压缩、文字截成"全部文…" */
 .chat-tools .scope-select { width: 88px; flex: none; }
+/* 「问答 / 对比」这四个字原来顶格：inner 是 inline-block、line-height 12px、
+ * 垂直 padding 为 0，文字从 24px 高的块顶部排起，实测文字行盒 top 比按钮 top
+ * 还高 1px（溢出），下方却空了 9px。改成 inline-flex 居中，横向 padding 不动。 */
 .chat-tools .el-radio-button__inner { padding: 0 9px; }
 .chat-tools .stream-switch { margin-left: 0; }
 /* 头部控件统一 24px 视觉高度（Element small 默认值），
@@ -82,6 +85,13 @@ body {
 .panel-head .el-select__wrapper,
 .panel-head .el-radio-button__inner,
 .panel-head .el-button--small { min-height: 24px; }
+/* 头部所有分段按钮统一垂直居中：只给 min-height 不居中，文字会贴着上边缘
+ * （line-height 小于字号时还会往上溢出，肉眼就是「顶格」） */
+.panel-head .el-radio-button__inner,
+.viewer-tools .el-radio-button__inner {
+  display: inline-flex; align-items: center; justify-content: center;
+  line-height: 1;
+}
 
 /* 页码：等宽数字 + 固定宽度，翻到 10/15 时不会左右跳 */
 .pager-group { display: inline-flex; align-items: center; gap: 2px; flex: none; }
