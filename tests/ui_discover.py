@@ -109,11 +109,21 @@ def run(url: str = BASE + "/", shot_dir: Path = OUT) -> dict:
         # 1) 打开抽屉 + 搜索
         js("window.__sciagent.openDiscover('search')")
         time.sleep(0.8)
-        js("""(async()=>{
+        # 走真实按钮，不直接调 vm.doSearch()：D-79 里搜索按钮因为模板自闭合写法
+        # 从来没渲染出来过，而这条用例一直直接调方法，所以两个月都没发现。
+        clicked = js("""(()=>{
           const vm = window.__sciagent;
           vm.disc.q = 'attention is all you need';
-          await vm.doSearch();
+          const row = document.querySelector('.disc-search');
+          if (!row || row.children.length < 2) return 'NO_BUTTON';
+          const btn = [...row.querySelectorAll('button')].find(b => b.textContent.includes('搜索'));
+          if (!btn) return 'NO_BUTTON';
+          btn.click();
+          return 'OK';
         })()""")
+        if clicked != "OK":
+            result["error"] = "搜索按钮不存在（模板自闭合标签吞掉了兄弟节点）"
+            return result
         ok = wait_for("document.querySelectorAll('.disc-card').length > 0", 60)
         if not ok:
             result["error"] = "搜索无结果卡片"

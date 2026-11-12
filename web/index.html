@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SciAgent · 科研智能体</title>
   <link rel="stylesheet" href="/static/vendor/element-plus.css" />
-  <link rel="stylesheet" href="/static/style.css?v=6" />
+  <link rel="stylesheet" href="/static/style.css?v=8" />
   <link rel="stylesheet" href="/static/vendor/katex.min.css" />
   <script src="/static/vendor/katex.min.js"></script>
   <script src="/static/vendor/katex-auto-render.min.js"></script>
@@ -40,11 +40,11 @@
     </div>
   </header>
 
-  <div class="layout">
+  <div class="layout" :class="'mpane-' + mobilePane">
     <!-- 左：文献库 -->
     <aside class="panel left">
       <div class="panel-head">
-        <span>文献库</span>
+        <span>文献库 <small>{{ docs.length }} 篇</small></span>
         <div class="viewer-tools">
           <el-button size="small" text @click="openDiscover('search')">发现</el-button>
           <el-button size="small" text @click="openTrash">回收站</el-button>
@@ -100,9 +100,13 @@
             <el-switch v-model="hover.on" size="small" active-text="悬停译"
                        class="hover-switch" @change="saveHoverPref"
                        title="鼠标在正文上停留 0.4 秒，自动翻译所在整句"></el-switch>
-            <el-button size="small" text :disabled="page<=1" @click="goPage(page-1)">上一页</el-button>
-            <span class="pager">{{ page }} / {{ pageCount }}</span>
-            <el-button size="small" text :disabled="page>=pageCount" @click="goPage(page+1)">下一页</el-button>
+            <!-- 上一页/页码/下一页绑成一组：手机上工具条换行时，
+                 这三个被拆到两行是最难用的（要来回看） -->
+            <span class="pager-group">
+              <el-button size="small" text :disabled="page<=1" @click="goPage(page-1)">上一页</el-button>
+              <span class="pager">{{ page }} / {{ pageCount }}</span>
+              <el-button size="small" text :disabled="page>=pageCount" @click="goPage(page+1)">下一页</el-button>
+            </span>
             <el-button size="small" text :loading="en.running" @click="openEn" title="把中文论文译成学术英文（官方 1.6.4）">
               {{ en.running ? `译英 ${en.done}/${en.total}` : '译英' }}
             </el-button>
@@ -398,7 +402,7 @@
                 <el-option v-for="f in chartFmts" :key="f.k" :label="f.label" :value="f.k"></el-option>
               </el-select>
               <el-input v-model="wv.cTitle" size="small" class="title-input"
-                        placeholder="图表标题" />
+                        placeholder="图表标题" ></el-input>
             </div>
             <el-button size="small" type="primary" :loading="wv.cLoading" @click="genChart">
               {{ wv.cLoading ? '生成中…' : '生成图表 + 图注' }}
@@ -607,7 +611,7 @@
         <div class="disc-search">
           <el-input v-model="disc.q" clearable
                     placeholder="论文标题或英文关键词，如 attention is all you need"
-                    @keyup.enter="doSearch" />
+                    @keyup.enter="doSearch" ></el-input>
           <el-button type="primary" :loading="disc.searching" @click="doSearch">搜索</el-button>
         </div>
         <div class="disc-meta" v-if="disc.searched">
@@ -654,7 +658,7 @@
             <div v-for="it in disc.refItems" :key="it.index" class="disc-card ref">
               <el-checkbox :model-value="disc.refSelected.includes(it.arxiv_id)"
                            :disabled="!it.arxiv_id || it.in_library"
-                           @change="toggleRef(it)" />
+                           @change="toggleRef(it)" ></el-checkbox>
               <div class="ref-body">
                 <div class="disc-name">{{ it.title || it.text.slice(0, 90) }}</div>
                 <div class="disc-ref-meta">
@@ -677,7 +681,7 @@
                        :loading="!!disc.job" @click="importRefs">批量下载入库</el-button>
           </div>
           <div v-if="disc.job" class="disc-job">
-            <el-progress :percentage="Math.round(disc.job.done / (disc.job.total || 1) * 100)" />
+            <el-progress :percentage="Math.round(disc.job.done / (disc.job.total || 1) * 100)" ></el-progress>
             <div class="disc-meta">
               正在处理 {{ disc.job.current || '…' }} · 成功 {{ disc.job.ok }} · 失败 {{ disc.job.failed }}
             </div>
@@ -694,9 +698,9 @@
         <div class="disc-meta">
           <span>库内主题：{{ disc.recTopics.length ? disc.recTopics.join(' · ') : '分析中…' }}</span>
           <el-select v-model="disc.recDays" size="small" style="width:118px" @change="loadRec">
-            <el-option :value="90" label="近 3 个月" />
-            <el-option :value="180" label="近 6 个月" />
-            <el-option :value="365" label="近 1 年" />
+            <el-option :value="90" label="近 3 个月" ></el-option>
+            <el-option :value="180" label="近 6 个月" ></el-option>
+            <el-option :value="365" label="近 1 年" ></el-option>
           </el-select>
           <el-button size="small" text :loading="disc.recLoading" @click="loadRec">刷新</el-button>
         </div>
@@ -752,7 +756,7 @@
     </div>
 
     <div v-if="en.running" class="en-progress">
-      <el-progress :percentage="en.total ? Math.round(en.done / en.total * 100) : 0" />
+      <el-progress :percentage="en.total ? Math.round(en.done / en.total * 100) : 0" ></el-progress>
       <div class="disc-meta">
         正在翻译 {{ en.done }} / {{ en.total || '…' }} 段 · 每批 3 路并发，中文越长越慢
       </div>
@@ -851,7 +855,7 @@
     <div class="disc-hint" v-if="zh.missing">
       未译段落保留英文原文，并带一条 HTML 注释说明原因。滚到对应页或点「整篇翻译」后可补全。
     </div>
-    <div v-if="zh.loading" class="en-progress"><el-progress :percentage="100" :indeterminate="true" /></div>
+    <div v-if="zh.loading" class="en-progress"><el-progress :percentage="100" :indeterminate="true" ></el-progress></div>
     <div v-else-if="!zh.translated" class="empty big">
       这篇还没有任何译文。先在「对照」视图往下滚两页，或点「整篇翻译」，再回来导出。
     </div>
@@ -860,8 +864,23 @@
       <div class="zh-more" v-if="zh.truncated">预览只显示前 6000 字符，完整内容点「下载 Markdown」</div>
     </template>
   </el-drawer>
+
+  <!-- 手机版底部导航：窄屏一次只显示一栏，靠它切换（桌面端由 CSS 隐藏）。
+       为什么不做成三栏竖着叠：手机上三栏叠起来要滚三千像素，中间还夹着
+       阅读器的横向滚动，实际操作起来比切换更难用。 -->
+  <nav class="mnav">
+    <button class="mnav-btn" :class="{ on: mobilePane === 'docs' }" @click="goMobile('docs')">
+      <span class="mnav-i">文</span><span class="mnav-t">文献库</span>
+    </button>
+    <button class="mnav-btn" :class="{ on: mobilePane === 'reader' }" @click="goMobile('reader')">
+      <span class="mnav-i">读</span><span class="mnav-t">阅读</span>
+    </button>
+    <button class="mnav-btn" :class="{ on: mobilePane === 'qa' }" @click="goMobile('qa')">
+      <span class="mnav-i">问</span><span class="mnav-t">问答</span>
+    </button>
+  </nav>
 </div>
 
-<script src="/static/app.js?v=6"></script>
+<script src="/static/app.js?v=8"></script>
 </body>
 </html>

@@ -184,6 +184,9 @@ const app = createApp({
   data() {
     return {
       warmHint: false,          // 冷启动预热中：超过 3 秒还没热完就显示提示条
+      // 手机版当前显示哪一栏（docs/reader/qa）。桌面端三栏并排，这个值不起作用，
+      // 只在 max-width:760px 的媒体查询里决定显示哪一块。
+      mobilePane: "qa",
       info: {},
       docs: [],
       selection: [],
@@ -636,6 +639,9 @@ const app = createApp({
       this.docs = (r.documents || []).map((d) => ({ ...d, _sel: this.selection.includes(d.id) }));
       if (!this.activeDoc && this.docs.length) {
         await this.openDoc(this.docs[0]);
+        // 手机版首屏停在「问答」：手机上打开就该能直接提问，而不是先看到一页 PDF。
+        // 桌面端三栏并排，这个值不参与布局。
+        this.mobilePane = "qa";
         // 深链：#bi 直接进对照视图，评审可以收藏链接直接演示
         if (location.hash === "#bi") {
           this.centerView = "bilingual";
@@ -693,8 +699,21 @@ const app = createApp({
       }, 3000);
     },
 
+    /// 手机版切栏。切到问答时顺手滚到最新一条：否则从阅读器点引用回来，
+    /// 看到的是上一次提问的开头，还以为没跳过来。
+    goMobile(pane) {
+      this.mobilePane = pane;
+      if (pane === "qa") {
+        this.$nextTick(() => {
+          const el = this.$refs.chatList;
+          if (el) el.scrollTop = el.scrollHeight;
+        });
+      }
+    },
+
     async openDoc(d) {
       this.activeDoc = d;
+      this.mobilePane = "reader";   // 手机上点文献名 = 想看这篇，直接切过去
       this.scope = "doc";
       this.page = 1;
       this.pageCount = d.page_count || 1;
@@ -2047,6 +2066,7 @@ const app = createApp({
     async biJump(seg) {
       const [x0, y0, x1, y1] = (seg.bbox || "0,0,0,0").split(",").map(Number);
       this.centerView = "reader";
+      this.mobilePane = "reader";
       await this.jump({ page: seg.page, bbox: [x0, y0, x1, y1], doc_id: this.activeDocId, text: seg.en });
     },
 

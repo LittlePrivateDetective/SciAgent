@@ -84,6 +84,7 @@ body {
 .panel-head .el-button--small { min-height: 24px; }
 
 /* 页码：等宽数字 + 固定宽度，翻到 10/15 时不会左右跳 */
+.pager-group { display: inline-flex; align-items: center; gap: 2px; flex: none; }
 .pager {
   font-size: 12px; color: var(--muted); padding: 0 6px;
   font-variant-numeric: tabular-nums; text-align: center; min-width: 52px;
@@ -598,6 +599,10 @@ body.is-dragging, body.is-dragging * { user-select: none !important; }
 .disc-sub { font-size: 11.5px; color: var(--muted); margin-top: 3px; }
 
 .disc-search { display: flex; gap: 8px; margin-bottom: 10px; }
+/* 输入框是 width:100% 的 flex 子项，不给它 min-width:0 会把「搜索」按钮挤出容器
+   （手机上直接看不到按钮） */
+.disc-search .el-input { flex: 1 1 auto; min-width: 0; }
+.disc-search .el-button { flex: none; }
 .disc-meta {
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
   font-size: 11.5px; color: var(--muted); margin-bottom: 8px;
@@ -894,4 +899,129 @@ body.is-dragging, body.is-dragging * { user-select: none !important; }
 @keyframes warm-in {
   from { opacity: 0; transform: translate(-50%, 8px); }
   to   { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* ============================================================ 手机版（≤760px）
+ * 原来窄屏只是把三栏从 260/1fr/380 依次收窄，收到手机上就是这个样子：
+ * 左栏被切成半截、字号小到看不清、整页还能左右拖。手机不是"窄一点的桌面"，
+ * 一次只能看一栏，所以这里改成「一栏 + 底部切换」。
+ */
+.mnav { display: none; }
+
+@media (max-width: 760px) {
+  html, body { height: 100%; }
+  body { font-size: 13.5px; -webkit-text-size-adjust: 100%; }
+
+  /* 顶栏：去掉副标题与两个次要标签，剩下的放得下就不换行。
+     badges 必须能收缩——390px 下"模型名 + 文献数"两个标签正好差几个像素，
+     原来写 flex:none 会把「文献 38」挤出右边缘（截图里能看到边框被切掉）。 */
+  .topbar { height: 44px; padding: 0 10px; gap: 6px; }
+  .brand { gap: 6px; min-width: 0; flex: 0 0 auto; }
+  .brand .sub { display: none; }
+  .badges { gap: 4px; flex: 0 1 auto; min-width: 0; overflow: hidden; }
+  .badges .el-tag { flex: 0 1 auto; min-width: 0; }
+  .badges .el-tag:first-child { max-width: 44vw; }
+  .badges .el-tag:first-child .el-tag__content {
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  /* 第 2 个是「向量库」、第 4 个是「片段」：手机上优先留模型名与文献数 */
+  .badges .el-tag:nth-child(2), .badges .el-tag:nth-child(3),
+  .badges .el-tag:nth-child(4) { display: none; }
+  .badges .admin-link { display: none; }
+
+  /* 布局：不再用 grid，一栏占满；高度扣掉顶栏与底部导航 */
+  .layout {
+    display: block; height: auto; padding: 0; gap: 0;
+    height: calc(100vh - 44px - 58px);
+    height: calc(100dvh - 44px - 58px);
+  }
+  .layout > .panel { display: none; height: 100%; border-radius: 0; border-left: 0; border-right: 0; border-bottom: 0; }
+  .mpane-docs   > .panel.left   { display: flex; }
+  .mpane-reader > .panel.center { display: flex; }
+  .mpane-qa     > .panel.right  { display: flex; }
+
+  /* 面板头：标题一行、工具一行，工具横向可滑（阅读器那排按钮 6 个，硬挤会换三行） */
+  .panel .panel-head {
+    height: auto; min-height: 42px; flex-wrap: wrap;
+    padding: 6px 10px; row-gap: 5px; gap: 6px;
+  }
+  .panel .panel-head > span:first-child { max-width: 100%; }
+  /* 换行而不是横向滚动：横滑会把「下一页」藏到屏幕外，
+     而翻页恰恰是阅读器最常用的操作。换行后六件控件两行内都看得见。 */
+  .viewer-tools, .chat-tools {
+    width: 100%; justify-content: flex-start; gap: 4px; flex-wrap: wrap; row-gap: 4px;
+  }
+  .viewer-tools > *, .chat-tools > * { flex: none; }
+  .pager { min-width: 44px; }
+  .chat-tools .scope-select { width: 96px; }
+  .panel-head .el-radio-button__inner { padding: 0 8px; }
+  /* 触屏没有 hover，悬停翻译在手机上不可能触发；留着只占位置，
+     还会把「上一页/下一页」挤出可视区 */
+  .viewer-tools .hover-switch { display: none; }
+
+  /* 文献列表：行高加大到能点准（原来 7px padding，手指一按就点到隔壁） */
+  .doc-item { padding: 11px 8px; gap: 9px; }
+  .doc-title { font-size: 13.5px; -webkit-line-clamp: 3; }
+  .doc-meta { font-size: 11.5px; }
+  .upload-area { padding: 8px; }
+  .doc-item .doc-del { opacity: .55; font-size: 12px; padding: 3px 7px; }
+
+  /* 阅读器：页图满宽，章节树改成浮层（原来 210px 会把正文挤成一条） */
+  .page-stage { padding: 6px; }
+  .panel.center .tree {
+    position: absolute; left: 0; top: 0; bottom: 0; z-index: 8;
+    width: 74%; max-width: 260px; background: var(--panel);
+    box-shadow: 2px 0 14px rgba(0, 0, 0, .12);
+  }
+
+  /* 问答：气泡满宽，引用来源那块单独滚，不要把整栏顶出去 */
+  .chat-list { padding: 8px; }
+  .empty.chat-empty { padding: 8px; }
+  /* 触屏可点高度：原来 7px 上下留白，实际只有 35px，手指容易点到隔壁 */
+  .sample-q { font-size: 12.5px; line-height: 1.5; padding: 11px 9px 11px 23px; }
+
+  /* 图谱 / 写作：这两个视图内部本来就有自己的滚动区 */
+  .graph-bar { flex-wrap: wrap; gap: 8px; padding: 8px 10px; }
+  .legend { margin-left: 0; }
+  .write-wrap { padding: 0 8px 8px; }
+  .wtabs { overflow-x: auto; scrollbar-width: none; }
+  .wtabs::-webkit-scrollbar { display: none; }
+  .wtabs .wtab { flex: none; }
+  .viz-split { display: block; }
+  .viz-pane + .viz-pane { margin-top: 8px; }
+
+  /* 弹窗与抽屉：Element 用的是行内 width/size，只能 !important 盖掉 */
+  .el-dialog { width: 94vw !important; max-width: 94vw; margin-top: 8vh !important; }
+  .el-drawer { width: 100% !important; max-width: 100vw; }
+  .el-drawer__body { padding: 10px; }
+
+  /* 保活提示原来贴底居中，会被底部导航压住 */
+  .warm-toast { left: 10px; right: 10px; bottom: 66px; font-size: 12px; }
+
+  /* 底部导航 */
+  .mnav {
+    display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+    height: 58px; padding-bottom: env(safe-area-inset-bottom, 0);
+    background: var(--panel); border-top: 1px solid var(--line);
+  }
+  .mnav-btn {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 2px; border: 0; background: none; color: var(--muted);
+    font-size: 11px; font-family: inherit; cursor: pointer; padding: 0;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .mnav-btn .mnav-i {
+    width: 22px; height: 22px; border-radius: 6px; display: flex;
+    align-items: center; justify-content: center;
+    font-size: 12px; background: #eef1f6; color: #5b6472;
+  }
+  .mnav-btn.on { color: var(--brand); font-weight: 500; }
+  .mnav-btn.on .mnav-i { background: var(--brand); color: #fff; }
+}
+
+/* 超窄屏（≤380px，如 iPhone SE）：再省一点横向空间 */
+@media (max-width: 380px) {
+  .brand .title { font-size: 14px; }
+  .badges .el-tag:nth-child(3) { display: none; }
+  .doc-title { font-size: 13px; }
 }

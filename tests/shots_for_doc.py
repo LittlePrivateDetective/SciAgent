@@ -241,7 +241,7 @@ def main() -> int:
             take("09_write_chart", "!!window.__sciagent.wv.chart", 1.6)
 
         # 论文发现
-        if not only or "discover" in only:
+        if (not only) or any("discover" in o for o in only):
             b.js("""(async()=>{const vm=window.__sciagent; vm.centerView='reader';
                   await new Promise(r=>setTimeout(r,300)); vm.openDiscover('search');
                   vm.disc.q='retrieval augmented generation'; await vm.doSearch(); return 1;})()""")
