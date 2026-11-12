@@ -21,7 +21,7 @@
   <!-- 云端冷启动提示：服务空闲休眠后，第一个访客要等 15–37 秒（实测）。
        不提示的话，评委只会觉得"这作品卡"；提示了就是"在干活"。 -->
   <div class="warm-toast" v-if="warmHint">
-    <span class="warm-dot"></span>正在唤醒模型与索引，约 10 秒…（首次访问需要预热，之后秒回）
+    <span class="warm-dot"></span>正在唤醒模型与索引，首次访问需 10–30 秒…（之后就秒回）
   </div>
   <header class="topbar">
     <div class="brand">
