@@ -219,6 +219,9 @@ def run(url: str = BASE + "/") -> dict:
           const vm = window.__sciagent, c = vm.wv.chart;
           if (!c) return {err: vm.wv.cError};
           const svg = document.querySelector('.viz-prev svg');
+          // 预览已从 mermaid 改成 ECharts 自绘（mermaid 10.9 的 xychart 会让纵轴
+          // 从数据最小值起，柱子被截断）；两种渲染都算"预览出来了"
+          const canv = document.querySelector('.chart-chart canvas');
           const cap = c.caption || {};
           const table = document.querySelector('.cap-card');
           return {
@@ -226,7 +229,12 @@ def run(url: str = BASE + "/") -> dict:
             labels: c.labels,
             codeHead: (c.code||'').slice(0,50),
             valuesInCode: ['28.4','34.5','41.0','65','110','175'].filter(v=>String(c.code).includes(v)),
-            svg: !!svg,
+            svg: !!svg, canvas: !!canv, drawnBars: (() => {
+              const inst = window.echarts && document.querySelector('.chart-chart')
+                ? window.echarts.getInstanceByDom(document.querySelector('.chart-chart')) : null;
+              const opt = inst ? inst.getOption() : null;
+              return opt && opt.series ? opt.series.map((x) => (x.data || []).length) : [];
+            })(),
             capSource: cap.source, capZh: cap.zh || '', capEn: cap.en || '',
             capTrend: cap.trend_zh || '',
             capChecks: cap.checks ? JSON.parse(JSON.stringify(cap.checks)) : null,
@@ -312,8 +320,13 @@ def run(url: str = BASE + "/") -> dict:
                      and "digraph" in code_of("dot")
                      and "\\begin{tikzpicture}" in code_of("tikz")
                      and "import matplotlib" in code_of("matplotlib"))
+        # 预览要么有 mermaid svg（雷达等回退路径），要么有 ECharts canvas；
+        # 有 canvas 时再核一遍"画出来的点数 == 表里的行数"，防止图画少了还判通过
+        drawn = chart.get("drawnBars") or []
+        preview_ok = bool(chart.get("svg")) or (
+            chart.get("canvas") and drawn and all(n == chart.get("rows") for n in drawn))
         c_ok = (chart.get("err") == "" and chart.get("format") == "mermaid"
-                and chart.get("svg") and len(chart.get("valuesInCode", [])) == 6
+                and preview_ok and len(chart.get("valuesInCode", [])) == 6
                 and chart.get("capCardDom") and len(chart.get("capZh", "")) > 40
                 and len(chart.get("capEn", "")) > 40)
         # 图注里出现表外数字时 capChecks.foreign 非空，这一项就必须挂

@@ -1,0 +1,68 @@
+{
+ "at": "2026-11-12 18:09:10",
+ "base": "http://127.0.0.1:8013",
+ "viewport": "1680x1050 @1x",
+ "shots": [
+  {
+   "file": "01_home.png",
+   "kb": 271,
+   "shot_at": "2026-11-12 17:59"
+  },
+  {
+   "file": "02_answer.png",
+   "kb": 367,
+   "wait_s": 1.2,
+   "at": "18:09:08"
+  },
+  {
+   "file": "03_reader.png",
+   "kb": 398,
+   "shot_at": "2026-11-12 17:59"
+  },
+  {
+   "file": "04_bilingual.png",
+   "kb": 349,
+   "shot_at": "2026-11-12 17:59"
+  },
+  {
+   "file": "05_graph.png",
+   "kb": 288,
+   "shot_at": "2026-11-12 17:59"
+  },
+  {
+   "file": "06_survey.png",
+   "kb": 274,
+   "shot_at": "2026-11-12 17:59"
+  },
+  {
+   "file": "07_write_outline.png",
+   "kb": 304,
+   "shot_at": "2026-11-12 18:00"
+  },
+  {
+   "file": "08_write_topology.png",
+   "kb": 198,
+   "shot_at": "2026-11-12 18:03"
+  },
+  {
+   "file": "09_write_chart.png",
+   "kb": 165,
+   "shot_at": "2026-11-12 17:58"
+  },
+  {
+   "file": "10_discover.png",
+   "kb": 405,
+   "shot_at": "2026-11-12 17:54"
+  },
+  {
+   "file": "11_admin_params.png",
+   "kb": 131,
+   "shot_at": "2026-11-12 17:54"
+  },
+  {
+   "file": "12_admin_overview.png",
+   "kb": 93,
+   "shot_at": "2026-11-12 17:55"
+  }
+ ]
+}

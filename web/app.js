@@ -43,6 +43,7 @@ const EXT = { mermaid: "mmd", dot: "gv", tikz: "tex", matplotlib: "py", latex: "
 // 架构图预览的 ECharts 实例。和引用图谱一样放在组件外：
 // 它持有 canvas 与大量内部对象，进响应式代理后每次 setOption 都会被深拷贝一遍。
 let _topoChart = null;
+let _chartChart = null;   // 数据图表预览（自己画，不用 mermaid）
 
 /* ---------- 极简 Markdown 渲染（够用即止：表格 / 粗体 / 行内代码 / 换行） ---------- */
 function mdToHtml(md) {
@@ -1761,7 +1762,8 @@ const app = createApp({
         } else {
           this.wv.chart = r;
           this.wv.chartSvg = "";
-          if (r.format === "mermaid") await this.renderMermaid(r.code, "chart");
+          await this.$nextTick();
+          this.renderChartChart();
         }
       } catch (e) {
         this.wv.cError = "请求失败，请检查服务是否在运行";
@@ -1769,6 +1771,53 @@ const app = createApp({
       } finally {
         this.wv.cLoading = false;
       }
+    },
+
+    /* ---------------- 数据图表预览 ----------------
+     * 为什么不用 mermaid 的 xychart 渲染预览：10.9 的 xychart 忽略我们给出的
+     * `y-axis 0 --> 200`，纵轴自动从数据最小值起（实测 28.4/34.5/41.0 画出来
+     * 是 28 起的柱子，第一根直接贴底），而导出的 Mermaid / Matplotlib 代码是
+     * 从 0 起的——预览和代码不一致，还会把"差 13 分"看成"差 3 倍"。
+     * 预览改用 ECharts 自己画：纵轴强制 0 起，柱顶标数值，与导出代码同一份数据。
+     */
+    renderChartChart() {
+      const c = this.wv.chart;
+      const el = this.$refs.chartChart;
+      if (!c || !el || !window.echarts) return;
+      const rows = c.raw_values || {};
+      const labels = c.labels || [];
+      const kind = c.kind === "line" ? "line" : "bar";
+      const series = Object.keys(rows).map((name) => ({
+        name,
+        type: kind,
+        smooth: kind === "line",
+        symbolSize: 7,
+        barMaxWidth: 46,
+        data: (rows[name] || []).map((v) => {
+          const n = parseFloat(String(v).replace(/[^0-9.\-]/g, ""));
+          return Number.isFinite(n) ? n : 0;
+        }),
+        // 点位标数值：评委不用对着轴估，这也是"逐格可核对"的一部分
+        label: { show: labels.length <= 6, position: "top", fontSize: 10, color: "#50596a" },
+      }));
+      el.style.height = "320px";
+      if (!_chartChart) _chartChart = window.echarts.init(el, null, { renderer: "canvas" });
+      _chartChart.resize();
+      _chartChart.setOption({
+        animationDuration: 320,
+        grid: { left: 52, right: 20, top: 46, bottom: 36 },
+        title: { text: c.title || "", left: "center", top: 4,
+                 textStyle: { fontSize: 13, fontWeight: 600, color: "#3a4150" } },
+        tooltip: { trigger: "axis" },
+        legend: { top: 26, textStyle: { fontSize: 11, color: "#6b7280" } },
+        xAxis: { type: "category", data: labels,
+                 axisLabel: { fontSize: 11, color: "#6b7280" },
+                 axisLine: { lineStyle: { color: "#d8dee8" } } },
+        // min: 0 是这一段的重点：柱状图纵轴不从 0 起会放大差异，学术图表里是硬伤
+        yAxis: { type: "value", min: 0, axisLabel: { fontSize: 11, color: "#6b7280" },
+                 splitLine: { lineStyle: { color: "#eef1f5" } } },
+        series,
+      }, true);
     },
 
     /* ---------------- 两个面板共用的工具 ---------------- */
@@ -2034,8 +2083,10 @@ const app = createApp({
         symbolSize: n.size,
         value: n,
         itemStyle: { color: roleColor[n.role] || "#4a7fd4" },
-        // 只给核心节点常显标签，40 篇的图上全显会糊成一团
-        label: { show: n.role === "cornerstone" || n.role === "bridge" || n.in_degree >= 2 },
+        // 只给核心节点常显标签：38 篇的图上，入度≥2 的就有 24 个，标签会叠成
+        // 一片糊（实测截图里中间的论文名互相压着看不清）。基石+桥接共 13 个，
+        // 刚好够看懂结构；其余节点鼠标悬停有 tooltip，点一下也有侧卡。
+        label: { show: n.role === "cornerstone" || n.role === "bridge" },
         category: n.cluster,
       }));
 

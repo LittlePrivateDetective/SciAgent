@@ -14,9 +14,9 @@
     "title": "块稀疏RAG架构",
     "source": "llm",
     "checks": {
-     "node_count": 7,
-     "edge_count": 6,
-     "group_count": 3,
+     "node_count": 9,
+     "edge_count": 8,
+     "group_count": 4,
      "dropped_edges": 0,
      "formats": [
       "mermaid",
@@ -25,12 +25,13 @@
       "matplotlib"
      ]
     },
-    "nodes": 7,
-    "edges": 6,
+    "nodes": 9,
+    "edges": 8,
     "groups": [
      "数据层",
      "模型层",
-     "输出层"
+     "输出层",
+     "训练层"
     ],
     "codeKeys": [
      "mermaid",
@@ -39,21 +40,21 @@
      "matplotlib"
     ],
     "codeLen": {
-     "mermaid": 317,
-     "dot": 1332,
-     "tikz": 1585,
-     "matplotlib": 4438
+     "mermaid": 368,
+     "dot": 1547,
+     "tikz": 1352,
+     "matplotlib": 4793
     },
     "idHits": {
-     "mermaid": 7,
-     "dot": 7,
-     "tikz": 7,
-     "matplotlib": 7
+     "mermaid": 9,
+     "dot": 9,
+     "tikz": 9,
+     "matplotlib": 9
     },
     "canvas": true,
-    "drawn": 7,
-    "drawnLinks": 6,
-    "chartH": 396,
+    "drawn": 9,
+    "drawnLinks": 8,
+    "chartH": 518,
     "chars": {
      "mermaid": "flowchart LR\n  subgraph G0[\"数据层\"]\n    n1([\"长文档输入\"])\n    n2[\"",
      "dot": "// 块稀疏RAG架构\ndigraph architecture {\n  rankdir=TB;\n  graph [fo",
@@ -66,19 +67,19 @@
   {
    "fmt_switch": {
     "mermaid": {
-     "len": 317,
+     "len": 368,
      "miss": false
     },
     "dot": {
-     "len": 1332,
+     "len": 1547,
      "miss": false
     },
     "tikz": {
-     "len": 1585,
+     "len": 1352,
      "miss": false
     },
     "matplotlib": {
-     "len": 4438,
+     "len": 4793,
      "miss": false
     }
    }
@@ -107,11 +108,16 @@
      "110",
      "175"
     ],
-    "svg": true,
+    "svg": false,
+    "canvas": true,
+    "drawnBars": [
+     3,
+     3
+    ],
     "capSource": "llm",
-    "capZh": "图 1　Transformer、BERT 和 GPT-3 三种模型在 BLEU 分数与参数量上的对比。BLEU 分数从 Transformer 的 28.4 提升至 GPT-3 的 41.0，增幅达 44.4%；参数量由 Transformer 的 65.0 增至 GPT-3 的 175，增长 169.2%。GPT-3 在两项指标上均达到峰值，而 Transformer 则处于最低水平。",
-    "capEn": "Figure 1. Comparison of BLEU scores and parameter counts across Transformer, BERT, and GPT-3. The BLEU score increases from 28.4 (Transformer) to 41.0 (GPT-3), a 44.4% improvement. Parameter count rises from 65.0 (Transformer) to 175 (GPT-3), representing a 169.2% increase. GPT-3 achieves the highest BLEU score and parameter count, while Transformer exhibits the lowest values in both metrics.",
-    "capTrend": "GPT-3 在 BLEU 分数和参数量上均达到最高值，相较于 Transformer 分别提升 44.4% 和 169.2%。",
+    "capZh": "图 1　Transformer、BERT 和 GPT-3 三种模型在 BLEU 分数与参数量上的对比。BLEU 分数从 Transformer 的 28.4 上升至 GPT-3 的 41.0，增幅达 44.4%；参数量则由 Transformer 的 65.0 增至 GPT-3 的 175，增长 169.2%。GPT-3 在两项指标上均达到最高值，BERT 次之，Transformer 在两项指标中均最低。",
+    "capEn": "Figure 1. Comparison of BLEU scores and parameter counts across Transformer, BERT, and GPT-3. BLEU scores increase from 28.4 (Transformer) to 41.0 (GPT-3), a 44.4% rise, while parameter counts rise from 65.0 (Transformer) to 175 (GPT-3), a 169.2% increase. GPT-3 achieves the highest BLEU score and parameter count, followed by BERT, with Transformer showing the lowest values in both metrics.",
+    "capTrend": "从 Transformer 到 GPT-3，BLEU 分数与参数量均显著上升，GPT-3 在两项指标中均达到最高值。",
     "capChecks": {
      "verified": 22,
      "foreign": [],
@@ -126,7 +132,7 @@
      "图注由模型撰写",
      "图注数字核对 22/22"
     ],
-    "wait_s": 4.0
+    "wait_s": 3.0
    }
   },
   {

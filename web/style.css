@@ -806,6 +806,8 @@ body.is-dragging, body.is-dragging * { user-select: none !important; }
 .viz-prev svg { width: auto !important; max-width: none !important; height: auto; }
 /* 架构图预览：ECharts 自己排版，高度由层数决定（JS 里写行内 height） */
 .topo-chart { width: 100%; height: 260px; }
+/* 数据图表预览：ECharts 自绘（纵轴从 0 起），高度 JS 里给 */
+.chart-chart { width: 100%; height: 320px; }
 
 .viz-prev-hint {
   padding: 14px 12px; font-size: 11.5px; line-height: 1.7; color: var(--muted);
