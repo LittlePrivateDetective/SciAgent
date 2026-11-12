@@ -4,17 +4,17 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SciAgent · 科研智能体</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/element-plus@2.7.6/dist/index.css" />
-  <link rel="stylesheet" href="/static/style.css?v=3" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
-  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/vue@3.4.31/dist/vue.global.prod.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/element-plus@2.7.6/dist/index.full.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/element-plus@2.7.6/dist/locale/zh-cn.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+  <link rel="stylesheet" href="/static/vendor/element-plus.css" />
+  <link rel="stylesheet" href="/static/style.css?v=5" />
+  <link rel="stylesheet" href="/static/vendor/katex.min.css" />
+  <script src="/static/vendor/katex.min.js"></script>
+  <script src="/static/vendor/katex-auto-render.min.js"></script>
+  <script src="/static/vendor/vue.global.prod.js"></script>
+  <script src="/static/vendor/element-plus.full.min.js"></script>
+  <script src="/static/vendor/element-plus-zh-cn.min.js"></script>
+  <script src="/static/vendor/echarts.min.js"></script>
   <!-- 架构图/图表的即时预览：Mermaid 在浏览器里直接渲染，DOT/TikZ/Python 只给代码 -->
-  <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+  <script src="/static/vendor/mermaid.min.js"></script>
 </head>
 <body>
 <div id="app" v-cloak>
@@ -859,6 +859,6 @@
   </el-drawer>
 </div>
 
-<script src="/static/app.js?v=3"></script>
+<script src="/static/app.js?v=5"></script>
 </body>
 </html>
