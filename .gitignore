@@ -45,3 +45,5 @@ dist/
 
 # 云端发布目录：含真实 API Key 与 230MB 数据，绝不进仓库
 deploy/
+data/bm25_tokens.txt
+data/bm25_tokens.tmp

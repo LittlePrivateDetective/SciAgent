@@ -113,6 +113,12 @@ def main() -> int:
     (DEPT / "data").mkdir()
     shutil.copy2(ROOT / "data" / "sciagent.db", DEPT / "data" / "sciagent.db")
     copy_tree(ROOT / "data" / "pdf", DEPT / "data" / "pdf")
+
+    # 分词缓存：云端不重跑 jieba 分词（2 万块实测 12 秒 / 云沙箱 26 秒）。
+    # 指纹按块 id 序列算，与 DB 一致；拷过去就能直接命中。
+    tokens = ROOT / "data" / "bm25_tokens.txt"
+    if tokens.exists():
+        shutil.copy2(tokens, DEPT / "data" / "bm25_tokens.txt")
     for extra in ("samples",):
         src = ROOT / "data" / extra
         if src.exists():

@@ -126,6 +126,61 @@ class BM25:
 _BM25_CACHE: dict[str, tuple[BM25, list[str]]] = {}
 
 
+def _tokens_path():
+    from pathlib import Path
+
+    return Path(settings.data_dir) / "bm25_tokens.txt"
+
+
+def _corpus_fingerprint(chunks: list["CorpusRow"]) -> str:
+    """按块 id 序列算指纹：入库/删除/重切块后指纹变，旧缓存自然失效。"""
+    import hashlib
+
+    h = hashlib.sha1()
+    for c in chunks:
+        h.update(c.id.encode())
+        h.update(b"|")
+    return h.hexdigest()[:16]
+
+
+def _load_tokens(chunks: list["CorpusRow"]) -> list[list[str]]:
+    """取分词结果，优先读磁盘缓存。
+
+    为什么要缓存：jieba 对 2 万个块（634 万字）分词实测 11.9 秒，
+    是冷启动里最大的一块开销（云沙箱 CPU 弱，实测 26 秒）。
+    分词结果本身与进程无关，落盘后冷启动只剩读文件（0.2 秒）+ 建索引（2 秒）。
+
+    格式：首行是指纹，之后一行一个块、词按空格分隔。没用 pickle 是因为
+    15.7MB 的 pickle 反序列化并不更快，而纯文本出问题时人能直接打开看。
+    """
+    fp = _corpus_fingerprint(chunks)
+    path = _tokens_path()
+    try:
+        if path.exists():
+            with path.open("r", encoding="utf-8") as f:
+                head = f.readline().strip()
+                if head == fp:
+                    body = f.read().split("\n")
+                    if len(body) == len(chunks):
+                        return [ln.split(" ") if ln else [] for ln in body]
+                    log.debug("分词缓存行数不符（%d vs %d），重建", len(body), len(chunks))
+    except Exception:  # noqa: BLE001 缓存读不了不算错误，重建即可
+        log.debug("分词缓存读取失败，重建", exc_info=True)
+
+    corpus = [tokenize(c.text) for c in chunks]
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = path.with_suffix(".tmp")
+        with tmp.open("w", encoding="utf-8") as f:
+            f.write(f"{fp}\n")
+            f.write("\n".join(" ".join(t) for t in corpus))
+        tmp.replace(path)
+        log.info("分词缓存已写入 %s（%d 块）", path.name, len(corpus))
+    except Exception:  # noqa: BLE001 写不进去（只读挂载）就每次重建，不影响正确性
+        log.debug("分词缓存写入失败", exc_info=True)
+    return corpus
+
+
 @dataclass(slots=True)
 class CorpusRow:
     """轻量语料行：只带检索需要的字段，不带 embedding。
@@ -184,7 +239,7 @@ def _get_bm25(doc_ids: list[str] | None):
         return hit
 
     chunks, names = _load_corpus(doc_ids)
-    corpus = [tokenize(c.text) for c in chunks]
+    corpus = _load_tokens(chunks)
     bm25 = BM25(corpus)
     entry = (bm25, [c.id for c in chunks])
     # 缓存带上样本量指纹，入库新文档后自然失效
