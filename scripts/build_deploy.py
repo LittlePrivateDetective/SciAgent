@@ -60,6 +60,25 @@ OVERRIDES = {
 }
 
 
+def _checkpoint_db(path: Path) -> None:
+    """把 WAL 合并回主库再拷贝。
+
+    SQLite 默认 WAL 模式：新写入先落 .db-wal，主 .db 可能落后几个事务。
+    直接 copy2 主库 = 拷到一个"少了最近改动"的旧快照，而且完全静默。
+    """
+    import sqlite3
+
+    if not path.exists():
+        return
+    try:
+        con = sqlite3.connect(str(path), timeout=10)
+        con.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+        con.commit()
+        con.close()
+    except Exception as exc:  # noqa: BLE001 数据库正被写也不能挡住打包
+        print(f"  [warn] WAL checkpoint 失败（{exc}），将连 -wal 一起拷")
+
+
 def copy_tree(src: Path, dst: Path, ignore=()) -> None:
     shutil.copytree(
         src, dst,
@@ -111,7 +130,14 @@ def main() -> int:
 
     # 数据：SQLite（含向量）+ 原始 PDF（阅读器要现渲页图）
     (DEPT / "data").mkdir()
+    _checkpoint_db(ROOT / "data" / "sciagent.db")
     shutil.copy2(ROOT / "data" / "sciagent.db", DEPT / "data" / "sciagent.db")
+    # WAL 里可能还有没落盘的事务。只拷 .db 会静默丢掉最近的入库——
+    # 实测丢过一篇刚上传的论文（本机 38 篇、包里 37 篇），而且不报错。
+    for suffix in ("-wal", "-shm"):
+        side = ROOT / "data" / f"sciagent.db{suffix}"
+        if side.exists() and side.stat().st_size > 0:
+            shutil.copy2(side, DEPT / "data" / f"sciagent.db{suffix}")
     copy_tree(ROOT / "data" / "pdf", DEPT / "data" / "pdf")
 
     # 分词缓存：云端不重跑 jieba 分词（2 万块实测 12 秒 / 云沙箱 26 秒）。
