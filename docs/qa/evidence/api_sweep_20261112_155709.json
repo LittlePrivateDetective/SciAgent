@@ -1,0 +1,481 @@
+{
+ "base": "http://127.0.0.1:8013",
+ "total": 47,
+ "pass": 47,
+ "fail": 0,
+ "by_status": {
+  "200": 47
+ },
+ "rows": [
+  {
+   "name": "系统信息",
+   "method": "GET",
+   "url": "/api/system/info",
+   "status": 200,
+   "ms": 32,
+   "pass": true,
+   "expect": "文档数与块数非零",
+   "detail": "{\"ok\": true, \"llm\": {\"route\": \"cloud\", \"model\": \"deepseek-v4.1-flash\", \"base_url\": \"https://dashscope.aliyuncs.com/compatible-mode/v1\", \"mock\": false}, \"vector_"
+  },
+  {
+   "name": "健康检查",
+   "method": "GET",
+   "url": "/health",
+   "status": 200,
+   "ms": 2,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"ok\": true, \"service\": \"sciagent\", \"version\": \"1.0.0\"}"
+  },
+  {
+   "name": "保活状态",
+   "method": "GET",
+   "url": "/api/keepalive",
+   "status": 200,
+   "ms": 2,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"ok\": true, \"enabled\": true, \"interval_s\": 300, \"warm_model\": true, \"warm_cloud\": false, \"started_at\": \"2026-11-12T15:44:10\", \"last_beat_at\": \"2026-11-12T15:54"
+  },
+  {
+   "name": "保活心跳",
+   "method": "POST",
+   "url": "/api/keepalive/beat",
+   "status": 200,
+   "ms": 2,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"ok\": true, \"enabled\": true, \"interval_s\": 300, \"warm_model\": true, \"warm_cloud\": false, \"started_at\": \"2026-11-12T15:44:10\", \"last_beat_at\": \"2026-11-12T15:55"
+  },
+  {
+   "name": "预热",
+   "method": "GET",
+   "url": "/api/warm",
+   "status": 200,
+   "ms": 1256,
+   "pass": true,
+   "expect": "检索预热成功",
+   "detail": "{\"ok\": true, \"route\": \"auto\", \"tag\": \"http\", \"tokens\": {\"path\": \"data\\\\bm25_tokens.txt\", \"exists\": true, \"mb\": 11.6, \"fingerprint\": \"5b2eb77a4a717b07\"}, \"retrie"
+  },
+  {
+   "name": "任务列表",
+   "method": "GET",
+   "url": "/api/tasks",
+   "status": 200,
+   "ms": 24,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"tasks\": [{\"id\": \"te16a67c7a026\", \"goal\": \"什么是混合检索\", \"mode\": \"qa\", \"status\": \"done\", \"steps\": 7, \"latency_ms\": 933, \"created_at\": \"11-12 15:44:59\"}, {\"id\": \"t7"
+  },
+  {
+   "name": "审计日志",
+   "method": "GET",
+   "url": "/api/audit",
+   "status": 200,
+   "ms": 4,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"items\": [{\"action\": \"params_reset\", \"doc_id\": \"\", \"detail\": \"恢复默认：max_upload_mb\", \"actor\": \"api_params_effect\", \"created_at\": \"2026-11-12T15:44:59.966791\"}, {"
+  },
+  {
+   "name": "工具目录",
+   "method": "GET",
+   "url": "/api/tools/catalog",
+   "status": 200,
+   "ms": 2,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"tools\": [{\"type\": \"function\", \"function\": {\"name\": \"arxiv_search\", \"description\": \"在 arXiv 上按关键词检索论文，返回标题、作者、arXiv 编号与年份\", \"parameters\": {\"type\": \"object\", \"p"
+  },
+  {
+   "name": "工具健康",
+   "method": "GET",
+   "url": "/api/tools/health",
+   "status": 200,
+   "ms": 2,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"ok\": true, \"tools\": [\"arxiv_search\", \"github_repo\", \"crossref_lookup\"], \"endpoints\": {\"arxiv\": \"export.arxiv.org\", \"github\": \"api.github.com\", \"crossref\": \"ap"
+  },
+  {
+   "name": "文献列表",
+   "method": "GET",
+   "url": "/api/documents",
+   "status": 200,
+   "ms": 40,
+   "pass": true,
+   "expect": "≥10 篇",
+   "detail": "{\"documents\": [{\"id\": \"d7a55a3674e24\", \"filename\": \"cn_paper.pdf\", \"title\": \"基于注意力机制的中文问答检索增强方法\", \"authors\": [], \"affiliations\": [], \"abstract\": \"\", \"year\": \"\","
+  },
+  {
+   "name": "文献详情",
+   "method": "GET",
+   "url": "/api/documents/d7a55a3674e24",
+   "status": 200,
+   "ms": 3,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"id\": \"d7a55a3674e24\", \"filename\": \"cn_paper.pdf\", \"title\": \"基于注意力机制的中文问答检索增强方法\", \"authors\": [], \"affiliations\": [], \"abstract\": \"\", \"year\": \"\", \"venue\": \"\", \""
+  },
+  {
+   "name": "章节树",
+   "method": "GET",
+   "url": "/api/documents/d7a55a3674e24/sections",
+   "status": 200,
+   "ms": 3,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"sections\": [{\"level\": 1, \"title\": \"基于注意力机制的中文问答检索增强方法\", \"page\": 1}]}"
+  },
+  {
+   "name": "块列表",
+   "method": "GET",
+   "url": "/api/documents/d7a55a3674e24/chunks",
+   "status": 200,
+   "ms": 4,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"chunks\": [{\"id\": \"cd086e1f0a37f\", \"page\": 1, \"bbox\": [72.0, 134.1, 512.0, 506.3], \"text\": \"摘要：本文提出一种面向中文问答的轻量级检索增强方法。该方法在稠密检索之后引入段落 级重排序，并利用注意力机制对证据句进行加权。在三个中"
+  },
+  {
+   "name": "页元数据",
+   "method": "GET",
+   "url": "/api/documents/d7a55a3674e24/pages",
+   "status": 200,
+   "ms": 5,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"pages\": [{\"page\": 1, \"width\": 595.0, \"height\": 842.0}]}"
+  },
+  {
+   "name": "页文本层",
+   "method": "GET",
+   "url": "/api/documents/d7a55a3674e24/page/1/text",
+   "status": 200,
+   "ms": 6,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"page\": 1, \"width\": 595.0, \"height\": 842.0, \"has_text_layer\": true, \"words\": [[\"基于注意力机制的中文问答检索增强方法\", 72.0, 90.8, 324.0, 21.6], [\"摘要：本文提出一种面向中文问答的轻量级检索增强方法。该方法在"
+  },
+  {
+   "name": "页图",
+   "method": "GET",
+   "url": "/api/documents/d7a55a3674e24/page/1.png",
+   "status": 200,
+   "ms": 53,
+   "pass": true,
+   "expect": "",
+   "detail": "�PNG\r\n\u001a\n\u0000\u0000\u0000\rIHDR\u0000\u0000\u00043\u0000\u0000\u0005�\b\u0002\u0000\u0000\u0000\u000b\u0002D�\u0000\u0000\u0000\tpHYs\u0000\u0000\u0013�\u0000\u0000\u0013�\u0001\u0007�9�\u0000\u0002!�IDATx��y�Wc��?�\u0012ck�B\r*�,e\u0018�$$�2!\rQh\u0012ٗlY\u001eH)IֱG�\rB\u001aK�P�NvF��(kT�d��^��~t=.�����s�w�6�����Ϲ�u�s��׵��\u0000\u0000\u0000\u0000\u0000"
+  },
+  {
+   "name": "参考文献表",
+   "method": "GET",
+   "url": "/api/documents/d7a55a3674e24/references",
+   "status": 200,
+   "ms": 4,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"total\": 0, \"entries\": []}"
+  },
+  {
+   "name": "引用跳正文",
+   "method": "GET",
+   "url": "/api/documents/d7a55a3674e24/references/1/cites",
+   "status": 200,
+   "ms": 8,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"ok\": true, \"index\": 1, \"total\": 0, \"occurrences\": 0, \"hits\": []}"
+  },
+  {
+   "name": "被引关系",
+   "method": "GET",
+   "url": "/api/documents/d7a55a3674e24/refs",
+   "status": 200,
+   "ms": 4,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"references\": []}"
+  },
+  {
+   "name": "版本差异",
+   "method": "GET",
+   "url": "/api/documents/d7c300e762602/diff?other_id=d7a55a3674e24",
+   "status": 200,
+   "ms": 14,
+   "pass": true,
+   "expect": "同族则 200，跨族 400/404",
+   "detail": "{\"ok\":true,\"summary\":{\"added_sections\":83,\"removed_sections\":1,\"changed_sections\":0,\"unchanged_sections\":0,\"added_senten"
+  },
+  {
+   "name": "回收站",
+   "method": "GET",
+   "url": "/api/documents/trash",
+   "status": 200,
+   "ms": 14,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"items\": [{\"doc_id\": \"d1e7d56b31ce0\", \"filename\": \"qa_probe_21.pdf\", \"title\": \"BLOOM: A 176B-Parameter Open-Access Multilingual Language Model\", \"chunk_count\":"
+  },
+  {
+   "name": "双语状态",
+   "method": "GET",
+   "url": "/api/documents/d7a55a3674e24/bilingual/status",
+   "status": 200,
+   "ms": 8,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"job\": {\"running\": false, \"done\": 0, \"total\": 0, \"error\": \"\"}, \"cached\": {\"total\": 1, \"done\": 1, \"ratio\": 1.0}}"
+  },
+  {
+   "name": "双语全文",
+   "method": "GET",
+   "url": "/api/documents/d7a55a3674e24/bilingual",
+   "status": 200,
+   "ms": 9,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"doc_id\":\"d7a55a3674e24\",\"page_from\":1,\"page_to\":1,\"page_count\":1,\"translated\":0,\"cached\":{\"total\":1,\"done\":1,\"ratio\":1"
+  },
+  {
+   "name": "中译英状态",
+   "method": "GET",
+   "url": "/api/documents/d7a55a3674e24/translate-en",
+   "status": 200,
+   "ms": 5,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"running\":false,\"total\":0,\"done\":0,\"segments\":0,\"skipped\":0,\"chars\":1882,\"error\":\"\",\"ms\":0,\"preview\":\"# Attention-based"
+  },
+  {
+   "name": "中译英下载",
+   "method": "GET",
+   "url": "/api/documents/d7a55a3674e24/translate-en.md",
+   "status": 200,
+   "ms": 2,
+   "pass": true,
+   "expect": "",
+   "detail": "# Attention-based Chinese Question Answering Retrieval Augmentation Method  English translation · 1/1 paragraphs  ---  #"
+  },
+  {
+   "name": "整篇翻译(单页)",
+   "method": "POST",
+   "url": "/api/documents/d7a55a3674e24/bilingual/translate",
+   "status": 200,
+   "ms": 6,
+   "pass": true,
+   "expect": "单页翻译返回 ok（D-73 修复点）",
+   "detail": "{\"ok\": true, \"translated\": 0, \"cached\": {\"total\": 1, \"done\": 1, \"ratio\": 1.0}}"
+  },
+  {
+   "name": "按页翻译",
+   "method": "POST",
+   "url": "/api/documents/d7a55a3674e24/page/1/translate",
+   "status": 200,
+   "ms": 7,
+   "pass": true,
+   "expect": "页面翻译",
+   "detail": "{\"ok\": true, \"page\": 1, \"segs\": 1, \"translated\": 1, \"missing\": 0, \"en\": \"摘要：本文提出一种面向中文问答的轻量级检索增强方法。该方法在稠密检索之后引入段落 级重排序，并利用注意力机制对证据句进行加权。在三个中文问答数据集上，准确率比强基 线提升 4"
+  },
+  {
+   "name": "任意片段翻译",
+   "method": "POST",
+   "url": "/api/translate",
+   "status": 200,
+   "ms": 400,
+   "pass": true,
+   "expect": "返回中文",
+   "detail": "{\"ok\": true, \"src\": \"en\", \"to\": \"zh\", \"text\": \"注意力机制就是全部所需。\", \"zh\": \"注意力机制就是全部所需。\", \"chars\": 26, \"truncated\": false}"
+  },
+  {
+   "name": "扫描件页文本",
+   "method": "GET",
+   "url": "/api/documents/dca501d1039dc/page/1/text",
+   "status": 200,
+   "ms": 11,
+   "pass": true,
+   "expect": "扫描件允许空文本层",
+   "detail": "{\"page\": 1, \"width\": 612.0, \"height\": 792.48, \"has_text_layer\": false, \"words\": []}"
+  },
+  {
+   "name": "问答-事实",
+   "method": "POST",
+   "url": "/api/chat",
+   "status": 200,
+   "ms": 9822,
+   "pass": true,
+   "expect": "≥5 条证据 + 有答案",
+   "detail": "{\"task_id\": \"t18ab5ace8cd0\", \"answer\": \"自注意力每层的计算复杂度为 O(n² · d)，其中 n 是序列长度，d 是表示维度 [2]。\\n- Table 1 中 Self-Attention 行给出：Complexity per Layer 为 O(n² · d)，Sequent"
+  },
+  {
+   "name": "问答-对比",
+   "method": "POST",
+   "url": "/api/chat",
+   "status": 200,
+   "ms": 16021,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"task_id\": \"t3ab2999a858f\", \"answer\": \"| 维度 | BERT 的做法 | GPT 的做法 |\\n|---|---|---|\\n| 预训练目标类型 | 使用两个无监督任务进行预训练 [2]；核心是“masked language model”（MLM）预训练目标，受 Cloze "
+  },
+  {
+   "name": "问答-证据不足",
+   "method": "POST",
+   "url": "/api/chat",
+   "status": 200,
+   "ms": 8226,
+   "pass": true,
+   "expect": "应明确说没有",
+   "detail": "{\"task_id\": \"teb7a0b821d8e\", \"answer\": \"证据未给出 GPT-5 的参数量。证据中出现的参数量包括：Llama 3 flagship model 的 405B trainable parameters [1]；scaling law 外推得到的 402B parameter mod"
+  },
+  {
+   "name": "问答-限定文献",
+   "method": "POST",
+   "url": "/api/chat",
+   "status": 200,
+   "ms": 6146,
+   "pass": true,
+   "expect": "证据全部来自指定文献",
+   "detail": "{\"task_id\": \"tc37b29b19b7f\", \"answer\": \"论文的主要贡献是提出一种面向中文问答的轻量级检索增强方法：在稠密检索之后引入段落级重排序，并利用注意力机制对证据句进行加权。[1]\\n\\n依据：\\n- 在三个中文问答数据集上，准确率比强基线提升 4.2 个百分点，推理延迟仅增加 11 毫秒"
+  },
+  {
+   "name": "图谱",
+   "method": "GET",
+   "url": "/api/graph",
+   "status": 200,
+   "ms": 333,
+   "pass": true,
+   "expect": "节点>20 边>50",
+   "detail": "{\"nodes\": [{\"id\": \"d817ac4e56a32\", \"label\": \"Language Models are Few-Shot Learners\", \"filename\": \"2005.14165v4.pdf\", \"year\": \"2020\", \"pages\": 75, \"pagerank\": 0."
+  },
+  {
+   "name": "图谱综述(选题)",
+   "method": "POST",
+   "url": "/api/graph/survey",
+   "status": 200,
+   "ms": 2806,
+   "pass": true,
+   "expect": "有聚类则出综述，否则 400/404",
+   "detail": "{\"ok\":true,\"survey\":\"**领域脉络**  \\n序列转导模型长期依赖复杂的循环或卷积网络，并以注意力机制连接编码器与解码器[2]。Transformer 以更简单的网络架构取代上述复杂结构，成为后续模型的基础[2]。迁移学"
+  },
+  {
+   "name": "Future Work",
+   "method": "GET",
+   "url": "/api/research/future-work",
+   "status": 200,
+   "ms": 1951,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"items\": [{\"doc_id\": \"dca501d1039dc\", \"page\": 10, \"bbox\": \"36.7,143.2,575.3,234.7\", \"section\": \"5 Training/6.3 English Constituency Parsing\", \"text\": \"We inten"
+  },
+  {
+   "name": "复现性",
+   "method": "GET",
+   "url": "/api/research/reproducibility",
+   "status": 200,
+   "ms": 3713,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"items\": [{\"doc_id\": \"dc7092cdf7b5c\", \"title\": \"Layer Normalization\", \"year\": \"2016\", \"repos\": [\"ivendrov/order-embedding\", \"cooijmanstim/Attentive_reader\"], \""
+  },
+  {
+   "name": "工具调用-GitHub",
+   "method": "POST",
+   "url": "/api/tools/invoke",
+   "status": 200,
+   "ms": 2,
+   "pass": true,
+   "expect": "在线或降级",
+   "detail": "{\"ok\":false,\"tool\":\"github_repo_info\",\"data\":null,\"source\":\"\",\"degraded\":false,\"fallback\":\"\",\"attempts\":0,\"latency_ms\":0"
+  },
+  {
+   "name": "工具 Agent",
+   "method": "POST",
+   "url": "/api/tools/agent",
+   "status": 200,
+   "ms": 1487,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"ok\": true, \"selected_by\": \"llm_function_call\", \"call\": {\"name\": \"github_repo\", \"arguments\": {\"repo\": \"huggingface/transformers\"}}, \"result\": {\"ok\": true, \"too"
+  },
+  {
+   "name": "CSV 转图表",
+   "method": "POST",
+   "url": "/api/tools/csv2chart",
+   "status": 200,
+   "ms": 2228,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"ok\": true, \"code\": \"xychart-beta\\n    title \\\"BLEU\\\"\\n    x-axis [\\\"transformer_big\\\", \\\"convseq\\\"]\\n    y-axis \\\"value\\\" 0 --> 32.66\\n    bar [28.4, 25.2]  %"
+  },
+  {
+   "name": "论文框架",
+   "method": "POST",
+   "url": "/api/write/outline",
+   "status": 200,
+   "ms": 10432,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"ok\": true, \"title\": \"On the Complexity-Accuracy Trade-off in Attention Mechanisms\", \"idea\": \"研究注意力机制的复杂度与精度权衡\", \"sections\": [{\"key\": \"abstract\", \"name\": \"Abst"
+  },
+  {
+   "name": "架构图",
+   "method": "POST",
+   "url": "/api/write/topology",
+   "status": 200,
+   "ms": 4027,
+   "pass": true,
+   "expect": "节点 + 四份代码",
+   "detail": "{\"ok\": true, \"title\": \"检索增强问答系统\", \"source\": \"llm\", \"nodes\": [{\"id\": \"n1\", \"label\": \"用户问题\", \"kind\": \"input\", \"group\": \"输入层\"}, {\"id\": \"n2\", \"label\": \"语义解析\", \"kind"
+  },
+  {
+   "name": "arXiv 搜索",
+   "method": "GET",
+   "url": "/api/discover/search?q=retrieval%20augmented%20generation",
+   "status": 200,
+   "ms": 876,
+   "pass": true,
+   "expect": "在线 200，无外网 503/降级",
+   "detail": "{\"ok\":true,\"q\":\"retrieval augmented generation\",\"items\":[{\"arxiv_id\":\"2411.18583\",\"title\":\"Automated Literature Review U"
+  },
+  {
+   "name": "推荐理由",
+   "method": "GET",
+   "url": "/api/discover/recommend",
+   "status": 200,
+   "ms": 4299,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"ok\":true,\"topics\":[\"attention\",\"transformer\",\"llama\",\"pre-training\",\"layer\"],\"window_days\":180,\"items\":[{\"arxiv_id\":\"2"
+  },
+  {
+   "name": "推荐反馈统计",
+   "method": "GET",
+   "url": "/api/discover/feedback",
+   "status": 200,
+   "ms": 3,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"like\": 1, \"dislike\": 5, \"click\": 0, \"disliked_ids\": [\"2611.07510\", \"2611.12206\", \"2611.12392\", \"2611.12777\", \"2611.13543\"], \"liked_ids\": [\"2611.12777\"]}"
+  },
+  {
+   "name": "追踪状态",
+   "method": "GET",
+   "url": "/api/discover/watch",
+   "status": 200,
+   "ms": 2,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"enabled\": false, \"interval_s\": 21600, \"days\": 7, \"started_at\": \"2026-11-12T15:44:10\", \"last_run_at\": null, \"next_run_at\": null, \"last_ms\": null, \"runs\": 0, \"f"
+  },
+  {
+   "name": "上传 PDF",
+   "method": "POST",
+   "url": "/api/documents/upload",
+   "status": 200,
+   "ms": 286,
+   "pass": true,
+   "expect": "新入库，或按内容判重",
+   "detail": "{\"ok\": false, \"stage\": \"duplicate\", \"message\": \"库中已存在内容高度重合的文献\", \"duplicates\": [{\"doc_id\": \"dcd82e8617cf8\", \"filename\": \"language_understanding_paper.pdf\", \"tit"
+  }
+ ]
+}

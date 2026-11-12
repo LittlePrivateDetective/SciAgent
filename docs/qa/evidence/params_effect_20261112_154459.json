@@ -1,0 +1,94 @@
+{
+ "base": "http://127.0.0.1:8013",
+ "at": "2026-11-12 15:44:59",
+ "total": 17,
+ "pass": 17,
+ "fail": 0,
+ "rows": [
+  {
+   "name": "未登录读参数被拒",
+   "pass": true,
+   "detail": "GET /api/admin/params -> 401"
+  },
+  {
+   "name": "错口令被拒",
+   "pass": true,
+   "detail": "-> 401"
+  },
+  {
+   "name": "正确口令签发会话",
+   "pass": true,
+   "detail": "-> 200，随后读参数 200"
+  },
+  {
+   "name": "保存 llm_mock",
+   "pass": true,
+   "detail": "applied=1"
+  },
+  {
+   "name": "自测走 mock 路由",
+   "pass": true,
+   "detail": "route=mock ms=0"
+  },
+  {
+   "name": "问答链路同步切到 mock",
+   "pass": true,
+   "detail": "answer=【模拟模式】未配置 LLM_API_KEY，以下内容不是真实模型输出。请在 .e"
+  },
+  {
+   "name": "mock 下检索仍返回证据",
+   "pass": true,
+   "detail": "evidence=11"
+  },
+  {
+   "name": "meta.thinking 跟随全局 True",
+   "pass": true,
+   "detail": "meta={'thinking': True, 'model': 'deepseek-v4.1-flash'}"
+  },
+  {
+   "name": "meta.thinking 跟随全局 False",
+   "pass": true,
+   "detail": "meta={'thinking': False, 'model': 'deepseek-v4.1-flash'}"
+  },
+  {
+   "name": "保活状态报 900s",
+   "pass": true,
+   "detail": "interval_s=900"
+  },
+  {
+   "name": "改成 1800s 后跟着变",
+   "pass": true,
+   "detail": "interval_s=1800"
+  },
+  {
+   "name": "超限上传被拒 413",
+   "pass": true,
+   "detail": "UnderstandingDeepLearning_02_09_26_C.pdf 21.3MB -> 413 {\"detail\":\"文件超过 1MB 限制\"}"
+  },
+  {
+   "name": "被拒后库内数量不变",
+   "pass": true,
+   "detail": "38 -> 38"
+  },
+  {
+   "name": "越界整批拒绝",
+   "pass": true,
+   "detail": "rejected=['max_upload_mb']"
+  },
+  {
+   "name": "同批合法项也没被写进去",
+   "pass": true,
+   "detail": "temperature=0.2(env)，拒绝前=0.2(env)"
+  },
+  {
+   "name": "改动留痕",
+   "pass": true,
+   "detail": "最近动作=['params_update', 'params_update', 'params_update', 'params_update', 'params_update', 'params_update']"
+  },
+  {
+   "name": "参数已恢复原值与原来源",
+   "pass": true,
+   "detail": "llm_mock=False(env) / llm_thinking=False(env) / keepalive_interval=300(default) / max_upload_mb=120(env)"
+  }
+ ]
+}

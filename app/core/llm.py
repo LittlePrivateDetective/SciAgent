@@ -97,10 +97,20 @@ class LLMGateway:
         self._client = None
 
     def route(self) -> str:
-        """决定本次走 cloud / local / mock。"""
+        """决定本次走 cloud / local / mock。
+
+        优先级：强制模拟 > 强制本地 > 缺 key 兜底。
+
+        `llm_mock` 必须排在最前（D-77）：它的说明写的是"完全不调模型，用固定文案
+        占位"，但原来它和"没 key"共用一条分支，于是 `ollama_enabled=true` 时被
+        改判成 local——本机 Ollama 没开，用户按下"模拟模式"反而每次问答都 502。
+        本意是"演示时别依赖网络"，结果又依赖了另一个更不稳定的东西。
+        """
+        if settings.llm_mock:
+            return "mock"
         if settings.llm_route == "local" and settings.ollama_enabled:
             return "local"
-        if settings.llm_mock or not settings.llm_api_key:
+        if not settings.llm_api_key:
             return "local" if settings.ollama_enabled else "mock"
         return "cloud"
 
