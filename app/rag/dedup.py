@@ -3,13 +3,18 @@
 官方用例：先传 1706.03762v7.pdf，再传 1706.03762v1.pdf，要求识别出"同一篇论文的
 不同版本"，并建议保留较新版本，最好能给出版本差异。
 
-三层判定，逐层短路：
-1. arXiv ID / DOI 归一（最硬）→ 同族；
-2. 64 位 SimHash 正文指纹（汉明距离 ≤ 6）→ 同文；
-3. 摘要向量余弦 ≥ 0.92 → 同文不同排版。
+四层判定，逐层短路（按实测调过，不是拍脑袋）：
+1. arXiv ID / DOI 归一 → 同族（最硬，版本号不同也能对上）；
+2. 归一化正文的 SHA1 完全一致 → 同文（改了文件名/元数据也躲不过）；
+3. 64 位 SimHash 距离 ≤ 6 **且** 标题相似 ≥ 0.7 → 同文的改写版；
+4. 标题相似 ≥ 0.92 → 疑似同名文献（正文可能完全不同）。
 
-只做 1 会被"改了排版/换了文件名"绕过；只做 2 会因为两版正文差异而漏判；
-三层叠加才稳。
+前两层各自能被绕过（换排版就改了指纹、换标题就丢了同族），必须叠加。
+第 3 层为什么要绑标题——见 find_duplicates 里的实测数据：64 位指纹对
+30k+ 字的长文档几乎没有区分度，不同论文的距离经常只有 2–6。
+
+已知取舍：同一篇的**中文译版**（正文全译、标题也换）会走到放行。这是故意的：
+漏判只是多存一篇，误判会把新论文直接堵在门外（D-87 就是这么发生的）。
 """
 from __future__ import annotations
 
@@ -27,6 +32,12 @@ log = get_logger(__name__)
 
 _TOKEN = re.compile(r"[A-Za-z][A-Za-z0-9]{2,}|[\u4e00-\u9fa5]{2,}")
 RE_VERSION = re.compile(r"v(\d+)$", re.I)
+
+# 三个阈值统一放在这里：测试（tests/dedup_matrix.py）直接引用，避免"文档写的
+# 和代码里的数字不是一回事"——这种漂移在阈值类逻辑里最难发现。
+SIMHASH_MAX_DIST = 6      # 64 位指纹的最大距离，超过就不看正文了
+TITLE_NEAR = 0.70        # 第 3 层要求：距离再近，标题也得像到这个程度
+TITLE_SAME = 0.92        # 第 4 层：标题几乎一样（正文可以完全不同）
 
 
 def normalize(text: str) -> str:
@@ -147,17 +158,20 @@ def find_duplicates(
         # （we/model/results/table/figure），实测 RAG(2005.11401) 与库内
         # Whisper(2212.04356)、LLaVA(2304.08485) 的距离都只有 4——两篇毫无关系。
         # 后果是新论文一律传不进来，用户只看到"内容高度重合"却找不到重合在哪。
-        # 现在改成：任何距离都要求标题也像（真·同版本标题实测 >0.95，0.6 足够宽容）。
+        # 现在改成：任何距离都要求标题也像。门槛取 0.70 而不是 0.60——40 篇互查时
+        # 距离 ≤6 的 111 对里，标题相似最高的一对是 0.55（LayerNorm 那篇 vs 另一篇，
+        # 距离 4），0.60 只剩 0.05 余量；而真同篇的标题相似度实测 >0.95（加副标题
+        # 也有 0.85），0.70 对召回没有影响。详见 tests/dedup_matrix.py 的量化结果。
         if sh and d.simhash:
             dist = hamming(sh, d.simhash)
-            if dist <= 6:
+            if dist <= SIMHASH_MAX_DIST:
                 from difflib import SequenceMatcher
 
                 # 标题缺失时（扫描件抽不到标题）保守按重复处理：宁可让用户看一眼，
                 # 也不要把同一篇论文存两遍污染检索
                 ratio = (SequenceMatcher(None, normalize(title), normalize(d.title)).ratio()
                          if title and d.title else 1.0)
-                if ratio >= 0.6:
+                if ratio >= TITLE_NEAR:
                     out.append(
                         DupHit(d, f"正文指纹近似(汉明距离={dist}，标题相似 {ratio:.2f})",
                                round(1 - dist / 64, 3), _suggest(d, arxiv_id))
@@ -169,7 +183,7 @@ def find_duplicates(
             from difflib import SequenceMatcher
 
             ratio = SequenceMatcher(None, normalize(title), normalize(d.title)).ratio()
-            if ratio >= 0.92:
+            if ratio >= TITLE_SAME:
                 out.append(DupHit(d, f"标题高度相似({ratio:.2f})", round(ratio, 3), _suggest(d, arxiv_id)))
 
     out.sort(key=lambda x: x.similarity, reverse=True)

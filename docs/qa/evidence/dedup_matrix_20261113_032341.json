@@ -1,0 +1,884 @@
+{
+ "at": "2026-11-13 03:23:41",
+ "docs": 38,
+ "consistency": {
+  "total": 38,
+  "drift": 0,
+  "rows": [],
+  "all": [
+   {
+    "file": "1706.03762v1.pdf",
+    "simhash_same": true,
+    "chash_same": true,
+    "family_same": true,
+    "family_weaker_now": false,
+    "fam_db": "arxiv:1706.03762",
+    "fam_now": "arxiv:1706.03762"
+   },
+   {
+    "file": "1607.06450v1.pdf",
+    "simhash_same": true,
+    "chash_same": true,
+    "family_same": true,
+    "family_weaker_now": false,
+    "fam_db": "arxiv:1607.06450",
+    "fam_now": "arxiv:1607.06450"
+   },
+   {
+    "file": "1707.06347v2.pdf",
+    "simhash_same": true,
+    "chash_same": true,
+    "family_same": true,
+    "family_weaker_now": false,
+    "fam_db": "arxiv:1707.06347",
+    "fam_now": "arxiv:1707.06347"
+   },
+   {
+    "file": "2001.08361v1.pdf",
+    "simhash_same": true,
+    "chash_same": true,
+    "family_same": true,
+    "family_weaker_now": false,
+    "fam_db": "arxiv:2001.08361",
+    "fam_now": "arxiv:2001.08361"
+   },
+   {
+    "file": "2002.04745v2.pdf",
+    "simhash_same": true,
+    "chash_same": true,
+    "family_same": true,
+    "family_weaker_now": false,
+    "fam_db": "arxiv:2002.04745",
+    "fam_now": "arxiv:2002.04745"
+   },
+   {
+    "file": "2005.14165v4.pdf",
+    "simhash_same": true,
+    "chash_same": true,
+    "family_same": true,
+    "family_weaker_now": false,
+    "fam_db": "arxiv:2005.14165",
+    "fam_now": "arxiv:2005.14165"
+   },
+   {
+    "file": "2101.03961v3.pdf",
+    "simhash_same": true,
+    "chash_same": true,
+    "family_same": true,
+    "family_weaker_now": false,
+    "fam_db": "arxiv:2101.03961",
+    "fam_now": "arxiv:2101.03961"
+   },
+   {
+    "file": "2107.03374v2.pdf",
+    "simhash_same": true,
+    "chash_same": true,
+    "family_same": true,
+    "family_weaker_now": false,
+    "fam_db": "arxiv:2107.03374",
+    "fam_now": "arxiv:2107.03374"
+   },
+   {
+    "file": "1910.02054v3.pdf",
+    "simhash_same": true,
+    "chash_same": true,
+    "family_same": true,
+    "family_weaker_now": false,
+    "fam_db": "arxiv:1910.02054",
+    "fam_now": "arxiv:1910.02054"
+   },
+   {
+    "file": "1910.10683v4.pdf",
+    "simhash_same": true,
+    "chash_same": true,
+    "family_same": true,
+    "family_weaker_now": false,
+    "fam_db": "arxiv:1910.10683",
+    "fam_now": "arxiv:1910.10683"
+   },
+   {
+    "file": "2010.11929v2.pdf",
+    "simhash_same": true,
+    "chash_same": true,
+    "family_same": true,
+    "family_weaker_now": false,
+    "fam_db": "arxiv:2010.11929",
+    "fam_now": "arxiv:2010.11929"
+   },
+   {
+    "file": "209_Emergent_Abilities_of_Larg.pdf",
+    "simhash_same": true,
+    "chash_same": true,
+    "family_same": true,
+    "family_weaker_now": true,
+    "fam_db": "arxiv:2204.01691",
+    "fam_now": "title:ec70bdcb91d020c9"
+   },
+   {
+    "file": "2103.00020v1.pdf",
+    "simhash_same": true,
+    "chash_same": true,
+    "family_same": true,
+    "family_weaker_now": false,
+    "fam_db": "arxiv:2103.00020",
+    "fam_now": "arxiv:2103.00020"
+   },
+   {
+    "file": "2106.09685v2.pdf",
+    "simhash_same": true,
+    "chash_same": true,
+    "family_same": true,
+    "family_weaker_now": false,
+    "fam_db": "arxiv:2106.09685",
+    "fam_now": "arxiv:2106.09685"
+   },
+   {
+    "file": "2201.11903v6.pdf",
+    "simhash_same": true,
+    "chash_same": true,
+    "family_same": true,
+    "family_weaker_now": false,
+    "fam_db": "arxiv:2201.11903",
+    "fam_now": "arxiv:2201.11903"
+   },
+   {
+    "file": "2203.02155v1.pdf",
+    "simhash_same": true,
+    "chash_same": true,
+    "family_same": true,
+    "family_weaker_now": false,
+    "fam_db": "arxiv:2203.02155",
+    "fam_now": "arxiv:2203.02155"
+   },
+   {
+    "file": "2205.14135v2.pdf",
+    "simhash_same": true,
+    "chash_same": true,
+    "family_same": true,
+    "family_weaker_now": false,
+    "fam_db": "arxiv:2205.14135",
+    "fam_now": "arxiv:2205.14135"
+   },
+   {
+    "file": "2210.02414v2.pdf",
+    "simhash_same": true,
+    "chash_same": true,
+    "family_same": true,
+    "family_weaker_now": false,
+    "fam_db": "arxiv:2210.02414",
+    "fam_now": "arxiv:2210.02414"
+   },
+   {
+    "file": "2211.05100v4.pdf",
+    "simhash_same": true,
+    "chash_same": true,
+    "family_same": true,
+    "family_weaker_now": false,
+    "fam_db": "arxiv:2211.05100",
+    "fam_now": "arxiv:2211.05100"
+   },
+   {
+    "file": "2212.04356v1.pdf",
+    "simhash_same": true,
+    "chash_same": true,
+    "family_same": true,
+    "family_weaker_now": false,
+    "fam_db": "arxiv:2212.04356",
+    "fam_now": "arxiv:2212.04356"
+   },
+   {
+    "file": "2303.08774v6.pdf",
+    "simhash_same": true,
+    "chash_same": true,
+    "family_same": true,
+    "family_weaker_now": false,
+    "fam_db": "arxiv:2303.08774",
+    "fam_now": "arxiv:2303.08774"
+   },
+   {
+    "file": "2304.08485v2.pdf",
+    "simhash_same": true,
+    "chash_same": true,
+    "family_same": true,
+    "family_weaker_now": false,
+    "fam_db": "arxiv:2304.08485",
+    "fam_now": "arxiv:2304.08485"
+   },
+   {
+    "file": "2305.13048v2.pdf",
+    "simhash_same": true,
+    "chash_same": true,
+    "family_same": true,
+    "family_weaker_now": false,
+    "fam_db": "arxiv:2305.13048",
+    "fam_now": "arxiv:2305.13048"
+   },
+   {
+    "file": "2305.14314v1.pdf",
+    "simhash_same": true,
+    "chash_same": true,
+    "family_same": true,
+    "family_weaker_now": false,
+    "fam_db": "arxiv:2305.14314",
+    "fam_now": "arxiv:2305.14314"
+   },
+   {
+    "file": "2305.18290v3.pdf",
+    "simhash_same": true,
+    "chash_same": true,
+    "family_same": true,
+    "family_weaker_now": false,
+    "fam_db": "arxiv:2305.18290",
+    "fam_now": "arxiv:2305.18290"
+   },
+   {
+    "file": "2307.09288v2.pdf",
+    "simhash_same": true,
+    "chash_same": true,
+    "family_same": true,
+    "family_weaker_now": false,
+    "fam_db": "arxiv:2307.09288",
+    "fam_now": "arxiv:2307.09288"
+   },
+   {
+    "file": "2310.06825v1.pdf",
+    "simhash_same": true,
+    "chash_same": true,
+    "family_same": true,
+    "family_weaker_now": false,
+    "fam_db": "arxiv:2310.06825",
+    "fam_now": "arxiv:2310.06825"
+   },
+   {
+    "file": "2406.14491v2.pdf",
+    "simhash_same": true,
+    "chash_same": true,
+    "family_same": true,
+    "family_weaker_now": false,
+    "fam_db": "arxiv:2406.14491",
+    "fam_now": "arxiv:2406.14491"
+   },
+   {
+    "file": "2407.21783v3.pdf",
+    "simhash_same": true,
+    "chash_same": true,
+    "family_same": true,
+    "family_weaker_now": false,
+    "fam_db": "arxiv:2407.21783",
+    "fam_now": "arxiv:2407.21783"
+   },
+   {
+    "file": "2412.15115v2.pdf",
+    "simhash_same": true,
+    "chash_same": true,
+    "family_same": true,
+    "family_weaker_now": false,
+    "fam_db": "arxiv:2412.15115",
+    "fam_now": "arxiv:2412.15115"
+   },
+   {
+    "file": "2412.19437v1.pdf",
+    "simhash_same": true,
+    "chash_same": true,
+    "family_same": true,
+    "family_weaker_now": false,
+    "fam_db": "arxiv:2412.19437",
+    "fam_now": "arxiv:2412.19437"
+   },
+   {
+    "file": "2501.12948v2.pdf",
+    "simhash_same": true,
+    "chash_same": true,
+    "family_same": true,
+    "family_weaker_now": false,
+    "fam_db": "arxiv:2501.12948",
+    "fam_now": "arxiv:2501.12948"
+   },
+   {
+    "file": "333078981_693988129081760_4712707815225756708_n.pdf",
+    "simhash_same": true,
+    "chash_same": true,
+    "family_same": true,
+    "family_weaker_now": false,
+    "fam_db": "title:eb5064934857295b",
+    "fam_now": "title:eb5064934857295b"
+   },
+   {
+    "file": "language_understanding_paper.pdf",
+    "simhash_same": true,
+    "chash_same": true,
+    "family_same": true,
+    "family_weaker_now": false,
+    "fam_db": "title:6d18c66c1cce4e61",
+    "fam_now": "title:6d18c66c1cce4e61"
+   },
+   {
+    "file": "N19-1423.pdf",
+    "simhash_same": true,
+    "chash_same": true,
+    "family_same": true,
+    "family_weaker_now": false,
+    "fam_db": "title:d103d429c1caa0ea",
+    "fam_now": "title:d103d429c1caa0ea"
+   },
+   {
+    "file": "UnderstandingDeepLearning_02_09_26_C.pdf",
+    "simhash_same": true,
+    "chash_same": true,
+    "family_same": true,
+    "family_weaker_now": false,
+    "fam_db": "title:c2a1efb2f038a10a",
+    "fam_now": "title:c2a1efb2f038a10a"
+   },
+   {
+    "file": "1706.03762v1_img.pdf",
+    "simhash_same": true,
+    "chash_same": true,
+    "family_same": true,
+    "family_weaker_now": false,
+    "fam_db": "title:592b2b0bae57a89f",
+    "fam_now": "title:592b2b0bae57a89f"
+   },
+   {
+    "file": "cn_paper.pdf",
+    "simhash_same": true,
+    "chash_same": true,
+    "family_same": true,
+    "family_weaker_now": false,
+    "fam_db": "title:5777021f745cb693",
+    "fam_now": "title:5777021f745cb693"
+   }
+  ]
+ },
+ "separation": {
+  "pairs": 666,
+  "dist_le_6": 111,
+  "dist_le_6_pct": 16.7,
+  "dist_hist": {
+   "0": 0,
+   "1": 0,
+   "2": 2,
+   "3": 7,
+   "4": 17,
+   "5": 37,
+   "6": 48,
+   "7": 76,
+   "8": 82
+  },
+  "closest": [
+   {
+    "dist": 2,
+    "title": 0.36,
+    "a": "1910.10683v4.pdf",
+    "b": "N19-1423.pdf",
+    "same_family": false
+   },
+   {
+    "dist": 2,
+    "title": 0.331,
+    "a": "2211.05100v4.pdf",
+    "b": "N19-1423.pdf",
+    "same_family": false
+   },
+   {
+    "dist": 3,
+    "title": 0.25,
+    "a": "2002.04745v2.pdf",
+    "b": "2412.19437v1.pdf",
+    "same_family": false
+   },
+   {
+    "dist": 3,
+    "title": 0.319,
+    "a": "1910.10683v4.pdf",
+    "b": "UnderstandingDeepLearning_02_09_26_C.pdf",
+    "same_family": false
+   },
+   {
+    "dist": 3,
+    "title": 0.196,
+    "a": "2211.05100v4.pdf",
+    "b": "2212.04356v1.pdf",
+    "same_family": false
+   },
+   {
+    "dist": 3,
+    "title": 0.237,
+    "a": "2211.05100v4.pdf",
+    "b": "UnderstandingDeepLearning_02_09_26_C.pdf",
+    "same_family": false
+   },
+   {
+    "dist": 3,
+    "title": 0.364,
+    "a": "2212.04356v1.pdf",
+    "b": "N19-1423.pdf",
+    "same_family": false
+   },
+   {
+    "dist": 3,
+    "title": 0.333,
+    "a": "2305.18290v3.pdf",
+    "b": "2501.12948v2.pdf",
+    "same_family": false
+   }
+  ],
+  "false_positive_pairs": [],
+  "most_similar_titles": [
+   {
+    "dist": 4,
+    "title": 0.545,
+    "a": "1607.06450v1.pdf",
+    "b": "2002.04745v2.pdf",
+    "same_family": false
+   },
+   {
+    "dist": 6,
+    "title": 0.518,
+    "a": "2210.02414v2.pdf",
+    "b": "2211.05100v4.pdf",
+    "same_family": false
+   },
+   {
+    "dist": 5,
+    "title": 0.494,
+    "a": "2001.08361v1.pdf",
+    "b": "2211.05100v4.pdf",
+    "same_family": false
+   },
+   {
+    "dist": 5,
+    "title": 0.483,
+    "a": "2107.03374v2.pdf",
+    "b": "333078981_693988129081760_4712707815225756708_n.pdf",
+    "same_family": false
+   },
+   {
+    "dist": 6,
+    "title": 0.457,
+    "a": "2201.11903v6.pdf",
+    "b": "333078981_693988129081760_4712707815225756708_n.pdf",
+    "same_family": false
+   },
+   {
+    "dist": 6,
+    "title": 0.455,
+    "a": "2103.00020v1.pdf",
+    "b": "N19-1423.pdf",
+    "same_family": false
+   }
+  ]
+ },
+ "scenarios": {
+  "rows": [
+   {
+    "case": "同篇：原样再传",
+    "expect_hit": true,
+    "got_hit": true,
+    "reason": "正文完全一致",
+    "top": "1706.03762v1.pdf",
+    "note": "应该走到「正文完全一致」",
+    "pass": true
+   },
+   {
+    "case": "同篇：删掉约 5% 段落",
+    "expect_hit": true,
+    "got_hit": true,
+    "reason": "同族版本",
+    "top": "1706.03762v1_img.pdf",
+    "note": "小改版仍应判重",
+    "pass": true
+   },
+   {
+    "case": "同篇：删掉约 30% 段落",
+    "expect_hit": true,
+    "got_hit": true,
+    "reason": "同族版本",
+    "top": "1706.03762v1_img.pdf",
+    "note": "大改版仍应判重",
+    "pass": true
+   },
+   {
+    "case": "同篇：只留前 50%（节选）",
+    "expect_hit": true,
+    "got_hit": true,
+    "reason": "同族版本",
+    "top": "1706.03762v1_img.pdf",
+    "note": "节选也算同篇",
+    "pass": true
+   },
+   {
+    "case": "同篇：标题换中文译名",
+    "expect_hit": true,
+    "got_hit": true,
+    "reason": "正文完全一致",
+    "top": "1706.03762v1.pdf",
+    "note": "靠正文救回来",
+    "pass": true
+   },
+   {
+    "case": "同篇：标题加副标题",
+    "expect_hit": true,
+    "got_hit": true,
+    "reason": "正文完全一致",
+    "top": "1706.03762v1.pdf",
+    "note": "副标题不该影响",
+    "pass": true
+   },
+   {
+    "case": "同篇：标题换成文件名式",
+    "expect_hit": true,
+    "got_hit": true,
+    "reason": "正文完全一致",
+    "top": "1706.03762v1.pdf",
+    "note": "文件名不能当同族依据",
+    "pass": true
+   },
+   {
+    "case": "同篇：空标题（扫描件）",
+    "expect_hit": true,
+    "got_hit": true,
+    "reason": "正文完全一致",
+    "top": "1706.03762v1.pdf",
+    "note": "标题缺失时保守判重",
+    "pass": true
+   },
+   {
+    "case": "同篇：删 30% 段落 + 标题换译名（已知取舍）",
+    "expect_hit": false,
+    "got_hit": false,
+    "reason": "",
+    "top": "",
+    "note": "正文与标题都变，刻意放行；靠用户自己判断",
+    "pass": true
+   },
+   {
+    "case": "无关：EN_1_RAG_arXiv2005.114 vs 库内",
+    "expect_hit": false,
+    "got_hit": false,
+    "reason": "",
+    "top": "",
+    "note": "检索增强方向，与库内 GPT-3/Llama 词汇高度重叠",
+    "pass": true
+   },
+   {
+    "case": "无关：EN_2_RETRO_arXiv2112.0 vs 库内",
+    "expect_hit": false,
+    "got_hit": false,
+    "reason": "",
+    "top": "",
+    "note": "同上，且引用了库内多篇",
+    "pass": true
+   },
+   {
+    "case": "无关：ZH_1_大语言模型的工具使用综述.pdf vs 库内",
+    "expect_hit": false,
+    "got_hit": false,
+    "reason": "",
+    "top": "",
+    "note": "中文综述 vs 全英文库",
+    "pass": true
+   },
+   {
+    "case": "无关：ZH_2_基于大模型的具身智能系统综述.pd vs 库内",
+    "expect_hit": false,
+    "got_hit": false,
+    "reason": "",
+    "top": "",
+    "note": "中文综述 vs 全英文库",
+    "pass": true
+   },
+   {
+    "case": "无关：cn_paper.pdf vs 其余 37 篇",
+    "expect_hit": false,
+    "got_hit": false,
+    "reason": "",
+    "top": "",
+    "note": "中文样本 vs 37 篇英文",
+    "pass": true
+   },
+   {
+    "case": "无关：UnderstandingDeepLearn vs 其余 37 篇",
+    "expect_hit": false,
+    "got_hit": false,
+    "reason": "",
+    "top": "",
+    "note": "541 页书 vs 论文",
+    "pass": true
+   },
+   {
+    "case": "两两：ZH_1_大语言模型的工具使用综 → ZH_2_基于大模型的具身智能系",
+    "expect_hit": false,
+    "got_hit": false,
+    "reason": "d=13 标题=0.538",
+    "top": "",
+    "note": "两篇中文综述，同领域同体裁",
+    "pass": true
+   },
+   {
+    "case": "两两(反向)：ZH_2_基于大模型的具身智 → ZH_1_大语言模型的工具使",
+    "expect_hit": false,
+    "got_hit": false,
+    "reason": "d=13 标题=0.538",
+    "top": "",
+    "note": "顺序不该影响结论",
+    "pass": true
+   },
+   {
+    "case": "两两：EN_1_RAG_arXiv20 → EN_2_RETRO_arXiv",
+    "expect_hit": false,
+    "got_hit": false,
+    "reason": "d=9 标题=0.301",
+    "top": "",
+    "note": "两篇检索增强，同一年代",
+    "pass": true
+   },
+   {
+    "case": "两两(反向)：EN_2_RETRO_arX → EN_1_RAG_arXiv",
+    "expect_hit": false,
+    "got_hit": false,
+    "reason": "d=9 标题=0.336",
+    "top": "",
+    "note": "顺序不该影响结论",
+    "pass": true
+   },
+   {
+    "case": "两两：EN_1_RAG_arXiv20 → ZH_1_大语言模型的工具使用综",
+    "expect_hit": false,
+    "got_hit": false,
+    "reason": "d=19 标题=0.0",
+    "top": "",
+    "note": "中英各一篇，主题相近",
+    "pass": true
+   },
+   {
+    "case": "两两(反向)：ZH_1_大语言模型的工具使 → EN_1_RAG_arXiv",
+    "expect_hit": false,
+    "got_hit": false,
+    "reason": "d=19 标题=0.0",
+    "top": "",
+    "note": "顺序不该影响结论",
+    "pass": true
+   }
+  ],
+  "failed": [],
+  "undecided": []
+ },
+ "thresholds": {
+  "within_6_pairs": 111,
+  "by_threshold": [
+   {
+    "title_threshold": 0.5,
+    "would_flag_pairs": 2
+   },
+   {
+    "title_threshold": 0.6,
+    "would_flag_pairs": 0
+   },
+   {
+    "title_threshold": 0.7,
+    "would_flag_pairs": 0
+   },
+   {
+    "title_threshold": 0.8,
+    "would_flag_pairs": 0
+   },
+   {
+    "title_threshold": 0.9,
+    "would_flag_pairs": 0
+   }
+  ]
+ },
+ "parse": [
+  {
+   "file": "1706.03762v1.pdf",
+   "chars": 37203,
+   "parse_s": 0.3
+  },
+  {
+   "file": "1607.06450v1.pdf",
+   "chars": 46336,
+   "parse_s": 0.1
+  },
+  {
+   "file": "1707.06347v2.pdf",
+   "chars": 27147,
+   "parse_s": 0.2
+  },
+  {
+   "file": "2001.08361v1.pdf",
+   "chars": 88722,
+   "parse_s": 0.3
+  },
+  {
+   "file": "2002.04745v2.pdf",
+   "chars": 66826,
+   "parse_s": 0.2
+  },
+  {
+   "file": "2005.14165v4.pdf",
+   "chars": 236707,
+   "parse_s": 4.1
+  },
+  {
+   "file": "2101.03961v3.pdf",
+   "chars": 100433,
+   "parse_s": 0.3
+  },
+  {
+   "file": "2107.03374v2.pdf",
+   "chars": 153969,
+   "parse_s": 0.8
+  },
+  {
+   "file": "1910.02054v3.pdf",
+   "chars": 67225,
+   "parse_s": 0.5
+  },
+  {
+   "file": "1910.10683v4.pdf",
+   "chars": 206444,
+   "parse_s": 0.4
+  },
+  {
+   "file": "2010.11929v2.pdf",
+   "chars": 67354,
+   "parse_s": 0.4
+  },
+  {
+   "file": "209_Emergent_Abilities_of_Larg.pdf",
+   "chars": 92514,
+   "parse_s": 0.3
+  },
+  {
+   "file": "2103.00020v1.pdf",
+   "chars": 223456,
+   "parse_s": 0.8
+  },
+  {
+   "file": "2106.09685v2.pdf",
+   "chars": 82836,
+   "parse_s": 0.4
+  },
+  {
+   "file": "2201.11903v6.pdf",
+   "chars": 136887,
+   "parse_s": 0.3
+  },
+  {
+   "file": "2203.02155v1.pdf",
+   "chars": 180012,
+   "parse_s": 0.6
+  },
+  {
+   "file": "2205.14135v2.pdf",
+   "chars": 113005,
+   "parse_s": 0.3
+  },
+  {
+   "file": "2210.02414v2.pdf",
+   "chars": 183843,
+   "parse_s": 1.0
+  },
+  {
+   "file": "2211.05100v4.pdf",
+   "chars": 201377,
+   "parse_s": 0.6
+  },
+  {
+   "file": "2212.04356v1.pdf",
+   "chars": 109780,
+   "parse_s": 0.5
+  },
+  {
+   "file": "2303.08774v6.pdf",
+   "chars": 283970,
+   "parse_s": 0.9
+  },
+  {
+   "file": "2304.08485v2.pdf",
+   "chars": 86709,
+   "parse_s": 0.6
+  },
+  {
+   "file": "2305.13048v2.pdf",
+   "chars": 90521,
+   "parse_s": 0.5
+  },
+  {
+   "file": "2305.14314v1.pdf",
+   "chars": 87394,
+   "parse_s": 0.5
+  },
+  {
+   "file": "2305.18290v3.pdf",
+   "chars": 93576,
+   "parse_s": 0.3
+  },
+  {
+   "file": "2307.09288v2.pdf",
+   "chars": 264808,
+   "parse_s": 3.7
+  },
+  {
+   "file": "2310.06825v1.pdf",
+   "chars": 24826,
+   "parse_s": 1.9
+  },
+  {
+   "file": "2406.14491v2.pdf",
+   "chars": 88509,
+   "parse_s": 0.2
+  },
+  {
+   "file": "2407.21783v3.pdf",
+   "chars": 355964,
+   "parse_s": 9.3
+  },
+  {
+   "file": "2412.15115v2.pdf",
+   "chars": 94994,
+   "parse_s": 0.6
+  },
+  {
+   "file": "2412.19437v1.pdf",
+   "chars": 150489,
+   "parse_s": 0.4
+  },
+  {
+   "file": "2501.12948v2.pdf",
+   "chars": 230769,
+   "parse_s": 0.5
+  },
+  {
+   "file": "333078981_693988129081760_4712707815225756708_n.pdf",
+   "chars": 87317,
+   "parse_s": 0.2
+  },
+  {
+   "file": "language_understanding_paper.pdf",
+   "chars": 40864,
+   "parse_s": 0.2
+  },
+  {
+   "file": "N19-1423.pdf",
+   "chars": 64120,
+   "parse_s": 0.1
+  },
+  {
+   "file": "UnderstandingDeepLearning_02_09_26_C.pdf",
+   "chars": 1312857,
+   "parse_s": 4.7
+  },
+  {
+   "file": "1706.03762v1_img.pdf",
+   "chars": 0,
+   "parse_s": 1.2
+  },
+  {
+   "file": "cn_paper.pdf",
+   "chars": 441,
+   "parse_s": 0.0
+  }
+ ]
+}
