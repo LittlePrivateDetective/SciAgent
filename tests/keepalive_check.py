@@ -14,8 +14,10 @@
 from __future__ import annotations
 
 import argparse
+import atexit
 import json
 import os
+import signal
 import subprocess
 import sys
 import time
@@ -75,6 +77,36 @@ def ollama_ps() -> str:
         return f"<unavailable: {exc}>"
 
 
+_PENDING: dict = {}
+
+
+def _restore_silently() -> None:
+    """无论怎么退出（含 Ctrl-C、被 kill），都把后台参数放回去。
+
+    为什么需要：这个脚本会把 llm_route 改成 local 来验预热。如果中途被打断，
+    服务就停在一个"本地路由 + Ollama 没开"的状态——问答直接不可用，而且
+    看起来跟保活一点关系都没有，排查很久才发现是测试留下的。
+    """
+    if not _PENDING:
+        return
+    try:
+        call("/api/admin/params", {"values": dict(_PENDING)}, method="PUT")
+        print(f"[restore] 已恢复 {_PENDING}", file=sys.stderr)
+    except Exception as exc:  # noqa: BLE001
+        print(f"[restore] 失败：{exc}（手动把 llm_route 改回 auto 即可）", file=sys.stderr)
+    finally:
+        _PENDING.clear()
+
+
+def _install_guards() -> None:
+    atexit.register(_restore_silently)
+    for sig in (signal.SIGTERM, signal.SIGINT):
+        try:
+            signal.signal(sig, lambda *a: (_restore_silently(), sys.exit(1)))
+        except Exception:  # noqa: BLE001 Windows 上部分信号不支持
+            pass
+
+
 def run(skip_warm: bool) -> dict:
     res: dict = {"ok": False, "steps": [], "checks": {}}
     if not ADMIN_PWD:
@@ -87,6 +119,13 @@ def run(skip_warm: bool) -> dict:
     params = {p["key"]: p for p in call("/api/admin/params")["params"]}
     original["keepalive_interval"] = params["keepalive_interval"]["value"]
     original["llm_route"] = params["llm_route"]["value"]
+    # 立刻登记：后面任何一次改动前，恢复所需的原值已经在手上
+    _PENDING.update({
+        "keepalive_interval": original["keepalive_interval"],
+        "keepalive_enabled": True,
+        "llm_route": original["llm_route"],
+    })
+    _install_guards()
 
     try:
         # 1) 自动心跳：服务启动后不用任何人触发
@@ -129,13 +168,13 @@ def run(skip_warm: bool) -> dict:
     finally:
         # 恢复现场：不恢复的话演示时就一直 30 秒一跳、还锁在本地路由
         try:
-            call("/api/admin/params", {"values": {
-                "keepalive_interval": original["keepalive_interval"],
-                "keepalive_enabled": True,
-                "llm_route": original["llm_route"],
-            }}, method="PUT")
+            _restore_silently()
             res["restored"] = {"route": call("/api/system/info")["llm"]["route"],
                                "interval": status()["interval_s"], "enabled": status()["enabled"]}
+            # 恢复后自查：还在 local 而本机没有 Ollama，就是没恢复干净
+            if res["restored"]["route"] == "local":
+                res.setdefault("warnings", []).append(
+                    "恢复后仍是 local 路由——原值可能就是 local，请确认本机 Ollama 在跑")
         except Exception as exc:  # noqa: BLE001
             res["restored"] = {"error": str(exc)}
 

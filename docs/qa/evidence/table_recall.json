@@ -11,7 +11,7 @@
         "Complexity per Layer"
       ],
       "tables_in_top8": 1,
-      "ms": 18898,
+      "ms": 8254,
       "top": [
         {
           "kind": "table",
@@ -42,7 +42,7 @@
         "28.4"
       ],
       "tables_in_top8": 2,
-      "ms": 1345,
+      "ms": 1537,
       "top": [
         {
           "kind": "text",
@@ -73,7 +73,7 @@
         "GLUE"
       ],
       "tables_in_top8": 2,
-      "ms": 909,
+      "ms": 970,
       "top": [
         {
           "kind": "text",
@@ -104,7 +104,7 @@
         "1024"
       ],
       "tables_in_top8": 1,
-      "ms": 876,
+      "ms": 878,
       "top": [
         {
           "kind": "table",
@@ -134,7 +134,7 @@
         "10,000"
       ],
       "tables_in_top8": 2,
-      "ms": 1412,
+      "ms": 1279,
       "top": [
         {
           "kind": "text",
@@ -165,7 +165,7 @@
         "88.5"
       ],
       "tables_in_top8": 2,
-      "ms": 1153,
+      "ms": 861,
       "top": [
         {
           "kind": "table",

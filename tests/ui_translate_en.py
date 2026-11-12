@@ -27,7 +27,7 @@ ROOT = Path(__file__).resolve().parents[1]
 EDGE = Path(r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe")
 OUT = ROOT / "docs" / "qa" / "evidence"
 BASE = "http://127.0.0.1:8013"
-CN = "cn_paper.pdf"
+CN = "cn_paper"   # 前缀匹配：assets 里叫 cn_paper_sample.pdf，入库后可能被改名
 
 
 def run(url: str = BASE + "/", shot_dir: Path = OUT) -> dict:
@@ -108,7 +108,7 @@ def run(url: str = BASE + "/", shot_dir: Path = OUT) -> dict:
 
         opened = js("""(async()=>{
           const vm = window.__sciagent;
-          const d = vm.docs.find(x => x.filename === '%s');
+          const d = vm.docs.find(x => x.filename.startsWith('%s'));
           if (!d) return {err:'NOT_FOUND'};
           await vm.openDoc(d);
           vm.goPage(1);
@@ -116,7 +116,7 @@ def run(url: str = BASE + "/", shot_dir: Path = OUT) -> dict:
         })()""" % CN)
         result["steps"].append({"open": opened})
         if not opened or opened.get("err"):
-            result["error"] = "库里没有中文测试论文 cn_paper.pdf"
+            result["error"] = "库里没有中文测试论文（文件名以 cn_paper 开头）"
             return result
         if not wait_for("document.querySelectorAll('.text-layer .tw').length > 5", 40):
             result["error"] = "中文页未渲染文本层（划词不可用）"

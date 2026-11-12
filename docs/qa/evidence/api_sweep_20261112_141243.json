@@ -1,0 +1,483 @@
+{
+ "base": "http://127.0.0.1:8013",
+ "total": 47,
+ "pass": 45,
+ "fail": 2,
+ "by_status": {
+  "200": 45,
+  "422": 1,
+  "404": 1
+ },
+ "rows": [
+  {
+   "name": "系统信息",
+   "method": "GET",
+   "url": "/api/system/info",
+   "status": 200,
+   "ms": 38,
+   "pass": true,
+   "expect": "文档数与块数非零",
+   "detail": "{\"ok\": true, \"llm\": {\"route\": \"cloud\", \"model\": \"deepseek-v4.1-flash\", \"base_url\": \"https://dashscope.aliyuncs.com/compatible-mode/v1\", \"mock\": false}, \"vector_"
+  },
+  {
+   "name": "健康检查",
+   "method": "GET",
+   "url": "/health",
+   "status": 200,
+   "ms": 2,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"ok\": true, \"service\": \"sciagent\", \"version\": \"1.0.0\"}"
+  },
+  {
+   "name": "保活状态",
+   "method": "GET",
+   "url": "/api/keepalive",
+   "status": 200,
+   "ms": 1,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"ok\": true, \"enabled\": true, \"interval_s\": 300, \"warm_model\": true, \"warm_cloud\": false, \"started_at\": \"2026-11-12T13:57:56\", \"last_beat_at\": \"2026-11-12T14:08"
+  },
+  {
+   "name": "保活心跳",
+   "method": "POST",
+   "url": "/api/keepalive/beat",
+   "status": 200,
+   "ms": 1,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"ok\": true, \"enabled\": true, \"interval_s\": 300, \"warm_model\": true, \"warm_cloud\": false, \"started_at\": \"2026-11-12T13:57:56\", \"last_beat_at\": \"2026-11-12T14:09"
+  },
+  {
+   "name": "预热",
+   "method": "GET",
+   "url": "/api/warm",
+   "status": 200,
+   "ms": 1439,
+   "pass": true,
+   "expect": "检索预热成功",
+   "detail": "{\"ok\": true, \"route\": \"auto\", \"tag\": \"http\", \"tokens\": {\"path\": \"data\\\\bm25_tokens.txt\", \"exists\": true, \"mb\": 11.5, \"fingerprint\": \"dc0f5bbcda2821ab\"}, \"retrie"
+  },
+  {
+   "name": "任务列表",
+   "method": "GET",
+   "url": "/api/tasks",
+   "status": 200,
+   "ms": 25,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"tasks\": [{\"id\": \"ta1986deee548\", \"goal\": \"Transformer 训练 Base 模型用了多少块 GPU，什么型号？\", \"mode\": \"qa\", \"status\": \"done\", \"steps\": 7, \"latency_ms\": 9468, \"created_at\""
+  },
+  {
+   "name": "审计日志",
+   "method": "GET",
+   "url": "/api/audit",
+   "status": 200,
+   "ms": 12,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"items\": [{\"action\": \"params_reset\", \"doc_id\": \"\", \"detail\": \"恢复默认：top_k\", \"actor\": \"admin\", \"created_at\": \"2026-11-12T14:02:01.060763\"}, {\"action\": \"params_up"
+  },
+  {
+   "name": "工具目录",
+   "method": "GET",
+   "url": "/api/tools/catalog",
+   "status": 200,
+   "ms": 2,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"tools\": [{\"type\": \"function\", \"function\": {\"name\": \"arxiv_search\", \"description\": \"在 arXiv 上按关键词检索论文，返回标题、作者、arXiv 编号与年份\", \"parameters\": {\"type\": \"object\", \"p"
+  },
+  {
+   "name": "工具健康",
+   "method": "GET",
+   "url": "/api/tools/health",
+   "status": 200,
+   "ms": 3,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"ok\": true, \"tools\": [\"arxiv_search\", \"github_repo\", \"crossref_lookup\"], \"endpoints\": {\"arxiv\": \"export.arxiv.org\", \"github\": \"api.github.com\", \"crossref\": \"ap"
+  },
+  {
+   "name": "文献列表",
+   "method": "GET",
+   "url": "/api/documents",
+   "status": 200,
+   "ms": 458,
+   "pass": true,
+   "expect": "≥10 篇",
+   "detail": "{\"documents\": [{\"id\": \"dca501d1039dc\", \"filename\": \"1706.03762v1_img.pdf\", \"title\": \"Attention Is All You Need\", \"authors\": [\"Ashish Vaswani\", \"Noam Shazeer\", \""
+  },
+  {
+   "name": "文献详情",
+   "method": "GET",
+   "url": "/api/documents/d98dddd7a5905",
+   "status": 200,
+   "ms": 2,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"id\": \"d98dddd7a5905\", \"filename\": \"UnderstandingDeepLearning_02_09_26_C.pdf\", \"title\": \"Understanding Deep Learning\", \"authors\": [\"Simon J.D. Prince\"], \"affil"
+  },
+  {
+   "name": "章节树",
+   "method": "GET",
+   "url": "/api/documents/d98dddd7a5905/sections",
+   "status": 200,
+   "ms": 24,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"sections\": [{\"level\": 2, \"title\": \"Contents\", \"page\": 5}, {\"level\": 2, \"title\": \"Preface\", \"page\": 5}, {\"level\": 2, \"title\": \"Acknowledgements\", \"page\": 5}, {"
+  },
+  {
+   "name": "块列表",
+   "method": "GET",
+   "url": "/api/documents/d98dddd7a5905/chunks",
+   "status": 200,
+   "ms": 952,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"chunks\": [{\"id\": \"c7079012c328d\", \"page\": 1, \"bbox\": [103.8, 156.5, 467.6, 629.4], \"text\": \"Understanding Deep Learning\\nSimon J.D. Prince\\nFebruary 8, 2026\\n"
+  },
+  {
+   "name": "页元数据",
+   "method": "GET",
+   "url": "/api/documents/d98dddd7a5905/pages",
+   "status": 200,
+   "ms": 1327,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"pages\": [{\"page\": 1, \"width\": 612.0, \"height\": 792.0}, {\"page\": 2, \"width\": 612.0, \"height\": 792.0}, {\"page\": 3, \"width\": 612.0, \"height\": 792.0}, {\"page\": 4,"
+  },
+  {
+   "name": "页文本层",
+   "method": "GET",
+   "url": "/api/documents/d98dddd7a5905/page/1/text",
+   "status": 200,
+   "ms": 115,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"page\": 1, \"width\": 612.0, \"height\": 792.0, \"has_text_layer\": true, \"words\": [[\"Understanding\", 157.8, 156.5, 125.1, 17.2], [\"Deep\", 289.4, 156.5, 43.3, 17.2],"
+  },
+  {
+   "name": "页图",
+   "method": "GET",
+   "url": "/api/documents/d98dddd7a5905/page/1.png",
+   "status": 200,
+   "ms": 160,
+   "pass": true,
+   "expect": "",
+   "detail": "�PNG\r\n\u001a\n\u0000\u0000\u0000\rIHDR\u0000\u0000\u0004Q\u0000\u0000\u0005�\b\u0002\u0000\u0000\u0000��H\u0000\u0000\u0000\tpHYs\u0000\u0000\u0013�\u0000\u0000\u0013�\u0001\u0007�9�\u0000\u0001\u000e�IDATx��݇�\u0013e����OVAY�bCE���EA�����^\u0011��])\"`\u0003\u0014\u0011DEE�)6��(���(\u0002v\u0004�\"E� �����n#�^.���\u001cO2�If&sw�\u000fI&�\u0006\u0000\u0000�����\u0015\u0000"
+  },
+  {
+   "name": "参考文献表",
+   "method": "GET",
+   "url": "/api/documents/d98dddd7a5905/references",
+   "status": 200,
+   "ms": 99,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"total\": 0, \"entries\": []}"
+  },
+  {
+   "name": "引用跳正文",
+   "method": "GET",
+   "url": "/api/documents/d98dddd7a5905/references/1/cites",
+   "status": 200,
+   "ms": 355,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"ok\": true, \"index\": 1, \"total\": 2, \"occurrences\": 2, \"hits\": [{\"page\": 336, \"bbox\": [133.8, 511.3, 515.4, 593.4], \"chunk_id\": \"c2bd83a2e593b\", \"section\": \"16 "
+  },
+  {
+   "name": "被引关系",
+   "method": "GET",
+   "url": "/api/documents/d98dddd7a5905/refs",
+   "status": 200,
+   "ms": 34,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"references\": [{\"index\": 1, \"text\": \"Tom Jacobs, Lei Fang, Fabian Henning, Umesh Rajashekar, Jay Park, Kai Liu, Pablo Renard Guiral, Federico Barbero, Rongjian"
+  },
+  {
+   "name": "版本差异",
+   "method": "GET",
+   "url": "/api/documents/d7c300e762602/diff",
+   "status": 422,
+   "ms": 8,
+   "pass": false,
+   "expect": "有同族版本则 200，否则 404",
+   "detail": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"query\",\"other_id\"],\"msg\":\"Field required\",\"input\":null}]}"
+  },
+  {
+   "name": "回收站",
+   "method": "GET",
+   "url": "/api/documents/trash",
+   "status": 200,
+   "ms": 18,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"items\": [{\"doc_id\": \"d370cd47a4d90\", \"filename\": \"qa_probe_21.pdf\", \"title\": \"BLOOM: A 176B-Parameter Open-Access Multilingual Language Model\", \"chunk_count\":"
+  },
+  {
+   "name": "双语状态",
+   "method": "GET",
+   "url": "/api/documents/d98dddd7a5905/bilingual/status",
+   "status": 200,
+   "ms": 12,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"job\": {\"running\": false, \"done\": 0, \"total\": 0, \"error\": \"\"}, \"cached\": {\"total\": 4106, \"done\": 0, \"ratio\": 0.0}}"
+  },
+  {
+   "name": "双语全文",
+   "method": "GET",
+   "url": "/api/documents/d98dddd7a5905/bilingual",
+   "status": 200,
+   "ms": 2163,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"doc_id\":\"d98dddd7a5905\",\"page_from\":1,\"page_to\":1,\"page_count\":541,\"translated\":2,\"cached\":{\"total\":4106,\"done\":2,\"rat"
+  },
+  {
+   "name": "中译英状态",
+   "method": "GET",
+   "url": "/api/documents/d98dddd7a5905/translate-en",
+   "status": 200,
+   "ms": 4,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"running\":false,\"total\":0,\"done\":0,\"segments\":0,\"skipped\":0,\"chars\":0,\"error\":\"\",\"ms\":0,\"preview\":\"\",\"path\":\"\",\"started"
+  },
+  {
+   "name": "中译英下载",
+   "method": "GET",
+   "url": "/api/documents/d98dddd7a5905/translate-en.md",
+   "status": 404,
+   "ms": 2,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"detail\":\"还没有生成英文版，请先点「译英」\"}"
+  },
+  {
+   "name": "整篇翻译(单页)",
+   "method": "POST",
+   "url": "/api/documents/d98dddd7a5905/bilingual/translate",
+   "status": 200,
+   "ms": 12,
+   "pass": true,
+   "expect": "单页翻译返回 ok（D-73 修复点）",
+   "detail": "{\"ok\": true, \"translated\": 0, \"cached\": {\"total\": 4106, \"done\": 2, \"ratio\": 0.0}}"
+  },
+  {
+   "name": "按页翻译",
+   "method": "POST",
+   "url": "/api/documents/d98dddd7a5905/page/1/translate",
+   "status": 200,
+   "ms": 5,
+   "pass": true,
+   "expect": "页面翻译",
+   "detail": "{\"ok\": true, \"page\": 1, \"segs\": 2, \"translated\": 2, \"missing\": 0, \"en\": \"Understanding Deep Learning\\nSimon J.D. Prince\\nFebruary 8, 2026\\nThe most recent versi"
+  },
+  {
+   "name": "任意片段翻译",
+   "method": "POST",
+   "url": "/api/translate",
+   "status": 200,
+   "ms": 467,
+   "pass": true,
+   "expect": "返回中文",
+   "detail": "{\"ok\": true, \"src\": \"en\", \"to\": \"zh\", \"text\": \"注意力机制就是你所需要的全部。\", \"zh\": \"注意力机制就是你所需要的全部。\", \"chars\": 26, \"truncated\": false}"
+  },
+  {
+   "name": "扫描件页文本",
+   "method": "GET",
+   "url": "/api/documents/dca501d1039dc/page/1/text",
+   "status": 200,
+   "ms": 4,
+   "pass": true,
+   "expect": "扫描件允许空文本层",
+   "detail": "{\"page\": 1, \"width\": 612.0, \"height\": 792.48, \"has_text_layer\": false, \"words\": []}"
+  },
+  {
+   "name": "问答-事实",
+   "method": "POST",
+   "url": "/api/chat",
+   "status": 200,
+   "ms": 27762,
+   "pass": true,
+   "expect": "≥5 条证据 + 有答案",
+   "detail": "{\"task_id\": \"tee8659674d86\", \"answer\": \"自注意力每层的计算复杂度为 O(n² · d)，其中 n 是序列长度，d 是表示维度 [2]。\\n- Table 1 逐行对比：Self-Attention 为 O(n² · d)、Sequential Operations 为 O(1)、"
+  },
+  {
+   "name": "问答-对比",
+   "method": "POST",
+   "url": "/api/chat",
+   "status": 200,
+   "ms": 17185,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"task_id\": \"t811e3b0c55c3\", \"answer\": \"| 维度 | BERT 的做法 | GPT 的做法 |\\n|---|---|---|\\n| 预训练目标类型 | 使用两个无监督任务进行预训练 [2]；核心是“masked language model”（MLM）预训练目标 [2] | 使用"
+  },
+  {
+   "name": "问答-证据不足",
+   "method": "POST",
+   "url": "/api/chat",
+   "status": 200,
+   "ms": 7955,
+   "pass": true,
+   "expect": "应明确说没有",
+   "detail": "{\"task_id\": \"t96923ba8d528\", \"answer\": \"证据未给出 GPT-5 的参数量，文献中未提及 GPT-5。证据中出现的 GPT 系列参数量为 8 billion parameters、11 billion parameters 和 17 billion parameters [5]。\\"
+  },
+  {
+   "name": "问答-限定文献",
+   "method": "POST",
+   "url": "/api/chat",
+   "status": 200,
+   "ms": 12205,
+   "pass": true,
+   "expect": "证据全部来自指定文献",
+   "detail": "{\"task_id\": \"tc8f8a4b4ac7a\", \"answer\": \"证据中未提及这篇文献的整体研究贡献；可确认的仅是：损失函数对参数的导数可分解为各个样本贡献的导数之和 [5][4]。\\n\\n---\\n**引用来源**\\n\\n| # | 文献 | 页 | 锚点 | 片段 |\\n| --- | --- | -"
+  },
+  {
+   "name": "图谱",
+   "method": "GET",
+   "url": "/api/graph",
+   "status": 200,
+   "ms": 631,
+   "pass": true,
+   "expect": "节点>20 边>50",
+   "detail": "{\"nodes\": [{\"id\": \"d817ac4e56a32\", \"label\": \"Language Models are Few-Shot Learners\", \"filename\": \"2005.14165v4.pdf\", \"year\": \"2020\", \"pages\": 75, \"pagerank\": 0."
+  },
+  {
+   "name": "图谱综述(选题)",
+   "method": "POST",
+   "url": "/api/graph/survey",
+   "status": 200,
+   "ms": 3477,
+   "pass": true,
+   "expect": "有聚类则出综述，否则 400/404",
+   "detail": "{\"ok\":true,\"survey\":\"**领域脉络**\\n\\n序列转导模型长期以复杂的循环或卷积神经网络为基础，并通过注意力机制连接编码器与解码器[2]。Transformer 的提出以更简单的网络架构取代了这一主流配置[2]。此后，基"
+  },
+  {
+   "name": "Future Work",
+   "method": "GET",
+   "url": "/api/research/future-work",
+   "status": 200,
+   "ms": 1282,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"items\": [{\"doc_id\": \"dca501d1039dc\", \"page\": 10, \"bbox\": \"36.7,143.2,575.3,234.7\", \"section\": \"5 Training/6.3 English Constituency Parsing\", \"text\": \"We inten"
+  },
+  {
+   "name": "复现性",
+   "method": "GET",
+   "url": "/api/research/reproducibility",
+   "status": 200,
+   "ms": 3760,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"items\": [{\"doc_id\": \"dc7092cdf7b5c\", \"title\": \"Layer Normalization\", \"year\": \"2016\", \"repos\": [\"ivendrov/order-embedding\", \"cooijmanstim/Attentive_reader\"], \""
+  },
+  {
+   "name": "工具调用-GitHub",
+   "method": "POST",
+   "url": "/api/tools/invoke",
+   "status": 200,
+   "ms": 3,
+   "pass": true,
+   "expect": "在线或降级",
+   "detail": "{\"ok\":false,\"tool\":\"github_repo_info\",\"data\":null,\"source\":\"\",\"degraded\":false,\"fallback\":\"\",\"attempts\":0,\"latency_ms\":0"
+  },
+  {
+   "name": "工具 Agent",
+   "method": "POST",
+   "url": "/api/tools/agent",
+   "status": 200,
+   "ms": 1447,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"ok\": true, \"selected_by\": \"llm_function_call\", \"call\": {\"name\": \"github_repo\", \"arguments\": {\"repo\": \"huggingface/transformers\"}}, \"result\": {\"ok\": true, \"too"
+  },
+  {
+   "name": "CSV 转图表",
+   "method": "POST",
+   "url": "/api/tools/csv2chart",
+   "status": 200,
+   "ms": 1564,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"ok\": true, \"code\": \"xychart-beta\\n    title \\\"BLEU\\\"\\n    x-axis [\\\"transformer_big\\\", \\\"convseq\\\"]\\n    y-axis \\\"value\\\" 0 --> 32.66\\n    bar [28.4, 25.2]  %"
+  },
+  {
+   "name": "论文框架",
+   "method": "POST",
+   "url": "/api/write/outline",
+   "status": 200,
+   "ms": 9562,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"ok\": true, \"title\": \"On the Complexity-Accuracy Trade-off in Attention Mechanisms\", \"idea\": \"研究注意力机制的复杂度与精度权衡\", \"sections\": [{\"key\": \"abstract\", \"name\": \"Abst"
+  },
+  {
+   "name": "架构图",
+   "method": "POST",
+   "url": "/api/write/topology",
+   "status": 200,
+   "ms": 3184,
+   "pass": true,
+   "expect": "节点 + 四份代码",
+   "detail": "{\"ok\": true, \"title\": \"检索增强问答系统\", \"source\": \"llm\", \"nodes\": [{\"id\": \"n1\", \"label\": \"用户问题\", \"kind\": \"input\", \"group\": \"输入层\"}, {\"id\": \"n2\", \"label\": \"问题解析\", \"kind"
+  },
+  {
+   "name": "arXiv 搜索",
+   "method": "GET",
+   "url": "/api/discover/search?q=retrieval%20augmented%20generation",
+   "status": 200,
+   "ms": 42060,
+   "pass": true,
+   "expect": "在线 200，无外网 503/降级",
+   "detail": "{\"ok\":true,\"q\":\"retrieval augmented generation\",\"items\":[],\"source\":\"arxiv.org\",\"ms\":42057}"
+  },
+  {
+   "name": "推荐理由",
+   "method": "GET",
+   "url": "/api/discover/recommend",
+   "status": 200,
+   "ms": 42402,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"ok\":true,\"topics\":[\"attention\",\"transformer\",\"llama\",\"pre-training\",\"normalization\"],\"items\":[],\"ms\":42397,\"note\":\"近期 "
+  },
+  {
+   "name": "推荐反馈统计",
+   "method": "GET",
+   "url": "/api/discover/feedback",
+   "status": 200,
+   "ms": 8,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"like\": 1, \"dislike\": 4, \"click\": 0, \"disliked_ids\": [\"2611.07510\", \"2611.12206\", \"2611.12392\", \"2611.12777\"], \"liked_ids\": [\"2611.12777\"]}"
+  },
+  {
+   "name": "追踪状态",
+   "method": "GET",
+   "url": "/api/discover/watch",
+   "status": 200,
+   "ms": 6,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"enabled\": false, \"interval_s\": 21600, \"days\": 7, \"started_at\": \"2026-11-12T13:57:56\", \"last_run_at\": null, \"next_run_at\": null, \"last_ms\": null, \"runs\": 0, \"f"
+  },
+  {
+   "name": "上传 PDF",
+   "method": "POST",
+   "url": "/api/documents/upload",
+   "status": 200,
+   "ms": 353,
+   "pass": false,
+   "expect": "新入库或识别为重复",
+   "detail": "{\"ok\": false, \"stage\": \"duplicate\", \"message\": \"库中已存在内容高度重合的文献\", \"duplicates\": [{\"doc_id\": \"dcd82e8617cf8\", \"filename\": \"language_understanding_paper.pdf\", \"tit"
+  }
+ ]
+}
