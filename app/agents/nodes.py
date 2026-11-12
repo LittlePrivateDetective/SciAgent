@@ -217,11 +217,31 @@ def _key_sentences(text: str, query: str, limit: int = 2) -> list[str]:
     return out
 
 
+_SUP = str.maketrans("0123456789", "⁰¹²³⁴⁵⁶⁷⁸⁹")
+_RE_BIG_O = re.compile(r"O\(([^()]{1,40})\)")
+
+
+def _pretty_math(text: str) -> str:
+    """把 O(...) 里的 ASCII 指数还原成上标：`O(n2 · d)` → `O(n² · d)`。
+
+    为什么需要：PDF 里 `n²` 的 2 是上标字形，解析器拿到的纯文本是 `n2`。
+    `O(n2 · d)` 这种写法模型读得懂，但它经常不认为这就是"复杂度"的答案
+    ——实测同一份证据、同一个问题，3 次里 1 次答"证据中未被直接给出"。
+    只处理 O(...) 内部、且只认"字母+数字"，不碰 V100、BLEU 28.4 这类正常数字。
+    """
+
+    def fix(m: re.Match) -> str:
+        inner = re.sub(r"(?<=[A-Za-z])(\d+)", lambda x: x.group(1).translate(_SUP), m.group(1))
+        return f"O({inner})"
+
+    return _RE_BIG_O.sub(fix, text)
+
+
 def _evidence_block(evidence: list[dict], max_chars_each: int = 1600, query: str = "") -> str:
     lines = []
     for i, ev in enumerate(evidence, start=1):
         kind = ev.get("kind")
-        body = ev.get("text") or ""
+        body = _pretty_math(ev.get("text") or "")
         # 表格给更宽的预算：截在表格中间会把后半张表的行整片丢掉，
         # 而"问的那一行"恰好常在后面（Table 1 的 Self-Attention 是第 2 行）
         budget = max(max_chars_each, 2400) if kind == "table" else max_chars_each
