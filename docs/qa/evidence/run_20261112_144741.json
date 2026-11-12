@@ -1,0 +1,27 @@
+{
+  "run_id": "20261112_144741",
+  "base": "http://127.0.0.1:8013",
+  "timestamp": "2026-11-12T14:47:45.969696",
+  "summary": {
+    "total": 1,
+    "pass": 1,
+    "fail": 0,
+    "blocked": 0
+  },
+  "results": [
+    {
+      "id": "B06",
+      "group": "ui",
+      "point": "b-3 中英双向同步滚动 (7%)",
+      "steps": "无头浏览器 iframe 注入滚动，读取两侧 scrollTop 与顶部段落序号",
+      "expected": "双向跟随且顶部段落序号一致",
+      "actual": "选用文献 1706.03762v1_img.pdf（90 块）\n双栏渲染 OK，已加载段落=5\n英文滚动 700 -&gt; 中文 141\n中文滚动 1300 -&gt; 英文 298 =&gt; 1559\n顶部段落序号 英文=7 中文=7\nRESULT: PASS 双向联动生效且按段落对齐",
+      "status": "PASS",
+      "elapsed_s": 4.0,
+      "evidence": {
+        "dom_length": 7070,
+        "raw": "选用文献 1706.03762v1_img.pdf（90 块）\n双栏渲染 OK，已加载段落=5\n英文滚动 700 -&gt; 中文 141\n中文滚动 1300 -&gt; 英文 298 =&gt; 1559\n顶部段落序号 英文=7 中文=7\nRESULT: PASS 双向联动生效且按段落对齐"
+      }
+    }
+  ]
+}

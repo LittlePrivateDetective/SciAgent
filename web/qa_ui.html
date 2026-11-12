@@ -29,7 +29,25 @@ async function ready(predicate, tries = 150, gap = 400) {
   return null;
 }
 
+async function pickDoc(minChunks) {
+  // 默认打开的文档会随"最新入库"变化（比如刚传了一篇 1 页的中文样本），
+  // 双语用例需要足够多的段落，所以自己挑一篇够长的，不依赖默认值
+  for (let i = 0; i < 60; i++) {
+    const w = f.contentWindow;
+    const vm = w && w.__sciagent;
+    if (vm && vm.docs && vm.docs.length) {
+      const hit = vm.docs.find((x) => (x.chunks || 0) >= minChunks) || vm.docs[0];
+      if (vm.activeDocId !== hit.id) await vm.openDoc(hit);
+      return hit;
+    }
+    await wait(300);
+  }
+  return null;
+}
+
 async function testBilingual() {
+  const doc = await pickDoc(60);
+  if (doc) say("选用文献 " + doc.filename + "（" + (doc.chunks || 0) + " 块）");
   const d = await ready((x) => x.querySelectorAll(".bi-pane").length === 2 &&
                               x.querySelectorAll(".bi-seg").length > 3);
   if (!d) return say("RESULT: FAIL 双栏未渲染");
