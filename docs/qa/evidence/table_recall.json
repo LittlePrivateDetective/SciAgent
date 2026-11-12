@@ -11,13 +11,13 @@
         "Complexity per Layer"
       ],
       "tables_in_top8": 1,
-      "ms": 21556,
+      "ms": 18898,
       "top": [
         {
-          "kind": "text",
-          "page": 4,
+          "kind": "table",
+          "page": 6,
           "doc": "1706.03762v1.pdf",
-          "head": "MultiHead(Q, K, V ) = Concat(head1, ..., headh) where headi = Attentio"
+          "head": "Table 1: Maximum path lengths, per-layer complexity and minimum number"
         },
         {
           "kind": "text",
@@ -41,8 +41,8 @@
         "41.16",
         "28.4"
       ],
-      "tables_in_top8": 1,
-      "ms": 1452,
+      "tables_in_top8": 2,
+      "ms": 1345,
       "top": [
         {
           "kind": "text",
@@ -73,7 +73,7 @@
         "GLUE"
       ],
       "tables_in_top8": 2,
-      "ms": 858,
+      "ms": 909,
       "top": [
         {
           "kind": "text",
@@ -88,10 +88,10 @@
           "head": "Both BERTBASE and BERTLARGE outperform all sys- tems on all tasks by a"
         },
         {
-          "kind": "table",
-          "page": 22,
-          "doc": "1910.10683v4.pdf",
-          "head": "Table 4: Performance of the three disparate pre-training objectives de"
+          "kind": "text",
+          "page": 6,
+          "doc": "N19-1423.pdf",
+          "head": "System MNLI-(m/mm) QQP QNLI 392k 363k 108k Pre-OpenAI SOTA 80.6/80.1 6"
         }
       ]
     },
@@ -104,13 +104,13 @@
         "1024"
       ],
       "tables_in_top8": 1,
-      "ms": 893,
+      "ms": 876,
       "top": [
         {
-          "kind": "text",
+          "kind": "table",
           "page": 2,
           "doc": "2210.02414v2.pdf",
-          "head": "ion GLM-130B GPT-3 175B OPT-175B Bias & Toxicity Evaluation BLOOM 176B"
+          "head": "Table 1: A comparison between GLM-130B and other 100B-scale LLMs and P"
         },
         {
           "kind": "text",
@@ -133,8 +133,8 @@
       "matched": [
         "10,000"
       ],
-      "tables_in_top8": 1,
-      "ms": 1326,
+      "tables_in_top8": 2,
+      "ms": 1412,
       "top": [
         {
           "kind": "text",
@@ -164,9 +164,15 @@
         "88.55",
         "88.5"
       ],
-      "tables_in_top8": 1,
-      "ms": 889,
+      "tables_in_top8": 2,
+      "ms": 1153,
       "top": [
+        {
+          "kind": "table",
+          "page": 15,
+          "doc": "2010.11929v2.pdf",
+          "head": "Table 5: Top1 accuracy (in %) of Vision Transformer on various dataset"
+        },
         {
           "kind": "text",
           "page": 2,
@@ -178,12 +184,6 @@
           "page": 15,
           "doc": "2010.11929v2.pdf",
           "head": "Published as a conference paper at ICLR 2021 ViT-B/16 ImageNet CIFAR-1"
-        },
-        {
-          "kind": "table",
-          "page": 15,
-          "doc": "2010.11929v2.pdf",
-          "head": "Table 5: Top1 accuracy (in %) of Vision Transformer on various dataset"
         }
       ]
     }

@@ -39,3 +39,6 @@ docs/技术文档.html
 # 参赛材料与内部笔记：赛方需求文档、执行策略、自评分，不进公开仓库
 _private/
 .workbuddy/
+
+# 提交包由 git archive 生成，代码一变就过期，不进仓库
+dist/

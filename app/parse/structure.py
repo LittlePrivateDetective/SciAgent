@@ -25,7 +25,13 @@ log = get_logger(__name__)
 RE_NUM_HEADING = re.compile(r"^(\d{1,2}(?:\.\d{1,2}){0,3})\.?\s+\S")
 RE_APPENDIX = re.compile(r"^(Appendix|APPENDIX)\s*[A-Z0-9]?", re.I)
 RE_FIGURE = re.compile(r"^(Figure|Fig\.)\s*\d+", re.I)
-RE_TABLE = re.compile(r"^Table\s*\d+", re.I)
+# 表题的三种写法：`Table 1: …`（ACL/CVPR 常用）、`Table 1 | …`（DeepSeek 系）、
+# `Table 1 Overview of …`（Llama 3）。裸编号 `Table 1` 单独成块也算（GPT-3）。
+RE_TABLE = re.compile(r"^Table\s*\d+\s*(?:[:.|]|$)", re.I)
+# 无标点那种要"编号后紧跟大写开头的名词短语"：正文引用写的是
+# "Table 3 summarizes the performance …"（小写动词），靠这一点区分。
+# 不能再用"长度 < 120"兜底——Llama 3 的表题普遍 130 字以上，会被误杀。
+RE_TABLE_LOOSE = re.compile(r"^Table\s*\d+\s+[A-Z]")
 RE_REF_HEAD = re.compile(
     r"^\s*(?:\d{1,2}(?:\.\d{1,3})*\.?\s+)?"
     r"(references|reference|bibliography|literature cited|works cited)\s*:?\s*$",
@@ -336,6 +342,15 @@ def classify(blocks: list[Block], body: float) -> list[Block]:
                 in_refs = False
             continue
 
+        # 图表编号要**先于**"参考文献区"判定：不少论文（LoRA、Qwen2.5）把附录表格
+        # 排在 References 之后，按顺序判会整片归成 reference，附录表一张都进不了库。
+        if RE_FIGURE.match(txt):
+            b.kind = "figure"
+            continue
+        if RE_TABLE.match(txt) or RE_TABLE_LOOSE.match(txt):
+            b.kind = "table"
+            continue
+
         # 参考文献区：不同出版社的编号样式差异极大（[12] / [SLA+18] / 作者-年份），
         # 逐条按正则判会漏一大半。既然已经进入 References 区，就整段视为条目，
         # 由 _extract_references 按长度和标签再清洗。
@@ -344,16 +359,207 @@ def classify(blocks: list[Block], body: float) -> list[Block]:
                 b.kind = "reference"
             continue
 
-        if RE_FIGURE.match(txt):
-            b.kind = "figure"
-            continue
-        if RE_TABLE.match(txt):
-            b.kind = "table"
-            continue
         if _looks_formula(b):
             b.kind = "formula"
             continue
     return blocks
+
+
+# ---------------- 表格网格重建 ----------------
+@dataclass
+class _Cell:
+    x0: float
+    y0: float
+    x1: float
+    y1: float
+    text: str
+
+
+def _cluster_rows(cells: list[_Cell], overlap_ratio: float = 0.5) -> list[dict]:
+    """把单元格按**垂直重叠**聚成行。
+
+    不能用"y 中心距离 < N"：表格里 `O(n2 · d)` 带上标，bbox 顶边比同行的
+    `Self-Attention` 高 4pt，中心距离会被上标拉偏；而两行之间只隔 1.8pt，
+    阈值稍大就把上下两行并了。纵向重叠比例对这两种情况都稳。
+    """
+    rows: list[dict] = []
+    for c in sorted(cells, key=lambda c: (c.y0, c.x0)):
+        for r in rows:
+            ov = min(r["y1"], c.y1) - max(r["y0"], c.y0)
+            h = min(r["y1"] - r["y0"], c.y1 - c.y0)
+            if h > 0 and ov / h >= overlap_ratio:
+                r["cells"].append(c)
+                r["y0"] = min(r["y0"], c.y0)
+                r["y1"] = max(r["y1"], c.y1)
+                break
+        else:
+            rows.append({"y0": c.y0, "y1": c.y1, "cells": [c]})
+    rows.sort(key=lambda r: r["y0"])
+    return rows
+
+
+def _column_spans(cells: list[_Cell], min_gap: float = 5.0) -> list[tuple[float, float]]:
+    """用"整块区域内的空白"切列，而不是聚类 x 坐标。
+
+    换成聚类中心会很难定阈值：Table 1 第一列的四个标签中心分别是
+    144 / 147 / 153 / 176（"Self-Attention (restricted)" 最宽），跨度 32pt；
+    而第一列与第二列只隔 30pt。按中心聚，阈值取 32 会并列、取 30 会拆列。
+    改成"所有格子的水平区间取并集，并集之间剩下的空白就是列缝"，
+    就不用赌阈值——空白是客观存在的。
+    """
+    segs = sorted((c.x0, c.x1) for c in cells)
+    if not segs:
+        return []
+    out = [[segs[0][0], segs[0][1]]]
+    for a, b in segs[1:]:
+        if a - out[-1][1] <= min_gap:
+            out[-1][1] = max(out[-1][1], b)
+        else:
+            out.append([a, b])
+    return [(a, b) for a, b in out]
+
+
+def _col_index(cell: _Cell, spans: list[tuple[float, float]]) -> int:
+    cx = (cell.x0 + cell.x1) / 2
+    for i, (a, b) in enumerate(spans):
+        if a <= cx <= b:
+            return i
+    # 落在列缝里（数字比表头窄、且右对齐）：归到最近的一列
+    return min(range(len(spans)), key=lambda i: min(abs(cx - spans[i][0]), abs(cx - spans[i][1])))
+
+
+def _table_grid(caption: Block, lines: list[Line], width: float) -> tuple[str, tuple] | None:
+    """从表题下方的原始行重建网格，返回 (按行文本, 包围盒)。
+
+    重建放在**区块合并之前的信息**上做：`_merge_lines` 会把
+    "Maximum Path Length" / "Operations" / "Self-Attention" 粘成一个块，
+    列归属就此丢失（D-68）。这里直接读 `Line`，每格还带着自己的 bbox。
+    """
+    x0, y0, x1, y1 = caption.bbox
+    span = max(x1 - x0, 1.0)
+    cand: list[_Cell] = []
+    for ln in lines:
+        if ln.bbox[1] < y1 - 1 or ln.bbox[1] > y1 + 420:
+            continue
+        w = max(ln.bbox[2] - ln.bbox[0], 1.0)
+        overlap = min(ln.bbox[2], x1) - max(ln.bbox[0], x0)
+        # 双栏排版里另一栏的正文不能混进来；表题通常与表格同宽
+        if overlap < min(60.0, 0.35 * w):
+            continue
+        cand.append(_Cell(ln.bbox[0], ln.bbox[1], ln.bbox[2], ln.bbox[3], ln.text.strip()))
+    if len(cand) < 4:
+        return None
+
+    rows = _cluster_rows(cand)
+    heights = sorted(r["y1"] - r["y0"] for r in rows)
+    med_h = heights[len(heights) // 2] or 9.0
+
+    taken: list[dict] = []
+    prev_y1 = None
+    skipped = 0
+    for i, r in enumerate(rows):
+        # 与上一行之间出现明显空白 → 表格结束（正文与表格之间至少有 2 行间隔）
+        if prev_y1 is not None and r["y0"] - prev_y1 > med_h * 2.5:
+            break
+        if len(r["cells"]) >= 2:
+            taken.append(r)
+        else:
+            if not taken and skipped < 2:
+                # 表题最后一行常被切成独立块（"not be compared to per-word …"），
+                # 它落在表题下方但不是表格内容。允许跳过开头至多两行这种残句，
+                # 再往后遇到单格行就当表格已结束。
+                skipped += 1
+                prev_y1 = r["y1"]
+                continue
+            # 单格行只在"下一行是多格"且贴得很近时才算表头续行
+            # （"Sequential / Operations" 这种折行表头）
+            nxt = rows[i + 1] if i + 1 < len(rows) else None
+            if nxt and len(nxt["cells"]) >= 2 and nxt["y0"] - r["y1"] <= med_h * 1.2:
+                taken.append(r)
+            else:
+                break
+        prev_y1 = r["y1"]
+
+    if len(taken) < 2:
+        return None
+    # 列边界只用**密集行**推：合并表头（"BLEU" 横跨 EN-DE/EN-FR 两列、
+    # "Training Cost (FLOPs)" 横跨两列）会把两列之间的空白填掉，
+    # 一旦参与取并集，两个子列就被并成一列（Table 2 实测）。
+    max_cells = max(len(r["cells"]) for r in taken)
+    dense = [
+        c
+        for r in taken
+        if len(r["cells"]) >= max(2, int(max_cells * 0.6))
+        for c in r["cells"]
+    ]
+    spans = _column_spans(dense or [c for r in taken for c in r["cells"]])
+    if len(spans) < 2:
+        return None
+
+    rendered: list[list[str]] = []
+    for r in taken:
+        bucket: list[list[str]] = [[] for _ in spans]
+        for c in r["cells"]:
+            bucket[_col_index(c, spans)].append(c.text)
+        cells_txt = [" ".join(v) for v in bucket]
+        filled = sum(1 for v in cells_txt if v)
+        # 表头折行只在**开头两行内**合并；否则 Table 3 里那些只填了两三格的
+        # 数据行（"2 | 5.01 | 25.1"）会被并进上一行，六行糊成一团
+        if rendered and len(rendered) <= 2 and filled <= max(1, len(spans) // 3):
+            for k, v in enumerate(cells_txt):
+                if v:
+                    rendered[-1][k] = f"{rendered[-1][k]} {v}".strip()
+            continue
+        rendered.append(cells_txt)
+
+    body = "\n".join(" | ".join(v for v in row if v) for row in rendered)
+    if not body.strip():
+        return None
+    box = (
+        min(c.x0 for r in taken for c in r["cells"]),
+        min(c.y0 for r in taken for c in r["cells"]),
+        max(c.x1 for r in taken for c in r["cells"]),
+        max(c.y1 for r in taken for c in r["cells"]),
+    )
+    return body, box
+
+
+def _rebuild_tables(
+    blocks: list[Block], lines_by_page: dict[int, list[Line]], widths: dict[int, float]
+) -> list[Block]:
+    """把 table 块（表题）与它下方的网格行合并成一个**结构完整的表格块**。
+
+    不这么做的话，网格行会被 `_merge_lines` 粘成若干段落块，列归属丢失：
+    模型看到 `O(n2 · d)` 却不知道它属于 Self-Attention（D-68）。
+    """
+    consumed: set[int] = set()
+    for b in blocks:
+        if b.kind != "table":
+            continue
+        lines = lines_by_page.get(b.page)
+        if not lines:
+            continue
+        grid = _table_grid(b, lines, widths.get(b.page, 600.0))
+        if not grid:
+            continue
+        body, box = grid
+        b.text = f"{b.text.strip()}\n{body}"
+        b.bbox = (
+            min(b.bbox[0], box[0]),
+            min(b.bbox[1], box[1]),
+            max(b.bbox[2], box[2]),
+            max(b.bbox[3], box[3]),
+        )
+        for nb in blocks:
+            if nb is b or nb.page != b.page or nb.kind in {"heading", "table", "figure", "reference"}:
+                continue
+            yc = (nb.bbox[1] + nb.bbox[3]) / 2
+            if box[1] - 1 <= yc <= box[3] + 1:
+                consumed.add(id(nb))
+    if not consumed:
+        return blocks
+    log.debug("表格网格重建：合并 %d 个网格块", len(consumed))
+    return [b for b in blocks if id(b) not in consumed]
 
 
 def _merge_number_prefix(blocks: list[Block]) -> list[Block]:
@@ -555,6 +761,8 @@ def parse_pdf(path: str, max_pages: int | None = None) -> ParsedDoc:
     empty_pages = 0
     page1_lines: list[Line] = []
     size_counter: Counter[float] = Counter()
+    lines_by_page: dict[int, list[Line]] = {}
+    page_widths: dict[int, float] = {}
 
     parsed_pages = 0
     for pno, page in enumerate(doc, start=1):
@@ -580,6 +788,9 @@ def parse_pdf(path: str, max_pages: int | None = None) -> ParsedDoc:
         blocks = _reading_order(blocks)
         if pno == 1:
             page1_lines = lines
+        # 表格重建要用"合并前的原始行"——合并一旦发生，列归属就没了（D-68）
+        lines_by_page[pno] = lines
+        page_widths[pno] = page.rect.width
         parsed.blocks.extend(blocks)
 
     doc.close()
@@ -592,7 +803,11 @@ def parse_pdf(path: str, max_pages: int | None = None) -> ParsedDoc:
     for i, b in enumerate(parsed.blocks):
         b.order = i
     parsed.blocks = classify(parsed.blocks, global_body)
+    parsed.blocks = _rebuild_tables(parsed.blocks, lines_by_page, page_widths)
     parsed.blocks = _merge_number_prefix(parsed.blocks)
+    # 表格重建会吃掉网格块，order 必须重新编号，否则章节路径映射对不上
+    for i, b in enumerate(parsed.blocks):
+        b.order = i
 
     parsed.char_count = total_chars
     parsed.is_scanned = parsed_pages > 0 and empty_pages >= max(1, int(parsed_pages * 0.6))

@@ -220,24 +220,32 @@ def _key_sentences(text: str, query: str, limit: int = 2) -> list[str]:
 def _evidence_block(evidence: list[dict], max_chars_each: int = 1600, query: str = "") -> str:
     lines = []
     for i, ev in enumerate(evidence, start=1):
+        kind = ev.get("kind")
         body = ev.get("text") or ""
-        if len(body) > max_chars_each:
-            cut = body[:max_chars_each]
-            # 尽量切在句末，别把"半句话"喂给模型（否则它会答"证据被截断"）
+        # 表格给更宽的预算：截在表格中间会把后半张表的行整片丢掉，
+        # 而"问的那一行"恰好常在后面（Table 1 的 Self-Attention 是第 2 行）
+        budget = max(max_chars_each, 2400) if kind == "table" else max_chars_each
+        if len(body) > budget:
+            cut = body[:budget]
+            # 尽量切在句末/行尾，别把"半句话"喂给模型（否则它会答"证据被截断"）
             p = max(cut.rfind("。"), cut.rfind(". "), cut.rfind("\n"))
-            if p > max_chars_each * 0.6:
+            if p > budget * 0.6:
                 cut = cut[: p + 1]
             body = cut + " …（本段后文省略）"
-        body = body.replace("\n", " ／ ")
-        sec = ev.get("section_path") or ""
-        sec_info = f"（章节：{sec}）" if sec else ""
         # 表格块的文字是按行拼出来的"列 | 值"，不说明的话模型会当成乱码散文
         # （实测：证据里明明有 O(n2 · d)，它仍回答"证据未给出"）
         kind_hint = ""
-        if ev.get("kind") == "table":
-            kind_hint = "【表格：按行给出，单元格之间用 ｜ 分隔，同一行的值属于同一列组合】"
-        elif ev.get("kind") == "figure":
-            kind_hint = "【图注】"
+        if kind == "table":
+            # 保留换行。之前这里把所有块统一压成一行，
+            # 整张表变成"… Maximum Path Length Self-Attention | O(n2 · d) …"，
+            # 模型只读到表头就判"未给出复杂度"（实测 3 次里 2 次答错）
+            rows = [ln.strip() for ln in body.splitlines() if ln.strip()]
+            body = "\n" + "\n".join(f"  {ln}" for ln in rows)
+            kind_hint = "【表格：下面一行一条记录，单元格之间用 | 分隔】\n"
+        else:
+            body = body.replace("\n", " ／ ")
+        sec = ev.get("section_path") or ""
+        sec_info = f"（章节：{sec}）" if sec else ""
         key = _key_sentences(ev.get("text") or "", query) if query else []
         key_line = ("▸ 关键句：" + " ｜ ".join(key) + "\n") if key else ""
         lines.append(
