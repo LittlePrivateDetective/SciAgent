@@ -205,6 +205,22 @@ docker compose up -d --build     # 单容器，数据挂 ./data
 
 生产建议：Caddy 反代 + HTTPS；源站只放行 CDN 回源段；`DEMO_ACCESS_TOKEN` 给评审专用口令。
 
+### 在线演示（托管版）
+
+演示实例跑在托管沙箱上，**不依赖任何人的电脑开机**：
+
+```bash
+python scripts/build_deploy.py            # 生成 deploy/（app + web + SQLite + PDF，235 MB）
+# 再把 deploy/ 整个目录交给托管平台启动：python run.py（读 PORT，绑 0.0.0.0）
+```
+
+两个坑和对应做法，都写在 `.github/workflows/keepalive.yml` 与 `app/core/warmup.py` 里：
+
+| 坑 | 做法 |
+| --- | --- |
+| 沙箱空闲会休眠，唤醒后第一个请求要等 20–30 秒 | 每 5 分钟 GET `/api/warm` 保活（GitHub Actions 定时任务）；页面打开时前端也静默打一次，超过 3 秒显示「正在唤醒模型」提示条 |
+| 冷启动最贵的一步是 jieba 对 2 万个块分词（11.9 秒） | 分词结果落盘 `data/bm25_tokens.txt`（按块 id 序列算指纹，入库后自动失效），构建时一并打包，云端不跑分词 |
+
 ## 已知限制
 
 - `EMB_PROVIDER=hash` 时语义检索退化，属于兜底档，不是交付档；
