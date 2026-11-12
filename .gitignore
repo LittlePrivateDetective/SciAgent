@@ -47,3 +47,4 @@ dist/
 deploy/
 data/bm25_tokens.txt
 data/bm25_tokens.tmp
+_incoming/

@@ -111,6 +111,19 @@ body {
 
 /* 左栏 */
 .upload-area { padding: 10px; border-bottom: 1px solid var(--line); }
+/* 批量操作条：只在有勾选时出现，不占常驻空间 */
+.sel-bar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px;
+  padding: 6px 8px; background: #f2f6ff; border-bottom: 1px solid #dbe4f8;
+  font-size: 11.5px; color: #4b5563;
+}
+.sel-bar .sel-info { display: flex; align-items: baseline; gap: 5px; min-width: 0; }
+.sel-bar .sel-n { color: var(--brand); font-size: 13px; }
+.sel-bar .sel-hint { font-size: 10.5px; color: #8a93a3; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis; }
+.sel-bar .sel-acts { display: flex; align-items: center; gap: 3px; width: 100%; }
+.sel-bar .sel-btn { padding: 0 6px !important; height: 22px; font-size: 11.5px; }
+.sel-bar .sel-del { height: 22px; padding: 0 8px; font-size: 11.5px; margin-left: auto; }
 .doc-list { overflow-y: auto; padding: 6px; flex: 1; }
 .doc-item {
   /* 顶部对齐：标题最多两行，若垂直居中，复选框会飘到第二行旁边

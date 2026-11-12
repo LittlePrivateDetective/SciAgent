@@ -138,20 +138,23 @@ def find_duplicates(
 
         # 3) SimHash 近似
         #
-        # 距离 5–6 这一档必须再验一次标题：同领域论文大量共用词汇，指纹本来就近。
+        # 距离 5–6 这一档必须再验标题：同领域论文大量共用词汇，指纹本来就近。
         # 实测把 ELECTRA(2003.10555) 判成了 BERT(N19-1423) 的重复（汉明距离 6、
         # similarity 0.906），直接堵死了「自动下载新论文」——下载成功却入不了库。
-        # 真·同篇不同版本标题几乎一致（>0.9），标题差异大的就是两篇不同的论文。
+        #
+        # 距离 ≤4 以前是"裸判"（不看标题直接认定重复），这个假设对长文档不成立：
+        # 64 位指纹装不下 30k+ 字正文的区分度，学术论文又共用大量通用词
+        # （we/model/results/table/figure），实测 RAG(2005.11401) 与库内
+        # Whisper(2212.04356)、LLaVA(2304.08485) 的距离都只有 4——两篇毫无关系。
+        # 后果是新论文一律传不进来，用户只看到"内容高度重合"却找不到重合在哪。
+        # 现在改成：任何距离都要求标题也像（真·同版本标题实测 >0.95，0.6 足够宽容）。
         if sh and d.simhash:
             dist = hamming(sh, d.simhash)
-            if dist <= 4:
-                out.append(
-                    DupHit(d, f"正文指纹近似(汉明距离={dist})", round(1 - dist / 64, 3), _suggest(d, arxiv_id))
-                )
-                continue
             if dist <= 6:
                 from difflib import SequenceMatcher
 
+                # 标题缺失时（扫描件抽不到标题）保守按重复处理：宁可让用户看一眼，
+                # 也不要把同一篇论文存两遍污染检索
                 ratio = (SequenceMatcher(None, normalize(title), normalize(d.title)).ratio()
                          if title and d.title else 1.0)
                 if ratio >= 0.6:

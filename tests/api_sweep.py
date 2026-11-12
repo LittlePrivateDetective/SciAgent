@@ -135,6 +135,14 @@ def main() -> int:
     s.call("版本差异", "GET", f"/api/documents/{arx_doc['id']}/diff?other_id={main_doc['id']}",
            allow=(200, 400, 404), expect="同族则 200，跨族 400/404")
     s.call("回收站", "GET", "/api/documents/trash", ok=lambda b: True)
+    # 批量删除：空选择必须拒绝；提交不存在的 id 要如实报 failed，而不是整批 500。
+    # 这里故意传重复 id，验证服务端去重后只报一条。
+    s.call("批量删除(空选择)", "POST", "/api/documents/batch-delete",
+           json_body={"ids": []}, allow=(400,), expect="空选择必须 400 拒绝")
+    s.call("批量删除(不存在的 id)", "POST", "/api/documents/batch-delete",
+           json_body={"ids": ["nope-batch-1", "nope-batch-1"]},
+           ok=lambda b: b.get("deleted") == 0 and len(b.get("failed") or []) == 1,
+           expect="deleted=0，failed=1（同一 id 去重）")
     s.call("双语状态", "GET", f"/api/documents/{did}/bilingual/status", ok=lambda b: "cached" in b)
     s.call("双语全文", "GET", f"/api/documents/{did}/bilingual", allow=(200, 404))
     s.call("中译英状态", "GET", f"/api/documents/{did}/translate-en", allow=(200, 404))

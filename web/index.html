@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SciAgent · 科研智能体</title>
   <link rel="stylesheet" href="/static/vendor/element-plus.css" />
-  <link rel="stylesheet" href="/static/style.css?v=12" />
+  <link rel="stylesheet" href="/static/style.css?v=13" />
   <link rel="stylesheet" href="/static/vendor/katex.min.css" />
   <script src="/static/vendor/katex.min.js"></script>
   <script src="/static/vendor/katex-auto-render.min.js"></script>
@@ -62,6 +62,27 @@
         <el-button size="small" style="width:100%;margin-top:6px" @click="rescan" :loading="rescanning">
           一键导入官方测试集（{{ info.official_pdfs || 0 }} 篇）
         </el-button>
+      </div>
+
+      <!-- 勾选既限定问答范围（原有语义），也是批量删除的入口。
+           38 篇里想清掉几篇测试件，逐个点「删」再逐个确认太费事，
+           所以这里显式给全选 / 清空 / 删除三件事，并把"勾选会影响问答范围"说明白。 -->
+      <div class="sel-bar" v-if="selection.length">
+        <span class="sel-info">
+          已选 <b class="sel-n">{{ selection.length }}</b> 篇
+          <span class="sel-hint">问答只在其中检索</span>
+        </span>
+        <div class="sel-acts">
+          <el-button size="small" text class="sel-btn" :disabled="!docs.length"
+                     @click="toggleSelectAll">
+            {{ selection.length === docs.length ? '取消全选' : '全选' }}
+          </el-button>
+          <el-button size="small" text class="sel-btn" @click="clearSelection">清空</el-button>
+          <el-button size="small" type="danger" plain class="sel-del"
+                     :loading="batchDeleting" @click="removeSelected">
+            删除 {{ selection.length }} 篇
+          </el-button>
+        </div>
       </div>
 
       <div class="doc-list">
@@ -919,6 +940,6 @@
   </nav>
 </div>
 
-<script src="/static/app.js?v=12"></script>
+<script src="/static/app.js?v=13"></script>
 </body>
 </html>

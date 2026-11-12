@@ -218,6 +218,52 @@ def list_trash(db: Session = Depends(get_db)):
     ]}
 
 
+class BatchDeleteIn(BaseModel):
+    ids: list[str] = []
+    reason: str = "batch_delete"
+
+
+@router.post("/documents/batch-delete")
+def batch_remove_documents(body: BatchDeleteIn, db: Session = Depends(get_db)):
+    """批量删除 → 逐篇进回收站（可恢复）+ 审计，返回逐篇结果。
+
+    为什么不复用前端循环调单删接口：38 篇会变成 38 次网络往返 + 38 次独立事务，
+    中途失败还会留下"删了一半"的界面——用户不知道到底哪几篇没了。
+    收口到一个接口，失败项单独列出来，前端能如实显示"删了 N 篇、M 篇失败"。
+
+    删除语义与单篇完全一致（走 delete_document：留快照、写审计、清 chunk、
+    失效检索/图谱缓存），所以不会出现"批量删的恢复不了"这种两套行为。
+    """
+    ids = [x for x in dict.fromkeys(body.ids or []) if x]   # 去重且保序
+    if not ids:
+        raise HTTPException(400, "没有选择任何文献")
+    if len(ids) > 300:
+        raise HTTPException(400, "一次最多删除 300 篇，请分批操作")
+
+    done: list[str] = []
+    failed: list[dict] = []
+    for doc_id in ids:
+        try:
+            if delete_document(db, doc_id, actor="ui", reason=body.reason or "batch_delete"):
+                done.append(doc_id)
+            else:
+                failed.append({"id": doc_id, "error": "文档不存在"})
+        except Exception as exc:  # noqa: BLE001 单篇失败不拖垮整批
+            db.rollback()
+            log.warning("批量删除：%s 失败 %s", doc_id, exc)
+            failed.append({"id": doc_id, "error": f"{type(exc).__name__}: {exc}"[:200]})
+
+    return {
+        "ok": True,
+        "deleted": len(done),
+        "ids": done,
+        "failed": failed,
+        "message": f"已移入回收站 {len(done)} 篇"
+                   + (f"，{len(failed)} 篇失败" if failed else "")
+                   + "（左栏「回收」可恢复）",
+    }
+
+
 @router.get("/documents")
 def list_documents(db: Session = Depends(get_db)):
     docs = list(db.scalars(select(Document).order_by(Document.created_at.desc())).all())

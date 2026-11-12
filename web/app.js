@@ -194,7 +194,9 @@ const app = createApp({
       mobilePane: "qa",
       info: {},
       docs: [],
+      // 勾选的文献 id：既是问答/写作的检索范围，也是批量删除的选中集
       selection: [],
+      batchDeleting: false,
       activeDoc: null,
       page: 1,
       pageCount: 1,
@@ -667,6 +669,71 @@ const app = createApp({
     },
     syncSelection() {
       this.selection = this.docs.filter((d) => d._sel).map((d) => d.id);
+    },
+
+    toggleSelectAll() {
+      if (!this.docs.length) return;
+      const all = this.selection.length === this.docs.length;
+      this.docs.forEach((d) => { d._sel = !all; });
+      this.selection = all ? [] : this.docs.map((d) => d.id);
+    },
+
+    clearSelection() {
+      this.docs.forEach((d) => { d._sel = false; });
+      this.selection = [];
+    },
+
+    /// 批量删除选中项。走 /batch-delete 一次收口，失败项单独报。
+    async removeSelected() {
+      const ids = [...this.selection];
+      if (!ids.length || this.batchDeleting) return;
+      const picked = this.docs.filter((d) => ids.includes(d.id));
+      const names = picked.slice(0, 3).map((d) => d.title || d.filename).join("、");
+      const more = picked.length > 3 ? ` 等 ${picked.length} 篇` : "";
+      // 全选删除等于清空语料，这种操作必须在确认框里说清后果，
+      // 否则回车一按，问答就再没有可检索的东西了
+      const warn = ids.length === this.docs.length && this.docs.length > 1
+        ? `这是文献库里的全部 ${this.docs.length} 篇，删完就没有可检索的语料了。\n\n`
+        : "";
+      try {
+        await ElementPlus.ElMessageBox.confirm(
+          `${warn}将把 ${ids.length} 篇移入回收站：\n${names}${more}\n\n源文件保留，可在左栏「回收」里恢复。`,
+          `删除 ${ids.length} 篇文献`,
+          { type: "warning", confirmButtonText: "移入回收站", cancelButtonText: "取消" }
+        );
+      } catch (e) {
+        return;
+      }
+
+      this.batchDeleting = true;
+      try {
+        const r = await fetch("/api/documents/batch-delete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ids, reason: "ui_batch_delete" }),
+        }).then((x) => x.json());
+        if (!r.ok) {
+          ElementPlus.ElMessage.error(r.detail || "批量删除失败");
+          return;
+        }
+        ElementPlus.ElMessage.success(r.message || `已移入回收站 ${r.deleted} 篇`);
+        if ((r.failed || []).length) {
+          ElementPlus.ElMessage.warning(`${r.failed.length} 篇没能删除，列表里仍然保留`);
+        }
+        // 正在读的那篇被删了：清干净，否则阅读器停在一个已不存在的文档上
+        if (this.activeDoc && ids.includes(this.activeDoc.id)) {
+          this.activeDoc = null;
+          this.highlights = [];
+          this.tl = { ...this.tl, words: [], sents: [], loaded: false };
+        }
+        this.selection = [];
+        await this.loadDocs();
+        this.loadInfo();
+      } catch (e) {
+        ElementPlus.ElMessage.error("批量删除失败：" + e);
+      } finally {
+        this.batchDeleting = false;
+      }
     },
 
     async doUpload(opt) {
