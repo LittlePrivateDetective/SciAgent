@@ -508,4 +508,9 @@
 > 顺手做了一件事：把 `Arrearage / Access denied / insufficient / rate limit / invalid_api_key`
 > 翻译成人话（`llm.upstream_hint()`），界面上现在显示的是
 > 「模型账户欠费（如阿里云百炼的 Arrearage），请充值后重试」，而不是一段英文 JSON。
-> 充值后需重跑 `qa_suite` 补齐这 5 条的结论。
+>
+> **已补齐（2026-11-13 12:29，充值后）**：五条定向重跑**全部 PASS**，整轮 `qa_suite`
+> 随之补齐为 **39 PASS / 0 FAIL / 1 BLOCKED**（BLOCK 是本机无 Docker 的 `E03D`）。
+> 实测：B08 点 `[29]` 由 p2 跳 p11、文本层对齐误差 0px；F03 生成 4 段 4980 字符、
+> 3 条引用全部可回指、编造 0 条；F04 点 `[1]` 真实打开 2412.19437v1.pdf。
+> 也就是说**这一轮没有遗留的代码级失败项**，唯一的空白是环境（Docker）。

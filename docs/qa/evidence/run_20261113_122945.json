@@ -1,0 +1,379 @@
+{
+  "run_id": "20261113_122945",
+  "base": "http://127.0.0.1:8013",
+  "timestamp": "2026-11-13T12:30:24.069324",
+  "summary": {
+    "total": 5,
+    "pass": 5,
+    "fail": 0,
+    "blocked": 0
+  },
+  "results": [
+    {
+      "id": "B08",
+      "group": "ui",
+      "point": "a-1 正文引用角标跳 References（官方 1.3.2）",
+      "steps": "在阅读器点正文里的 [29]，检查页码、高亮框尺寸与位置、条目详情浮层",
+      "expected": "翻到 References 页、高亮框圈住该条（宽≥页宽 50%、高≥8px）且滚入视野",
+      "actual": "点 [29], 由 p2 跳到 p11，高亮 628×16px 且滚入视野；文本层对齐误差 0px、100% 词落在页面内",
+      "status": "PASS",
+      "elapsed_s": 7.5,
+      "evidence": {
+        "steps": [
+          {
+            "open": "OK"
+          },
+          {
+            "geometry": {
+              "imgW": 968,
+              "imgH": 1252.7,
+              "layerW": 968,
+              "layerH": 1252.7,
+              "frameW": 968,
+              "frameH": 1252.7,
+              "dw": 0,
+              "dh": 0,
+              "tws": 627,
+              "inside_ratio": 1,
+              "cites": 13,
+              "scanNote": false,
+              "refhit": 12,
+              "lastWord": {
+                "t": "2 ",
+                "x": 773,
+                "y": 1289.1
+              },
+              "scale": 1.5816993464052287
+            }
+          },
+          {
+            "align": "PASS"
+          },
+          {
+            "select": {
+              "text": "Attention mechanisms have become an integral part of",
+              "popVisible": true,
+              "btn": "翻译这段"
+            }
+          },
+          {
+            "translate": {
+              "ok": true,
+              "zh": "注意力机制已成为不可或缺的组成部分"
+            }
+          },
+          {
+            "cite": {
+              "label": "[29], ",
+              "before": 2,
+              "after": 11,
+              "pop": true,
+              "popText": "[29] Noam Shazeer, Azalia Mirhoseini, Krzysztof Maziarz, Andy Davis, Quoc Le, Geoffrey Hinton, and Jeff Dean. Outrageously large neural networks: The sparsely-gated mixture-of-experts layer. arXiv preprint arXiv:1701.06538, 2017.",
+              "hl": 3,
+              "hlBox": "null",
+              "scrollTop": 529,
+              "stageScrollH": 1277,
+              "stageClientH": 748,
+              "hlInline": "left: 17.6471%; top: 70.0631%; width: 64.902%; height: 1.26263%;",
+              "hlTopComputed": "877.672px",
+              "hlHComputed": "15.8125px",
+              "frameTopInView": -517,
+              "pageSizesHas11": true,
+              "hlW": 628,
+              "hlH": 16,
+              "frameW": 968,
+              "hlVisible": true,
+              "hlTopInView": 361
+            }
+          },
+          {
+            "hl_box": "PASS",
+            "w": 628,
+            "h": 16,
+            "frameW": 968
+          },
+          {
+            "cite_jump": "PASS"
+          }
+        ],
+        "ok": true,
+        "error": ""
+      }
+    },
+    {
+      "id": "B09",
+      "group": "ui",
+      "point": "a-3 划词翻译（官方 1.3.3.1）",
+      "steps": "在阅读器选中一段英文正文，点浮层「译」，检查返回中文",
+      "expected": "选区文本带空格、返回非空中文译文",
+      "actual": "选中「Attention mechanisms have become an integral par…」→ 注意力机制已成为不可或缺的组成部分",
+      "status": "PASS",
+      "elapsed_s": 0.0,
+      "evidence": {
+        "steps": [
+          {
+            "open": "OK"
+          },
+          {
+            "geometry": {
+              "imgW": 968,
+              "imgH": 1252.7,
+              "layerW": 968,
+              "layerH": 1252.7,
+              "frameW": 968,
+              "frameH": 1252.7,
+              "dw": 0,
+              "dh": 0,
+              "tws": 627,
+              "inside_ratio": 1,
+              "cites": 13,
+              "scanNote": false,
+              "refhit": 12,
+              "lastWord": {
+                "t": "2 ",
+                "x": 773,
+                "y": 1289.1
+              },
+              "scale": 1.5816993464052287
+            }
+          },
+          {
+            "align": "PASS"
+          },
+          {
+            "select": {
+              "text": "Attention mechanisms have become an integral part of",
+              "popVisible": true,
+              "btn": "翻译这段"
+            }
+          },
+          {
+            "translate": {
+              "ok": true,
+              "zh": "注意力机制已成为不可或缺的组成部分"
+            }
+          },
+          {
+            "cite": {
+              "label": "[29], ",
+              "before": 2,
+              "after": 11,
+              "pop": true,
+              "popText": "[29] Noam Shazeer, Azalia Mirhoseini, Krzysztof Maziarz, Andy Davis, Quoc Le, Geoffrey Hinton, and Jeff Dean. Outrageously large neural networks: The sparsely-gated mixture-of-experts layer. arXiv preprint arXiv:1701.06538, 2017.",
+              "hl": 3,
+              "hlBox": "null",
+              "scrollTop": 529,
+              "stageScrollH": 1277,
+              "stageClientH": 748,
+              "hlInline": "left: 17.6471%; top: 70.0631%; width: 64.902%; height: 1.26263%;",
+              "hlTopComputed": "877.672px",
+              "hlHComputed": "15.8125px",
+              "frameTopInView": -517,
+              "pageSizesHas11": true,
+              "hlW": 628,
+              "hlH": 16,
+              "frameW": 968,
+              "hlVisible": true,
+              "hlTopInView": 361
+            }
+          },
+          {
+            "hl_box": "PASS",
+            "w": 628,
+            "h": 16,
+            "frameW": 968
+          },
+          {
+            "cite_jump": "PASS"
+          }
+        ],
+        "ok": true
+      }
+    },
+    {
+      "id": "A06C",
+      "group": "tools",
+      "point": "a-4 Function Calling 决策 (6%)",
+      "steps": "POST /api/tools/agent，让模型按 tools 协议选工具并真实执行",
+      "expected": "selected_by=llm_function_call 且执行结果非空",
+      "actual": "LLM 选定 arxiv_search，真实执行返回 1 条（local_library）",
+      "status": "PASS",
+      "elapsed_s": 2.9,
+      "evidence": {
+        "status": 200,
+        "selected_by": "llm_function_call",
+        "call": {
+          "name": "arxiv_search",
+          "arguments": {
+            "query": "attention is all you need",
+            "max_results": 1
+          }
+        },
+        "result_ok": true,
+        "result_source": "local_library",
+        "items": 1
+      }
+    },
+    {
+      "id": "F03",
+      "group": "write",
+      "point": "f-1 写作 Copilot 无幻觉 References（官方 1.6.1）",
+      "steps": "POST /api/write/outline 给一句 idea，检查四段框架、每条 Reference 能否回指库内 doc_id、越界引用数",
+      "expected": "四段均有正文；References 全部有 doc_id 且在库内；模型编造条目=0；越界引用=0",
+      "actual": "10.1s 生成 4 段（5662 字符），References 3 条全部可回指库内文献，编造 0 条、越界引用 0 处",
+      "status": "PASS",
+      "elapsed_s": 10.2,
+      "evidence": {
+        "latency_s": 10.1,
+        "title": "Sparse Attention for Efficient Long-Document Retrieval-Augmented Generation",
+        "sections": {
+          "abstract": 1420,
+          "introduction": 1567,
+          "related_work": 1438,
+          "plan": 1237
+        },
+        "sections_with_cites": {
+          "abstract": [
+            "[1]",
+            "[2]",
+            "[3]"
+          ],
+          "introduction": [
+            "[1]",
+            "[2]",
+            "[3]"
+          ],
+          "related_work": [
+            "[1]",
+            "[2]",
+            "[3]"
+          ],
+          "plan": [
+            "[1]",
+            "[2]",
+            "[3]"
+          ]
+        },
+        "refs": [
+          {
+            "i": 1,
+            "doc_in_library": true,
+            "gbt": "佚名. DeepSeek-V3 Technical Report[EB/OL]. arXiv:2412.19437v1, 2024."
+          },
+          {
+            "i": 2,
+            "doc_in_library": true,
+            "gbt": "佚名. 基于注意力机制的中文问答检索增强方法[EB/OL]."
+          },
+          {
+            "i": 3,
+            "doc_in_library": true,
+            "gbt": "DAO T, FU D Y, ERMON S, et al. FlashAttention: Fast and Memory-Eﬃcient Exact Attention with IO-Awareness[EB/OL]. arXiv:2205.14135v2, 2022."
+          }
+        ],
+        "checks": {
+          "citations_total": 12,
+          "citations_valid": 3,
+          "citations_invalid": [],
+          "refs_from_library": 3,
+          "refs_generated_by_llm": 0,
+          "cited_refs": 3
+        },
+        "sample": "Retrieval-augmented generation (RAG) systems face significant challenges in long-document scenarios due to high memory consumption and computational overhead from standard attention mechanisms. This w"
+      }
+    },
+    {
+      "id": "F04",
+      "group": "write",
+      "point": "f-1 写作视图前端渲染（官方 1.6.1）",
+      "steps": "真实浏览器：切「写作」→ 填 idea → 生成 → 检查四段与 References 渲染，点条目能否打开原文",
+      "expected": "四段渲染完整、统计条正确、点 References 能打开对应文献",
+      "actual": "12.5s 渲染 4 段 + 5 条 References；统计条「References 5 条，全部来自库内 / 模型编造条目 0 条」；点 [1] 打开 2412.19437v1.pdf",
+      "status": "PASS",
+      "elapsed_s": 18.5,
+      "evidence": {
+        "steps": [
+          {
+            "write_view_display": "flex"
+          },
+          {
+            "render": {
+              "err": "",
+              "title": "Sparse Attention for Efficient Long-Document Retrieval-Augmented Generation with Reduced Memory Footprint",
+              "elapsed": {
+                "citations_total": 17,
+                "citations_valid": 5,
+                "citations_invalid": [],
+                "refs_from_library": 5,
+                "refs_generated_by_llm": 0,
+                "cited_refs": 5
+              },
+              "secs": [
+                {
+                  "name": "Abstract · 摘要",
+                  "len": 1512,
+                  "html": "<div class=\"write-sec-head\"><span>Abstract · 摘要</span><span class=\"write-sec-cites\">[1] [2] [3]</span></div><p class=\"write-sec-text\">Retrieval-augmented generation (RAG) for long documents faces significant challenges i"
+                },
+                {
+                  "name": "Introduction · 引言",
+                  "len": 1913,
+                  "html": "<div class=\"write-sec-head\"><span>Introduction · 引言</span><span class=\"write-sec-cites\">[1] [2] [3] [4] [5]</span></div><p class=\"write-sec-text\">Long-document retrieval-augmented generation (RAG) systems face a critical"
+                },
+                {
+                  "name": "Related Work · 相关工作",
+                  "len": 1793,
+                  "html": "<div class=\"write-sec-head\"><span>Related Work · 相关工作</span><span class=\"write-sec-cites\">[1] [2] [3] [4] [5]</span></div><p class=\"write-sec-text\">Recent efforts to improve attention efficiency have focused on reducing "
+                },
+                {
+                  "name": "Research Plan · 研究方案",
+                  "len": 1510,
+                  "html": "<div class=\"write-sec-head\"><span>Research Plan · 研究方案</span><span class=\"write-sec-cites\">[1] [2] [3] [5]</span></div><p class=\"write-sec-text\">Our research plan consists of four phases: (1) Design of the sparse attenti"
+                }
+              ],
+              "refs": 5,
+              "refsSample": [
+                {
+                  "idx": "[1]",
+                  "text": "佚名. DeepSeek-V3 Technical Report[EB/OL]. arXiv:2412.19437v1, 2024."
+                },
+                {
+                  "idx": "[2]",
+                  "text": "TEAM Q. Qwen2.5 Technical Report[EB/OL]. arXiv:2412.15115v2, 2024."
+                }
+              ],
+              "dimRefs": 0,
+              "checksDom": [
+                "References 5 条，全部来自库内",
+                "模型编造条目 0 条",
+                "越界引用 0 处",
+                "正文引用 17 处 · 命中文献 5 篇"
+              ],
+              "allRefsHaveDoc": true,
+              "bodyScroll": 1392,
+              "elapsed_s": 12.5
+            }
+          },
+          {
+            "sections": "PASS"
+          },
+          {
+            "refs_real": "PASS"
+          },
+          {
+            "no_invalid_cite": "PASS"
+          },
+          {
+            "open_ref": {
+              "before": "write",
+              "after": "reader",
+              "doc": "2412.19437v1.pdf",
+              "docId": "d01b0500ab8ae"
+            }
+          }
+        ],
+        "ok": true,
+        "error": ""
+      }
+    }
+  ]
+}

@@ -49,6 +49,8 @@ def main() -> None:
     ap.add_argument("--max-len", type=int, default=1024)
     ap.add_argument("--accum", type=int, default=8)
     ap.add_argument("--max-steps", type=int, default=-1)
+    ap.add_argument("--save-steps", type=int, default=50, help="每多少步存一次 adapter")
+    ap.add_argument("--log-steps", type=int, default=5)
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
 
@@ -144,9 +146,9 @@ def main() -> None:
         learning_rate=args.lr,
         lr_scheduler_type="cosine",
         warmup_ratio=0.03,
-        logging_steps=5,
+        logging_steps=args.log_steps,
         save_strategy="steps",
-        save_steps=100,
+        save_steps=args.save_steps,
         save_total_limit=2,
         max_steps=args.max_steps,
         gradient_checkpointing=True,
@@ -159,6 +161,21 @@ def main() -> None:
     )
     trainer = Trainer(model=model, args=targs, train_dataset=ds, data_collator=collate)
     trainer.train()
+
+    # 训练日志单独落一份 JSON：Trainer 的 loss 只打在进度条上（重定向到文件时
+    # 会被 \\r 覆盖得看不见），而"loss 有没有降"是判断这轮训练有没有意义的第一依据，
+    # 不能只靠翻日志。这一段也顺带解决了冒烟时 trainer_state.json 缺失的问题
+    # ——保存过程中断时，至少 loss 曲线还在。
+    hist = [h for h in trainer.state.log_history if "loss" in h]
+    log_path = Path(args.out) / "train_log.json"
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    log_path.write_text(json.dumps(trainer.state.log_history, ensure_ascii=False, indent=1),
+                        encoding="utf-8")
+    if hist:
+        first = sum(h["loss"] for h in hist[:3]) / min(3, len(hist))
+        last = sum(h["loss"] for h in hist[-3:]) / min(3, len(hist))
+        print(f"loss 首 {first:.4f} → 末 {last:.4f}（{len(hist)} 个记录点，明细 {log_path}）")
+
     trainer.save_model(args.out)
     tok.save_pretrained(args.out)
     print(f"LoRA 已保存 → {args.out}")
