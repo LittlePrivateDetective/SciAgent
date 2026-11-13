@@ -46,7 +46,10 @@ def main() -> None:
     ap.add_argument("--out", default=str(OUT / "lora-3b"))
     ap.add_argument("--epochs", type=float, default=1.0)
     ap.add_argument("--lr", type=float, default=2e-4)
-    ap.add_argument("--max-len", type=int, default=1024)
+    # 1024 在 6GB 上会把显存吃到只剩 300MB，每步都在换页；896 是实测能留出
+    # 约 600MB 余量的上限。平均样本 439 token，被截断的只有长证据样本。
+    ap.add_argument("--max-len", type=int, default=896)
+    ap.add_argument("--optim", default="adamw_torch")
     ap.add_argument("--accum", type=int, default=8)
     ap.add_argument("--max-steps", type=int, default=-1)
     ap.add_argument("--save-steps", type=int, default=50, help="每多少步存一次 adapter")
@@ -154,7 +157,11 @@ def main() -> None:
         gradient_checkpointing=True,
         gradient_checkpointing_kwargs={"use_reentrant": False},
         fp16=True,                      # 2060 不支持 bf16
-        optim="paged_adamw_8bit",
+        # 不用 paged_adamw_8bit：它在 Windows + 显存将满时会把优化器更新退到 CPU，
+        # 实测 20 步后 GPU 利用率掉到 4%、CPU 单核 100%，进度条 8 分钟不动一步，
+        # 且进程杀不掉（占着 5.8GB 显存不放）。LoRA 只有 30M 参数，
+        # 普通 AdamW 的 state 也就 240MB，没必要为省这点显存去踩那个坑。
+        optim=args.optim,
         report_to=[],
         remove_unused_columns=False,
         dataloader_num_workers=0,
