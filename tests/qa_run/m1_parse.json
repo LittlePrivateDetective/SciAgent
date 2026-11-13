@@ -1,0 +1,611 @@
+[
+ {
+  "file": "1706.03762v1.pdf",
+  "note": "官方标准样本",
+  "pages": 15,
+  "parsed_pages": 15,
+  "ms": 433,
+  "is_scanned": false,
+  "title": "Attention Is All You Need",
+  "title_nonempty": true,
+  "title_match": true,
+  "authors_n": 9,
+  "authors": [
+   "Ashish Vaswani",
+   "Google Brain",
+   "Noam Shazeer",
+   "Niki Parmar",
+   "Google Research",
+   "Jakob Uszkoreit"
+  ],
+  "affiliations_n": 3,
+  "abstract_chars": 1135,
+  "sections_n": 30,
+  "section_levels": {
+   "2": 19,
+   "1": 8,
+   "3": 3
+  },
+  "sections_head": [
+   "Attention Is All You Need",
+   "Abstract",
+   "1 Introduction",
+   "2 Background",
+   "3 Model Architecture",
+   "3.1 Encoder and Decoder Stacks"
+  ],
+  "references_n": 36,
+  "refs_sample": [
+   "[1] Jimmy Lei Ba, Jamie Ryan Kiros, and Geoffrey E Hinton. Layer normalization. arXiv prep",
+   "[2] Dzmitry Bahdanau, Kyunghyun Cho, and Yoshua Bengio. Neural machine translation by join",
+   "[3] Denny Britz, Anna Goldie, Minh-Thang Luong, and Quoc V. Le. Massive exploration of neu"
+  ],
+  "block_kinds": {
+   "heading": 30,
+   "text": 162,
+   "figure": 5,
+   "formula": 7,
+   "table": 4,
+   "reference": 284
+  },
+  "arxiv_id": "1706.03762v1",
+  "doi": "",
+  "char_count": 35839,
+  "problems": [],
+  "scan_detection": "PASS",
+  "status": "PASS"
+ },
+ {
+  "file": "1706.03762v7.pdf",
+  "note": "官方更新版本",
+  "pages": 15,
+  "parsed_pages": 15,
+  "ms": 415,
+  "is_scanned": false,
+  "title": "Attention Is All You Need",
+  "title_nonempty": true,
+  "title_match": true,
+  "authors_n": 9,
+  "authors": [
+   "Ashish Vaswani",
+   "Google Brain",
+   "Noam Shazeer",
+   "Niki Parmar",
+   "Google Research",
+   "Jakob Uszkoreit"
+  ],
+  "affiliations_n": 3,
+  "abstract_chars": 2218,
+  "sections_n": 30,
+  "section_levels": {
+   "2": 19,
+   "1": 8,
+   "3": 3
+  },
+  "sections_head": [
+   "Attention Is All You Need",
+   "Abstract",
+   "1 Introduction",
+   "2 Background",
+   "3 Model Architecture",
+   "3.1 Encoder and Decoder Stacks"
+  ],
+  "references_n": 40,
+  "refs_sample": [
+   "[1] Jimmy Lei Ba, Jamie Ryan Kiros, and Geoffrey E Hinton. Layer normalization. arXiv prep",
+   "[2] Dzmitry Bahdanau, Kyunghyun Cho, and Yoshua Bengio. Neural machine translation by join",
+   "[3] Denny Britz, Anna Goldie, Minh-Thang Luong, and Quoc V. Le. Massive exploration of neu"
+  ],
+  "block_kinds": {
+   "text": 173,
+   "heading": 30,
+   "figure": 5,
+   "formula": 8,
+   "table": 4,
+   "reference": 290
+  },
+  "arxiv_id": "1706.03762v7",
+  "doi": "",
+  "char_count": 38450,
+  "problems": [],
+  "scan_detection": "PASS",
+  "status": "PASS"
+ },
+ {
+  "file": "1706.03762v1_img.pdf",
+  "note": "官方图片版（应识别为扫描件）（扫描件检测通过；无 OCR 正文，内容识别不得判 PASS）",
+  "pages": 15,
+  "parsed_pages": 15,
+  "ms": 1526,
+  "is_scanned": true,
+  "title": "",
+  "title_nonempty": false,
+  "title_match": null,
+  "authors_n": 0,
+  "authors": [],
+  "affiliations_n": 0,
+  "abstract_chars": 0,
+  "sections_n": 0,
+  "section_levels": {},
+  "sections_head": [],
+  "references_n": 0,
+  "refs_sample": [],
+  "block_kinds": {},
+  "arxiv_id": "",
+  "doi": "",
+  "char_count": 0,
+  "problems": [
+   "标题为空",
+   "作者为空",
+   "摘要过短/为空",
+   "标题树过少",
+   "参考文献过少"
+  ],
+  "scan_detection": "PASS",
+  "status": "WARN"
+ },
+ {
+  "file": "UnderstandingDeepLearning_02_09_26_C.pdf",
+  "note": "官方 541 页长书",
+  "pages": 541,
+  "parsed_pages": 541,
+  "ms": 5648,
+  "is_scanned": false,
+  "title": "Understanding Deep Learning",
+  "title_nonempty": true,
+  "title_match": null,
+  "authors_n": 1,
+  "authors": [
+   "Simon J.D. Prince"
+  ],
+  "affiliations_n": 0,
+  "abstract_chars": 0,
+  "sections_n": 1105,
+  "section_levels": {
+   "2": 557,
+   "1": 332,
+   "3": 216
+  },
+  "sections_head": [
+   "Contents",
+   "Preface",
+   "Acknowledgements",
+   "1 Introduction",
+   "2 Supervised learning",
+   "3 Shallow neural networks"
+  ],
+  "references_n": 291,
+  "refs_sample": [
+   "Tom Jacobs, Lei Fang, Fabian Henning, Umesh Rajashekar, Jay Park, Kai Liu, Pablo Renard Gu",
+   "If we train a system to predict salary levels for individuals based on historical data, th",
+   "Deep learning systems make decisions, but we do not usually know exactly how or based on w"
+  ],
+  "block_kinds": {
+   "text": 9471,
+   "heading": 1105,
+   "reference": 1855,
+   "figure": 286,
+   "formula": 1167
+  },
+  "arxiv_id": "",
+  "doi": "",
+  "char_count": 1281489,
+  "problems": [
+   "摘要过短/为空"
+  ],
+  "scan_detection": "PASS",
+  "status": "WARN"
+ },
+ {
+  "file": "EN_1810.04805_BERT.pdf",
+  "note": "扩充·双栏",
+  "pages": 16,
+  "parsed_pages": 16,
+  "ms": 182,
+  "is_scanned": false,
+  "title": "BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding",
+  "title_nonempty": true,
+  "title_match": true,
+  "authors_n": 5,
+  "authors": [
+   "Jacob Devlin",
+   "Ming-Wei Chang",
+   "Kenton Lee",
+   "Kristina Toutanova",
+   "Google AI Language"
+  ],
+  "affiliations_n": 1,
+  "abstract_chars": 1081,
+  "sections_n": 30,
+  "section_levels": {
+   "2": 25,
+   "1": 5
+  },
+  "sections_head": [
+   "BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding",
+   "Abstract",
+   "1 Introduction",
+   "Representations",
+   "2 Related Work",
+   "2.2 Unsupervised Fine-tuning Approaches"
+  ],
+  "references_n": 63,
+  "refs_sample": [
+   "Alan Akbik, Duncan Blythe, and Roland Vollgraf. 2018. Contextual string embeddings for seq",
+   "Rami Al-Rfou, Dokook Choe, Noah Constant, Mandy Guo, and Llion Jones. 2018.",
+   "Rie Kubota Ando and Tong Zhang. 2005. A framework for learning predictive structures from "
+  ],
+  "block_kinds": {
+   "heading": 30,
+   "text": 736,
+   "figure": 5,
+   "formula": 2,
+   "table": 9,
+   "reference": 95
+  },
+  "arxiv_id": "1810.04805v2",
+  "doi": "",
+  "char_count": 62006,
+  "problems": [],
+  "scan_detection": "PASS",
+  "status": "PASS"
+ },
+ {
+  "file": "EN_1909.11942_ALBERT.pdf",
+  "note": "扩充·双栏（文件名为下载任务标签，标题以 PDF 原文为准）",
+  "pages": 17,
+  "parsed_pages": 17,
+  "ms": 120,
+  "is_scanned": false,
+  "title": "ALBERT: A LITE BERT FOR SELF-SUPERVISED LEARNING OF LANGUAGE REPRESENTATIONS",
+  "title_nonempty": true,
+  "title_match": null,
+  "authors_n": 8,
+  "authors": [
+   "Zhenzhong Lan",
+   "Mingda Chen",
+   "Sebastian Goodman",
+   "Kevin Gimpel",
+   "Piyush Sharma",
+   "Radu Soricut"
+  ],
+  "affiliations_n": 2,
+  "abstract_chars": 977,
+  "sections_n": 15,
+  "section_levels": {
+   "1": 10,
+   "2": 5
+  },
+  "sections_head": [
+   "FOR SELF-SUPERVISED LEARNING OF LANGUAGE REPRESENTATIONS",
+   "ALBERT: A LITE BERT",
+   "ABSTRACT",
+   "1 INTRODUCTION",
+   "2 RELATED WORK",
+   "3 THE ELEMENTS OF ALBERT"
+  ],
+  "references_n": 64,
+  "refs_sample": [
+   "Alexei Baevski and Michael Auli. Adaptive input representations for neural language modeli",
+   "Shaojie Bai, J. Zico Kolter, and Vladlen Koltun. Deep equilibrium models. In Neural Inform",
+   "Roy Bar-Haim, Ido Dagan, Bill Dolan, Lisa Ferro, Danilo Giampiccolo, Bernardo Magnini, and"
+  ],
+  "block_kinds": {
+   "text": 1029,
+   "heading": 15,
+   "figure": 4,
+   "table": 14,
+   "formula": 2,
+   "reference": 90
+  },
+  "arxiv_id": "1909.11942v6",
+  "doi": "",
+  "char_count": 58492,
+  "problems": [],
+  "scan_detection": "PASS",
+  "status": "PASS"
+ },
+ {
+  "file": "EN_2307.08691_FlashAttention-2.pdf",
+  "note": "扩充·公式密集",
+  "pages": 14,
+  "parsed_pages": 14,
+  "ms": 1369,
+  "is_scanned": false,
+  "title": "FlashAttention-2: Faster Attention with Better Parallelism and Work Partitioning",
+  "title_nonempty": true,
+  "title_match": true,
+  "authors_n": 1,
+  "authors": [
+   "Tri Dao"
+  ],
+  "affiliations_n": 2,
+  "abstract_chars": 1745,
+  "sections_n": 19,
+  "section_levels": {
+   "1": 8,
+   "2": 11
+  },
+  "sections_head": [
+   "1 Introduction",
+   "2 Background",
+   "2.1 Hardware characteristics",
+   "2.2 Standard Attention Implementation",
+   "FlashAttention",
+   "FlashAttention-2: Algorithm, Parallelism, and Work Partition- ing"
+  ],
+  "references_n": 20,
+  "refs_sample": [
+   "[1] Joshua Ainslie, James Lee-Thorp, Michiel de Jong, Yury Zemlyanskiy, Federico Lebrón, a",
+   "[2] Iz Beltagy, Matthew E Peters, and Arman Cohan. Longformer: The long-document transform",
+   "[3] Beidi Chen, Tri Dao, Eric Winsor, Zhao Song, Atri Rudra, and Christopher Ré. Scatterbr"
+  ],
+  "block_kinds": {
+   "text": 891,
+   "heading": 19,
+   "formula": 32,
+   "figure": 7,
+   "table": 1,
+   "reference": 25
+  },
+  "arxiv_id": "2307.08691v1",
+  "doi": "",
+  "char_count": 38524,
+  "problems": [],
+  "scan_detection": "PASS",
+  "status": "PASS"
+ },
+ {
+  "file": "EN_2404.14219_Phi-3_Technical_Report.pdf",
+  "note": "扩充·含大量表格",
+  "pages": 24,
+  "parsed_pages": 24,
+  "ms": 1699,
+  "is_scanned": false,
+  "title": "Phi-3 Technical Report: A Highly Capable Language Model Locally on Your Phone",
+  "title_nonempty": true,
+  "title_match": true,
+  "authors_n": 1,
+  "authors": [
+   "Microsoft"
+  ],
+  "affiliations_n": 1,
+  "abstract_chars": 1489,
+  "sections_n": 22,
+  "section_levels": {
+   "1": 8,
+   "2": 12,
+   "3": 2
+  },
+  "sections_head": [
+   "Phi-3 Technical Report: A Highly Capable Language Model Locally on Your Phone",
+   "1 Introduction",
+   "2 Technical Specifications",
+   "3 Academic benchmarks",
+   "4 Multilingual and Long Context",
+   "5 Safety"
+  ],
+  "references_n": 73,
+  "refs_sample": [
+   "[AI23] Meta AI. Introducing meta llama 3: The most capable openly available llm to date, 2",
+   "[Ant24] AI Anthropic. The claude 3 model family: Opus, sonnet, haiku. Claude-3 Model Card,",
+   "[AON+21] Jacob Austin, Augustus Odena, Maxwell Nye, Maarten Bosma, Henryk Michalewski, Dav"
+  ],
+  "block_kinds": {
+   "heading": 22,
+   "text": 961,
+   "figure": 9,
+   "formula": 3,
+   "table": 7,
+   "reference": 304
+  },
+  "arxiv_id": "2404.14219v4",
+  "doi": "",
+  "char_count": 54931,
+  "problems": [],
+  "scan_detection": "PASS",
+  "status": "PASS"
+ },
+ {
+  "file": "ZH_zwxxxb_3659_大语言模型评测综述.pdf",
+  "note": "扩充·中文双栏",
+  "pages": 23,
+  "parsed_pages": 23,
+  "ms": 588,
+  "is_scanned": false,
+  "title": "大语言模型评测综述",
+  "title_nonempty": true,
+  "title_match": null,
+  "authors_n": 2,
+  "authors": [
+   "罗文",
+   "王厚峰"
+  ],
+  "affiliations_n": 0,
+  "abstract_chars": 316,
+  "sections_n": 17,
+  "section_levels": {
+   "1": 16,
+   "2": 1
+  },
+  "sections_head": [
+   "大语言模型评测综述",
+   "EvaluatingLargeLanguageModels:ASurveyofResearchProgress",
+   "n∑",
+   "1 BERTScore",
+   "m∑",
+   "n∑"
+  ],
+  "references_n": 143,
+  "refs_sample": [
+   "[1] KENTONJD M W C,TOUTANOVA L K.BERT: Pre-trainingofdeepbidirectionaltransformersforlangu",
+   "[2] RADFORD A,NARASIMHAN K,SALIMANS T, etal.Improvinglanguageunderstandingbygenerative pre",
+   "[3] LEWISM,LIUY,GOYALN,etal.BART:Denoisingsequence-to-sequencepre-trainingfornaturallangua"
+  ],
+  "block_kinds": {
+   "text": 1560,
+   "heading": 17,
+   "formula": 5,
+   "reference": 658
+  },
+  "arxiv_id": "",
+  "doi": "",
+  "char_count": 54991,
+  "problems": [],
+  "scan_detection": "PASS",
+  "status": "PASS"
+ },
+ {
+  "file": "ZH_zwxxxb_3314_多模态信息处理前沿综述.pdf",
+  "note": "扩充·中文双栏",
+  "pages": 20,
+  "parsed_pages": 20,
+  "ms": 1286,
+  "is_scanned": false,
+  "title": "多模态信息处理前沿综述:应用、融合和预训练",
+  "title_nonempty": true,
+  "title_match": null,
+  "authors_n": 4,
+  "authors": [
+   "吴友政",
+   "李浩然",
+   "姚霆",
+   "何晓冬"
+  ],
+  "affiliations_n": 0,
+  "abstract_chars": 264,
+  "sections_n": 58,
+  "section_levels": {
+   "1": 10,
+   "2": 48
+  },
+  "sections_head": [
+   "多模态信息处理前沿综述:应用、融合和预训练",
+   "0 引言",
+   "Era)、1980-2000 年的计算时代(Computational",
+   "Era)、2000-2010 年的交互时代(InteractionEra)",
+   "1 多模态应用",
+   "CMU-MOSI"
+  ],
+  "references_n": 127,
+  "refs_sample": [
+   "[1] MorencyLP,BaltrusaitisT.Tutorialon multimodal machinelearning[C]//Proceedingsofthe55th",
+   "[2] ZhangC,YangZ,HeX,etal.Multimodalintelligence:representationlearning,informationfusiona",
+   "[3] SummairaJ,LiX,ShoibA M,etal.Recentadvances andtrendsinmultimodaldeeplearning:areview[J"
+  ],
+  "block_kinds": {
+   "text": 1433,
+   "heading": 58,
+   "formula": 4,
+   "reference": 576
+  },
+  "arxiv_id": "",
+  "doi": "",
+  "char_count": 47890,
+  "problems": [],
+  "scan_detection": "PASS",
+  "status": "PASS"
+ },
+ {
+  "file": "ZH_1_大语言模型的工具使用综述.pdf",
+  "note": "扩充·自动化学报",
+  "pages": 16,
+  "parsed_pages": 16,
+  "ms": 138,
+  "is_scanned": false,
+  "title": "大语言模型的工具使用综述",
+  "title_nonempty": true,
+  "title_match": null,
+  "authors_n": 9,
+  "authors": [
+   "郑逸宁",
+   "李不凡",
+   "殷林琪",
+   "印张悦",
+   "袁枫烨",
+   "魏海洋"
+  ],
+  "affiliations_n": 0,
+  "abstract_chars": 404,
+  "sections_n": 54,
+  "section_levels": {
+   "1": 46,
+   "2": 8
+  },
+  "sections_head": [
+   "大语言模型的工具使用综述",
+   "1 余 镇",
+   "1 李不凡",
+   "1 杨 捷",
+   "郑逸宁",
+   "1 陆嘉昊"
+  ],
+  "references_n": 101,
+  "refs_sample": [
+   "Achiam J, Adler S, Agarwal S, Ahmad L, Akkaya I, Aleman F L, et al. GPT-4 technical report",
+   "Liu W W, Huang X, Zeng X S, Hao X L, Yu S, Li D X, et al. ToolACE: Winning the points of L",
+   "Abdelaziz I, Basu K, Agarwal M, Kumaravel S, Stallone M, Panda R, et al. Granite-function "
+  ],
+  "block_kinds": {
+   "text": 803,
+   "heading": 54,
+   "reference": 135
+  },
+  "arxiv_id": "",
+  "doi": "10.16383/j.aas.c240793",
+  "char_count": 52279,
+  "problems": [],
+  "scan_detection": "PASS",
+  "status": "PASS"
+ },
+ {
+  "file": "ZH_zwxxxb_3055_知识图谱研究现状及军事应用.pdf",
+  "note": "扩充·知识图谱",
+  "pages": 8,
+  "parsed_pages": 8,
+  "ms": 616,
+  "is_scanned": false,
+  "title": "知识图谱研究现状及军事应用",
+  "title_nonempty": true,
+  "title_match": null,
+  "authors_n": 6,
+  "authors": [
+   "林旺群",
+   "汪淼",
+   "王伟",
+   "王重楠",
+   "金松昌",
+   "北京"
+  ],
+  "affiliations_n": 0,
+  "abstract_chars": 181,
+  "sections_n": 3,
+  "section_levels": {
+   "1": 2,
+   "2": 1
+  },
+  "sections_head": [
+   "知识图谱研究现状及军事应用",
+   "ASurveytoKnowledgeGraphandItsMilitaryApplication",
+   "参考文献"
+  ],
+  "references_n": 36,
+  "refs_sample": [
+   "[1] 徐增林,盛泳潘,贺丽荣,等.知识图谱技术综述[J].电 子科技大学学报,2016,45(04):589-606.",
+   "[2] 漆桂林,高桓,吴天星.知识图谱研究进展[J].情报 工程,2017,3(1):4-25.",
+   "[3] 刘峤,李杨,段宏,等.知识图谱构建技术综述[J].计算 机研究与发展,2016,53(03):582-600."
+  ],
+  "block_kinds": {
+   "text": 445,
+   "heading": 3,
+   "formula": 1,
+   "reference": 149
+  },
+  "arxiv_id": "",
+  "doi": "",
+  "char_count": 15336,
+  "problems": [],
+  "scan_detection": "PASS",
+  "status": "PASS"
+ }
+]

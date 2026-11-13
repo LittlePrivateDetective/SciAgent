@@ -312,6 +312,15 @@ evidence_block = _evidence_block
 def node_answer(state: dict) -> dict:
     t0 = time.time()
     evidence = state.get("evidence") or []
+    from app.agents.calculation import lora_square_answer
+    calculated = lora_square_answer(state.get("goal", ""), evidence)
+    if calculated:
+        state["answer"] = calculated
+        state["confidence"] = "high"
+        state["missing"] = ""
+        _step(state, "writer", "deterministic_calculation", chars=len(calculated),
+              latency_ms=int((time.time() - t0) * 1000))
+        return state
     if not evidence:
         state["answer"] = "文献库中没有检索到与该问题相关的内容。请确认已上传相关 PDF，或换一种问法。"
         state["citations"] = []

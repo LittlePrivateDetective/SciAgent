@@ -1,0 +1,404 @@
+[
+  {
+    "case": "章节树真实标题",
+    "status": "PASS",
+    "seconds": 0.0,
+    "detail": {
+      "sections": [
+        {
+          "level": 2,
+          "title": "Constitutional AI: Harmlessness from AI Feedback",
+          "page": 1
+        },
+        {
+          "level": 2,
+          "title": "Yuntao Bai∗, Saurav Kadavath, Sandipan Kundu, Amanda Askell, Jackson Kernion,",
+          "page": 1
+        },
+        {
+          "level": 1,
+          "title": "Anthropic",
+          "page": 1
+        },
+        {
+          "level": 2,
+          "title": "Abstract",
+          "page": 1
+        },
+        {
+          "level": 1,
+          "title": "1 Introduction",
+          "page": 2
+        },
+        {
+          "level": 2,
+          "title": "1.1 Motivations",
+          "page": 2
+        },
+        {
+          "level": 2,
+          "title": "Scaling Supervision",
+          "page": 2
+        },
+        {
+          "level": 2,
+          "title": "A Harmless but Non-Evasive (Still Helpful) Assistant",
+          "page": 4
+        },
+        {
+          "level": 2,
+          "title": "Simplicity and Transparency",
+          "page": 4
+        },
+        {
+          "level": 2,
+          "title": "1.2 The Constitutional AI Approach",
+          "page": 5
+        },
+        {
+          "level": 2,
+          "title": "1.3 Contributions",
+          "page": 5
+        },
+        {
+          "level": 2,
+          "title": "1.4 Models and Data",
+          "page": 6
+        },
+        {
+          "level": 1,
+          "title": "2 Evaluating the Potential for AI Supervision of HHH",
+          "page": 6
+        },
+        {
+          "level": 1,
+          "title": "3 Constitutional AI: Critiques, Revisions, and Supervised Learning",
+          "page": 7
+        },
+        {
+          "level": 2,
+          "title": "3.1 Method",
+          "page": 7
+        },
+        {
+          "level": 2,
+          "title": "3.2 Datasets and Training",
+          "page": 8
+        },
+        {
+          "level": 2,
+          "title": "3.3 Main Results",
+          "page": 8
+        },
+        {
+          "level": 2,
+          "title": "3.4 Scaling Trends",
+          "page": 9
+        },
+        {
+          "level": 2,
+          "title": "Number of Principles in the Constitution",
+          "page": 9
+        },
+        {
+          "level": 2,
+          "title": "Number of Revisions",
+          "page": 9
+        },
+        {
+          "level": 2,
+          "title": "3.5 Are Critiques Necessary?",
+          "page": 10
+        },
+        {
+          "level": 2,
+          "title": "Constitutional AI: Reinforcement Learning from AI Feedback",
+          "page": 10
+        },
+        {
+          "level": 2,
+          "title": "4.1 Method",
+          "page": 10
+        },
+        {
+          "level": 2,
+          "title": "4.2 Datasets and Training",
+          "page": 11
+        },
+        {
+          "level": 2,
+          "title": "4.3 Main Results",
+          "page": 12
+        },
+        {
+          "level": 2,
+          "title": "Constitutional Principles",
+          "page": 13
+        },
+        {
+          "level": 2,
+          "title": "Ensembling",
+          "page": 13
+        },
+        {
+          "level": 2,
+          "title": "Preference Labels (Soft vs. Hard vs. Clamped)",
+          "page": 13
+        },
+        {
+          "level": 2,
+          "title": "4.4 Harmlessness vs. Evasiveness",
+          "page": 13
+        },
+        {
+          "level": 2,
+          "title": "4.5 Absolute Harmfulness Score",
+          "page": 14
+        },
+        {
+          "level": 1,
+          "title": "5 Related Work",
+          "page": 14
+        },
+        {
+          "level": 1,
+          "title": "6 Discussion",
+          "page": 15
+        },
+        {
+          "level": 2,
+          "title": "6.1 Future Directions",
+          "page": 15
+        },
+        {
+          "level": 2,
+          "title": "6.2 Broader Impacts",
+          "page": 16
+        },
+        {
+          "level": 1,
+          "title": "7 Contribution Statement",
+          "page": 16
+        },
+        {
+          "level": 2,
+          "title": "Acknowledgments",
+          "page": 17
+        },
+        {
+          "level": 1,
+          "title": "References",
+          "page": 17
+        },
+        {
+          "level": 2,
+          "title": "A",
+          "page": 18
+        },
+        {
+          "level": 2,
+          "title": "Sample critiques and revisions",
+          "page": 18
+        },
+        {
+          "level": 2,
+          "title": "B",
+          "page": 19
+        },
+        {
+          "level": 2,
+          "title": "Identifying and Classifying Harmful Conversations",
+          "page": 19
+        },
+        {
+          "level": 2,
+          "title": "C",
+          "page": 20
+        },
+        {
+          "level": 2,
+          "title": "Constitutional Principles Used for This Research",
+          "page": 20
+        },
+        {
+          "level": 2,
+          "title": "Principles for SL-CAI",
+          "page": 20
+        },
+        {
+          "level": 2,
+          "title": "Principles for RL-CAI",
+          "page": 22
+        },
+        {
+          "level": 2,
+          "title": "D",
+          "page": 23
+        },
+        {
+          "level": 2,
+          "title": "Many More Samples",
+          "page": 23
+        },
+        {
+          "level": 2,
+          "title": "PALMS Sensitive Questions",
+          "page": 23
+        },
+        {
+          "level": 2,
+          "title": "LaMDA Prompts",
+          "page": 25
+        },
+        {
+          "level": 2,
+          "title": "InstructGPT Prompts",
+          "page": 27
+        },
+        {
+          "level": 2,
+          "title": "E",
+          "page": 29
+        },
+        {
+          "level": 2,
+          "title": "Few-shot Prompts",
+          "page": 29
+        },
+        {
+          "level": 2,
+          "title": "Few-shot Prompts for SL-CAI",
+          "page": 29
+        },
+        {
+          "level": 2,
+          "title": "Chain-of-Thought Prompts for RL-CAI",
+          "page": 31
+        }
+      ]
+    }
+  },
+  {
+    "case": "页文本层坐标",
+    "status": "PASS",
+    "seconds": 0.01,
+    "detail": {
+      "http": 200,
+      "words": 343
+    }
+  },
+  {
+    "case": "页图 PNG",
+    "status": "PASS",
+    "seconds": 0.05,
+    "detail": {
+      "http": 200,
+      "bytes": 194789,
+      "type": "image/png"
+    }
+  },
+  {
+    "case": "扫描件文本层状态诚实",
+    "status": "PASS",
+    "seconds": 0.01,
+    "detail": {
+      "page": 1,
+      "width": 612.0,
+      "height": 792.48,
+      "has_text_layer": false,
+      "words": []
+    }
+  },
+  {
+    "case": "正文引用反查有命中",
+    "status": "PASS",
+    "seconds": 0.01,
+    "detail": {
+      "ok": true,
+      "index": 1,
+      "total": 1,
+      "occurrences": 1,
+      "hits": [
+        {
+          "page": 2,
+          "bbox": [
+            107.6,
+            601.2,
+            505.7,
+            678.1
+          ],
+          "chunk_id": "c0aec8b0267ef",
+          "section": "3 Model Architecture/3.1 Encoder and Decoder Stacks",
+          "sentence": "We employ a residual connection around each of the two sub-layers, followed by layer normalization [1].",
+          "context": "on around each of the two sub-layers, followed by layer normalization [1]. That is, the output of each sub-layer is LayerNorm(x + Sublayer(x)),",
+          "count": 1
+        }
+      ]
+    }
+  },
+  {
+    "case": "中文译本预览与 Markdown 下载",
+    "status": "PASS",
+    "seconds": 0.07,
+    "detail": {
+      "preview_http": 200,
+      "download_http": 200,
+      "chars": 118991,
+      "cjk": 9646,
+      "head": "# Constitutional AI: Harmlessness from AI Feedback\n\nYuntao Bai, Saurav Kadavath, Sandipan Kundu, Amanda Askell, Jackson Kernion, Andy Jones · 2022 · 中文译本 · 45/204 段已译（22%）\n\n---\n\n安迪·琼斯，安娜·陈，安娜·戈尔迪，阿扎莉亚·米尔霍塞尼，卡梅隆·麦金农，卡罗尔·陈，凯瑟琳·奥尔松，克里斯托弗·奥拉，丹尼·埃尔南德斯，道恩·德雷恩，戴夫·冈古利，达斯汀·李，埃利·特兰-约翰逊，埃森·佩雷斯，杰米·科尔，杰里德·穆勒，杰弗里·拉迪什，乔舒亚·兰道，卡马拉·努杜斯，卡米莱·卢科斯uite，利亚娜·洛维特，迈克尔·塞利托，内尔森·埃尔哈吉，尼古拉斯·舍费尔，诺埃米·梅尔卡多，诺瓦·达斯萨尔马，罗伯特·拉森比，罗宾·拉尔森，萨姆·林格，斯科特·约翰斯顿，肖娜·克鲁维奇，希儿·埃尔肖克，斯坦尼斯拉夫·福尔特，塔梅拉·兰汉，蒂莫西·特利恩-劳顿，汤姆·康纳利，汤姆·赫尼根，特里斯坦·休姆，塞缪尔·R·鲍曼，扎克·哈特菲尔德-多"
+    }
+  },
+  {
+    "case": "英译中保留数字引用",
+    "status": "PASS",
+    "seconds": 0.47,
+    "detail": {
+      "http": 200,
+      "output": "该模型包含1750亿个参数[3]，并使用8个注意力头。",
+      "ms": null
+    }
+  },
+  {
+    "case": "中译英",
+    "status": "PASS",
+    "seconds": 0.59,
+    "detail": {
+      "http": 200,
+      "output": "We propose a retrieval-augmented method that improves accuracy by 4.2 percentage points on three Chinese question-answering datasets.",
+      "ms": null
+    }
+  },
+  {
+    "case": "公式符号保留",
+    "status": "PASS",
+    "seconds": 0.49,
+    "detail": {
+      "http": 200,
+      "output": "令 β1 = 0.9 且 β2 = 0.999；学习率设为 3e-4。",
+      "ms": null
+    }
+  },
+  {
+    "case": "中文论文整篇译英与下载",
+    "status": "PASS",
+    "seconds": 8.03,
+    "detail": {
+      "status": {
+        "running": false,
+        "total": 1,
+        "done": 1,
+        "segments": 1,
+        "skipped": 0,
+        "chars": 1967,
+        "error": "",
+        "ms": 6728,
+        "preview": "# An Attention-Based Retrieval-Augmented Method for Chinese Question Answering\n\nEnglish translation · 1/1 paragraphs\n\n---\n\n## An Attention-Based Retrieval-Augmented Method for Chinese Question Answering\n\nAbstract: This paper proposes a lightweight retrieval-augmented method for Chinese question answering. The method introduces passage-level re-ranking after dense retrieval and employs an attention mechanism to weight evidence sentences. On three Chinese question answering datasets, the accuracy improves by 4.2 percentage points over a strong baseline, while the inference latency increases by only 11 milliseconds. Ablation studies indicate that the re-ranking module contributes 3.1 percentage points and the evidence weighting contributes 1.1 percentage points.\n1 Introduction\nChinese question answering systems are required to locate evidence sentences within massive document collections. Existing methods predominantly rely on single-route dense retrieval, which achieves high recall but insufficient ranking quality in long-document scenarios. It is observed that the attention distribution between a question and its evidence sentences is highly concentrated on a few keywords; therefore, candidate passages can be re-ranked using lightweight attention.\n2 Method\nFirst, a dual-tower model is employed to retrieve the top 50 passages. Subsequently, a cross-encoder computes the matching scores between the question and each passage. Finally, the evidence sentences are concatenated with score-based weighting. During training, a contrastive learning objective is adopted, and the temperature coefficient is set to 0.05.\n3 Experiments\nThe experiments are conducted on Chinese question answering benchmarks, with accuracy and average latency serving as the evaluation metrics. The baseline consists of a combination of BM25 and dense retrieval. The results demonstrate that the proposed method significantly improves accuracy while maintaining low latency.\n",
+        "path": "D:\\projects\\sciagent\\data\\exports\\d7a55a3674e24_en.md",
+        "started": true
+      },
+      "download_http": 200,
+      "chars": 1967,
+      "head": "# An Attention-Based Retrieval-Augmented Method for Chinese Question Answering\n\nEnglish translation · 1/1 paragraphs\n\n---\n\n## An Attention-Based Retrieval-Augmented Method for Chinese Question Answering\n\nAbstract: This paper proposes a lightweight retrieval-augmented method for Chinese question answering. The method introduces passage-level re-ranking after dense retrieval and employs an attention mechanism to weight evidence sentences. On three Chinese question answering datasets, the accuracy "
+    }
+  }
+]

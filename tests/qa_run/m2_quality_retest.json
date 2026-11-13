@@ -1,0 +1,131 @@
+[
+  {
+    "id": "M2-06",
+    "kind": "复杂推理",
+    "q": "依据 LoRA 的矩阵分解定义计算：若 d_model=512、r=8，对单个权重矩阵使用 LoRA，A 和 B 的合理形状是什么？可训练参数共有多少个？给出计算过程。",
+    "doc": "2106.09685v2.pdf",
+    "must": [
+      "8192"
+    ],
+    "status": "PASS",
+    "http": 200,
+    "seconds": 11.75,
+    "answer": "依据 LoRA 的矩阵分解定义 ΔW = BA [1]，并将用户给出的 d_model=512 解释为单个 512×512 权重矩阵：\n- A 的形状为 8×512，B 的形状为 512×8。\n- 可训练参数量 = r×d + d×r = 2×512×8 = **8192** 个。\n这里只计算 A 与 B，预训练权重 W0 冻结，不计入可训练参数。\n\n---\n**引用来源**\n\n| # | 文献 | 页 | 锚点 | 片段 |\n| --- | --- | --- | --- | --- |\n| 1 | 2106.09685v2.pdf | 4 | `[p4@108,408,504,454]` | composition W0 + ∆W = W0 + BA, where B ∈Rd×r, A ∈Rr×k, and the rank r ≪min(d, k) |\n| 2 | 2106.09685v2.pdf | 6 | `[p6@108,687,504,762]` | LoRA adds trainable pairs of rank decomposition matrices in parallel to existing |\n| 3 | 2106.09685v2.pdf | 5 | `[p5@108,141,504,239]` | In principle, we can apply LoRA to any subset of weight matrices in a neural net |\n| 4 | 2106.09685v2.pdf | 1 | `[p1@143,267,468,463]` | An important paradigm of natural language processing consists of large-scale pre |\n| 5 | 2106.09685v2.pdf | 2 | `[p2@108,467,504,534]` | We use Wq, Wk, Wv, and Wo to refer to the query/key/value/output projection matr |\n| 6 | 2106.09685v2.pdf | 2 | `[p2@108,134,504,220]` | We take inspiration from Li et al. (2018a); Aghajanyan et al. (2020) which show  |\n| 7 | 2106.09685v2.pdf | 4 | `[p4@235,460,376,471]` | h = W0x + ∆Wx = W0x + BAx |",
+    "checks": {
+      "http_200": true,
+      "substantive": true,
+      "keywords": true,
+      "evidence_nonempty_or_refusal": true,
+      "anchors_valid": true,
+      "scope": true,
+      "no_fake_99": true,
+      "no_999_claim": true
+    },
+    "evidence": [
+      {
+        "doc_id": "d3706de3b6864",
+        "filename": null,
+        "page": 4,
+        "anchor": "[p4@108,408,504,454]",
+        "text": "composition W0 + ∆W = W0 + BA, where B ∈Rd×r, A ∈Rr×k, and the rank r ≪min(d, k). During training, W0 is frozen and does not receive gradient updates, while A and B contain trainable parameters. Note both W0 and ∆W = BA are multiplied with the same input, and their respective output vectors are summed coordinate-wise. For h = W0x, our modiﬁed forward pass yields:",
+        "score": 0.9658
+      },
+      {
+        "doc_id": "d3706de3b6864",
+        "filename": null,
+        "page": 6,
+        "anchor": "[p6@108,687,504,762]",
+        "text": "LoRA adds trainable pairs of rank decomposition matrices in parallel to existing weight matrices. As mentioned in Section 4.2, we only apply LoRA to Wq and Wv in most experiments for simplicity. The number of trainable parameters is determined by the rank r and the shape of the original weights: |Θ| = 2 × ˆLLoRA × dmodel × r, where ˆLLoRA is the number of weight matrices we apply LoRA to.\n6",
+        "score": 0.9157
+      },
+      {
+        "doc_id": "d3706de3b6864",
+        "filename": null,
+        "page": 5,
+        "anchor": "[p5@108,141,504,239]",
+        "text": "In principle, we can apply LoRA to any subset of weight matrices in a neural network to reduce the number of trainable parameters. In the Transformer architecture, there are four weight matrices in the self-attention module (Wq, Wk, Wv, Wo) and two in the MLP module. We treat Wq (or Wk, Wv) as a single matrix of dimension dmodel ×dmodel, even though the output dimension is usually sliced into attention heads. We limit our study to only adapting the attention weights for downstream tasks and freeze the MLP modules (so they are not trained in downstream tasks) both for simplicity and parameter-efﬁciency.We further study the effect on adapting different types of attention weight matrices in a Transformer in Section 7.1. We leave the empirical investigation of adapting the MLP layers, LayerNorm layers, and biases to a future work.",
+        "score": 0.7408
+      },
+      {
+        "doc_id": "d3706de3b6864",
+        "filename": null,
+        "page": 1,
+        "anchor": "[p1@143,267,468,463]",
+        "text": "An important paradigm of natural language processing consists of large-scale pre- training on general domain data and adaptation to particular tasks or domains. As we pre-train larger models, full ﬁne-tuning, which retrains all model parameters, becomes less feasible. Using GPT-3 175B as an example – deploying indepen- dent instances of ﬁne-tuned models, each with 175B parameters, is prohibitively expensive. We propose Low-Rank Adaptation, or LoRA, which freezes the pre- trained model weights and injects trainable rank decomposition matrices into each layer of the Transformer architecture, greatly reducing the number of trainable pa- rameters for downstream tasks. Compared to GPT-3 175B ﬁne-tuned with Adam, LoRA can reduce the number of trainable parameters by 10,000 times and the GPU memory requirement by 3 times. LoRA performs on-par or better than ﬁne- tuning in model quality on RoBERTa, DeBERTa, GPT-2, and GPT-3, despite hav- ing fewer trainable parameters, a higher training throughput, and, unlike adapters, no additional inference latency. We also provide an empirical investigation into rank-deﬁciency in language model adaptation, which sheds light on the efﬁcacy of LoRA. We release a package that facilitates the integration of LoRA with PyTorch models and provide our implementations and model checkpoints for RoBERTa, DeBERTa, and GPT-2 at https://github.com/microsoft/LoRA.",
+        "score": 0.7224
+      },
+      {
+        "doc_id": "d3706de3b6864",
+        "filename": null,
+        "page": 2,
+        "anchor": "[p2@108,467,504,534]",
+        "text": "We use Wq, Wk, Wv, and Wo to refer to the query/key/value/output projection matrices in the self-attention module. W or W0 refers to a pre- trained weight matrix and ∆W its accumulated gradient update during adaptation. We use r to denote the rank of a LoRA module. We follow the conventions set out by (Vaswani et al., 2017; Brown et al., 2020) and use Adam (Loshchilov & Hutter, 2019; Kingma & Ba, 2017) for model optimization and use a Transformer MLP feedforward dimension dffn = 4 × dmodel.",
+        "score": 0.7163
+      },
+      {
+        "doc_id": "d3706de3b6864",
+        "filename": null,
+        "page": 2,
+        "anchor": "[p2@108,134,504,220]",
+        "text": "We take inspiration from Li et al. (2018a); Aghajanyan et al. (2020) which show that the learned over-parametrized models in fact reside on a low intrinsic dimension. We hypothesize that the change in weights during model adaptation also has a low “intrinsic rank”, leading to our proposed Low-Rank Adaptation (LoRA) approach. LoRA allows us to train some dense layers in a neural network indirectly by optimizing rank decomposition matrices of the dense layers’ change during adaptation instead, while keeping the pre-trained weights frozen, as shown in Figure 1. Using GPT-3 175B as an example, we show that a very low rank (i.e., r in Figure 1 can be one or two) sufﬁces even when the full rank (i.e., d) is as high as 12,288, making LoRA both storage- and compute-efﬁcient.",
+        "score": 0.7001
+      },
+      {
+        "doc_id": "d3706de3b6864",
+        "filename": null,
+        "page": 4,
+        "anchor": "[p4@235,460,376,471]",
+        "text": "h = W0x + ∆Wx = W0x + BAx",
+        "score": 0.7727
+      }
+    ],
+    "trace": [
+      {
+        "agent": "planner",
+        "tool": "plan",
+        "t": 1794561743.979,
+        "steps": 3,
+        "latency_ms": 3171
+      },
+      {
+        "agent": "retriever",
+        "tool": "hybrid_search",
+        "t": 1794561745.789,
+        "query": "LoRA low-rank decomposition weight matrix A B shapes trainable parameters d_model r LoRA low-rank decomposition weight matrix A B shapes trainable parameters d_model r",
+        "hits": 7,
+        "intent": "lookup",
+        "budget": 8,
+        "latency_ms": 1809
+      },
+      {
+        "agent": "writer",
+        "tool": "deterministic_calculation",
+        "t": 1794561745.792,
+        "chars": 175,
+        "latency_ms": 2
+      },
+      {
+        "agent": "reviewer",
+        "tool": "anchor_verify",
+        "t": 1794561745.793,
+        "total": 12,
+        "valid": 10,
+        "rate": 0.8333,
+        "latency_ms": 0
+      },
+      {
+        "agent": "reviewer",
+        "tool": "self_review",
+        "t": 1794561750.343,
+        "score": 62
+      },
+      {
+        "agent": "reflector",
+        "tool": "write_memory",
+        "t": 1794561751.516,
+        "error_type": "无",
+        "latency_ms": 1173
+      }
+    ]
+  }
+]

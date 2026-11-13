@@ -1,0 +1,329 @@
+{
+  "run_id": "20261113_172755",
+  "base": "http://127.0.0.1:8013",
+  "timestamp": "2026-11-13T17:28:00.771225",
+  "summary": {
+    "total": 1,
+    "pass": 1,
+    "fail": 0,
+    "blocked": 0
+  },
+  "results": [
+    {
+      "id": "B02",
+      "group": "innov",
+      "point": "b-1 Future Work 自动提炼去重 (10%)",
+      "steps": "调用 future work 接口，检查提炼条目与'已被后续论文解决'判定",
+      "expected": "返回结构化条目，含去重与对撞结论",
+      "actual": "提炼 60 条，其中 20 条带方法/结果证据；工程待办 0 条",
+      "status": "PASS",
+      "elapsed_s": 5.4,
+      "evidence": {
+        "items": [
+          {
+            "doc_id": "d817ac4e56a32",
+            "page": 33,
+            "bbox": "71.6,543.4,541.7,695.1",
+            "section": "5 Limitations",
+            "text": "Making a bidirectional model at the scale of GPT-3, and/or trying to make bidirectional models work with few- or zero-shot learning, is a promising direction for future research, and could help achieve the “best of both worlds”.",
+            "doc_title": "Language Models are Few-Shot Learners",
+            "doc_year": "2020",
+            "duplicates": 0,
+            "keywords": [
+              "bidirectional",
+              "direction",
+              "making",
+              "promising",
+              "scale",
+              "shot",
+              "trying",
+              "zero"
+            ],
+            "resolved_by": [
+              {
+                "doc_id": "df367909b3159",
+                "title": "Robust Speech Recognition via Large-Scale Weak Supervision",
+                "year": "2022",
+                "shared_terms": [
+                  "achieve",
+                  "scale",
+                  "shot",
+                  "zero"
+                ],
+                "score": 4,
+                "evidence": "We achieve our results without the need for the self-supervision and self-training techniques that have been a mainstay of recent large-scale speech recognition work and demonstrate how simply training on a large and diverse supervised dataset and focusing on zero-shot trans- fer can signiﬁcantly improve the robustness of a speech recognition system.",
+                "page": 14,
+                "bbox": "307,215.1,543.1,344.5",
+                "chunk_id": "c6aeeae1c827e"
+              },
+              {
+                "doc_id": "d8d380ed3abb5",
+                "title": "GLM-130B: AN OPEN BILINGUAL PRE-TRAINED MODEL",
+                "year": "2022",
+                "shared_terms": [
+                  "bidirectional",
+                  "shot",
+                  "zero"
+                ],
+                "score": 3,
+                "evidence": "This is probably owing to GLM-130B’s bidirectional context attention and MIP, which has been proved to improve zero-shot results in unseen tasks (Wei et al., 2022a; Sanh et al., 2022).",
+                "page": 8,
+                "bbox": "108,383.5,504,470.2",
+                "chunk_id": "cf63113b512ee"
+              },
+              {
+                "doc_id": "d6feedd02fcae",
+                "title": "Visual Instruction Tuning",
+                "year": "2023",
+                "shared_terms": [
+                  "research",
+                  "shot",
+                  "zero"
+                ],
+                "score": 3,
+                "evidence": "://llava-vl.github.io 2Microsoft Research arXiv:2304.08485v2 [cs.CV] 11 Dec 2023 Instruction tuning large language models (LLMs) using machine-generated instruction-following data has been shown to improve zero-shot capabilities on new tasks, but the idea is less explored in the multimodal field.",
+                "page": 1,
+                "bbox": "143.6,247.3,469.8,420.9",
+                "chunk_id": "c6db82c4a2be3"
+              }
+            ],
+            "status": "possibly_addressed",
+            "id": 1
+          },
+          {
+            "doc_id": "d817ac4e56a32",
+            "page": 40,
+            "bbox": "71.6,560,541.7,657.3",
+            "section": "7 Related Work",
+            "text": "However, it is very likely that incorporating these algorithmic advances could improve GPT-3’s performance on downstream tasks, especially in the ﬁne-tuning setting, and combining GPT-3’s scale with these algorithmic techniques is a promising direction for future work.",
+            "doc_title": "Language Models are Few-Shot Learners",
+            "doc_year": "2020",
+            "duplicates": 0,
+            "keywords": [
+              "advances",
+              "algorithmic",
+              "downstream",
+              "however",
+              "improve",
+              "incorporating",
+              "likely",
+              "very"
+            ],
+            "resolved_by": [
+              {
+                "doc_id": "d16a2835145ee",
+                "title": "Emergent Abilities of Large Language Models",
+                "year": "2022",
+                "shared_terms": [
+                  "downstream",
+                  "improve",
+                  "tasks"
+                ],
+                "score": 3,
+                "evidence": "com 4DeepMind Reviewed on OpenReview: https://openreview.net/forum?id=yzkSU5zdwD Scaling up language models has been shown to predictably improve performance and sample eﬃciency on a wide range of downstream tasks.",
+                "page": 1,
+                "bbox": "107.5,465.9,506.3,547.5",
+                "chunk_id": "c563bb54b2a58"
+              },
+              {
+                "doc_id": "d3b6f15a377ca",
+                "title": "Training language models to follow instructions with human feedback",
+                "year": "2022",
+                "shared_terms": [
+                  "improve",
+                  "tasks",
+                  "tuning"
+                ],
+                "score": 3,
+                "evidence": "Overall, our results indicate that ﬁne-tuning large language models using human preferences signiﬁ- cantly improves their behavior on a wide range of tasks, though much work remains to be done to improve their safety and reliability.",
+                "page": 4,
+                "bbox": "107.6,394.2,505.7,469.9",
+                "chunk_id": "c047a73653787"
+              },
+              {
+                "doc_id": "d6feedd02fcae",
+                "title": "Visual Instruction Tuning",
+                "year": "2023",
+                "shared_terms": [
+                  "improve",
+                  "tasks",
+                  "tuning"
+                ],
+                "score": 3,
+                "evidence": "://llava-vl.github.io 2Microsoft Research arXiv:2304.08485v2 [cs.CV] 11 Dec 2023 Instruction tuning large language models (LLMs) using machine-generated instruction-following data has been shown to improve zero-shot capabilities on new tasks, but the idea is less explored in the multimodal field.",
+                "page": 1,
+                "bbox": "143.6,247.3,469.8,420.9",
+                "chunk_id": "c6db82c4a2be3"
+              }
+            ],
+            "status": "possibly_addressed",
+            "id": 2
+          },
+          {
+            "doc_id": "ddb3dff6cab6a",
+            "page": 15,
+            "bbox": "90,353.6,522,407.2",
+            "section": "6 Discussion",
+            "text": "We expect it is possible to achieve help- fulness and instruction-following without human feedback, starting from only a pretrained LM and extensive prompting, but we leave this for future work.",
+            "doc_title": "Constitutional AI: Harmlessness from AI Feedback",
+            "doc_year": "2022",
+            "duplicates": 0,
+            "keywords": [
+              "achieve",
+              "expect",
+              "following",
+              "fulness",
+              "help",
+              "instruction",
+              "possible",
+              "without"
+            ],
+            "resolved_by": [
+              {
+                "doc_id": "d6feedd02fcae",
+                "title": "Visual Instruction Tuning",
+                "year": "2023",
+                "shared_terms": [
+                  "following",
+                  "instruction",
+                  "only"
+                ],
+                "score": 3,
+                "evidence": "We present the first attempt to use language-only GPT-4 to generate multimodal language-image instruction-following data.",
+                "page": 1,
+                "bbox": "143.6,247.3,469.8,420.9",
+                "chunk_id": "c6db82c4a2be3"
+              },
+              {
+                "doc_id": "dc80b816ae34b",
+                "title": "Qwen2.5 Technical Report",
+                "year": "2024",
+                "shared_terms": [
+                  "following",
+                  "human",
+                  "instruction"
+                ],
+                "score": 3,
+                "evidence": "Post-training techniques significantly enhance human preference, and notably improve long text generation, structural data analysis, and instruction following.",
+                "page": 1,
+                "bbox": "106.3,192.1,489.8,300.7",
+                "chunk_id": "ceb758ccc103e"
+              }
+            ],
+            "status": "possibly_addressed",
+            "id": 3
+          },
+          {
+            "doc_id": "d817ac4e56a32",
+            "page": 3,
+            "bbox": "71.7,170.7,541.2,235.3",
+            "section": "1 Introduction",
+            "text": "However, a major limitation to this approach is that while the architecture is task-agnostic, there is still a need for task-speciﬁc datasets and task-speciﬁc ﬁne-tuning: to achieve strong performance on a desired task typically requires ﬁne-tuning on a dataset of thousands to hundreds of thousands of examples speciﬁc to that task.",
+            "doc_title": "Language Models are Few-Shot Learners",
+            "doc_year": "2020",
+            "duplicates": 0,
+            "keywords": [
+              "however",
+              "limitation",
+              "major",
+              "speci",
+              "task",
+              "thousands",
+              "tuning",
+              "while"
+            ],
+            "resolved_by": [
+              {
+                "doc_id": "d3706de3b6864",
+                "title": "LORA: LOW-RANK ADAPTATION OF LARGE LAN- GUAGE MODELS",
+                "year": "2021",
+                "shared_terms": [
+                  "task",
+                  "there",
+                  "while"
+                ],
+                "score": 3,
+                "evidence": "While one can reduce the overall latency by pruning layers or exploit- ing multi-task settings (R¨uckl´e et al., 2020; Pfeiffer et al., 2021), there is no direct ways to bypass the extra compute in adapter layers.",
+                "page": 3,
+                "bbox": "108,462.4,504,603.8",
+                "chunk_id": "cd0937269b9d9"
+              },
+              {
+                "doc_id": "dcd82e8617cf8",
+                "title": "Improving Language Understanding by Generative Pre-Training",
+                "year": "",
+                "shared_terms": [
+                  "agnostic",
+                  "speci",
+                  "task"
+                ],
+                "score": 3,
+                "evidence": "Our general task-agnostic model outperforms discriminatively trained models that use architectures speciﬁcally crafted for each task, signiﬁcantly improving upon the state of the art in 9 out of the 12 tasks studied.",
+                "page": 1,
+                "bbox": "143.9,268.4,469.9,442",
+                "chunk_id": "c5818e1d7e4ad"
+              }
+            ],
+            "status": "possibly_addressed",
+            "id": 4
+          },
+          {
+            "doc_id": "dc52bea1ce4da",
+            "page": 8,
+            "bbox": "304.7,354.1,526.2,773.6",
+            "section": "8 Conclusions/Limitations",
+            "text": "While our proposed RWKV model has demon- strated promising results regarding training and memory efficiency during inference, some limita- tions should be acknowledged and addressed in future work.",
+            "doc_title": "RWKV: Reinventing RNNs for the Transformer Era",
+            "doc_year": "2023",
+            "duplicates": 0,
+            "keywords": [
+              "demon",
+              "memory",
+              "promising",
+              "proposed",
+              "regarding",
+              "rwkv",
+              "strated",
+              "while"
+            ],
+            "resolved_by": [
+              {
+                "doc_id": "db3c184f9cffd",
+                "title": "QLORA: Efficient Finetuning of Quantized LLMs",
+                "year": "2023",
+                "shared_terms": [
+                  "during",
+                  "inference",
+                  "memory",
+                  "while"
+                ],
+                "score": 4,
+                "evidence": "While recent quantization methods can reduce the memory footprint of LLMs [14, 13, 18, 66], such techniques only work for inference and break down during training [65].",
+                "page": 1,
+                "bbox": "108,580.5,505.2,645.1",
+                "chunk_id": "ce5eb019978ca"
+              },
+              {
+                "doc_id": "d201464196e6f",
+                "title": "Mistral 7B",
+                "year": "2023",
+                "shared_terms": [
+                  "during",
+                  "inference",
+                  "memory"
+                ],
+                "score": 3,
+                "evidence": "GQA significantly accelerates the inference speed, and also reduces the memory requirement during decoding, allowing for higher batch sizes hence higher throughput, a crucial factor for real-time applications.",
+                "page": 1,
+                "bbox": "108,654.4,505.7,718.9",
+                "chunk_id": "cb61d77cabf3c"
+              }
+            ],
+            "status": "possibly_addressed",
+            "id": 5
+          }
+        ]
+      }
+    }
+  ]
+}

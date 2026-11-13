@@ -1,0 +1,127 @@
+
+### M2-01 FAIL
+ANSWER: 编码器和解码器各由 N = 6 个相同层堆叠而成，注意力头数为 h = 8。
+
+---
+**引用来源**
+
+| # | 文献 | 页 | 锚点 | 片段 |
+| --- | --- | --- | --- | --- |
+| 1 | 1706.03762v1_img.pdf | 4 | `[p4@36,666,575,744]` | The Transformer uses multi-head attention in three different ways: - In the enco |
+| 2 | 1706.03762v1.pdf | 9 | `[p9@107,71,505,370]` | Table 3: Variations on the Transformer architecture. Unlisted hyperparameter val |
+| 3 | 1706.03762v1.pdf | 2 | `[p2@107,601,505,678]` | The encoder is composed of a stack of N = 6 identical layers. Each layer has two |
+| 4 | 1706.03762v1.pdf | 2 | `[p2@108,601,504,752]` | Encoder: The decoder is also composed of a stack of N = 6 identical layers. In a |
+| 5 | 1706.03762v1.pdf | 4 | `[p4@107,537,504,651]` | MultiHead(Q, K, V ) = Concat(head1, ..., headh) where headi = Attention(QW Q i , |
+| 6 | 1706.03762v1.pdf | 1 | `[p1@143,361,469,523]` | The dominant sequence transduction models are based on complex recurrent or conv |
+| 7 | 1706.03762v1.pdf | 9 | `[p9@108,103,274,113]` | 8 not be compared to per-word perplexities. |
+EVIDENCE: [('dca501d1039dc', None, 4, '[p4@36,666,575,744]', 'The Transformer uses multi-head attention in three different ways:\n- In the encoder-decoder attention layers, the queries come from the previous decoder layer, and the memory keys '), ('dce63a636cf64', None, 9, '[p9@107,71,505,370]', 'Table 3: Variations on the Transformer architecture. Unlisted hyperparameter values are identical to those of the base model. All metrics are on the English-to-German translation d'), ('dce63a636cf64', None, 2, '[p2@107,601,505,678]', 'The encoder is composed of a stack of N = 6 identical layers. Each layer has two sub-layers. The ﬁrst is a multi-head self-attention mechanism, and the second is a simple, position'), ('dce63a636cf64', None, 2, '[p2@108,601,504,752]', 'Encoder:\nThe decoder is also composed of a stack of N = 6 identical layers. In addition to the two sub-layers in each encoder layer, the decoder inserts a third sub-layer, which pe'), ('dce63a636cf64', None, 4, '[p4@107,537,504,651]', 'MultiHead(Q, K, V ) = Concat(head1, ..., headh) where headi = Attention(QW Q\ni , KW K\ni , V W V\ni )\nWhere the projections are parameter matrices W Q\n∈Rdmodel×dk and W V\n∈Rdmodel×dk'), ('dce63a636cf64', None, 1, '[p1@143,361,469,523]', 'The dominant sequence transduction models are based on complex recurrent or convolutional neural networks in an encoder-decoder conﬁguration. The best performing models also connec'), ('dce63a636cf64', None, 9, '[p9@108,103,274,113]', '8\nnot be compared to per-word perplexities.')]
+
+### M2-04 FAIL
+ANSWER: | 维度 | LoRA | QLoRA |
+|---|---|---|
+| 降低微调成本的核心机制 | 提出一种高效适配策略，不引入 inference latency、不缩短输入序列长度，同时保持高模型质量；部署为服务时通过共享绝大多数模型参数实现快速任务切换 [1]；用一小组可训练参数（adapters）降低内存需求，不更新保持固定的全模型参数，SGD 梯度穿过固定的预训练权重传给 adapter [9]；通过额外的 factorized projection 增强线性投影 [9] | 通过冻结的 4-bit 量化预训练语言模型将梯度反传进 Low Rank Adapters (LoRA) [2]；在 LoRA 基础上把 transformer 模型量化为 4-bit 精度并使用 paged optimizers 处理内存尖峰 [8]；借助 4-bit NormalFloat (NF4) 量化与 Double Quantization 实现高保真 4-bit 微调，并引入 Paged Optimizers 防止 gradient checkpointing 期间的内存尖峰导致 out-of-memory [4] |
+| 内存/硬件效果 | 减少内存需求（使用少量可训练 adapters、全模型参数固定）[9] | 将内存占用降到足以在单张 48GB GPU 上微调 65B 参数模型，同时保持完整 16-bit 微调任务性能 [2]；Double Quantization 平均每参数约节省 0.37 bits（65B 模型约 3 GB）[3] |
+| 量化是否为 LoRA 原论文提出 | 否。LoRA 原论文的贡献是高效适配策略本身，证据中未提及 LoRA 提出量化 [1][9] | 是 QLoRA 的贡献：首次证明可在无任何性能退化的情况下微调量化 4-bit 模型，用新的高精度技术把预训练模型量化为 4-bit 后再加入一小组可学习 Low-rank Adapter 权重 [5]；量化相关创新包括 4-bit NormalFloat (NF4)、Double Quantization、Paged Optimizers [3][4] |
+| 性能表现 | 保持高模型质量，不引入 inference latency [1] | 4-bit QLoRA 配合 NF4 数据类型在评测设置完善的学术基准上匹配 16-bit full finetuning 与 16-bit LoRA 微调性能 [7]；NF4 + double quantization 完全恢复 16-bit LoRA 的 MMLU 性能，而 FP4 比 16-bit brain float LoRA 基线低约 1 个百分点，说明 NF4 量化精度优于 FP4 [6] |
+| 承袭关系 | — | QLoRA 在 LoRA 基础上改进：把 transformer 模型量化为 4-bit 精度并使用 paged optimizers 处理内存尖峰 [8]；梯度穿过冻结的 4-bit 量化预训练模型反传进 LoRA [2]；并把相关贡献组合成调优更好的 LoRA 方法，在每一网络层加入 adapters，从而避免以往工作中的几乎所有精度折衷 [3] |
+| 差异点 | 不涉及量化，靠少量可训练 adapters 与共享参数降成本 [1][9] | 在 LoRA 之上叠加 4-bit 量化（NF4）、Double Quantization 与 Paged Optimizers [3][4]；量化技术此前只适用于推理、在训练中会失效，QLoRA 使其可用于微调 [12] |
+| 演进方向 | 原论文指出 LoRA 可与其他高效适配方法结合，可能带来正交改进 [11] | 将量化与 LoRA 结合，在单卡上把可微调规模推到 65B，并训练超过 1,000 个模型（80M 到 65B 参数）[2][13] |
+
+结论：LoRA 通过“少量可训练 adapters + 全模型参数固定 + 共享绝大多数参数”降低微调的内存与部署切换成本，且不引入 inference latency [1][9]；QLoRA 承袭 LoRA 的 adapter 思路，进一步把冻结的预训练模型量化为 4-bit（NF4）、引入 Double Quantization 与 Paged Optimizers，使 65B 模型可在单张 48GB GPU 上微调并保持 16-bit 微调性能 [2][3][4][8]。量化并非 LoRA 原论文提出，而是 QLoRA 的核心创新 [1][5]；二者的差异点在于是否对基座模型做 4-bit 量化，演进方向是把 LoRA 与其他高效适配/量化方法结合以获得正交改进 [3][11]。
+
+---
+**引用来源**
+
+| # | 文献 | 页 | 锚点 | 片段 |
+| --- | --- | --- | --- | --- |
+| 1 | 2106.09685v2.pdf | 12 | `[p12@108,606,504,671]` | Fine-tuning enormous language models is prohibitively expensive in terms of the  |
+| 2 | 2305.14314v1.pdf | 1 | `[p1@143,284,469,545]` | We present QLORA, an efficient finetuning approach that reduces memory us- age e |
+| 3 | 2305.14314v1.pdf | 2 | `[p2@107,308,505,406]` | QLORA introduces multiple innovations designed to reduce memory use without sacr |
+| 4 | 2305.14314v1.pdf | 4 | `[p4@107,235,504,278]` | QLORA achieves high-fidelity 4-bit finetuning via two techniques we propose—4-bi |
+| 5 | 2305.14314v1.pdf | 1 | `[p1@107,653,504,742]` | We demonstrate for the first time that it is possible to finetune a quantized 4- |
+| 6 | 2305.14314v1.pdf | 7 | `[p7@107,371,505,490]` | erformance lost due to the imprecise quantization can be fully recovered through |
+| 7 | 2305.14314v1.pdf | 7 | `[p7@107,500,505,554]` | Our results consistently show that 4-bit QLORA with NF4 data type matches 16- bi |
+| 8 | 2305.14314v1.pdf | 3 | `[p3@108,247,504,266]` | Figure 1: Different finetuning methods and their memory requirements. QLORA impr |
+| 9 | 2305.14314v1.pdf | 3 | `[p3@108,567,504,620]` | Low-rank Adapter (LoRA) finetuning [28] is a method that reduces memory requirem |
+| 10 | 2305.14314v1.pdf | 5 | `[p5@107,649,504,752]` | We have discussed how QLoRA works and how it can significantly reduce the requir |
+| 11 | 2106.09685v2.pdf | 12 | `[p12@108,672,504,762]` | networks with dense layers. There are many directions for future works. 1) LoRA  |
+| 12 | 2305.14314v1.pdf | 1 | `[p1@108,580,505,645]` | Finetuning large language models (LLMs) is a highly effective way to improve the |
+| 13 | 2305.14314v1.pdf | 2 | `[p2@107,415,505,534]` | QLORA’s efficiency enables us to perform an in-depth study of instruction finetu |
+EVIDENCE: [('d3706de3b6864', None, 12, '[p12@108,606,504,671]', 'Fine-tuning enormous language models is prohibitively expensive in terms of the hardware required and the storage/switching cost for hosting independent instances for different tas'), ('db3c184f9cffd', None, 1, '[p1@143,284,469,545]', 'We present QLORA, an efficient finetuning approach that reduces memory us- age enough to finetune a 65B parameter model on a single 48GB GPU while preserving full 16-bit finetuning'), ('db3c184f9cffd', None, 2, '[p2@107,308,505,406]', 'QLORA introduces multiple innovations designed to reduce memory use without sacrificing per- formance: (1) 4-bit NormalFloat, an information theoretically optimal quantization data'), ('db3c184f9cffd', None, 4, '[p4@107,235,504,278]', 'QLORA achieves high-fidelity 4-bit finetuning via two techniques we propose—4-bit NormalFloat (NF4) quantization and Double Quantization. Additionally, we introduce Paged Optimizer'), ('db3c184f9cffd', None, 1, '[p1@107,653,504,742]', 'We demonstrate for the first time that it is possible to finetune a quantized 4-bit model without any performance degradation. Our method, QLORA, uses a novel high-precision techni'), ('db3c184f9cffd', None, 7, '[p7@107,371,505,490]', 'erformance lost due to the imprecise quantization can be fully recovered through\nFor our second setup, since full finetuning models at and beyond 11B parameters requires more than '), ('db3c184f9cffd', None, 7, '[p7@107,500,505,554]', 'Our results consistently show that 4-bit QLORA with NF4 data type matches 16- bit full finetuning and 16-bit LoRA finetuning performance on academic benchmarks with well- establish'), ('db3c184f9cffd', None, 3, '[p3@108,247,504,266]', 'Figure 1: Different finetuning methods and their memory requirements. QLORA improves over LoRA by quantizing the transformer model to 4-bit precision and using paged optimizers to '), ('db3c184f9cffd', None, 3, '[p3@108,567,504,620]', 'Low-rank Adapter (LoRA) finetuning [28] is a method that reduces memory requirements by using a small set of trainable parameters, often termed adapters, while not updating the ful'), ('db3c184f9cffd', None, 5, '[p5@107,649,504,752]', 'We have discussed how QLoRA works and how it can significantly reduce the required memory for finetuning models. The main question now is whether QLoRA can perform as well as full-'), ('d3706de3b6864', None, 12, '[p12@108,672,504,762]', 'networks with dense layers.\nThere are many directions for future works. 1) LoRA can be combined with other efﬁcient adapta- tion methods, potentially providing orthogonal improveme'), ('db3c184f9cffd', None, 1, '[p1@108,580,505,645]', 'Finetuning large language models (LLMs) is a highly effective way to improve their performance, [40, 62, 43, 61, 59, 37] and to add desirable or remove undesirable behaviors [43, 2'), ('db3c184f9cffd', None, 2, '[p2@107,415,505,534]', 'QLORA’s efficiency enables us to perform an in-depth study of instruction finetuning and chatbot performance on model scales that would be impossible using regular finetuning due t')]
+
+### M2-06 FAIL
+ANSWER: 证据[1]仅给出可训练参数总量公式 |Θ| = 2 × ˆLLoRA × dmodel × r，其中 ˆLLoRA 为应用 LoRA 的权重矩阵数量；证据未给出 dmodel、r 与 ˆLLoRA 的具体取值，因此无法据证据计算具体参数个数。
+
+---
+**引用来源**
+
+| # | 文献 | 页 | 锚点 | 片段 |
+| --- | --- | --- | --- | --- |
+| 1 | 2106.09685v2.pdf | 6 | `[p6@108,687,504,762]` | LoRA adds trainable pairs of rank decomposition matrices in parallel to existing |
+| 2 | 2107.03374v2.pdf | 17 | `[p17@55,678,291,717]` | Liu, Y., Ott, M., Goyal, N., Du, J., Joshi, M., Chen, D., Levy, O., Lewis, M., Z |
+| 3 | 2107.03374v2.pdf | 4 | `[p4@307,685,541,707]` | In Figure 4, we plot test loss on a held-out validation set against Codex model  |
+| 4 | 2107.03374v2.pdf | 8 | `[p8@306,358,543,427]` | We train to minimize negative log-likelihood of the reference solution, and mask |
+| 5 | 2107.03374v2.pdf | 5 | `[p5@55,321,288,346]` | 5.92×107 )−0.13 where N is the number of non-embedding parameters in the model. |
+| 6 | 2107.03374v2.pdf | 15 | `[p15@317,400,542,429]` | Large scale autoregressive language modeling with mesh-tensorﬂow, 2021. URL http |
+| 7 | 2107.03374v2.pdf | 17 | `[p17@307,70,542,99]` | Lu, J., Batra, D., Parikh, D., and Lee, S. Vilbert: Pretraining task- agnostic v |
+EVIDENCE: [('d3706de3b6864', None, 6, '[p6@108,687,504,762]', 'LoRA adds trainable pairs of rank decomposition matrices in parallel to existing weight matrices. As mentioned in Section 4.2, we only apply LoRA to Wq and Wv in most experiments f'), ('ddd3d54f80b5a', None, 17, '[p17@55,678,291,717]', 'Liu, Y., Ott, M., Goyal, N., Du, J., Joshi, M., Chen, D., Levy, O., Lewis, M., Zettlemoyer, L., and Stoyanov, V. Roberta: A robustly optimized bert pretraining approach. ArXiv, abs'), ('ddd3d54f80b5a', None, 4, '[p4@307,685,541,707]', 'In Figure 4, we plot test loss on a held-out validation set against Codex model size. We ﬁnd that just as language'), ('ddd3d54f80b5a', None, 8, '[p8@306,358,543,427]', 'We train to minimize negative log-likelihood of the reference solution, and mask out loss for any tokens in the prompt. We train using a learning rate 1/10 as large as used for ﬁne'), ('ddd3d54f80b5a', None, 5, '[p5@55,321,288,346]', '5.92×107 )−0.13 where N is the number of non-embedding parameters in the model.'), ('ddd3d54f80b5a', None, 15, '[p15@317,400,542,429]', 'Large scale autoregressive language modeling with mesh-tensorﬂow, 2021. URL http://github.com/ eleutherai/gpt-neo.'), ('ddd3d54f80b5a', None, 17, '[p17@307,70,542,99]', 'Lu, J., Batra, D., Parikh, D., and Lee, S. Vilbert: Pretraining task- agnostic visiolinguistic representations for vision-and-language tasks. arXiv preprint arXiv:1908.02265, 2019.')]
+
+### M2-07 FAIL
+ANSWER: 不对：BERT 不是 decoder-only 模型，也不使用单向注意力，而是 multi-layer bidirectional Transformer encoder，使用 bidirectional self-attention。
+- BERT 的模型架构是 multi-layer bidirectional Transformer encoder，基于 Vaswani et al. (2017) 的原始实现 [4]。
+- 关键区别在于：BERT Transformer 使用 bidirectional self-attention，而 GPT Transformer 使用 constrained self-attention，每个 token 只能关注其左侧上下文 [4]。
+- BERT 通过 masked language models 实现预训练的 deep bidirectional representations，不同于 Radford et al. (2018) 使用 unidirectional language models 预训练，也不同于 Peters et al. (2018a) 对独立训练的 left-to-right 与 right-to-left LM 做 shallow concatenation [2]；三者中只有 BERT representations 在所有层都同时以左右上下文为条件 [6]。
+
+---
+**引用来源**
+
+| # | 文献 | 页 | 锚点 | 片段 |
+| --- | --- | --- | --- | --- |
+| 1 | N19-1423.pdf | 1 | `[p1@89,245,273,423]` | We introduce a new language representa- tion model called BERT, which stands for |
+| 2 | N19-1423.pdf | 2 | `[p2@74,194,290,313]` | • We demonstrate the importance of bidirectional pre-training for language repre |
+| 3 | N19-1423.pdf | 4 | `[p4@72,483,290,657]` | 3.1 Pre-training BERT Unlike Peters et al. (2018a) and Radford et al. (2018), we |
+| 4 | N19-1423.pdf | 3 | `[p3@307,377,525,701]` | BERT’s model architec- ture is a multi-layer bidirectional Transformer en- coder |
+| 5 | N19-1423.pdf | 9 | `[p9@307,619,525,752]` | Recent empirical improvements due to transfer learning with language models have |
+| 6 | N19-1423.pdf | 13 | `[p13@72,183,525,241]` | Figure 3: Differences in pre-training model architectures. BERT uses a bidirecti |
+| 7 | N19-1423.pdf | 1 | `[p1@89,429,273,546]` | BERT is conceptually simple and empirically powerful. It obtains new state-of-th |
+| 8 | N19-1423.pdf | 2 | `[p2@74,324,290,479]` | • We show that pre-trained representations reduce the need for many heavily-engi |
+EVIDENCE: [('d819e6fc0f986', None, 1, '[p1@89,245,273,423]', 'We introduce a new language representa- tion model called BERT, which stands for Bidirectional Encoder Representations from Transformers. Unlike recent language repre- sentation mo'), ('d819e6fc0f986', None, 2, '[p2@74,194,290,313]', '• We demonstrate the importance of bidirectional pre-training for language representations. Un- like Radford et al. (2018), which uses unidirec- tional language models for pre-trai'), ('d819e6fc0f986', None, 4, '[p4@72,483,290,657]', '3.1\nPre-training BERT Unlike Peters et al. (2018a) and Radford et al. (2018), we do not use traditional left-to-right or right-to-left language models to pre-train BERT. Instead, w'), ('d819e6fc0f986', None, 3, '[p3@307,377,525,701]', 'BERT’s model architec- ture is a multi-layer bidirectional Transformer en- coder based on the original implementation de- scribed in Vaswani et al. (2017) and released in the tenso'), ('d819e6fc0f986', None, 9, '[p9@307,619,525,752]', 'Recent empirical improvements due to transfer learning with language models have demonstrated that rich, unsupervised pre-training is an integral part of many language understandin'), ('d819e6fc0f986', None, 13, '[p13@72,183,525,241]', 'Figure 3: Differences in pre-training model architectures. BERT uses a bidirectional Transformer. OpenAI GPT uses a left-to-right Transformer. ELMo uses the concatenation of indepe'), ('d819e6fc0f986', None, 1, '[p1@89,429,273,546]', 'BERT is conceptually simple and empirically powerful.\nIt obtains new state-of-the-art re- sults on eleven natural language processing tasks, including pushing the GLUE score to 80.'), ('d819e6fc0f986', None, 2, '[p2@74,324,290,479]', '• We show that pre-trained representations reduce the need for many heavily-engineered task- speciﬁc architectures. BERT is the ﬁrst ﬁne- tuning based representation model that ach')]
+
+### M2-09 FAIL
+ANSWER: 文献中未提及 Attention Is All You Need 原文在 2026 年诺贝尔奖实验中的获奖结论和精确页码。证据仅包含该论文的参考文献条目，未涉及任何诺贝尔奖实验、获奖结论或对应页码。[1][2][3][4][5][6]
+
+---
+**引用来源**
+
+| # | 文献 | 页 | 锚点 | 片段 |
+| --- | --- | --- | --- | --- |
+| 1 | 333078981_693988129081760_47127078152257 | 15 | `[p15@306,581,526,635]` | Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N |
+| 2 | b0c8ccb0_2006.11239_Denoising_Diffusion_ | 12 | `[p12@108,349,504,378]` | [60] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Ai |
+| 3 | 2001.08361v1.pdf | 30 | `[p30@142,210,522,264]` | Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N |
+| 4 | 2412.15115v2.pdf | 24 | `[p24@70,592,524,613]` | Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N |
+| 5 | language_understanding_paper.pdf | 11 | `[p11@108,553,505,572]` | [62] A. Vaswani, N. Shazeer, N. Parmar, J. Uszkoreit, L. Jones, A. N. Gomez, Ł.  |
+| 6 | N19-1423.pdf | 11 | `[p11@307,595,525,649]` | Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N |
+| 7 | 333078981_693988129081760_47127078152257 | 15 | `[p15@306,645,485,656]` | Ben Wang and Aran Komatsuzaki. 2021. |
+| 8 | b0c8ccb0_2006.11239_Denoising_Diffusion_ | 12 | `[p12@108,383,505,402]` | [61] Pascal Vincent. A connection between score matching and denoising autoencod |
+EVIDENCE: [('d875afb2e5932', None, 15, '[p15@306,581,526,635]', 'Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez, Ł ukasz Kaiser, and Illia Polosukhin. 2017. Attention is all you need. In Advances in Neural'), ('d5eb03c8b9874', None, 12, '[p12@108,349,504,378]', '[60] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez, Łukasz Kaiser, and Illia Polosukhin. Attention is all you need. In Advances in Neural I'), ('d8821b3e541fa', None, 30, '[p30@142,210,522,264]', 'Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez, Ł ukasz Kaiser, and Illia Polosukhin. Attention is all you need. In I. Guyon, U. V. Luxburg,'), ('dc80b816ae34b', None, 24, '[p24@70,592,524,613]', 'Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez, Lukasz Kaiser, and Illia Polosukhin. Attention is all you need. In NIPS, pp. 5998–6008, 201'), ('dcd82e8617cf8', None, 11, '[p11@108,553,505,572]', '[62] A. Vaswani, N. Shazeer, N. Parmar, J. Uszkoreit, L. Jones, A. N. Gomez, Ł. Kaiser, and I. Polosukhin. Attention is all you need. In Advances in Neural Information Processing S'), ('d819e6fc0f986', None, 11, '[p11@307,595,525,649]', 'Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez, Lukasz Kaiser, and Illia Polosukhin. 2017. Attention is all you need. In Advances in Neural '), ('d875afb2e5932', None, 15, '[p15@306,645,485,656]', 'Ben Wang and Aran Komatsuzaki. 2021.'), ('d5eb03c8b9874', None, 12, '[p12@108,383,505,402]', '[61] Pascal Vincent. A connection between score matching and denoising autoencoders. Neural Computation, 23(7):1661–1674, 2011.')]
+
+### M2-12 FAIL
+ANSWER: Transformer 的 base 模型总参数量是 65×10^6（即表中 params ×10^6 列的 65）。
+- Table 3 的 base 行给出：base | 6 | 512 | 1024 | 8 | 64 | 64 | 0.1 | 0.1 | 100K | 4.92 | 25.8 | 65，其中最后一列即 params ×10^6 [2][7]。
+- 该表说明未列出的超参数值与 base 模型相同，指标均在 English-to-German 翻译开发集 newstest2013 上 [1][2]。
+- 定位：1706.03762v1.pdf 第9页，Table 3（Variations on the Transformer architecture）的 base 行、params ×10^6 列 [2][7]。
+
+---
+**引用来源**
+
+| # | 文献 | 页 | 锚点 | 片段 |
+| --- | --- | --- | --- | --- |
+| 1 | 1706.03762v1_img.pdf | 9 | `[p9@36,41,575,57]` | Table 3: Variations on the Transformer architecture. Unlisted hyperparameter val |
+| 2 | 1706.03762v1.pdf | 9 | `[p9@107,71,505,370]` | Table 3: Variations on the Transformer architecture. Unlisted hyperparameter val |
+| 3 | 1706.03762v1.pdf | 8 | `[p8@107,71,504,240]` | Table 2: The Transformer achieves better BLEU scores than previous state-of-the- |
+| 4 | 1706.03762v1.pdf | 1 | `[p1@143,361,469,523]` | The dominant sequence transduction models are based on complex recurrent or conv |
+| 5 | 1706.03762v1.pdf | 8 | `[p8@107,671,505,752]` | We trained a 4-layer transformer with dmodel = 1024 on the Wall Street Journal ( |
+| 6 | 1706.03762v1.pdf | 1 | `[p1@10,184,497,560]` | Ashish Vaswani∗ Google Brain avaswani@google.com Noam Shazeer∗ Google Brain noam |
+| 7 | 1706.03762v1_img.pdf | 9 | `[p9@36,64,575,395]` | 8 | | $N$ | $d_{\text{model}}$ | $d_{\text{ff}}$ | $h$ | $d_k$ | $d_v$ | $P_{dro |
+| 8 | 1706.03762v1.pdf | 9 | `[p9@108,103,274,113]` | 8 not be compared to per-word perplexities. |
+EVIDENCE: [('dca501d1039dc', None, 9, '[p9@36,41,575,57]', 'Table 3: Variations on the Transformer architecture. Unlisted hyperparameter values are identical to those of the base model. All metrics are on the English-to-German translation d'), ('dce63a636cf64', None, 9, '[p9@107,71,505,370]', 'Table 3: Variations on the Transformer architecture. Unlisted hyperparameter values are identical to those of the base model. All metrics are on the English-to-German translation d'), ('dce63a636cf64', None, 8, '[p8@107,71,504,240]', 'Table 2: The Transformer achieves better BLEU scores than previous state-of-the-art models on the English-to-German and English-to-French newstest2014 tests at a fraction of the tr'), ('dce63a636cf64', None, 1, '[p1@143,361,469,523]', 'The dominant sequence transduction models are based on complex recurrent or convolutional neural networks in an encoder-decoder conﬁguration. The best performing models also connec'), ('dce63a636cf64', None, 8, '[p8@107,671,505,752]', 'We trained a 4-layer transformer with dmodel = 1024 on the Wall Street Journal (WSJ) portion of the Penn Treebank [23], about 40K training sentences. We also trained it in a semi-s'), ('dce63a636cf64', None, 1, '[p1@10,184,497,560]', 'Ashish Vaswani∗ Google Brain avaswani@google.com\nNoam Shazeer∗ Google Brain noam@google.com\nNiki Parmar∗ Google Research nikip@google.com\nJakob Uszkoreit∗ Google Research usz@googl'), ('dca501d1039dc', None, 9, '[p9@36,64,575,395]', '8\n| | $N$ | $d_{\\text{model}}$ | $d_{\\text{ff}}$ | $h$ | $d_k$ | $d_v$ | $P_{drop}$ | $\\epsilon_{ls}$ | train steps | PPL (dev) | BLEU (dev) | params $\\times 10^6$ | |---|---|---|-'), ('dce63a636cf64', None, 9, '[p9@108,103,274,113]', '8\nnot be compared to per-word perplexities.')]

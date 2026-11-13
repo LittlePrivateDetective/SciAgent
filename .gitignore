@@ -59,3 +59,10 @@ deploy/
 data/bm25_tokens.txt
 data/bm25_tokens.tmp
 _incoming/
+
+# QA 隔离实例数据 / 运行日志 / 下载的第三方论文 PDF（版权，不进公开仓库）
+# 复现用的清单与下载脚本保留在仓库：docs/qa/扩充文献清单.md、tests/corpus/*.py
+tests/qa_run/data/
+tests/qa_run/__pycache__/
+tests/qa_run/*.log
+tests/corpus/*.pdf

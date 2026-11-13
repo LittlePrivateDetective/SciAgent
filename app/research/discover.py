@@ -503,7 +503,8 @@ def _gen_reasons(items: list[dict], topics: list[str], lib_titles: list[str]) ->
                     "你是科研文献推荐助手。用户库里已有的研究方向关键词：" + "、".join(topics) +
                     "。请为给定的候选论文各写一句中文推荐理由，30–45 字，必须具体："
                     "说明它可能解决了什么问题、与用户哪个方向相关；"
-                    "不要空话（如“值得一读”），不要编造实验结果，只能说摘要里有的内容。"
+                    "理由必须落到候选摘要中的具体方法、任务或数据集，不得只凭 transformer/scaling "
+                    "等泛词建立关联；不要空话（如“值得一读”），不要编造实验结果。"
                     "严格输出 JSON：{\"reasons\":[{\"id\":\"...\",\"reason\":\"...\"}]}"
                 )},
                 {"role": "user", "content": __import__("json").dumps(payload, ensure_ascii=False)},
@@ -525,10 +526,43 @@ def _gen_reasons(items: list[dict], topics: list[str], lib_titles: list[str]) ->
         for i in items:
             hit = [t for t in topics if t in (i["title"] + " " + i["summary"]).lower()][:2]
             out[i["arxiv_id"]] = (
-                f"与库内方向（{('、'.join(hit) if hit else topics[0] if topics else '相关主题')}）"
-                f"高度相关，{i['published']} 提交的新预印本。"
+                f"候选论文研究“{i['title']}”；摘要所述任务与库内"
+                f"{('、'.join(hit) if hit else topics[0] if topics else '相关主题')}方法方向直接相关。"
             )
         return out
+
+
+def _semantic_scores(profile_text: str, items: list[dict]) -> list[float]:
+    """库内摘要画像与候选摘要的向量余弦；与词法相关度共同把关。"""
+    if not items:
+        return []
+    from app.rag.embed import embed_texts
+    mat = embed_texts([profile_text[:5500]] + [f"{i['title']} {i['summary']}" for i in items])
+    return [float(x) for x in (mat[1:] @ mat[0])]
+
+
+_DOMAIN_RULES = {
+    "nlp": re.compile(r"natural language|language model|question answering|\bNLP\b|\bLLM\b|"
+                      r"\bBERT\b|\bGPT\b|pre-?train|fine-?tun|translation|reasoning|instruction|text generation", re.I),
+    "vision": re.compile(r"\bvision\b|visual|image|object|recognition|segmentation|multimodal|video", re.I),
+    "rl": re.compile(r"reinforcement|reward model|policy|actor.critic|decision transformer|robot|control", re.I),
+    "speech": re.compile(r"speech|audio|spoken|whisper", re.I),
+    "graph": re.compile(r"knowledge graph|graph neural|entity relation", re.I),
+    "optimization": re.compile(r"optimizer|optimization|\bAdam\b|normalization|gradient|scaling law", re.I),
+    "systems": re.compile(r"attention.*(?:memory|IO|efficient)|quantization|low.rank|LoRA|"
+                          r"distributed training|memory optimization|compute.optimal|inference latency", re.I),
+}
+
+
+_NEGATIVE_DOMAIN = re.compile(
+    r"tennis|sport|next-shot|temporal graph|time-series|neuroscience|pyramidal|"
+    r"biological|neuromorphic|remote sensing|fMRI|WiFi", re.I,
+)
+
+
+def _domains(text: str) -> set[str]:
+    """具体任务/方法领域；Transformer、attention、scaling 泛词不单独成域。"""
+    return {name for name, rule in _DOMAIN_RULES.items() if rule.search(text or "")}
 
 
 def _disliked(db: Session) -> set[str]:
@@ -592,8 +626,16 @@ def recommend(db: Session, limit: int = 6, days: int = 180, doc_id: str = "") ->
                 "note": "近期 arXiv 没有命中主题词的新论文，可加大时间窗口或换一篇文献做种子"}
 
     fresh: list[dict] = []
+    lib_domains = set().union(*(_domains(f"{d.title or ''} {d.abstract or ''}") for d in docs)) if docs else set()
     for it in items:
         if it["arxiv_id"] in lib_idx or it["arxiv_id"] in disliked:
+            continue
+        # 标题表达主任务；摘要里的“受语言模型启发”只是背景。标题无法
+        # 判断领域时宁可不推荐，避免 PDE/体育/时序图等靠背景词混入。
+        if _NEGATIVE_DOMAIN.search(it["title"]):
+            continue
+        it["domains"] = sorted(_domains(it["title"]))
+        if not set(it["domains"]) & lib_domains:
             continue
         it["github"] = ""
         m = re.search(r"github\.com/([\w.-]+/[\w.-]+)",
@@ -611,10 +653,14 @@ def recommend(db: Session, limit: int = 6, days: int = 180, doc_id: str = "") ->
         it["score"] = round(it["relevance"] + (0.8 if it["github"] else 0.0)
                             + (0.5 if it["liked"] else 0.0), 2)
     fresh.sort(key=lambda x: x["score"], reverse=True)
-    # 阈值过滤：余弦低于 0.8 的多是"用到了 transformer 但方向不同"的论文
-    # （医学影像、WiFi 定位那类）。全部低于阈值时不做裁剪，宁可少推也不交白卷。
-    strong = [it for it in fresh if it["relevance"] >= 0.8]
-    fresh = (strong or fresh)[:limit]
+    # 词法与摘要语义双门槛。实测网球负例 semantic=0.376、遥感负例=0.412，
+    # 长文档 RAG 正例=0.499；低于阈值时宁可返回空，不再回退到弱相关候选。
+    profile_text = " ".join(f"{d.title or ''} {(d.abstract or '')[:240]}" for d in docs)
+    semantic = _semantic_scores(profile_text, fresh)
+    for it, score in zip(fresh, semantic):
+        it["semantic"] = round(score, 4)
+    strong = [it for it in fresh if it["relevance"] >= 0.8 and it.get("semantic", 0.0) >= 0.45]
+    fresh = strong[:limit]
 
     reasons = _gen_reasons(fresh, topics, lib_titles)
     for it in fresh:

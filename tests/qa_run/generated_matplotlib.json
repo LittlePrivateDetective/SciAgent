@@ -1,0 +1,20 @@
+[
+  {
+    "kind": "bar",
+    "status": "PASS",
+    "png": "D:\\projects\\sciagent\\tests\\qa_run\\generated_figures\\figure_bar.png",
+    "pdf": "D:\\projects\\sciagent\\tests\\qa_run\\generated_figures\\figure_bar.pdf"
+  },
+  {
+    "kind": "line",
+    "status": "PASS",
+    "png": "D:\\projects\\sciagent\\tests\\qa_run\\generated_figures\\figure_line.png",
+    "pdf": "D:\\projects\\sciagent\\tests\\qa_run\\generated_figures\\figure_line.pdf"
+  },
+  {
+    "kind": "radar",
+    "status": "PASS",
+    "png": "D:\\projects\\sciagent\\tests\\qa_run\\generated_figures\\figure_radar.png",
+    "pdf": "D:\\projects\\sciagent\\tests\\qa_run\\generated_figures\\figure_radar.pdf"
+  }
+]

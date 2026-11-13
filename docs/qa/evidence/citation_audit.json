@@ -1,26 +1,26 @@
 {
- "generated_at": "2026-11-13 11:47:47",
+ "generated_at": "2026-11-13 17:27:44",
  "sampled": 100,
  "graded": 98,
  "unverifiable": 2,
  "hit": 98,
- "tight": 84,
+ "tight": 73,
  "rate": 1.0,
- "tight_rate": 0.8571,
+ "tight_rate": 0.7449,
  "median_recall": 1.0,
  "median_precision": 1.0,
  "by_kind": {
   "text": [
-   37,
-   38
+   51,
+   52
   ],
   "table": [
-   33,
-   34
+   43,
+   44
   ],
   "figure": [
-   28,
-   28
+   4,
+   4
   ]
  },
  "misses": []

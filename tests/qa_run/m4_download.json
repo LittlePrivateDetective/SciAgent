@@ -1,0 +1,426 @@
+[
+  {
+    "case": "arXiv 在线搜索",
+    "status": "PASS",
+    "detail": {
+      "http": 200,
+      "count": 1,
+      "titles": [
+        "Tool Attention Is All You Need: Dynamic Tool Gating and Lazy Schema Loading for Eliminating the MCP/Tools Tax in Scalable Agentic Workflows"
+      ]
+    }
+  },
+  {
+    "case": "真实 PDF 下载并入库",
+    "status": "PASS",
+    "detail": {
+      "http": 200,
+      "seconds": 0.01,
+      "response": {
+        "ok": false,
+        "stage": "exists",
+        "doc_id": "dddc91b56e307",
+        "title": "Tool Attention Is All You Need: Dynamic Tool Gating and Lazy Schema Loading for Eliminating the MCP/Tools Tax in Scalable Agentic Workflows",
+        "message": "库里已有这篇（fa2809da_2604.21816_Tool_Attention_Is_All_You_Need_Dynamic_Tool_Gating_and_Lazy.pdf），无需重复下载"
+      }
+    }
+  },
+  {
+    "case": "下载件可打开且切块",
+    "status": "PASS",
+    "detail": {
+      "doc": {
+        "id": "dddc91b56e307",
+        "filename": "fa2809da_2604.21816_Tool_Attention_Is_All_You_Need_Dynamic_Tool_Gating_and_Lazy.pdf",
+        "title": "Tool Attention Is All You Need: Dynamic Tool Gating and Lazy Schema Loading for Eliminating the MCP/Tools Tax in Scalable Agentic Workflows",
+        "authors": [
+          "Anuj Sadani",
+          "Deepak Kumar"
+        ],
+        "affiliations": [],
+        "abstract": "",
+        "year": "2026",
+        "venue": "",
+        "arxiv_id": "2604.21816v1",
+        "doi": "",
+        "page_count": 21,
+        "char_count": 52275,
+        "is_scanned": false,
+        "version": 1,
+        "family_key": "arxiv:2604.21816",
+        "status": "ready",
+        "created_at": "2026-11-13 15:53:55"
+      },
+      "chunks": 196
+    }
+  },
+  {
+    "case": "参考文献候选按被引排序",
+    "status": "PASS",
+    "detail": {
+      "http": 200,
+      "response": {
+        "ok": true,
+        "doc_id": "dce63a636cf64",
+        "doc_title": "Attention Is All You Need",
+        "total_refs": 37,
+        "matched": 5,
+        "downloadable": 5,
+        "items": [
+          {
+            "index": "34",
+            "cites": 10,
+            "text": "[34] Yonghui Wu, Mike Schuster, Zhifeng Chen, Quoc V Le, Mohammad Norouzi, Wolfgang Macherey, Maxim Krikun, Yuan Cao, Qin Gao, Klaus Macherey, et al. Google’s neural machine translation system: Bridging the gap between human and machine translation. arXiv preprint arXiv:1609.08144, 2016.",
+            "title": "Google’s neural machine translation system: Bridging the gap between human and machine translation",
+            "arxiv_id": "1609.08144",
+            "in_library": false,
+            "doc_id": "",
+            "via": "arxiv_id"
+          },
+          {
+            "index": "9",
+            "cites": 6,
+            "text": "[9] Jonas Gehring, Michael Auli, David Grangier, Denis Yarats, and Yann N. Dauphin. Convolu- tional sequence to sequence learning. arXiv preprint arXiv:1705.03122v2, 2017.",
+            "title": "Convolu- tional sequence to sequence learning",
+            "arxiv_id": "1705.03122",
+            "in_library": false,
+            "doc_id": "",
+            "via": "arxiv_id"
+          },
+          {
+            "index": "33",
+            "cites": 6,
+            "text": "[33] Vinyals & Kaiser, Koo, Petrov, Sutskever, and Hinton. Grammar as a foreign language. In Advances in Neural Information Processing Systems, 2015.",
+            "title": "",
+            "arxiv_id": "",
+            "in_library": false,
+            "doc_id": "",
+            "via": ""
+          },
+          {
+            "index": "8",
+            "cites": 3,
+            "text": "[8] Chris Dyer, Adhiguna Kuncoro, Miguel Ballesteros, and Noah A. Smith. Recurrent neural network grammars. In Proc. of NAACL, 2016.",
+            "title": "",
+            "arxiv_id": "",
+            "in_library": false,
+            "doc_id": "",
+            "via": ""
+          },
+          {
+            "index": "16",
+            "cites": 3,
+            "text": "[16] Nal Kalchbrenner, Lasse Espeholt, Karen Simonyan, Aaron van den Oord, Alex Graves, and Ko- ray Kavukcuoglu. Neural machine translation in linear time. arXiv preprint arXiv:1610.10099v2, 2017.",
+            "title": "Neural machine translation in linear time",
+            "arxiv_id": "1610.10099",
+            "in_library": false,
+            "doc_id": "",
+            "via": "arxiv_id"
+          },
+          {
+            "index": "2",
+            "cites": 2,
+            "text": "[2] Dzmitry Bahdanau, Kyunghyun Cho, and Yoshua Bengio. Neural machine translation by jointly learning to align and translate. CoRR, abs/1409.0473, 2014.",
+            "title": "NEURAL MACHINE TRANSLATION BY JOINTLY LEARNING TO ALIGN AND TRANSLATE",
+            "arxiv_id": "",
+            "in_library": true,
+            "doc_id": "dea040ee12c27",
+            "via": ""
+          },
+          {
+            "index": "3",
+            "cites": 2,
+            "text": "[3] Denny Britz, Anna Goldie, Minh-Thang Luong, and Quoc V. Le. Massive exploration of neural machine translation architectures. CoRR, abs/1703.03906, 2017.",
+            "title": "Massive Exploration of Neural Machine Translation Architectures",
+            "arxiv_id": "1703.03906",
+            "in_library": false,
+            "doc_id": "",
+            "via": "title_search"
+          },
+          {
+            "index": "4",
+            "cites": 2,
+            "text": "[4] Jianpeng Cheng, Li Dong, and Mirella Lapata. Long short-term memory-networks for machine reading. arXiv preprint arXiv:1601.06733, 2016.",
+            "title": "Long short-term memory-networks for machine reading",
+            "arxiv_id": "1601.06733",
+            "in_library": false,
+            "doc_id": "",
+            "via": "arxiv_id"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "case": "参考文献空批量拒绝",
+    "status": "PASS",
+    "detail": {
+      "http": 400,
+      "body": "{\"detail\":\"没有选择要下载的条目\"}"
+    }
+  },
+  {
+    "case": "手动触发定期追踪",
+    "status": "PASS",
+    "detail": {
+      "http": 200,
+      "body": {
+        "ok": true,
+        "error": "",
+        "note": "",
+        "items": [
+          {
+            "arxiv_id": "2611.14838",
+            "title": "Sophon: A Procedural Diagnostic for Spatial Reasoning in Vision-Language Models",
+            "published": "2026-11-10",
+            "reason": "Sophon通过程序化生成几何推理数据集，解决了VLM在去除物体/场景先验后空间推理能力崩溃的问题，与用户关注的adaptation方向相关。",
+            "relevance": 1.92,
+            "github": "zgazak/sophon",
+            "in_library": false
+          },
+          {
+            "arxiv_id": "2611.17191",
+            "title": "Maximizing Capacity Utilization of LoRA Adapters for Mitigating the Learning-Forgetting Trade-off",
+            "published": "2026-11-12",
+            "reason": "该文提出最大化LoRA适配器容量以缓解学习-遗忘权衡，针对异构和持续学习场景中LoRA性能不足问题，直接关联用户关注的low-rank方向。",
+            "relevance": 1.55,
+            "github": "tomohiro-sawada/lora-capacity-utilization",
+            "in_library": false
+          },
+          {
+            "arxiv_id": "2611.16359",
+            "title": "IsharaBART: An efficient BART-Based Framework for Low-Resource Bangla Sign Language Translation",
+            "published": "2026-11-12",
+            "reason": "IsharaBART采用高效BART架构解决低资源孟加拉手语翻译任务中的数据稀缺与计算开销问题，契合用户对低资源场景下adaptation的研究需求。",
+            "relevance": 1.8,
+            "github": "",
+            "in_library": false
+          },
+          {
+            "arxiv_id": "2611.17072",
+            "title": "Reasoning Supervision and Capability Retention in LoRA Domain Adaptation",
+            "published": "2026-11-12",
+            "reason": "该研究通过推理监督与能力保留机制优化LoRA领域适应，提升金融文本任务中模型对原始能力的保持，直接关联用户关注的domain adaptation与LoRA。",
+            "relevance": 1.75,
+            "github": "",
+            "in_library": false
+          },
+          {
+            "arxiv_id": "2611.10455",
+            "title": "Bayesian Low-Rank Posteriors for Scalable Membership Inference",
+            "published": "2026-11-07",
+            "reason": "该文基于贝叶斯低秩后验构建可扩展的成员推断防御，利用低秩结构降低阴影模型训练成本，与用户关注的low-rank及安全应用相关。",
+            "relevance": 1.61,
+            "github": "",
+            "in_library": false
+          },
+          {
+            "arxiv_id": "2611.14397",
+            "title": "A Margin Perspective on LoRA: Robustness to Catastrophic Forgetting and Adapter Merging (MaLoRA)",
+            "published": "2026-11-10",
+            "reason": "MaLoRA从边界视角分析LoRA，提出增强对灾难性遗忘鲁棒性的方法，并支持适配器合并，直接回应用户对low-rank与robust adaptation的关注。",
+            "relevance": 1.57,
+            "github": "",
+            "in_library": false
+          },
+          {
+            "arxiv_id": "2611.11761",
+            "title": "BridgeKV: Large-Model Prefill and Small-Model Decoding for LLM Inference via KV Cache Translation",
+            "published": "2026-11-09",
+            "reason": "BridgeKV通过KV缓存翻译实现大模型预填充与小模型解码协同，提升LLM推理效率，其跨模型状态转换机制与attention优化相关。",
+            "relevance": 1.52,
+            "github": "",
+            "in_library": false
+          },
+          {
+            "arxiv_id": "2611.14246",
+            "title": "SinkState: On-the-Fly SVD of Recurrent States for Efficient Hybrid LLM Serving",
+            "published": "2026-11-10",
+            "reason": "SinkState提出在线SVD处理循环状态，实现混合注意力模型中历史压缩的高效计算，改进线性注意力的推理效率，与attention和transformer优化相关。",
+            "relevance": 1.37,
+            "github": "",
+            "in_library": false
+          }
+        ],
+        "status": {
+          "enabled": false,
+          "interval_s": 21600,
+          "days": 7,
+          "started_at": "2026-11-13T17:24:05",
+          "last_run_at": "2026-11-13T17:24:34",
+          "next_run_at": "2026-11-13T23:24:34",
+          "last_ms": 8729,
+          "runs": 1,
+          "fails": 0,
+          "last_count": 8,
+          "last_error": "",
+          "items": [
+            {
+              "arxiv_id": "2611.14838",
+              "title": "Sophon: A Procedural Diagnostic for Spatial Reasoning in Vision-Language Models",
+              "published": "2026-11-10",
+              "reason": "Sophon通过程序化生成几何推理数据集，解决了VLM在去除物体/场景先验后空间推理能力崩溃的问题，与用户关注的adaptation方向相关。",
+              "relevance": 1.92,
+              "github": "zgazak/sophon",
+              "in_library": false
+            },
+            {
+              "arxiv_id": "2611.17191",
+              "title": "Maximizing Capacity Utilization of LoRA Adapters for Mitigating the Learning-Forgetting Trade-off",
+              "published": "2026-11-12",
+              "reason": "该文提出最大化LoRA适配器容量以缓解学习-遗忘权衡，针对异构和持续学习场景中LoRA性能不足问题，直接关联用户关注的low-rank方向。",
+              "relevance": 1.55,
+              "github": "tomohiro-sawada/lora-capacity-utilization",
+              "in_library": false
+            },
+            {
+              "arxiv_id": "2611.16359",
+              "title": "IsharaBART: An efficient BART-Based Framework for Low-Resource Bangla Sign Language Translation",
+              "published": "2026-11-12",
+              "reason": "IsharaBART采用高效BART架构解决低资源孟加拉手语翻译任务中的数据稀缺与计算开销问题，契合用户对低资源场景下adaptation的研究需求。",
+              "relevance": 1.8,
+              "github": "",
+              "in_library": false
+            },
+            {
+              "arxiv_id": "2611.17072",
+              "title": "Reasoning Supervision and Capability Retention in LoRA Domain Adaptation",
+              "published": "2026-11-12",
+              "reason": "该研究通过推理监督与能力保留机制优化LoRA领域适应，提升金融文本任务中模型对原始能力的保持，直接关联用户关注的domain adaptation与LoRA。",
+              "relevance": 1.75,
+              "github": "",
+              "in_library": false
+            },
+            {
+              "arxiv_id": "2611.10455",
+              "title": "Bayesian Low-Rank Posteriors for Scalable Membership Inference",
+              "published": "2026-11-07",
+              "reason": "该文基于贝叶斯低秩后验构建可扩展的成员推断防御，利用低秩结构降低阴影模型训练成本，与用户关注的low-rank及安全应用相关。",
+              "relevance": 1.61,
+              "github": "",
+              "in_library": false
+            },
+            {
+              "arxiv_id": "2611.14397",
+              "title": "A Margin Perspective on LoRA: Robustness to Catastrophic Forgetting and Adapter Merging (MaLoRA)",
+              "published": "2026-11-10",
+              "reason": "MaLoRA从边界视角分析LoRA，提出增强对灾难性遗忘鲁棒性的方法，并支持适配器合并，直接回应用户对low-rank与robust adaptation的关注。",
+              "relevance": 1.57,
+              "github": "",
+              "in_library": false
+            },
+            {
+              "arxiv_id": "2611.11761",
+              "title": "BridgeKV: Large-Model Prefill and Small-Model Decoding for LLM Inference via KV Cache Translation",
+              "published": "2026-11-09",
+              "reason": "BridgeKV通过KV缓存翻译实现大模型预填充与小模型解码协同，提升LLM推理效率，其跨模型状态转换机制与attention优化相关。",
+              "relevance": 1.52,
+              "github": "",
+              "in_library": false
+            },
+            {
+              "arxiv_id": "2611.14246",
+              "title": "SinkState: On-the-Fly SVD of Recurrent States for Efficient Hybrid LLM Serving",
+              "published": "2026-11-10",
+              "reason": "SinkState提出在线SVD处理循环状态，实现混合注意力模型中历史压缩的高效计算，改进线性注意力的推理效率，与attention和transformer优化相关。",
+              "relevance": 1.37,
+              "github": "",
+              "in_library": false
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "case": "追踪状态与最近快照",
+    "status": "PASS",
+    "detail": {
+      "enabled": false,
+      "interval_s": 21600,
+      "days": 7,
+      "started_at": "2026-11-13T17:24:05",
+      "last_run_at": "2026-11-13T17:24:34",
+      "next_run_at": "2026-11-13T23:24:34",
+      "last_ms": 8729,
+      "runs": 1,
+      "fails": 0,
+      "last_count": 8,
+      "last_error": "",
+      "items": [
+        {
+          "arxiv_id": "2611.14838",
+          "title": "Sophon: A Procedural Diagnostic for Spatial Reasoning in Vision-Language Models",
+          "published": "2026-11-10",
+          "reason": "Sophon通过程序化生成几何推理数据集，解决了VLM在去除物体/场景先验后空间推理能力崩溃的问题，与用户关注的adaptation方向相关。",
+          "relevance": 1.92,
+          "github": "zgazak/sophon",
+          "in_library": false
+        },
+        {
+          "arxiv_id": "2611.17191",
+          "title": "Maximizing Capacity Utilization of LoRA Adapters for Mitigating the Learning-Forgetting Trade-off",
+          "published": "2026-11-12",
+          "reason": "该文提出最大化LoRA适配器容量以缓解学习-遗忘权衡，针对异构和持续学习场景中LoRA性能不足问题，直接关联用户关注的low-rank方向。",
+          "relevance": 1.55,
+          "github": "tomohiro-sawada/lora-capacity-utilization",
+          "in_library": false
+        },
+        {
+          "arxiv_id": "2611.16359",
+          "title": "IsharaBART: An efficient BART-Based Framework for Low-Resource Bangla Sign Language Translation",
+          "published": "2026-11-12",
+          "reason": "IsharaBART采用高效BART架构解决低资源孟加拉手语翻译任务中的数据稀缺与计算开销问题，契合用户对低资源场景下adaptation的研究需求。",
+          "relevance": 1.8,
+          "github": "",
+          "in_library": false
+        },
+        {
+          "arxiv_id": "2611.17072",
+          "title": "Reasoning Supervision and Capability Retention in LoRA Domain Adaptation",
+          "published": "2026-11-12",
+          "reason": "该研究通过推理监督与能力保留机制优化LoRA领域适应，提升金融文本任务中模型对原始能力的保持，直接关联用户关注的domain adaptation与LoRA。",
+          "relevance": 1.75,
+          "github": "",
+          "in_library": false
+        },
+        {
+          "arxiv_id": "2611.10455",
+          "title": "Bayesian Low-Rank Posteriors for Scalable Membership Inference",
+          "published": "2026-11-07",
+          "reason": "该文基于贝叶斯低秩后验构建可扩展的成员推断防御，利用低秩结构降低阴影模型训练成本，与用户关注的low-rank及安全应用相关。",
+          "relevance": 1.61,
+          "github": "",
+          "in_library": false
+        },
+        {
+          "arxiv_id": "2611.14397",
+          "title": "A Margin Perspective on LoRA: Robustness to Catastrophic Forgetting and Adapter Merging (MaLoRA)",
+          "published": "2026-11-10",
+          "reason": "MaLoRA从边界视角分析LoRA，提出增强对灾难性遗忘鲁棒性的方法，并支持适配器合并，直接回应用户对low-rank与robust adaptation的关注。",
+          "relevance": 1.57,
+          "github": "",
+          "in_library": false
+        },
+        {
+          "arxiv_id": "2611.11761",
+          "title": "BridgeKV: Large-Model Prefill and Small-Model Decoding for LLM Inference via KV Cache Translation",
+          "published": "2026-11-09",
+          "reason": "BridgeKV通过KV缓存翻译实现大模型预填充与小模型解码协同，提升LLM推理效率，其跨模型状态转换机制与attention优化相关。",
+          "relevance": 1.52,
+          "github": "",
+          "in_library": false
+        },
+        {
+          "arxiv_id": "2611.14246",
+          "title": "SinkState: On-the-Fly SVD of Recurrent States for Efficient Hybrid LLM Serving",
+          "published": "2026-11-10",
+          "reason": "SinkState提出在线SVD处理循环状态，实现混合注意力模型中历史压缩的高效计算，改进线性注意力的推理效率，与attention和transformer优化相关。",
+          "relevance": 1.37,
+          "github": "",
+          "in_library": false
+        }
+      ]
+    }
+  }
+]

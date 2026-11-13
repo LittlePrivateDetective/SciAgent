@@ -1,0 +1,188 @@
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+16:57:35 | INFO    | app.parse.structure      | 解析完成 ZH_zwxxxb_2994_神经机器翻译前沿综述.pdf：18 页 / 1693 区块 / 30 标题 / 171 参考文献 / 扫描件=False
+
+ ZH_zwxxxb_2994_神经机器翻译前沿综述.pdf
+BLOCK reference 13 '[45] Libovicky'
+REFS NEAR [(44, '[44] CaglayanO,AransaW,BardetA,etal.LIUM-CVC submissionsforWMT17 multimodaltranslationtask [C]//Proc'), (46, '[46] CalixtoI,LiuQ,CampbellN.Incorporatingglobal visualfeaturesinto attention-based neural machine t')]
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+16:57:35 | INFO    | app.parse.structure      | 解析完成 ZH_zwxxxb_3187_基于语言模型的预训练技术研究综述.pdf：15 页 / 1409 区块 / 6 标题 / 61 参考文献 / 扫描件=False
+
+ ZH_zwxxxb_3187_基于语言模型的预训练技术研究综述.pdf
+BLOCK text 9 '[36]通过附加的语言约束 任务整合了语言知识;SenseBERT'
+BLOCK reference 14 "[36] LauscherA,Vuli'"
+REFS NEAR [(35, '[35] ZhangZ,Han X,LiuZ,etal.ERNIE:Enhanced languagerepresentationwithinformativeentities[J]. arXivpr'), (37, '[37] LevineY,Lenz B,Dagan O,etal.SenseBERT: Drivingsomesenseinto BERT[J].arXiv preprint arXiv:1908. ')]
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+16:57:36 | INFO    | app.parse.structure      | 解析完成 ZH_zwxxxb_3659_大语言模型评测综述.pdf：23 页 / 2240 区块 / 17 标题 / 142 参考文献 / 扫描件=False
+
+ ZH_zwxxxb_3659_大语言模型评测综述.pdf
+BLOCK text 12 '[123]、'
+BLOCK reference 22 '[123] ZHANG T, KISHORE'
+REFS NEAR [(122, '[122] MATHUR N,BALDWIN T,COHN T.Puttingevaluationin context:Contextualembeddingsimprovemachinetransl'), (124, '[124] ZHAO W,PEYRARD M,LIU F,etal.MoverScore:Textgenerationevaluating withcontextualizedembeddingsan')]
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+16:57:37 | INFO    | app.parse.structure      | 解析完成 ZH_zwxxxb_3861_大语言模型微调方法研究综述.pdf：26 页 / 3495 区块 / 81 标题 / 153 参考文献 / 扫描件=False
+
+ ZH_zwxxxb_3861_大语言模型微调方法研究综述.pdf
+BLOCK text 6 '[51]、Prompt'
+BLOCK text 10 '[51]'
+BLOCK reference 20 '[51] LI,X.'
+REFS NEAR [(50, '[50] HOULSBY N,GIURGIU A,JASTRZEBSKIS,et al.Parameter-efficient transfer learning for NLP [C]//Proce'), (52, '[52] LESTER,B.,R.ALRFOU,N.CONSTANT,The powerofscaleforparameter-efficientprompttuning [C]//Proceedin')]

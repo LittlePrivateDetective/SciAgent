@@ -227,7 +227,8 @@ def ingest(
         parsed = parse_pdf(str(path))
     except Exception as exc:  # noqa: BLE001
         log.exception("解析失败：%s", original_name)
-        return {"ok": False, "stage": "parse", "error": str(exc)}
+        return {"ok": False, "stage": "parse",
+                "error": "无法解析 PDF，文件可能损坏、加密或内容格式无效"}
 
     if parsed.is_scanned or parsed.char_count < 200:
         # 扫描件：没有文本层，走 OCR；注意别把 OCR 失败当成解析失败

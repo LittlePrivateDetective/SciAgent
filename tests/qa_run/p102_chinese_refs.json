@@ -1,0 +1,106 @@
+[
+  {
+    "file": "ZH_zwxxxb_2994_神经机器翻译前沿综述.pdf",
+    "source_max_index": 174,
+    "parsed_count": 174,
+    "parsed_min_max": [
+      1,
+      174
+    ],
+    "missing_indices": [],
+    "sample_first": "[1] BrownPF,CockeJ,DellaPietraSA,etal.Astatisticalapproachtomachinetranslation[J].ComputationalLinguistics,1990,16(2):79-85.",
+    "sample_last": "[174] ElbayadM,BesacierL,VerbeekJ.Token-leveland sequence-levelloss smoothing for RNN language models[C]//Proceedingsofthe56th AnnualMeetingofthe AssociationforComputationalLinguistics,2018:2094-2103.",
+    "status": "PASS"
+  },
+  {
+    "file": "ZH_zwxxxb_2995_从视觉到文本图像描述生成研究进展综述.pdf",
+    "source_max_index": 86,
+    "parsed_count": 86,
+    "parsed_min_max": [
+      1,
+      86
+    ],
+    "missing_indices": [],
+    "sample_first": "[1] HeX,DengL.Deeplearningforimage-to-textgeneration:Atechnicaloverview[J].IEEESignalProcessing Magazine,2017,34(6):109-116.",
+    "sample_last": "[86] Feng Y,MaL,Liu W,etal.Unsupervisedimage captioning[C]//ProceedingsoftheIEEE Conference onComputerVisionandPattern Recognition,2019:",
+    "status": "PASS"
+  },
+  {
+    "file": "ZH_zwxxxb_3055_知识图谱研究现状及军事应用.pdf",
+    "source_max_index": 36,
+    "parsed_count": 36,
+    "parsed_min_max": [
+      1,
+      36
+    ],
+    "missing_indices": [],
+    "sample_first": "[1] 徐增林,盛泳潘,贺丽荣,等.知识图谱技术综述[J].电 子科技大学学报,2016,45(04):589-606.",
+    "sample_last": "[36] 刘峤,韩明皓,江浏祎.基于双层随机游走的关系推理 算法[J].计算机学报,2017,40(6):1275-1290.",
+    "status": "PASS"
+  },
+  {
+    "file": "ZH_zwxxxb_3187_基于语言模型的预训练技术研究综述.pdf",
+    "source_max_index": 62,
+    "parsed_count": 62,
+    "parsed_min_max": [
+      1,
+      62
+    ],
+    "missing_indices": [],
+    "sample_first": "[1] FerroneL,ZanzottoF M.Symbolic,distributedand 岳增营等:基于语言模型的预训练技术研究综述 9期 distributionalrepresentationsfornaturallanguageprocessingintheeraofdeeplearning:Asurvey[J].arXiv preprintarXiv:1702. 00764,2017.",
+    "sample_last": "[62] XuY,LiM,CuiL,etal.Layoutlm:Pre-trainingof textandlayoutfordocumentimage understanding [C]//Proceedingsofthe26th ACM SIGKDDInternational Conference on Knowledge Discovery and DataMining,2020:1192-1200.",
+    "status": "PASS"
+  },
+  {
+    "file": "ZH_zwxxxb_3314_多模态信息处理前沿综述.pdf",
+    "source_max_index": 127,
+    "parsed_count": 127,
+    "parsed_min_max": [
+      1,
+      127
+    ],
+    "missing_indices": [],
+    "sample_first": "[1] MorencyLP,BaltrusaitisT.Tutorialon multimodal machinelearning[C]//Proceedingsofthe55thAnnual MeetingoftheAssociationforComputationalLinguistics,2017.",
+    "sample_last": "[127] 郑秋硕,漆桂林,王萌.多模态知识图谱[EB/OL]. https://zhuanlan.zhihu.com/p/163278672.[2020-",
+    "status": "PASS"
+  },
+  {
+    "file": "ZH_zwxxxb_3659_大语言模型评测综述.pdf",
+    "source_max_index": 143,
+    "parsed_count": 143,
+    "parsed_min_max": [
+      1,
+      143
+    ],
+    "missing_indices": [],
+    "sample_first": "[1] KENTONJD M W C,TOUTANOVA L K.BERT: Pre-trainingofdeepbidirectionaltransformersforlanguage understanding[C]//Proceedings of NAACLHLT,2019:4171-4186.",
+    "sample_last": "[143] SAIAB,DIXITT,ShethDY,etal.Perturbation checklistsforevaluatingnlgevaluationmetrics[C]// ProceedingsoftheConferenceonEmpiricalMethods inNaturalLanguageProcessing,2021:7219-7234.",
+    "status": "PASS"
+  },
+  {
+    "file": "ZH_zwxxxb_3660_医疗领域对话系统口语理解综述.pdf",
+    "source_max_index": 66,
+    "parsed_count": 66,
+    "parsed_min_max": [
+      1,
+      66
+    ],
+    "missing_indices": [],
+    "sample_first": "[1] HEMPHILLCT,GODFREYJJ,DODDINGTONG R.The ATISspokenlanguagesystemspilotcorpus [C]//ProceedingsofaWorkshopHeldatHiddenValley,Pennsylvania,1990:96-101.",
+    "sample_last": "[66] VALIZADEH M,PARDEN.TheAIdoctorisin:A surveyoftask-orienteddialoguesystemsforhealthcareapplications[C]//Proceedingsofthe60thAnnual Meetingofthe Associationfor ComputationalLinguistics.Dublin,Ireland:AssociationforComputationalLinguistics,2022:6638-6660. 任芳慧等:医疗领域对话系统口语理解综述 1期",
+    "status": "PASS"
+  },
+  {
+    "file": "ZH_zwxxxb_3861_大语言模型微调方法研究综述.pdf",
+    "source_max_index": 155,
+    "parsed_count": 155,
+    "parsed_min_max": [
+      1,
+      155
+    ],
+    "missing_indices": [],
+    "sample_first": "[1] OpenAI.ChatGPT:Optimizinglanguage modelsfor dialogue[EB/OL].https://onlinechatgpt. com/[2024-",
+    "sample_last": "[155] Fine-Tuning LLMs:LoRA orfull-parameter? An in-depthanalysis with LLaMa 2.[EB/OL].https://www. com/blog/fine-tuning-llms-loanyscale. ra-or-full-parameter-an-in-depth-analysis-with-LLaMa-2.[2024-05-31]. 赵玉龙(1984—),共同第一作者,博士研究生,助",
+    "status": "PASS"
+  }
+]

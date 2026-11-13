@@ -305,6 +305,7 @@ _ALIAS = {
     "t5": "text-to-text transformer",
     "vit": "image is worth",
     "lora": "low-rank adaptation",
+    "qlora": "qlora",
     "instructgpt": "follow instructions",
     "rlhf": "follow instructions",
     "chinchilla": "compute-optimal",
@@ -474,7 +475,7 @@ def search(
         seen.add(key)
         deduped.append(h)
 
-    return deduped[:top_k]
+    return _scope_hits(deduped[:top_k], doc_ids)
 
 
 def _stitch(hits: list[Hit], top_n: int = 3) -> list[Hit]:
@@ -579,7 +580,16 @@ def _api_rerank(query: str, hits: list[Hit], top_k: int) -> list[Hit] | None:
         return None
 
 
-def _ensure_mentioned_docs(hits: list[Hit], query: str, top_k: int) -> list[Hit]:
+def _scope_hits(hits: list[Hit], doc_ids: list[str] | None) -> list[Hit]:
+    """限定范围的最终硬边界；None/空列表沿用全库语义。"""
+    if not doc_ids:
+        return hits
+    allowed = set(doc_ids)
+    return [h for h in hits if h.doc_id in allowed]
+
+
+def _ensure_mentioned_docs(hits: list[Hit], query: str, top_k: int,
+                           doc_ids: list[str] | None = None) -> list[Hit]:
     """问题点名了某几篇（GPT-1/2/3、BERT、T5…）时，保证每篇都进证据。
 
     为什么不能只靠召回加权：加权发生在重排之前，而 cross-encoder 只看"这段文字
@@ -587,8 +597,10 @@ def _ensure_mentioned_docs(hits: list[Hit], query: str, top_k: int) -> list[Hit]
     全部抵消。对比题恰恰要求"点到的每篇都得有证据"，否则只能答"未提及"。
     """
     wanted = _alias_boosts(query)
+    if doc_ids:
+        wanted = {d: score for d, score in wanted.items() if d in set(doc_ids)}
     if not wanted:
-        return hits
+        return _scope_hits(hits, doc_ids)
 
     present = {h.doc_id for h in hits}
     missing = [d for d in wanted if d not in present]
@@ -617,7 +629,7 @@ def _ensure_mentioned_docs(hits: list[Hit], query: str, top_k: int) -> list[Hit]
         out.append(h)
         if len(out) >= top_k:
             break
-    return out
+    return _scope_hits(out, doc_ids)
 
 
 # 缓存"被文本版盖住的扫描版"，60 秒失效：入库后不用重启也能生效
@@ -798,7 +810,7 @@ def search_with_rerank(query: str, doc_ids: list[str] | None = None, top_k: int 
     # 重排多要一些：后面要从中挑"分数最高的表格"补位，只拿 8 条往往里面没有表
     remote = _api_rerank(query, hits, min(max(top_k * 3, 24), len(hits)))
     if remote:
-        final = _ensure_mentioned_docs(remote[:top_k], query, top_k)
+        final = _ensure_mentioned_docs(remote[:top_k], query, top_k, doc_ids)
         # 补位用的表格池：优先用重排给过分数的，其次退回召回阶段的词法分。
         # 不能只从 remote 里挑——实测 Table 1 在重排前 24 名之外，
         # 只认 remote 的话这条规则等于没生效（D-67 复测发现的第二轮问题）。
@@ -809,7 +821,8 @@ def search_with_rerank(query: str, doc_ids: list[str] | None = None, top_k: int 
             reverse=True,
         )
         final = _ensure_table_slot(query, final, tables or remote, top_k)
-        return _stitch(final, stitch_n) if stitch_n else final
+        scoped = _stitch(final, stitch_n) if stitch_n else final
+        return _scope_hits(scoped, doc_ids)
 
     q_tokens = set(tokenize(query))
     max_sparse = max((h.sparse_score for h in hits), default=0.0) or 1.0
@@ -826,6 +839,7 @@ def search_with_rerank(query: str, doc_ids: list[str] | None = None, top_k: int 
     reranked = sorted(hits, key=local_score, reverse=True)
     for h in reranked:
         h.score = local_score(h)
-    out = _ensure_mentioned_docs(reranked[:top_k], query, top_k)
+    out = _ensure_mentioned_docs(reranked[:top_k], query, top_k, doc_ids)
     out = _ensure_table_slot(query, out, reranked, top_k)
-    return _stitch(out, stitch_n) if stitch_n else out
+    scoped = _stitch(out, stitch_n) if stitch_n else out
+    return _scope_hits(scoped, doc_ids)

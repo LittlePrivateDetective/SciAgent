@@ -1,0 +1,178 @@
+{
+  "ok": true,
+  "topics": [
+    "transformer",
+    "attention",
+    "normalization",
+    "optimization",
+    "scaling"
+  ],
+  "window_days": 180,
+  "items": [
+    {
+      "arxiv_id": "2611.16517",
+      "title": "UniSpark: Exploring Hybrid Attention for Multimodal Understanding and Generation",
+      "authors": [
+        "Jiancheng Pan",
+        "Yuzheng Liu",
+        "Hengyuan Cao",
+        "Qiyuan Zhang",
+        "Yangyan Li",
+        "Biao Gong"
+      ],
+      "published": "2026-11-12",
+      "updated": "2026-11-12",
+      "summary": "We present UniSpark-9B, a unified multimodal model that investigates hybrid attention for visual understanding and generation. Built on a Mixture-of-Transformer-Experts backbone with approximately 9B parameters in each branch, UniSpark combines full attention for explicit token interactions with GatedDeltaNet linear at",
+      "comment": "Technical Report, 31 pages",
+      "category": "cs.CV",
+      "abs_url": "https://arxiv.org/abs/2611.16517",
+      "pdf_url": "https://arxiv.org/pdf/2611.16517",
+      "domains": [
+        "systems",
+        "vision"
+      ],
+      "github": "",
+      "relevance": 2.17,
+      "liked": false,
+      "in_library": false,
+      "score": 2.17,
+      "semantic": 0.5244,
+      "reason": "针对多模态理解与生成中的注意力机制效率问题，提出混合注意力架构，结合全注意力与专家网络，在9B参数规模下提升视觉-语言对齐能力。"
+    },
+    {
+      "arxiv_id": "2611.14060",
+      "title": "Where Do Vision-Language Models Get Left and Right? Position-Code Counterfactuals in Qwen2.5-VL, Qwen3-VL and InternVL3",
+      "authors": [
+        "Enhao Cui",
+        "Junzhi Yang",
+        "Yaoshun Lin",
+        "Yuhan Feng",
+        "Zijian Chen"
+      ],
+      "published": "2026-11-10",
+      "updated": "2026-11-10",
+      "summary": "A vision-language model may take left-right direction from the orientation of image content within patches, its vision transformer's (ViT) position code, or token positions and order in its language model (LLM). Ablations show the ViT code is necessary; we test sufficiency by mirroring only a position code. In Qwen2.5-",
+      "comment": "25 pages, 6 figures, 10 tables. Code: https://github.com/chen4study-hub/where-vlms-get-left-right",
+      "category": "cs.CV",
+      "abs_url": "https://arxiv.org/abs/2611.14060",
+      "pdf_url": "https://arxiv.org/pdf/2611.14060",
+      "domains": [
+        "nlp",
+        "vision"
+      ],
+      "github": "chen4study-hub/where-vlms-get-left-right",
+      "relevance": 0.96,
+      "liked": false,
+      "in_library": false,
+      "score": 1.76,
+      "semantic": 0.4512,
+      "reason": "针对视觉语言模型中左右方向判断依赖位置编码的不确定性，通过镜像反事实实验验证ViT位置码在方向感知中的必要性。"
+    },
+    {
+      "arxiv_id": "2611.16270",
+      "title": "SMIC: Shared Multiscale Input-Reference Conditioning across Transformer Layers for Natural Language Inference",
+      "authors": [
+        "Xin Zhang",
+        "Victor S. Sheng"
+      ],
+      "published": "2026-11-12",
+      "updated": "2026-11-12",
+      "summary": "Natural Language Inference models can be sensitive to localized lexical changes. We introduce Shared Multiscale Input-Reference Conditioning (SMIC), which constructs a single input-dependent multiscale reference and reuses it across Transformer layers. Each layer applies its own multiscale transformation to the shared ",
+      "comment": "",
+      "category": "cs.CL",
+      "abs_url": "https://arxiv.org/abs/2611.16270",
+      "pdf_url": "https://arxiv.org/pdf/2611.16270",
+      "domains": [
+        "nlp"
+      ],
+      "github": "",
+      "relevance": 1.75,
+      "liked": false,
+      "in_library": false,
+      "score": 1.75,
+      "semantic": 0.5299,
+      "reason": "针对自然语言推理对局部词汇变化敏感的问题，提出跨层共享多尺度输入-参考条件机制，统一各层上下文建模。"
+    },
+    {
+      "arxiv_id": "2611.17240",
+      "title": "Objects as Addresses: Instance Binding in Vision Transformer Attention",
+      "authors": [
+        "Khalil Sabri",
+        "Guillaume-Alexandre Bilodeau",
+        "Nicolas Saunier",
+        "Wassim Bouachir"
+      ],
+      "published": "2026-11-12",
+      "updated": "2026-11-12",
+      "summary": "Humans naturally parse visual scenes into coherent individual objects rather than scattered features, a capability cognitive science calls object binding. While recent work shows that pretrained Vision Transformers (ViTs) intrinsically acquire this ability, how native self-attention computations mechanistically keep ob",
+      "comment": "",
+      "category": "cs.CV",
+      "abs_url": "https://arxiv.org/abs/2611.17240",
+      "pdf_url": "https://arxiv.org/pdf/2611.17240",
+      "domains": [
+        "vision"
+      ],
+      "github": "",
+      "relevance": 1.7,
+      "liked": false,
+      "in_library": false,
+      "score": 1.7,
+      "semantic": 0.4662,
+      "reason": "针对视觉Transformer中对象绑定能力不足的问题，提出以对象为地址的注意力机制，增强对视觉场景中个体对象的显式建模。"
+    },
+    {
+      "arxiv_id": "2611.16072",
+      "title": "KVPath: Connecting Key-Value Representations Across Transformer Layers",
+      "authors": [
+        "Xuan Luo",
+        "Zhiyuan Wang",
+        "Hanzhong Cao",
+        "Xifeng Yan"
+      ],
+      "published": "2026-11-11",
+      "updated": "2026-11-11",
+      "summary": "Transformers typically cache an independent key-value (KV) representation for each token at every layer. Recent work reveals that a token's KV representations across neighboring layers are correlated and contain shared information. We hypothesize that this correlation implies incremental inter-layer changes, which can ",
+      "comment": "",
+      "category": "cs.LG",
+      "abs_url": "https://arxiv.org/abs/2611.16072",
+      "pdf_url": "https://arxiv.org/pdf/2611.16072",
+      "domains": [
+        "systems"
+      ],
+      "github": "",
+      "relevance": 1.67,
+      "liked": false,
+      "in_library": false,
+      "score": 1.67,
+      "semantic": 0.4719,
+      "reason": "针对Transformer层间键值表示独立导致信息冗余的问题，提出KVPath方法连接相邻层的键值表示，挖掘跨层相关性以提升表征效率。"
+    },
+    {
+      "arxiv_id": "2611.17141",
+      "title": "ISLA: A Coordinate-Free, Measure-Weighted Transformer for Boundary-Driven PDEs",
+      "authors": [
+        "Peter Sharpe"
+      ],
+      "published": "2026-11-12",
+      "updated": "2026-11-12",
+      "summary": "A foundational principle of physics is that all coordinate systems are equally valid: the behavior of a PDE-governed system does not depend on the origin or orientation of the frame, nor on the units or mesh used to write it down, and neither should a surrogate model. Yet the neural surrogates with the lowest errors on",
+      "comment": "48 pages, 14 figures, 26 tables. Companion paper to \"AeroZoo: A Benchmark of Well-Posed Flow Problems for Foundation Models of Aerodynamics\" (Sharpe et al., 2026)",
+      "category": "cs.LG",
+      "abs_url": "https://arxiv.org/abs/2611.17141",
+      "pdf_url": "https://arxiv.org/pdf/2611.17141",
+      "domains": [
+        "nlp",
+        "systems"
+      ],
+      "github": "",
+      "relevance": 1.53,
+      "liked": false,
+      "in_library": false,
+      "score": 1.53,
+      "semantic": 0.4686,
+      "reason": "针对物理PDE求解器对坐标系敏感的问题，提出无坐标、测度加权的Transformer，实现对边界驱动问题的不变性建模。"
+    }
+  ],
+  "ms": 8328,
+  "source": "arxiv.org"
+}

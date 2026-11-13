@@ -1,0 +1,30 @@
+{
+  "total": 30,
+  "pass": 13,
+  "warn": 17,
+  "fail": 0,
+  "empty_abstract": 15,
+  "empty_authors": 6,
+  "zero_refs": 8,
+  "zh_zero_refs": 8,
+  "zh_count": 10,
+  "en_count": 20,
+  "median_ms": 443.0,
+  "max_ms": 8026,
+  "problem_counts": {
+    "作者为空": 6,
+    "摘要过短/为空": 15,
+    "参考文献过少": 8,
+    "标题树过少": 1
+  },
+  "zero_ref_files": [
+    "ZH_zwxxxb_2994_神经机器翻译前沿综述.pdf",
+    "ZH_zwxxxb_2995_从视觉到文本图像描述生成研究进展综述.pdf",
+    "ZH_zwxxxb_3055_知识图谱研究现状及军事应用.pdf",
+    "ZH_zwxxxb_3187_基于语言模型的预训练技术研究综述.pdf",
+    "ZH_zwxxxb_3314_多模态信息处理前沿综述.pdf",
+    "ZH_zwxxxb_3659_大语言模型评测综述.pdf",
+    "ZH_zwxxxb_3660_医疗领域对话系统口语理解综述.pdf",
+    "ZH_zwxxxb_3861_大语言模型微调方法研究综述.pdf"
+  ]
+}

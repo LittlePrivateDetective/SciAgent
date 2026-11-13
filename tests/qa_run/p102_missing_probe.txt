@@ -1,0 +1,142 @@
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+
+### ZH_zwxxxb_2994_神经机器翻译前沿综述.pdf
+45 "[45] Libovicky\n'J,HelclJ,Tlusty\n' M,etal.CUNIsystem\nfor WMT16automaticpost-editingand multimodal\ntranslationtasks[C]//Proceedingsofthe1stConfer-\nenceon Machine Translation: Volume 2,Shared\nTaskPapers,2016:646-654.\n[46] CalixtoI,LiuQ,CampbellN.Incorporatingglobal\nvisualfeaturesinto attention-based ne"
+53 '[53]对文本表示和图像表示独立去求注意力,并\n应用层次注意力来整合两种注意力结果。Zhou等\n人[54]使用一种视觉注意力机制,建立了视觉和文本\n的联合语义嵌入。除注意力外,Ive等人[55]提出了一\n种二阶段的解码方法,在第一阶段仅使用普通的翻译\n模型,在第二阶段用视觉信息来改善翻译结果。\nToyama等人[56]在多模态翻译中通过变分自编码器\n的方式引入了隐变量,隐变量中包含文本和图像的信\n息。在测试时,模型只通过文本预测隐变量,不需要\n用到图像信息。Calixto等人[57]对上述方法进行改\n进,要求模型能从隐变量中重构出图像。Yang等\n人[58]同时训练正向和反向的翻译模型,并通过'
+75 '[75]将CTC\n损失应用在非自回归模型中,使得模型可以产生空单\n词,摆脱对译文长度预测的依赖。Shao等人[60]在模\n型中融入序列信息,改进强化学习算法来进行序列级\n训练,用对译文“多峰性”不敏感的序列级指标来训练\n模型。Shao等人[76]随后针对非自回归模型提出了\nBag-of-Ngrams训练目标,该训练目标具有可导、计算\n方便、与翻译质量相关性高等优点,能够稳定、高效地\n训练非自回归模型,相对强化学习方法,翻译效果有\n大幅提升。对非自回归模型的另一个改进思路为迭\n代式的解码,即通过多轮迭代,在牺牲一定翻译速度\n的前提下提升翻译质量。Lee等人[77]首次提出了迭\n代式的解码方法,并'
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+
+### ZH_zwxxxb_3659_大语言模型评测综述.pdf
+123 '[123]、\nMoverScore\n[124]、BERTfor MTE\n[125]、COMET\n[126]、\nBLEURT\n[127]、RoBERTa-eval\n[128]、BARTScore\n[129]、\nMAUVE\n[130]、DiscoScore\n[131]和基于大语言模型的\n评测[132-135]等。下面将重点介绍几种有代表性的基\n于模型的评测方法,分别是依赖参考文本,基于\nBERT 的BERTScore、BERTforMTE 与不依赖参\n考文本,基于大语言模型的GPTScore\n[132]、Kocmi\n& Federmann\n[133]以及PandaLM\n[135]。\n3.\n1.\n1'
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+
+### ZH_zwxxxb_3660_医疗领域对话系统口语理解综述.pdf
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+16:53:09 | INFO    | app.parse.structure      | 解析完成 D:\projects\sciagent\tests\corpus\ZH_zwxxxb_3660_医疗领域对话系统口语理解综述.pdf：12 页 / 1121 区块 / 27 标题 / 73 参考文献 / 扫描件=False
+[(67, '郭熙铜(1983-),通信作者,博士,教授,主要研'), (68, '第二十三届中国计算语言学大会(CCL2024)征稿启事'), (69, '大学承办。中国计算语言学大会创办于1991年,由中国中文信息学会计算语言学专业委员会负责组织。经'), (70, 'org/static/CCL2024/index.'), (71, '论文主题 CCL2024征集计算语言学方面的原创研究和应'), (72, '• 自然语言处理应用 时间表 • OpenReview投稿系统开放:2024年3月1日'), (73, '• 论文Rebuttal和讨论日期:2024 年4 月30')]

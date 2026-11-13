@@ -24,7 +24,7 @@ log = get_logger(__name__)
 app = FastAPI(
     title="SciAgent · 科研智能体",
     description="双栏感知 PDF 解析 + 锚点可验证 RAG + 多 Agent 编排",
-    version="1.0.0",
+    version="1.1.0",
 )
 
 # 访问防护放在 CORS 之后注册 = 位于外层：先挡掉超频与无令牌请求，

@@ -1,0 +1,186 @@
+{
+  "ok": true,
+  "topics": [
+    "transformer",
+    "attention",
+    "normalization",
+    "optimization",
+    "scaling"
+  ],
+  "window_days": 180,
+  "items": [
+    {
+      "arxiv_id": "2611.16517",
+      "title": "UniSpark: Exploring Hybrid Attention for Multimodal Understanding and Generation",
+      "authors": [
+        "Jiancheng Pan",
+        "Yuzheng Liu",
+        "Hengyuan Cao",
+        "Qiyuan Zhang",
+        "Yangyan Li",
+        "Biao Gong"
+      ],
+      "published": "2026-11-12",
+      "updated": "2026-11-12",
+      "summary": "We present UniSpark-9B, a unified multimodal model that investigates hybrid attention for visual understanding and generation. Built on a Mixture-of-Transformer-Experts backbone with approximately 9B parameters in each branch, UniSpark combines full attention for explicit token interactions with GatedDeltaNet linear at",
+      "comment": "Technical Report, 31 pages",
+      "category": "cs.CV",
+      "abs_url": "https://arxiv.org/abs/2611.16517",
+      "pdf_url": "https://arxiv.org/pdf/2611.16517",
+      "domains": [
+        "nlp",
+        "systems",
+        "vision"
+      ],
+      "github": "",
+      "relevance": 2.17,
+      "liked": false,
+      "in_library": false,
+      "score": 2.17,
+      "semantic": 0.5254,
+      "reason": "UniSpark-9B通过混合注意力机制结合全注意力与专家网络，提升多模态理解与生成性能，尤其在视觉内容的细粒度建模上表现突出。"
+    },
+    {
+      "arxiv_id": "2611.16063",
+      "title": "Vocabulary-Free Next-Event Prediction on Temporal Graphs",
+      "authors": [
+        "Zhishang Luo",
+        "Venu Madhav Tammali",
+        "Amila Weerasinghe",
+        "Osso Vahabzadeh",
+        "Olcay Boz",
+        "Xue Hao"
+      ],
+      "published": "2026-11-11",
+      "updated": "2026-11-11",
+      "summary": "Autoregressive transformer training through next-token prediction has driven remarkable advances in language modeling and has become increasingly effective for time-series modeling. Yet its success in temporal graph learning remains limited, and most temporal link-prediction methods are discriminative rather than autor",
+      "comment": "Accepted at the NeurIPS 2026 Workshop on Foundation Models for Temporal Systems. 20 pages, 2 figures",
+      "category": "cs.LG",
+      "abs_url": "https://arxiv.org/abs/2611.16063",
+      "pdf_url": "https://arxiv.org/pdf/2611.16063",
+      "domains": [
+        "nlp",
+        "systems"
+      ],
+      "github": "",
+      "relevance": 1.94,
+      "liked": false,
+      "in_library": false,
+      "score": 1.94,
+      "semantic": 0.4797,
+      "reason": "该研究提出无词汇表的自回归Transformer方法，通过时间图上的下一事件预测任务，有效缓解了传统方法在动态图结构建模中的局限性。"
+    },
+    {
+      "arxiv_id": "2611.16057",
+      "title": "Pyramidal Columns Acting as Attention Heads",
+      "authors": [
+        "Fabrizia Giulia Garavaglia",
+        "Marco Giunti"
+      ],
+      "published": "2026-11-11",
+      "updated": "2026-11-11",
+      "summary": "Can the functional architecture of a Transformer attention head be given a biological construction? More specifically, could a suitable group of pyramidal columns in posterior temporal language regions (PTLRs) constitute the biological construction of a neuromorphic mechanical realization of an attention head, under a ",
+      "comment": "v1: main text (20 pp., 7 figs.) and supplementary materials (12 figures)",
+      "category": "q-bio.NC",
+      "abs_url": "https://arxiv.org/abs/2611.16057",
+      "pdf_url": "https://arxiv.org/pdf/2611.16057",
+      "domains": [
+        "systems"
+      ],
+      "github": "",
+      "relevance": 1.84,
+      "liked": false,
+      "in_library": false,
+      "score": 1.84,
+      "semantic": 0.5573,
+      "reason": "论文将皮层金字塔柱群视为类Transformer注意力头的生物构造，为神经形态注意力机制提供了可解释的生物学基础，关联attention与neuromorphic设计。"
+    },
+    {
+      "arxiv_id": "2611.14060",
+      "title": "Where Do Vision-Language Models Get Left and Right? Position-Code Counterfactuals in Qwen2.5-VL, Qwen3-VL and InternVL3",
+      "authors": [
+        "Enhao Cui",
+        "Junzhi Yang",
+        "Yaoshun Lin",
+        "Yuhan Feng",
+        "Zijian Chen"
+      ],
+      "published": "2026-11-10",
+      "updated": "2026-11-10",
+      "summary": "A vision-language model may take left-right direction from the orientation of image content within patches, its vision transformer's (ViT) position code, or token positions and order in its language model (LLM). Ablations show the ViT code is necessary; we test sufficiency by mirroring only a position code. In Qwen2.5-",
+      "comment": "25 pages, 6 figures, 10 tables. Code: https://github.com/chen4study-hub/where-vlms-get-left-right",
+      "category": "cs.CV",
+      "abs_url": "https://arxiv.org/abs/2611.14060",
+      "pdf_url": "https://arxiv.org/pdf/2611.14060",
+      "domains": [
+        "nlp",
+        "systems",
+        "vision"
+      ],
+      "github": "chen4study-hub/where-vlms-get-left-right",
+      "relevance": 0.96,
+      "liked": false,
+      "in_library": false,
+      "score": 1.76,
+      "semantic": 0.452,
+      "reason": "通过镜像反事实实验验证ViT位置编码对视觉语言模型左右方向判断的关键作用，揭示了位置编码在跨模态推理中的必要性。"
+    },
+    {
+      "arxiv_id": "2611.16270",
+      "title": "SMIC: Shared Multiscale Input-Reference Conditioning across Transformer Layers for Natural Language Inference",
+      "authors": [
+        "Xin Zhang",
+        "Victor S. Sheng"
+      ],
+      "published": "2026-11-12",
+      "updated": "2026-11-12",
+      "summary": "Natural Language Inference models can be sensitive to localized lexical changes. We introduce Shared Multiscale Input-Reference Conditioning (SMIC), which constructs a single input-dependent multiscale reference and reuses it across Transformer layers. Each layer applies its own multiscale transformation to the shared ",
+      "comment": "",
+      "category": "cs.CL",
+      "abs_url": "https://arxiv.org/abs/2611.16270",
+      "pdf_url": "https://arxiv.org/pdf/2611.16270",
+      "domains": [
+        "nlp",
+        "systems"
+      ],
+      "github": "",
+      "relevance": 1.75,
+      "liked": false,
+      "in_library": false,
+      "score": 1.75,
+      "semantic": 0.53,
+      "reason": "SMIC通过跨层共享多尺度输入-参考条件，增强自然语言推理中对局部词汇变化的鲁棒性，有效缓解了模型对微小语义扰动的敏感问题。"
+    },
+    {
+      "arxiv_id": "2611.17240",
+      "title": "Objects as Addresses: Instance Binding in Vision Transformer Attention",
+      "authors": [
+        "Khalil Sabri",
+        "Guillaume-Alexandre Bilodeau",
+        "Nicolas Saunier",
+        "Wassim Bouachir"
+      ],
+      "published": "2026-11-12",
+      "updated": "2026-11-12",
+      "summary": "Humans naturally parse visual scenes into coherent individual objects rather than scattered features, a capability cognitive science calls object binding. While recent work shows that pretrained Vision Transformers (ViTs) intrinsically acquire this ability, how native self-attention computations mechanistically keep ob",
+      "comment": "",
+      "category": "cs.CV",
+      "abs_url": "https://arxiv.org/abs/2611.17240",
+      "pdf_url": "https://arxiv.org/pdf/2611.17240",
+      "domains": [
+        "nlp",
+        "systems",
+        "vision"
+      ],
+      "github": "",
+      "relevance": 1.7,
+      "liked": false,
+      "in_library": false,
+      "score": 1.7,
+      "semantic": 0.4667,
+      "reason": "该工作提出以物体为地址的绑定机制，利用ViT注意力显式建模视觉对象间的空间关系，解决视觉场景中对象分离与整合的难题。"
+    }
+  ],
+  "ms": 5614,
+  "source": "arxiv.org"
+}

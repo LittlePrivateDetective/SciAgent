@@ -1,0 +1,1762 @@
+{
+  "items": [
+    {
+      "doc_id": "d817ac4e56a32",
+      "page": 33,
+      "bbox": "71.6,543.4,541.7,695.1",
+      "section": "5 Limitations",
+      "text": "Making a bidirectional model at the scale of GPT-3, and/or trying to make bidirectional models work with few- or zero-shot learning, is a promising direction for future research, and could help achieve the “best of both worlds”.",
+      "doc_title": "Language Models are Few-Shot Learners",
+      "doc_year": "2020",
+      "duplicates": 0,
+      "keywords": [
+        "bidirectional",
+        "direction",
+        "making",
+        "promising",
+        "scale",
+        "shot",
+        "trying",
+        "zero"
+      ],
+      "resolved_by": [
+        {
+          "doc_id": "df367909b3159",
+          "title": "Robust Speech Recognition via Large-Scale Weak Supervision",
+          "year": "2022",
+          "shared_terms": [
+            "achieve",
+            "scale",
+            "shot",
+            "zero"
+          ],
+          "score": 4,
+          "evidence": "We achieve our results without the need for the self-supervision and self-training techniques that have been a mainstay of recent large-scale speech recognition work and demonstrate how simply training on a large and diverse supervised dataset and focusing on zero-shot trans- fer can signiﬁcantly improve the robustness of a speech recognition system.",
+          "page": 14,
+          "bbox": "307,215.1,543.1,344.5",
+          "chunk_id": "c6aeeae1c827e"
+        },
+        {
+          "doc_id": "d8d380ed3abb5",
+          "title": "GLM-130B: AN OPEN BILINGUAL PRE-TRAINED MODEL",
+          "year": "2022",
+          "shared_terms": [
+            "bidirectional",
+            "shot",
+            "zero"
+          ],
+          "score": 3,
+          "evidence": "This is probably owing to GLM-130B’s bidirectional context attention and MIP, which has been proved to improve zero-shot results in unseen tasks (Wei et al., 2022a; Sanh et al., 2022).",
+          "page": 8,
+          "bbox": "108,383.5,504,470.2",
+          "chunk_id": "cf63113b512ee"
+        },
+        {
+          "doc_id": "d6feedd02fcae",
+          "title": "Visual Instruction Tuning",
+          "year": "2023",
+          "shared_terms": [
+            "research",
+            "shot",
+            "zero"
+          ],
+          "score": 3,
+          "evidence": "://llava-vl.github.io 2Microsoft Research arXiv:2304.08485v2 [cs.CV] 11 Dec 2023 Instruction tuning large language models (LLMs) using machine-generated instruction-following data has been shown to improve zero-shot capabilities on new tasks, but the idea is less explored in the multimodal field.",
+          "page": 1,
+          "bbox": "143.6,247.3,469.8,420.9",
+          "chunk_id": "c6db82c4a2be3"
+        }
+      ],
+      "status": "possibly_addressed",
+      "id": 1
+    },
+    {
+      "doc_id": "d817ac4e56a32",
+      "page": 40,
+      "bbox": "71.6,560,541.7,657.3",
+      "section": "7 Related Work",
+      "text": "However, it is very likely that incorporating these algorithmic advances could improve GPT-3’s performance on downstream tasks, especially in the ﬁne-tuning setting, and combining GPT-3’s scale with these algorithmic techniques is a promising direction for future work.",
+      "doc_title": "Language Models are Few-Shot Learners",
+      "doc_year": "2020",
+      "duplicates": 0,
+      "keywords": [
+        "advances",
+        "algorithmic",
+        "downstream",
+        "however",
+        "improve",
+        "incorporating",
+        "likely",
+        "very"
+      ],
+      "resolved_by": [
+        {
+          "doc_id": "d16a2835145ee",
+          "title": "Emergent Abilities of Large Language Models",
+          "year": "2022",
+          "shared_terms": [
+            "downstream",
+            "improve",
+            "tasks"
+          ],
+          "score": 3,
+          "evidence": "com 4DeepMind Reviewed on OpenReview: https://openreview.net/forum?id=yzkSU5zdwD Scaling up language models has been shown to predictably improve performance and sample eﬃciency on a wide range of downstream tasks.",
+          "page": 1,
+          "bbox": "107.5,465.9,506.3,547.5",
+          "chunk_id": "c563bb54b2a58"
+        },
+        {
+          "doc_id": "d3b6f15a377ca",
+          "title": "Training language models to follow instructions with human feedback",
+          "year": "2022",
+          "shared_terms": [
+            "improve",
+            "tasks",
+            "tuning"
+          ],
+          "score": 3,
+          "evidence": "Overall, our results indicate that ﬁne-tuning large language models using human preferences signiﬁ- cantly improves their behavior on a wide range of tasks, though much work remains to be done to improve their safety and reliability.",
+          "page": 4,
+          "bbox": "107.6,394.2,505.7,469.9",
+          "chunk_id": "c047a73653787"
+        },
+        {
+          "doc_id": "d6feedd02fcae",
+          "title": "Visual Instruction Tuning",
+          "year": "2023",
+          "shared_terms": [
+            "improve",
+            "tasks",
+            "tuning"
+          ],
+          "score": 3,
+          "evidence": "://llava-vl.github.io 2Microsoft Research arXiv:2304.08485v2 [cs.CV] 11 Dec 2023 Instruction tuning large language models (LLMs) using machine-generated instruction-following data has been shown to improve zero-shot capabilities on new tasks, but the idea is less explored in the multimodal field.",
+          "page": 1,
+          "bbox": "143.6,247.3,469.8,420.9",
+          "chunk_id": "c6db82c4a2be3"
+        }
+      ],
+      "status": "possibly_addressed",
+      "id": 2
+    },
+    {
+      "doc_id": "ddb3dff6cab6a",
+      "page": 15,
+      "bbox": "90,353.6,522,407.2",
+      "section": "6 Discussion",
+      "text": "We expect it is possible to achieve help- fulness and instruction-following without human feedback, starting from only a pretrained LM and extensive prompting, but we leave this for future work.",
+      "doc_title": "Constitutional AI: Harmlessness from AI Feedback",
+      "doc_year": "2022",
+      "duplicates": 0,
+      "keywords": [
+        "achieve",
+        "expect",
+        "following",
+        "fulness",
+        "help",
+        "instruction",
+        "possible",
+        "without"
+      ],
+      "resolved_by": [
+        {
+          "doc_id": "d6feedd02fcae",
+          "title": "Visual Instruction Tuning",
+          "year": "2023",
+          "shared_terms": [
+            "following",
+            "instruction",
+            "only"
+          ],
+          "score": 3,
+          "evidence": "We present the first attempt to use language-only GPT-4 to generate multimodal language-image instruction-following data.",
+          "page": 1,
+          "bbox": "143.6,247.3,469.8,420.9",
+          "chunk_id": "c6db82c4a2be3"
+        },
+        {
+          "doc_id": "dc80b816ae34b",
+          "title": "Qwen2.5 Technical Report",
+          "year": "2024",
+          "shared_terms": [
+            "following",
+            "human",
+            "instruction"
+          ],
+          "score": 3,
+          "evidence": "Post-training techniques significantly enhance human preference, and notably improve long text generation, structural data analysis, and instruction following.",
+          "page": 1,
+          "bbox": "106.3,192.1,489.8,300.7",
+          "chunk_id": "ceb758ccc103e"
+        }
+      ],
+      "status": "possibly_addressed",
+      "id": 3
+    },
+    {
+      "doc_id": "d817ac4e56a32",
+      "page": 3,
+      "bbox": "71.7,170.7,541.2,235.3",
+      "section": "1 Introduction",
+      "text": "However, a major limitation to this approach is that while the architecture is task-agnostic, there is still a need for task-speciﬁc datasets and task-speciﬁc ﬁne-tuning: to achieve strong performance on a desired task typically requires ﬁne-tuning on a dataset of thousands to hundreds of thousands of examples speciﬁc to that task.",
+      "doc_title": "Language Models are Few-Shot Learners",
+      "doc_year": "2020",
+      "duplicates": 0,
+      "keywords": [
+        "however",
+        "limitation",
+        "major",
+        "speci",
+        "task",
+        "thousands",
+        "tuning",
+        "while"
+      ],
+      "resolved_by": [
+        {
+          "doc_id": "d3706de3b6864",
+          "title": "LORA: LOW-RANK ADAPTATION OF LARGE LAN- GUAGE MODELS",
+          "year": "2021",
+          "shared_terms": [
+            "task",
+            "there",
+            "while"
+          ],
+          "score": 3,
+          "evidence": "While one can reduce the overall latency by pruning layers or exploit- ing multi-task settings (R¨uckl´e et al., 2020; Pfeiffer et al., 2021), there is no direct ways to bypass the extra compute in adapter layers.",
+          "page": 3,
+          "bbox": "108,462.4,504,603.8",
+          "chunk_id": "cd0937269b9d9"
+        },
+        {
+          "doc_id": "dcd82e8617cf8",
+          "title": "Improving Language Understanding by Generative Pre-Training",
+          "year": "",
+          "shared_terms": [
+            "agnostic",
+            "speci",
+            "task"
+          ],
+          "score": 3,
+          "evidence": "Our general task-agnostic model outperforms discriminatively trained models that use architectures speciﬁcally crafted for each task, signiﬁcantly improving upon the state of the art in 9 out of the 12 tasks studied.",
+          "page": 1,
+          "bbox": "143.9,268.4,469.9,442",
+          "chunk_id": "c5818e1d7e4ad"
+        }
+      ],
+      "status": "possibly_addressed",
+      "id": 4
+    },
+    {
+      "doc_id": "dc52bea1ce4da",
+      "page": 8,
+      "bbox": "304.7,354.1,526.2,773.6",
+      "section": "8 Conclusions/Limitations",
+      "text": "While our proposed RWKV model has demon- strated promising results regarding training and memory efficiency during inference, some limita- tions should be acknowledged and addressed in future work.",
+      "doc_title": "RWKV: Reinventing RNNs for the Transformer Era",
+      "doc_year": "2023",
+      "duplicates": 0,
+      "keywords": [
+        "demon",
+        "memory",
+        "promising",
+        "proposed",
+        "regarding",
+        "rwkv",
+        "strated",
+        "while"
+      ],
+      "resolved_by": [
+        {
+          "doc_id": "db3c184f9cffd",
+          "title": "QLORA: Efficient Finetuning of Quantized LLMs",
+          "year": "2023",
+          "shared_terms": [
+            "during",
+            "inference",
+            "memory",
+            "while"
+          ],
+          "score": 4,
+          "evidence": "While recent quantization methods can reduce the memory footprint of LLMs [14, 13, 18, 66], such techniques only work for inference and break down during training [65].",
+          "page": 1,
+          "bbox": "108,580.5,505.2,645.1",
+          "chunk_id": "ce5eb019978ca"
+        },
+        {
+          "doc_id": "d201464196e6f",
+          "title": "Mistral 7B",
+          "year": "2023",
+          "shared_terms": [
+            "during",
+            "inference",
+            "memory"
+          ],
+          "score": 3,
+          "evidence": "GQA significantly accelerates the inference speed, and also reduces the memory requirement during decoding, allowing for higher batch sizes hence higher throughput, a crucial factor for real-time applications.",
+          "page": 1,
+          "bbox": "108,654.4,505.7,718.9",
+          "chunk_id": "cb61d77cabf3c"
+        }
+      ],
+      "status": "possibly_addressed",
+      "id": 5
+    },
+    {
+      "doc_id": "dca501d1039dc",
+      "page": 10,
+      "bbox": "36.7,143.2,575.3,234.7",
+      "section": "5 Training/6.3 English Constituency Parsing",
+      "text": "We plan to extend the Transformer to problems involving input and output modalities other than text and to investigate local, restricted attention mechanisms to efficiently handle large inputs and outputs such as images, audio and video.",
+      "doc_title": "Attention Is All You Need",
+      "doc_year": "2014",
+      "duplicates": 0,
+      "keywords": [
+        "extend",
+        "input",
+        "involving",
+        "modalities",
+        "output",
+        "plan",
+        "problems",
+        "transformer"
+      ],
+      "resolved_by": [
+        {
+          "doc_id": "dce63a636cf64",
+          "title": "Attention Is All You Need",
+          "year": "2017",
+          "shared_terms": [
+            "input",
+            "output",
+            "transformer"
+          ],
+          "score": 3,
+          "evidence": "In this work we propose the Transformer, a model architecture eschewing recurrence and instead relying entirely on an attention mechanism to draw global dependencies between input and output.",
+          "page": 2,
+          "bbox": "107.7,150.7,505.7,193.5",
+          "chunk_id": "c492d6431394b"
+        }
+      ],
+      "status": "possibly_addressed",
+      "id": 6
+    },
+    {
+      "doc_id": "deed9eb540748",
+      "page": 9,
+      "bbox": "107.6,227.2,505.2,335.3",
+      "section": "6 Discussion",
+      "text": "As for limitations, we ﬁrst qualify that although chain of thought emulates the thought processes of human reasoners, this does not answer whether the neural network is actually “reasoning,” which we leave as an open question.",
+      "doc_title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+      "doc_year": "2022",
+      "duplicates": 0,
+      "keywords": [
+        "although",
+        "chain",
+        "emulates",
+        "human",
+        "limitations",
+        "processes",
+        "qualify",
+        "thought"
+      ],
+      "resolved_by": [
+        {
+          "doc_id": "ddb3dff6cab6a",
+          "title": "Constitutional AI: Harmlessness from AI Feedback",
+          "year": "2022",
+          "shared_terms": [
+            "chain",
+            "human",
+            "thought"
+          ],
+          "score": 3,
+          "evidence": "Both the SL and RL methods can leverage chain-of-thought style reasoning to improve the human-judged performance and transparency of AI decision making.",
+          "page": 1,
+          "bbox": "125.9,439.3,486.1,602",
+          "chunk_id": "cf9000b42f951"
+        }
+      ],
+      "status": "possibly_addressed",
+      "id": 7
+    },
+    {
+      "doc_id": "deed9eb540748",
+      "page": 9,
+      "bbox": "107.6,227.2,505.2,335.3",
+      "section": "6 Discussion",
+      "text": "Third, there is no guarantee of correct reasoning paths, which can lead to both correct and incorrect answers; improving factual generations of language models is an open direction for future work (Rashkin et al., 2021; Ye and Durrett, 2022; Wiegreffe et al., 2022, inter alia).",
+      "doc_title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+      "doc_year": "2022",
+      "duplicates": 0,
+      "keywords": [
+        "both",
+        "correct",
+        "guarantee",
+        "lead",
+        "paths",
+        "reasoning",
+        "there",
+        "third"
+      ],
+      "resolved_by": [
+        {
+          "doc_id": "d7c300e762602",
+          "title": "DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning",
+          "year": "2025",
+          "shared_terms": [
+            "answers",
+            "paths",
+            "reasoning"
+          ],
+          "score": 3,
+          "evidence": "(2023b) introduced self-consistency, a method that aggregates answers from multiple reasoning paths to improve robustness and accuracy.",
+          "page": 64,
+          "bbox": "70.5,477.8,524.7,597.1",
+          "chunk_id": "cb9fadfcb448e"
+        }
+      ],
+      "status": "possibly_addressed",
+      "id": 8
+    },
+    {
+      "doc_id": "d01b0500ab8ae",
+      "page": 6,
+      "bbox": "70.4,406.5,526.3,539.4",
+      "section": "1. Introduction/Summary of Core Evaluation Results",
+      "text": "Lastly, we conclude this work, discuss existing limitations of DeepSeek-V3, and propose potential directions for future research (Section 6).",
+      "doc_title": "DeepSeek-V3 Technical Report",
+      "doc_year": "2024",
+      "duplicates": 0,
+      "keywords": [
+        "conclude",
+        "deepseek",
+        "discuss",
+        "existing",
+        "lastly",
+        "limitations",
+        "potential",
+        "propose"
+      ],
+      "resolved_by": [
+        {
+          "doc_id": "d7c300e762602",
+          "title": "DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning",
+          "year": "2025",
+          "shared_terms": [
+            "deepseek",
+            "research",
+            "section"
+          ],
+          "score": 3,
+          "evidence": "In this section, we present our safety taxonomy research for the DeepSeek-R1 model based on an in-house safety benchmark.",
+          "page": 48,
+          "bbox": "70.9,378.2,524.4,429.8",
+          "chunk_id": "c221ef7f7c402"
+        }
+      ],
+      "status": "possibly_addressed",
+      "id": 9
+    },
+    {
+      "doc_id": "d01b0500ab8ae",
+      "page": 6,
+      "bbox": "70.3,587.1,526.2,665.7",
+      "section": "2. Architecture",
+      "text": "f DeepSeek-V3, and propose potential directions for future research (Section 6).",
+      "doc_title": "DeepSeek-V3 Technical Report",
+      "doc_year": "2024",
+      "duplicates": 0,
+      "keywords": [
+        "deepseek",
+        "directions",
+        "potential",
+        "propose",
+        "research",
+        "section"
+      ],
+      "resolved_by": [
+        {
+          "doc_id": "d7c300e762602",
+          "title": "DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning",
+          "year": "2025",
+          "shared_terms": [
+            "deepseek",
+            "research",
+            "section"
+          ],
+          "score": 3,
+          "evidence": "In this section, we present our safety taxonomy research for the DeepSeek-R1 model based on an in-house safety benchmark.",
+          "page": 48,
+          "bbox": "70.9,378.2,524.4,429.8",
+          "chunk_id": "c221ef7f7c402"
+        }
+      ],
+      "status": "possibly_addressed",
+      "id": 10
+    },
+    {
+      "doc_id": "d16a2835145ee",
+      "page": 11,
+      "bbox": "72,188.5,540.5,294.1",
+      "section": "4 Augmented Prompting Strategies/5.6 Directions for future work",
+      "text": "Future research could potentially investigate why these abilities have not yet emerged, and how to enable models to perform these tasks.",
+      "doc_title": "Emergent Abilities of Large Language Models",
+      "doc_year": "2022",
+      "duplicates": 0,
+      "keywords": [
+        "abilities",
+        "emerged",
+        "enable",
+        "investigate",
+        "perform",
+        "potentially",
+        "research",
+        "tasks"
+      ],
+      "resolved_by": [
+        {
+          "doc_id": "deed9eb540748",
+          "title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+          "year": "2022",
+          "shared_terms": [
+            "abilities",
+            "potentially",
+            "research"
+          ],
+          "score": 3,
+          "evidence": "Improving the factuality of language model generations with respect to context and world knowledge is an important direction open problems in language model research and could also be expected to potentially improve multi-step reasoning abilities of language models.",
+          "page": 28,
+          "bbox": "108,404,505.7,534",
+          "chunk_id": "ca0f17357f500"
+        }
+      ],
+      "status": "possibly_addressed",
+      "id": 11
+    },
+    {
+      "doc_id": "d16a2835145ee",
+      "page": 11,
+      "bbox": "72,304.8,542.2,434.4",
+      "section": "4 Augmented Prompting Strategies/5.6 Directions for future work",
+      "text": "Beyond research on unlocking further emergent tasks, an important open question for future research is how and why emergent abilities occur in large language models.",
+      "doc_title": "Emergent Abilities of Large Language Models",
+      "doc_year": "2022",
+      "duplicates": 0,
+      "keywords": [
+        "beyond",
+        "emergent",
+        "further",
+        "important",
+        "open",
+        "research",
+        "tasks",
+        "unlocking"
+      ],
+      "resolved_by": [
+        {
+          "doc_id": "deed9eb540748",
+          "title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+          "year": "2022",
+          "shared_terms": [
+            "abilities",
+            "important",
+            "open",
+            "research"
+          ],
+          "score": 4,
+          "evidence": "Improving the factuality of language model generations with respect to context and world knowledge is an important direction open problems in language model research and could also be expected to potentially improve multi-step reasoning abilities of language models.",
+          "page": 28,
+          "bbox": "108,404,505.7,534",
+          "chunk_id": "ca0f17357f500"
+        }
+      ],
+      "status": "possibly_addressed",
+      "id": 12
+    },
+    {
+      "doc_id": "d74c57e412830",
+      "page": 13,
+      "bbox": "296.8,118.2,537,408.9",
+      "section": "13 9 Conclusion",
+      "text": "Future work includes explaining decisions made by deep networks in domains such as reinforcement learning, natural language processing and video applications.",
+      "doc_title": "Grad-CAM: Visual Explanations from Deep Networks",
+      "doc_year": "2016",
+      "duplicates": 0,
+      "keywords": [
+        "decisions",
+        "deep",
+        "domains",
+        "explaining",
+        "includes",
+        "made",
+        "natural",
+        "reinforcement"
+      ],
+      "resolved_by": [
+        {
+          "doc_id": "dc52bea1ce4da",
+          "title": "RWKV: Reinventing RNNs for the Transformer Era",
+          "year": "2023",
+          "shared_terms": [
+            "applications",
+            "natural",
+            "processing"
+          ],
+          "score": 3,
+          "evidence": "As a novel architecture for sequential data, RWKV has the potential to improve sequence- based models across different applications ranging from natural language processing to biomedical data processing or climate modelling.",
+          "page": 9,
+          "bbox": "70.9,277.6,291,478.3",
+          "chunk_id": "ccb15b0bc11c4"
+        }
+      ],
+      "status": "possibly_addressed",
+      "id": 13
+    },
+    {
+      "doc_id": "d817ac4e56a32",
+      "page": 6,
+      "bbox": "99.4,508.2,541.7,649.2",
+      "section": "2 Approach",
+      "text": "can be ﬁne-tuned in principle and this is a promising direction for future work. • Few-Shot (FS) is the term we will use in this work to refer to the setting where the model is given a few demonstrations of the task at inference time as conditioning [RWC+19], but no weight updates are allowed.",
+      "doc_title": "Language Models are Few-Shot Learners",
+      "doc_year": "2020",
+      "duplicates": 0,
+      "keywords": [
+        "direction",
+        "principle",
+        "promising",
+        "refer",
+        "shot",
+        "term",
+        "tuned",
+        "will"
+      ],
+      "resolved_by": [
+        {
+          "doc_id": "d46b9a50a8416",
+          "title": "Learning Transferable Visual Models From Natural Language Supervision",
+          "year": "2021",
+          "shared_terms": [
+            "direction",
+            "given",
+            "promising"
+          ],
+          "score": 3,
+          "evidence": "Combining CLIP with self-supervision (Henaff, 2020; Chen et al., 2020c) and self-training (Lee; Xie et al., 2020) methods is a promising direction given their demonstrated ability to improve data efﬁciency over standard supervised learning.",
+          "page": 20,
+          "bbox": "55.1,69.5,290.7,199",
+          "chunk_id": "cb1454ec7ab50"
+        }
+      ],
+      "status": "possibly_addressed",
+      "id": 14
+    },
+    {
+      "doc_id": "d817ac4e56a32",
+      "page": 34,
+      "bbox": "71.6,374.5,541.7,449.9",
+      "section": "5 Limitations",
+      "text": "A limitation associated with models at the scale of GPT-3, regardless of objective function or algorithm, is that they are both expensive and inconvenient to perform inference on, which may present a challenge for practical applicability of models of this scale in their current form.",
+      "doc_title": "Language Models are Few-Shot Learners",
+      "doc_year": "2020",
+      "duplicates": 0,
+      "keywords": [
+        "algorithm",
+        "associated",
+        "function",
+        "limitation",
+        "objective",
+        "regardless",
+        "scale",
+        "they"
+      ],
+      "resolved_by": [
+        {
+          "doc_id": "d3d0d60c92622",
+          "title": "Llama 2: Open Foundation and Fine-Tuned Chat Models",
+          "year": "2023",
+          "shared_terms": [
+            "algorithm",
+            "function",
+            "objective"
+          ],
+          "score": 3,
+          "evidence": "Ep∼D,g∼π[R(g | p)] (3) arg max π We iteratively improve the policy by sampling prompts p from our dataset D and generations g from the policy π and use the PPO algorithm and loss function to achieve this objective.",
+          "page": 15,
+          "bbox": "71.5,342.4,541.4,452.7",
+          "chunk_id": "c2f00bdc2acab"
+        }
+      ],
+      "status": "possibly_addressed",
+      "id": 15
+    },
+    {
+      "doc_id": "d46b9a50a8416",
+      "page": 9,
+      "bbox": "307,266.7,543.2,396.2",
+      "section": "3. Experiments/23.0 CLIP/3.1.5. ANALYSIS OF ZERO-SHOT CLIP PERFORMANCE",
+      "text": "Research into better methods of combining the strength of zero-shot transfer with ﬂexibility of few-shot learning is a promising direction for future work.",
+      "doc_title": "Learning Transferable Visual Models From Natural Language Supervision",
+      "doc_year": "2021",
+      "duplicates": 0,
+      "keywords": [
+        "better",
+        "combining",
+        "exibility",
+        "research",
+        "shot",
+        "strength",
+        "transfer",
+        "zero"
+      ],
+      "resolved_by": [
+        {
+          "doc_id": "d6feedd02fcae",
+          "title": "Visual Instruction Tuning",
+          "year": "2023",
+          "shared_terms": [
+            "research",
+            "shot",
+            "zero"
+          ],
+          "score": 3,
+          "evidence": "://llava-vl.github.io 2Microsoft Research arXiv:2304.08485v2 [cs.CV] 11 Dec 2023 Instruction tuning large language models (LLMs) using machine-generated instruction-following data has been shown to improve zero-shot capabilities on new tasks, but the idea is less explored in the multimodal field.",
+          "page": 1,
+          "bbox": "143.6,247.3,469.8,420.9",
+          "chunk_id": "c6db82c4a2be3"
+        }
+      ],
+      "status": "possibly_addressed",
+      "id": 16
+    },
+    {
+      "doc_id": "d28f9c6d123e3",
+      "page": 25,
+      "bbox": "90,133.9,522.1,349",
+      "section": "6. Related Work",
+      "text": "This version of the Switch Transformer does not employ attention sparsity, but these techniques are complimentary, and, as future work, these could be combined to potentially improve learning on tasks requiring long contexts.",
+      "doc_title": "Switch Transformers: Scaling to Trillion Parameter Models with Simple and Eﬃcient Sparsity",
+      "doc_year": "2021",
+      "duplicates": 0,
+      "keywords": [
+        "attention",
+        "does",
+        "employ",
+        "sparsity",
+        "switch",
+        "techniques",
+        "transformer",
+        "version"
+      ],
+      "resolved_by": [
+        {
+          "doc_id": "d16a2835145ee",
+          "title": "Emergent Abilities of Large Language Models",
+          "year": "2022",
+          "shared_terms": [
+            "combined",
+            "improve",
+            "potentially"
+          ],
+          "score": 3,
+          "evidence": "Future research could potentially analyze emergence in new ways (e.g., analyze the relationship between emergent tasks and similar data in training; create a synthetic task that requires multiple compositional sub-tasks and evaluate how each of those sub-tasks improve with scale and unlock emergence when combined).",
+          "page": 11,
+          "bbox": "72,304.8,542.2,434.4",
+          "chunk_id": "c995a1b42bfd6"
+        }
+      ],
+      "status": "possibly_addressed",
+      "id": 17
+    },
+    {
+      "doc_id": "d3b6f15a377ca",
+      "page": 19,
+      "bbox": "108,537.9,504.8,602.4",
+      "section": "5 Discussion/5.4 Open questions",
+      "text": "Our techniques can also be applied to making models refuse certain user instructions, and we plan to explore this in subsequent iterations of this research.",
+      "doc_title": "Training language models to follow instructions with human feedback",
+      "doc_year": "2022",
+      "duplicates": 0,
+      "keywords": [
+        "applied",
+        "certain",
+        "instructions",
+        "making",
+        "plan",
+        "refuse",
+        "techniques",
+        "user"
+      ],
+      "resolved_by": [
+        {
+          "doc_id": "d315cafab02d0",
+          "title": "Instruction Pre-Training: Language Models are Supervised Multitask Learners",
+          "year": "2024",
+          "shared_terms": [
+            "explore",
+            "plan",
+            "research"
+          ],
+          "score": 3,
+          "evidence": "(2024) could potentially complement our method, areas we plan to explore in future research.",
+          "page": 8,
+          "bbox": "305.8,73.5,526.3,192.9",
+          "chunk_id": "cc3710bff0cb8"
+        }
+      ],
+      "status": "possibly_addressed",
+      "id": 18
+    },
+    {
+      "doc_id": "d3b6f15a377ca",
+      "page": 19,
+      "bbox": "108,608.7,505.7,651.5",
+      "section": "5 Discussion/5.4 Open questions",
+      "text": "ructions, and we plan to explore this in subsequent iterations of this research.",
+      "doc_title": "Training language models to follow instructions with human feedback",
+      "doc_year": "2022",
+      "duplicates": 0,
+      "keywords": [
+        "explore",
+        "iterations",
+        "plan",
+        "research",
+        "ructions",
+        "subsequent"
+      ],
+      "resolved_by": [
+        {
+          "doc_id": "d315cafab02d0",
+          "title": "Instruction Pre-Training: Language Models are Supervised Multitask Learners",
+          "year": "2024",
+          "shared_terms": [
+            "explore",
+            "plan",
+            "research"
+          ],
+          "score": 3,
+          "evidence": "(2024) could potentially complement our method, areas we plan to explore in future research.",
+          "page": 8,
+          "bbox": "305.8,73.5,526.3,192.9",
+          "chunk_id": "cc3710bff0cb8"
+        }
+      ],
+      "status": "possibly_addressed",
+      "id": 19
+    },
+    {
+      "doc_id": "d5e1461a7722b",
+      "page": 5,
+      "bbox": "100.8,463.2,511.2,592.7",
+      "section": "1 Extended Introduction",
+      "text": "We plan to release all implementations described in this paper by end of May 2020 and extend it further to support 1 trillion parameters by enabling ZeRO-DP stage 3 partition- ing parameters (Pos+g+p).",
+      "doc_title": "ZeRO: Memory Optimizations Toward Training Trillion Parameter Models",
+      "doc_year": "2019",
+      "duplicates": 0,
+      "keywords": [
+        "described",
+        "extend",
+        "further",
+        "implementations",
+        "parameters",
+        "plan",
+        "support",
+        "trillion"
+      ],
+      "resolved_by": [
+        {
+          "doc_id": "dc80b816ae34b",
+          "title": "Qwen2.5 Technical Report",
+          "year": "2024",
+          "shared_terms": [
+            "enabling",
+            "extend",
+            "further"
+          ],
+          "score": 3,
+          "evidence": "To further extend the context length of Qwen2.5-Turbo, we introduce longer SFT examples during post-training, enabling it to better align with human preference in long queries.",
+          "page": 7,
+          "bbox": "70.6,301,524.4,321.9",
+          "chunk_id": "c6964e3f7178c"
+        }
+      ],
+      "status": "possibly_addressed",
+      "id": 20
+    },
+    {
+      "doc_id": "dc842730fa072",
+      "page": 7,
+      "bbox": "108,683.5,504,762.2",
+      "section": "4 EXPERIMENTS",
+      "text": "Further analysis of few-shot properties of ViT is an exciting direction of future work. 7",
+      "doc_title": "AN IMAGE IS WORTH 16X16 WORDS: TRANSFORMERS FOR IMAGE RECOGNITION AT SCALE",
+      "doc_year": "2020",
+      "duplicates": 0,
+      "keywords": [
+        "analysis",
+        "direction",
+        "exciting",
+        "further",
+        "properties",
+        "shot"
+      ],
+      "resolved_by": [],
+      "status": "open",
+      "id": 21
+    },
+    {
+      "doc_id": "dc842730fa072",
+      "page": 9,
+      "bbox": "108,307.6,504,372.5",
+      "section": "4 EXPERIMENTS",
+      "text": "We leave exploration of contrastive pre-training (Chen et al., 2020b; He et al., 2020; Bachman et al., 2019; H´enaff et al., 2020) to future work.",
+      "doc_title": "AN IMAGE IS WORTH 16X16 WORDS: TRANSFORMERS FOR IMAGE RECOGNITION AT SCALE",
+      "doc_year": "2020",
+      "duplicates": 0,
+      "keywords": [
+        "bachman",
+        "chen",
+        "contrastive",
+        "enaff",
+        "exploration",
+        "leave"
+      ],
+      "resolved_by": [],
+      "status": "open",
+      "id": 22
+    },
+    {
+      "doc_id": "dc842730fa072",
+      "page": 9,
+      "bbox": "108,414.4,504,479.1",
+      "section": "5 CONCLUSION",
+      "text": "0b; He et al., 2020; Bachman et al., 2019; H´enaff et al., 2020) to future work.",
+      "doc_title": "AN IMAGE IS WORTH 16X16 WORDS: TRANSFORMERS FOR IMAGE RECOGNITION AT SCALE",
+      "doc_year": "2020",
+      "duplicates": 0,
+      "keywords": [
+        "bachman",
+        "enaff"
+      ],
+      "resolved_by": [],
+      "status": "open",
+      "id": 23
+    },
+    {
+      "doc_id": "dce63a636cf64",
+      "page": 6,
+      "bbox": "107.8,417.1,504,459.8",
+      "section": "4 Why Self-Attention",
+      "text": "We plan to investigate this approach further in future work.",
+      "doc_title": "Attention Is All You Need",
+      "doc_year": "2017",
+      "duplicates": 1,
+      "keywords": [
+        "further",
+        "investigate",
+        "plan"
+      ],
+      "resolved_by": [],
+      "status": "open",
+      "id": 24
+    },
+    {
+      "doc_id": "dce63a636cf64",
+      "page": 10,
+      "bbox": "107.5,195.8,505.6,254.9",
+      "section": "7 Conclusion",
+      "text": "We plan to extend the Transformer to problems involving input and output modalities other than text and to investigate local, restricted attention mechanisms to efﬁciently handle large inputs and outputs such as images, audio and video.",
+      "doc_title": "Attention Is All You Need",
+      "doc_year": "2017",
+      "duplicates": 0,
+      "keywords": [
+        "extend",
+        "input",
+        "involving",
+        "modalities",
+        "output",
+        "plan",
+        "problems",
+        "transformer"
+      ],
+      "resolved_by": [],
+      "status": "open",
+      "id": 25
+    },
+    {
+      "doc_id": "dca501d1039dc",
+      "page": 6,
+      "bbox": "36.7,433.9,575.3,466",
+      "section": "4 Why Self-Attention",
+      "text": "We plan to investigate this approach further in future work.",
+      "doc_title": "Attention Is All You Need",
+      "doc_year": "2014",
+      "duplicates": 1,
+      "keywords": [
+        "further",
+        "investigate",
+        "plan"
+      ],
+      "resolved_by": [],
+      "status": "open",
+      "id": 26
+    },
+    {
+      "doc_id": "daa37c9aa3934",
+      "page": 2,
+      "bbox": "108,252.8,504,295.6",
+      "section": "2 Method",
+      "text": "straightforward to extend this scenario to the case where we also perform variational inference on the global parameters; that algorithm is put in the appendix, but experiments with that case are left to future work.",
+      "doc_title": "Auto-Encoding Variational Bayes",
+      "doc_year": "2013",
+      "duplicates": 0,
+      "keywords": [
+        "case",
+        "extend",
+        "inference",
+        "perform",
+        "scenario",
+        "straightforward",
+        "variational",
+        "where"
+      ],
+      "resolved_by": [],
+      "status": "open",
+      "id": 27
+    },
+    {
+      "doc_id": "daa37c9aa3934",
+      "page": 5,
+      "bbox": "108,644.6,504,762.2",
+      "section": "3 Example: Variational Auto-Encoder",
+      "text": "j )2\u0011 X log pθ(x(i)|z(i,l)) L l=1 ϵ(l) ∼N(0, I) (10) As explained above and in appendix C, the decoding term log pθ(x(i)|z(i,l)) is a Bernoulli or Gaus- sian MLP, depending on the type of data we are modelling. 2Note that this is just a (simplifying) choice, and not a limitation of our method. 5",
+      "doc_title": "Auto-Encoding Variational Bayes",
+      "doc_year": "2013",
+      "duplicates": 0,
+      "keywords": [
+        "above",
+        "appendix",
+        "bernoulli",
+        "decoding",
+        "explained",
+        "gaus",
+        "sian",
+        "term"
+      ],
+      "resolved_by": [],
+      "status": "open",
+      "id": 28
+    },
+    {
+      "doc_id": "d819e6fc0f986",
+      "page": 1,
+      "bbox": "307.3,456.1,525.5,670.8",
+      "section": "1 Introduction",
+      "text": "The ma- jor limitation is that standard language models are unidirectional, and this limits the choice of archi- tectures that can be used during pre-training.",
+      "doc_title": "BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding",
+      "doc_year": "2018",
+      "duplicates": 0,
+      "keywords": [
+        "archi",
+        "choice",
+        "during",
+        "limitation",
+        "limits",
+        "standard",
+        "tectures",
+        "unidirectional"
+      ],
+      "resolved_by": [],
+      "status": "open",
+      "id": 29
+    },
+    {
+      "doc_id": "d5b8eb26eb7ad",
+      "page": 8,
+      "bbox": "311,196,540.3,485.1",
+      "section": "via/Conclusion",
+      "text": "Our future work includes applications of our method to Recurrent Neural Networks (Pascanu et al., 2013), where the internal covariate shift and the vanishing or exploding gradients may be especially severe, and which would al- low us to more thoroughly test the hypothesis that normal- ization improves gradient propagation (Sec. 3.3).",
+      "doc_title": "Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift",
+      "doc_year": "2015",
+      "duplicates": 0,
+      "keywords": [
+        "applications",
+        "covariate",
+        "includes",
+        "internal",
+        "pascanu",
+        "recurrent",
+        "shift",
+        "where"
+      ],
+      "resolved_by": [],
+      "status": "open",
+      "id": 30
+    },
+    {
+      "doc_id": "d5b8eb26eb7ad",
+      "page": 8,
+      "bbox": "311,196,540.3,485.1",
+      "section": "via/Conclusion",
+      "text": "We plan to investigate whether Batch Normalization can help with domain adaptation, in its traditional sense – i.e. whether the normalization performed by the network would al- low it to more easily generalize to new data distribu- tions, perhaps with just a recomputation of the population means and variances (Alg. 2).",
+      "doc_title": "Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift",
+      "doc_year": "2015",
+      "duplicates": 0,
+      "keywords": [
+        "adaptation",
+        "batch",
+        "domain",
+        "help",
+        "investigate",
+        "normalization",
+        "plan",
+        "whether"
+      ],
+      "resolved_by": [],
+      "status": "open",
+      "id": 31
+    },
+    {
+      "doc_id": "deed9eb540748",
+      "page": 3,
+      "bbox": "131.4,236.2,505.2,314.1",
+      "section": "2 Chain-of-Thought Prompting",
+      "text": "Second, a chain of thought provides an interpretable window into the behavior of the model, suggesting how it might have arrived at a particular answer and providing opportunities to debug where the reasoning path went wrong (although fully characterizing a model’s computations that support an answer remains an open question). 3.",
+      "doc_title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+      "doc_year": "2022",
+      "duplicates": 0,
+      "keywords": [
+        "answer",
+        "behavior",
+        "chain",
+        "interpretable",
+        "provides",
+        "second",
+        "thought",
+        "window"
+      ],
+      "resolved_by": [],
+      "status": "open",
+      "id": 32
+    },
+    {
+      "doc_id": "deed9eb540748",
+      "page": 26,
+      "bbox": "108,74.3,504,106.2",
+      "section": "Appendix: Additional Analysis/Correct Chain of Thought Analysis",
+      "text": "This is a limitation, and future work should perform an analysis of the factuality of such chains of thought.",
+      "doc_title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+      "doc_year": "2022",
+      "duplicates": 0,
+      "keywords": [
+        "analysis",
+        "chains",
+        "factuality",
+        "limitation",
+        "perform",
+        "should",
+        "thought"
+      ],
+      "resolved_by": [],
+      "status": "open",
+      "id": 33
+    },
+    {
+      "doc_id": "ddb3dff6cab6a",
+      "page": 15,
+      "bbox": "90,413.4,522,489",
+      "section": "6 Discussion",
+      "text": "only a pretrained LM and extensive prompting, but we leave this for future work.",
+      "doc_title": "Constitutional AI: Harmlessness from AI Feedback",
+      "doc_year": "2022",
+      "duplicates": 0,
+      "keywords": [
+        "extensive",
+        "leave",
+        "only",
+        "pretrained",
+        "prompting"
+      ],
+      "resolved_by": [],
+      "status": "open",
+      "id": 34
+    },
+    {
+      "doc_id": "ddb3dff6cab6a",
+      "page": 15,
+      "bbox": "90,413.4,522,489",
+      "section": "6 Discussion",
+      "text": "We leave it to future work to study the effectiveness of this type of feedback.",
+      "doc_title": "Constitutional AI: Harmlessness from AI Feedback",
+      "doc_year": "2022",
+      "duplicates": 1,
+      "keywords": [
+        "effectiveness",
+        "feedback",
+        "leave",
+        "study",
+        "type"
+      ],
+      "resolved_by": [],
+      "status": "open",
+      "id": 35
+    },
+    {
+      "doc_id": "df4bc26bb5d82",
+      "page": 5,
+      "bbox": "107.7,216.2,505.5,280.8",
+      "section": "3 Method",
+      "text": "We did not ﬁnd predicting the states or returns-to-go to improve performance, although it is easily permissible within our framework (as shown in Section 5.4) and would be an interesting study for future work.",
+      "doc_title": "Decision Transformer: Reinforcement Learning via Sequence Modeling",
+      "doc_year": "2021",
+      "duplicates": 0,
+      "keywords": [
+        "although",
+        "easily",
+        "improve",
+        "permissible",
+        "predicting",
+        "returns",
+        "states",
+        "within"
+      ],
+      "resolved_by": [],
+      "status": "open",
+      "id": 36
+    },
+    {
+      "doc_id": "df4bc26bb5d82",
+      "page": 5,
+      "bbox": "108.5,313.4,434.7,394.1",
+      "section": "3 Method/Algorithm 1 Decision Transformer Pseudocode (for continuous ",
+      "text": "ork (as shown in Section 5.4) and would be an interesting study for future work. # R, s, a, t: returns -to -go , states , actions , or timesteps # transformer: transformer masking (GPT) # embed_s , embed_a , embed_R: linear with causal layers # embed_t: learned embedding embedding # pred_a: linear episode positional action prediction layer # main model def DecisionTransformer (R, s, a, t): # compute",
+      "doc_title": "Decision Transformer: Reinforcement Learning via Sequence Modeling",
+      "doc_year": "2021",
+      "duplicates": 0,
+      "keywords": [
+        "embed",
+        "embedding",
+        "interesting",
+        "linear",
+        "section",
+        "shown",
+        "study",
+        "transformer"
+      ],
+      "resolved_by": [],
+      "status": "open",
+      "id": 37
+    },
+    {
+      "doc_id": "df4bc26bb5d82",
+      "page": 12,
+      "bbox": "107.5,576,504,651.5",
+      "section": "7 Conclusion",
+      "text": "Transformer models can also be used to model the state evolution of trajectory, potentially serving as an alternative to model-based RL, and we hope to explore this in future work.",
+      "doc_title": "Decision Transformer: Reinforcement Learning via Sequence Modeling",
+      "doc_year": "2021",
+      "duplicates": 0,
+      "keywords": [
+        "alternative",
+        "evolution",
+        "hope",
+        "potentially",
+        "serving",
+        "state",
+        "trajectory",
+        "transformer"
+      ],
+      "resolved_by": [],
+      "status": "open",
+      "id": 38
+    },
+    {
+      "doc_id": "df4bc26bb5d82",
+      "page": 12,
+      "bbox": "108,657.8,504.4,752.3",
+      "section": "7 Conclusion",
+      "text": "as an alternative to model-based RL, and we hope to explore this in future work.",
+      "doc_title": "Decision Transformer: Reinforcement Learning via Sequence Modeling",
+      "doc_year": "2021",
+      "duplicates": 0,
+      "keywords": [
+        "alternative",
+        "explore",
+        "hope"
+      ],
+      "resolved_by": [],
+      "status": "open",
+      "id": 39
+    },
+    {
+      "doc_id": "ddf4618639a58",
+      "page": 3,
+      "bbox": "61,74.4,545.1,743.3",
+      "section": "3. Deep Residual Learning/3.2. Identity Mapping by Shortcuts",
+      "text": "The function F(x, {Wi}) represents the 2This hypothesis, however, is still an open question.",
+      "doc_title": "Deep Residual Learning for Image Recognition",
+      "doc_year": "2015",
+      "duplicates": 0,
+      "keywords": [
+        "function",
+        "however",
+        "hypothesis",
+        "open",
+        "question",
+        "represents",
+        "still"
+      ],
+      "resolved_by": [],
+      "status": "open",
+      "id": 40
+    },
+    {
+      "doc_id": "d7c300e762602",
+      "page": 10,
+      "bbox": "70.9,655.7,525.8,734.5",
+      "section": "6. Conclusion, Limitation, and Future Work",
+      "text": "We aim to address this limitation in future updates.",
+      "doc_title": "DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning",
+      "doc_year": "2025",
+      "duplicates": 0,
+      "keywords": [
+        "address",
+        "limitation",
+        "updates"
+      ],
+      "resolved_by": [],
+      "status": "open",
+      "id": 41
+    },
+    {
+      "doc_id": "d7c300e762602",
+      "page": 10,
+      "bbox": "70.9,655.7,525.8,734.5",
+      "section": "6. Conclusion, Limitation, and Future Work",
+      "text": "The limitation may be related to the base checkpoint, DeepSeek-V3-Base, mainly utilizes Chinese and English, so that it can achieve better results with the two languages in reasoning.",
+      "doc_title": "DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning",
+      "doc_year": "2025",
+      "duplicates": 0,
+      "keywords": [
+        "base",
+        "checkpoint",
+        "chinese",
+        "deepseek",
+        "limitation",
+        "mainly",
+        "related",
+        "utilizes"
+      ],
+      "resolved_by": [],
+      "status": "open",
+      "id": 42
+    },
+    {
+      "doc_id": "d7c300e762602",
+      "page": 11,
+      "bbox": "70.9,257.4,526.3,349.7",
+      "section": "6. Conclusion, Limitation, and Future Work/Prompting Engineering: When evaluating DeepSeek-R1, we obser",
+      "text": "Consequently, for complex tasks that cannot be effectively evaluated by a reliable reward model, scaling up pure RL methods remains an open challenge.",
+      "doc_title": "DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning",
+      "doc_year": "2025",
+      "duplicates": 0,
+      "keywords": [
+        "cannot",
+        "complex",
+        "consequently",
+        "effectively",
+        "evaluated",
+        "reliable",
+        "reward",
+        "tasks"
+      ],
+      "resolved_by": [],
+      "status": "open",
+      "id": 43
+    },
+    {
+      "doc_id": "d7c300e762602",
+      "page": 11,
+      "bbox": "70.9,359.1,526.2,397.2",
+      "section": "6. Conclusion, Limitation, and Future Work/Prompting Engineering: When evaluating DeepSeek-R1, we obser",
+      "text": "y a reliable reward model, scaling up pure RL methods remains an open challenge.",
+      "doc_title": "DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning",
+      "doc_year": "2025",
+      "duplicates": 0,
+      "keywords": [
+        "challenge",
+        "open",
+        "pure",
+        "reliable",
+        "remains",
+        "reward",
+        "scaling"
+      ],
+      "resolved_by": [],
+      "status": "open",
+      "id": 44
+    },
+    {
+      "doc_id": "d7c300e762602",
+      "page": 11,
+      "bbox": "70.9,406.6,524.8,512.3",
+      "section": "6. Conclusion, Limitation, and Future Work/Prompting Engineering: When evaluating DeepSeek-R1, we obser",
+      "text": "In such cases, the lack of a robust feedback mechanism may hinder progress, suggesting that future research should focus on developing innovative approaches to define and refine reward structures for these complex, less verifiable problems.",
+      "doc_title": "DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning",
+      "doc_year": "2025",
+      "duplicates": 0,
+      "keywords": [
+        "cases",
+        "feedback",
+        "hinder",
+        "lack",
+        "mechanism",
+        "progress",
+        "robust",
+        "suggesting"
+      ],
+      "resolved_by": [],
+      "status": "open",
+      "id": 45
+    },
+    {
+      "doc_id": "d7c300e762602",
+      "page": 14,
+      "bbox": "70.9,474.2,526.2,580.1",
+      "section": "Appendix/A.2. Conventional Post-Training Paradigm",
+      "text": "This limitation arises because human-provided responses, which serve as targets during SFT, are not always optimal for model learning; they often omit critical reasoning components such as explicit reflection and verification steps.",
+      "doc_title": "DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning",
+      "doc_year": "2025",
+      "duplicates": 0,
+      "keywords": [
+        "arises",
+        "because",
+        "human",
+        "limitation",
+        "provided",
+        "responses",
+        "serve",
+        "targets"
+      ],
+      "resolved_by": [],
+      "status": "open",
+      "id": 46
+    },
+    {
+      "doc_id": "d7c300e762602",
+      "page": 27,
+      "bbox": "70.5,446.2,525.8,606.2",
+      "section": "…/SFT Data Statistics",
+      "text": "We leave the expansion to multi-turn dialogue data as future work.",
+      "doc_title": "DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning",
+      "doc_year": "2025",
+      "duplicates": 0,
+      "keywords": [
+        "dialogue",
+        "expansion",
+        "leave",
+        "multi",
+        "turn"
+      ],
+      "resolved_by": [],
+      "status": "open",
+      "id": 47
+    },
+    {
+      "doc_id": "d7c300e762602",
+      "page": 60,
+      "bbox": "70.9,88.2,524.6,153.3",
+      "section": "…/E.4. An Analysis on CoT Length",
+      "text": "from a fundamental limitation: in majority voting, samples are generated independently rather than building upon each other.",
+      "doc_title": "DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning",
+      "doc_year": "2025",
+      "duplicates": 0,
+      "keywords": [
+        "fundamental",
+        "generated",
+        "independently",
+        "limitation",
+        "majority",
+        "rather",
+        "samples",
+        "voting"
+      ],
+      "resolved_by": [],
+      "status": "open",
+      "id": 48
+    },
+    {
+      "doc_id": "d7c300e762602",
+      "page": 63,
+      "bbox": "70.5,88.3,526.2,139.7",
+      "section": "…/G. Discussion",
+      "text": "We therefore recommend that future research in this area prioritize the use of sufficiently large and expressive models when aiming to validate the efficacy of RL from scratch.",
+      "doc_title": "DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning",
+      "doc_year": "2025",
+      "duplicates": 0,
+      "keywords": [
+        "area",
+        "expressive",
+        "prioritize",
+        "recommend",
+        "research",
+        "sufficiently",
+        "therefore",
+        "when"
+      ],
+      "resolved_by": [],
+      "status": "open",
+      "id": 49
+    },
+    {
+      "doc_id": "d01b0500ab8ae",
+      "page": 17,
+      "bbox": "70.6,88.2,526.2,209.1",
+      "section": "3. Infrastructures/Σ/3.3.2. Improved Precision from Quantization and Multiplicati",
+      "text": "We hope our design can serve as a reference for future work to keep pace with the latest GPU architectures.",
+      "doc_title": "DeepSeek-V3 Technical Report",
+      "doc_year": "2024",
+      "duplicates": 0,
+      "keywords": [
+        "architectures",
+        "design",
+        "hope",
+        "keep",
+        "latest",
+        "pace",
+        "reference",
+        "serve"
+      ],
+      "resolved_by": [],
+      "status": "open",
+      "id": 50
+    },
+    {
+      "doc_id": "d01b0500ab8ae",
+      "page": 34,
+      "bbox": "70.9,578.2,526.2,670.3",
+      "section": "5. Post-Training/5.4. Discussion/5.4.1. Distillation from DeepSeek-R1",
+      "text": "Further exploration of this approach across different domains remains an important direction for future research.",
+      "doc_title": "DeepSeek-V3 Technical Report",
+      "doc_year": "2024",
+      "duplicates": 0,
+      "keywords": [
+        "across",
+        "different",
+        "direction",
+        "domains",
+        "exploration",
+        "further",
+        "important",
+        "remains"
+      ],
+      "resolved_by": [],
+      "status": "open",
+      "id": 51
+    },
+    {
+      "doc_id": "d01b0500ab8ae",
+      "page": 34,
+      "bbox": "70.9,712.4,526.2,789.8",
+      "section": "5. Post-Training/5.4. Discussion/5.4.2. Self-Rewarding",
+      "text": "ach across different domains remains an important direction for future research.",
+      "doc_title": "DeepSeek-V3 Technical Report",
+      "doc_year": "2024",
+      "duplicates": 0,
+      "keywords": [
+        "across",
+        "different",
+        "direction",
+        "domains",
+        "important",
+        "remains",
+        "research"
+      ],
+      "resolved_by": [],
+      "status": "open",
+      "id": 52
+    },
+    {
+      "doc_id": "d01b0500ab8ae",
+      "page": 35,
+      "bbox": "70.5,690.3,524.4,789.8",
+      "section": "6. Conclusion, Limitations, and Future Directions",
+      "text": "In the future, we plan to strategically invest in research across the following directions. • We will consistently study and refine our model architectures, aiming to further improve 35",
+      "doc_title": "DeepSeek-V3 Technical Report",
+      "doc_year": "2024",
+      "duplicates": 0,
+      "keywords": [
+        "across",
+        "directions",
+        "following",
+        "invest",
+        "plan",
+        "research",
+        "strategically",
+        "will"
+      ],
+      "resolved_by": [],
+      "status": "open",
+      "id": 53
+    },
+    {
+      "doc_id": "d41eb4c50f36f",
+      "page": 10,
+      "bbox": "108,487.8,505.7,617.9",
+      "section": "7 Discussion",
+      "text": "Limitations & Future Work.",
+      "doc_title": "Direct Preference Optimization: Your Language Model is Secretly a Reward Model",
+      "doc_year": "2023",
+      "duplicates": 0,
+      "keywords": [
+        "limitations"
+      ],
+      "resolved_by": [],
+      "status": "open",
+      "id": 54
+    },
+    {
+      "doc_id": "d41eb4c50f36f",
+      "page": 10,
+      "bbox": "108,487.8,505.7,617.9",
+      "section": "7 Discussion",
+      "text": "Our results raise several important questions for future work.",
+      "doc_title": "Direct Preference Optimization: Your Language Model is Secretly a Reward Model",
+      "doc_year": "2023",
+      "duplicates": 0,
+      "keywords": [
+        "important",
+        "questions",
+        "raise",
+        "several"
+      ],
+      "resolved_by": [],
+      "status": "open",
+      "id": 55
+    },
+    {
+      "doc_id": "d41eb4c50f36f",
+      "page": 10,
+      "bbox": "108,487.8,505.7,617.9",
+      "section": "7 Discussion",
+      "text": "Additionally, while we evaluate models up to 6B parameters, exploration of scaling DPO to state-of-the-art models orders of magnitude larger is an exciting direction for future work.",
+      "doc_title": "Direct Preference Optimization: Your Language Model is Secretly a Reward Model",
+      "doc_year": "2023",
+      "duplicates": 0,
+      "keywords": [
+        "additionally",
+        "exploration",
+        "magnitude",
+        "orders",
+        "parameters",
+        "scaling",
+        "state",
+        "while"
+      ],
+      "resolved_by": [],
+      "status": "open",
+      "id": 56
+    },
+    {
+      "doc_id": "d41eb4c50f36f",
+      "page": 10,
+      "bbox": "108,487.8,505.7,617.9",
+      "section": "7 Discussion",
+      "text": "Regarding evaluations, we find that the win rates computed by GPT-4 are impacted by the prompt; future work may study the best way to elicit high-quality judgments from automated systems.",
+      "doc_title": "Direct Preference Optimization: Your Language Model is Secretly a Reward Model",
+      "doc_year": "2023",
+      "duplicates": 0,
+      "keywords": [
+        "computed",
+        "evaluations",
+        "find",
+        "impacted",
+        "prompt",
+        "rates",
+        "regarding",
+        "study"
+      ],
+      "resolved_by": [],
+      "status": "open",
+      "id": 57
+    },
+    {
+      "doc_id": "d16a2835145ee",
+      "page": 2,
+      "bbox": "72,193,541.4,254.4",
+      "section": "1 Introduction",
+      "text": "Emergence motivates future research on why such abilities are acquired and whether more scaling will lead to further emergent abilities, which we highlight as important questions for the ﬁeld (§5).",
+      "doc_title": "Emergent Abilities of Large Language Models",
+      "doc_year": "2022",
+      "duplicates": 0,
+      "keywords": [
+        "abilities",
+        "acquired",
+        "emergence",
+        "motivates",
+        "research",
+        "scaling",
+        "whether",
+        "will"
+      ],
+      "resolved_by": [],
+      "status": "open",
+      "id": 58
+    },
+    {
+      "doc_id": "d16a2835145ee",
+      "page": 10,
+      "bbox": "72,359.4,540.4,393.2",
+      "section": "4 Augmented Prompting Strategies/5.6 Directions for future work",
+      "text": "tHub CoPilot,7 and directly as services themselves, such as OpenAI’s GPT-3 API.8 Future work on emergent abilities could involve train more-capable language models, as well as methods for better enabling language models to perform tasks.",
+      "doc_title": "Emergent Abilities of Large Language Models",
+      "doc_year": "2022",
+      "duplicates": 0,
+      "keywords": [
+        "abilities",
+        "copilot",
+        "directly",
+        "emergent",
+        "openai",
+        "services",
+        "themselves",
+        "thub"
+      ],
+      "resolved_by": [],
+      "status": "open",
+      "id": 59
+    },
+    {
+      "doc_id": "d16a2835145ee",
+      "page": 10,
+      "bbox": "72,404,540.4,449.9",
+      "section": "4 Augmented Prompting Strategies/5.6 Directions for future work",
+      "text": "Further scaling up models has so far appeared to increase the capabilities of language models, and is a straightforward direction for future work.",
+      "doc_title": "Emergent Abilities of Large Language Models",
+      "doc_year": "2022",
+      "duplicates": 0,
+      "keywords": [
+        "appeared",
+        "capabilities",
+        "direction",
+        "further",
+        "increase",
+        "scaling",
+        "straightforward"
+      ],
+      "resolved_by": [],
+      "status": "open",
+      "id": 60
+    }
+  ],
+  "stats": {
+    "documents": 52,
+    "candidate_sentences": 187,
+    "after_dedup": 173,
+    "returned": 60,
+    "possibly_addressed": 20,
+    "duplicates_merged": 3
+  },
+  "method": "研究问题/工程待办分离 → 同族 4-gram 去重 → 具体方法或结果原句对撞"
+}

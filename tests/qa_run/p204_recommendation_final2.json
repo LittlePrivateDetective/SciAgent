@@ -1,0 +1,155 @@
+{
+  "ok": true,
+  "topics": [
+    "transformer",
+    "attention",
+    "normalization",
+    "optimization",
+    "scaling"
+  ],
+  "window_days": 180,
+  "items": [
+    {
+      "arxiv_id": "2611.16517",
+      "title": "UniSpark: Exploring Hybrid Attention for Multimodal Understanding and Generation",
+      "authors": [
+        "Jiancheng Pan",
+        "Yuzheng Liu",
+        "Hengyuan Cao",
+        "Qiyuan Zhang",
+        "Yangyan Li",
+        "Biao Gong"
+      ],
+      "published": "2026-11-12",
+      "updated": "2026-11-12",
+      "summary": "We present UniSpark-9B, a unified multimodal model that investigates hybrid attention for visual understanding and generation. Built on a Mixture-of-Transformer-Experts backbone with approximately 9B parameters in each branch, UniSpark combines full attention for explicit token interactions with GatedDeltaNet linear at",
+      "comment": "Technical Report, 31 pages",
+      "category": "cs.CV",
+      "abs_url": "https://arxiv.org/abs/2611.16517",
+      "pdf_url": "https://arxiv.org/pdf/2611.16517",
+      "domains": [
+        "systems",
+        "vision"
+      ],
+      "github": "",
+      "relevance": 2.17,
+      "liked": false,
+      "in_library": false,
+      "score": 2.17,
+      "semantic": 0.5238,
+      "reason": "提出混合注意力机制，通过全注意力与专家化Transformer结合，提升多模态理解与生成中视觉token的显式建模能力，解决跨模态对齐中的语义模糊问题。"
+    },
+    {
+      "arxiv_id": "2611.14060",
+      "title": "Where Do Vision-Language Models Get Left and Right? Position-Code Counterfactuals in Qwen2.5-VL, Qwen3-VL and InternVL3",
+      "authors": [
+        "Enhao Cui",
+        "Junzhi Yang",
+        "Yaoshun Lin",
+        "Yuhan Feng",
+        "Zijian Chen"
+      ],
+      "published": "2026-11-10",
+      "updated": "2026-11-10",
+      "summary": "A vision-language model may take left-right direction from the orientation of image content within patches, its vision transformer's (ViT) position code, or token positions and order in its language model (LLM). Ablations show the ViT code is necessary; we test sufficiency by mirroring only a position code. In Qwen2.5-",
+      "comment": "25 pages, 6 figures, 10 tables. Code: https://github.com/chen4study-hub/where-vlms-get-left-right",
+      "category": "cs.CV",
+      "abs_url": "https://arxiv.org/abs/2611.14060",
+      "pdf_url": "https://arxiv.org/pdf/2611.14060",
+      "domains": [
+        "nlp",
+        "vision"
+      ],
+      "github": "chen4study-hub/where-vlms-get-left-right",
+      "relevance": 0.96,
+      "liked": false,
+      "in_library": false,
+      "score": 1.76,
+      "semantic": 0.4504,
+      "reason": "通过镜像反事实实验验证ViT位置编码在视觉语言模型左右方向判断中的必要性，揭示其对空间感知任务的关键作用。"
+    },
+    {
+      "arxiv_id": "2611.16270",
+      "title": "SMIC: Shared Multiscale Input-Reference Conditioning across Transformer Layers for Natural Language Inference",
+      "authors": [
+        "Xin Zhang",
+        "Victor S. Sheng"
+      ],
+      "published": "2026-11-12",
+      "updated": "2026-11-12",
+      "summary": "Natural Language Inference models can be sensitive to localized lexical changes. We introduce Shared Multiscale Input-Reference Conditioning (SMIC), which constructs a single input-dependent multiscale reference and reuses it across Transformer layers. Each layer applies its own multiscale transformation to the shared ",
+      "comment": "",
+      "category": "cs.CL",
+      "abs_url": "https://arxiv.org/abs/2611.16270",
+      "pdf_url": "https://arxiv.org/pdf/2611.16270",
+      "domains": [
+        "nlp"
+      ],
+      "github": "",
+      "relevance": 1.75,
+      "liked": false,
+      "in_library": false,
+      "score": 1.75,
+      "semantic": 0.5308,
+      "reason": "引入共享多尺度输入-参考条件机制，在Transformer各层复用同一输入依赖的多尺度参考，缓解局部词汇变化对自然语言推理的影响。"
+    },
+    {
+      "arxiv_id": "2611.17240",
+      "title": "Objects as Addresses: Instance Binding in Vision Transformer Attention",
+      "authors": [
+        "Khalil Sabri",
+        "Guillaume-Alexandre Bilodeau",
+        "Nicolas Saunier",
+        "Wassim Bouachir"
+      ],
+      "published": "2026-11-12",
+      "updated": "2026-11-12",
+      "summary": "Humans naturally parse visual scenes into coherent individual objects rather than scattered features, a capability cognitive science calls object binding. While recent work shows that pretrained Vision Transformers (ViTs) intrinsically acquire this ability, how native self-attention computations mechanistically keep ob",
+      "comment": "",
+      "category": "cs.CV",
+      "abs_url": "https://arxiv.org/abs/2611.17240",
+      "pdf_url": "https://arxiv.org/pdf/2611.17240",
+      "domains": [
+        "vision"
+      ],
+      "github": "",
+      "relevance": 1.7,
+      "liked": false,
+      "in_library": false,
+      "score": 1.7,
+      "semantic": 0.4668,
+      "reason": "将物体视为注意力中的地址，利用视觉Transformer自注意力机制实现实例绑定，解决视觉场景中对象聚合的语义碎片化问题。"
+    },
+    {
+      "arxiv_id": "2611.15459",
+      "title": "Fear of Memorizing Objects: End-to-End Zero-Shot Model-Based Object Detection",
+      "authors": [
+        "Leon Greiner",
+        "Wout Boerdijk",
+        "Junwen Huang",
+        "Benjamin Busam",
+        "Rudolph Triebel",
+        "Maximilian Durner"
+      ],
+      "published": "2026-11-11",
+      "updated": "2026-11-11",
+      "summary": "This paper presents FOMO (Fear of Memorizing Objects), an end-to-end trainable transformer-based architecture for zero-shot model-based object detection. Existing approaches typically follow a proposal-and-match pipeline: target-agnostic mask proposals are generated and then matched to template features in a set of loo",
+      "comment": "",
+      "category": "cs.CV",
+      "abs_url": "https://arxiv.org/abs/2611.15459",
+      "pdf_url": "https://arxiv.org/pdf/2611.15459",
+      "domains": [
+        "vision"
+      ],
+      "github": "",
+      "relevance": 1.09,
+      "liked": false,
+      "in_library": false,
+      "score": 1.09,
+      "semantic": 0.4718,
+      "reason": "设计端到端可训练的FOMO架构，基于Transformer进行零样本模型化目标检测，避免传统提案-匹配流程中的记忆偏差。"
+    }
+  ],
+  "ms": 5643,
+  "source": "arxiv.org"
+}

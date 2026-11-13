@@ -159,6 +159,8 @@ async def upload_document(
     data = await file.read()
     if len(data) > settings.max_upload_mb * 1024 * 1024:
         raise HTTPException(413, f"文件超过 {settings.max_upload_mb}MB 限制")
+    if not data.startswith(b"%PDF-"):
+        raise HTTPException(400, "文件内容不是有效的 PDF，请重新导出后再上传")
 
     path = save_upload(data, file.filename)
     # 解析是 CPU 密集的（500 页约 20–40 秒）。两个人同时传，整机会卡到
@@ -172,6 +174,8 @@ async def upload_document(
     finally:
         guard.release_upload()
 
+    if not result.get("ok") and result.get("stage") in {"parse", "chunk"}:
+        raise HTTPException(400, result.get("error") or "PDF 解析失败，请检查文件")
     if not result.get("ok") and result.get("stage") == "duplicate":
         pending_id = uuid.uuid4().hex[:10]
         PENDING[pending_id] = {"path": path, "name": file.filename}
@@ -832,6 +836,10 @@ def chat(body: ChatIn, db: Session = Depends(get_db)):
     ttl = answer_ttl()
     cached = (answer_cache.get(ck)
               if ttl > 0 and not body.no_cache and gateway.route() != "mock" else None)
+    if cached and body.doc_ids and any(
+            e.get("doc_id") not in set(body.doc_ids) for e in cached.get("evidence") or []):
+        # 旧版本可能缓存过越界证据；不能仅过滤列表后继续复用对应答案，整条作废重算。
+        cached = None
     if cached:
         res = copy.deepcopy(cached)
         res["latency_ms"] = 0
@@ -1159,6 +1167,9 @@ def chat_stream(body: StreamIn, db: Session = Depends(get_db)):
         cached = (answer_cache.get(ck)
                   if ttl > 0 and not body.no_cache and gateway.route() != "mock" else None)
 
+        if cached and doc_ids and any(
+                e.get("doc_id") not in set(doc_ids) for e in cached.get("evidence") or []):
+            cached = None
         try:
             if cached:
                 ev = copy.deepcopy(cached["evidence"])

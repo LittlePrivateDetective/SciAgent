@@ -34,7 +34,7 @@ RE_TABLE = re.compile(r"^Table\s*\d+\s*(?:[:.|]|$)", re.I)
 RE_TABLE_LOOSE = re.compile(r"^Table\s*\d+\s+[A-Z]")
 RE_REF_HEAD = re.compile(
     r"^\s*(?:\d{1,2}(?:\.\d{1,3})*\.?\s+)?"
-    r"(references|reference|bibliography|literature cited|works cited)\s*:?\s*$",
+    r"(references|reference|bibliography|literature cited|works cited|参考文献)\s*:?\s*$",
     re.I,
 )
 # 条目编号样式：数字 [12] / "12. " / 作者键 [SLA+18] / [RNSS18]
@@ -269,7 +269,8 @@ def _is_heading(block: Block, body: float) -> tuple[bool, int]:
         return False, 0
     # 纯人名行：只在第 1 页作者区（标题下方、摘要上方）判定。
     # 不能全局用，否则 "Model Architecture" 这种两词标题会被误杀。
-    if block.page == 1 and block.bbox[1] < 300 and NAME_RE.match(txt):
+    if block.page == 1 and (ORG_RE.search(txt) or (block.bbox[1] < 300 and (
+            NAME_RE.match(txt) or ("," in txt and not RE_NUM_HEADING.match(txt))))):
         return False, 0
     # 短且带数字却不是编号开头 → 表格数据行（"WSJ 23 F1"）
     if len(txt) < 30 and any(c.isdigit() for c in txt) and not RE_NUM_HEADING.match(txt):
@@ -375,8 +376,9 @@ def classify(blocks: list[Block], body: float) -> list[Block]:
         ok, lvl = _is_heading(b, body)
         if ok:
             b.kind, b.level = "heading", lvl
-            # 进入参考文献区后，形如 [12] / "12. " 的条目单独归类
-            if re.match(r"^(appendix|supplementary|a\s+appendix)", txt.lower()):
+            # 只认明确的参考区结束标题；跨栏续行可能因加粗/字号被误判为
+            # 普通 heading，不能因此把后半篇参考文献全部截断。
+            if in_refs and re.match(r"^(appendix|supplementary|a\s+appendix|作者简介|征稿启事)", txt.lower()):
                 in_refs = False
             continue
 
@@ -393,7 +395,8 @@ def classify(blocks: list[Block], body: float) -> list[Block]:
         # 逐条按正则判会漏一大半。既然已经进入 References 区，就整段视为条目，
         # 由 _extract_references 按长度和标签再清洗。
         if in_refs:
-            if len(txt) >= 25 and not re.fullmatch(r"[\d\W]{0,8}", txt):
+            # 短续行也保留到篇级合并阶段；这里丢掉就再也无法拼回上一条。
+            if not re.fullmatch(r"[\d\W]{0,8}", txt):
                 b.kind = "reference"
             continue
 
@@ -637,9 +640,9 @@ def _split_authors(text: str) -> list[str]:
 
 ORG_RE = re.compile(
     r"(Google|University|Universit|Institute|Research|Department|Inc\.?|Ltd\.?|Brain|College|"
-    r"School|Laborator|Labs|MIT|CSAIL|Corporation|Corp\.?|Academy|Microsoft|Meta|OpenAI|DeepMind)"
+    r"School|Laborator|Labs|MIT|CSAIL|Corporation|Corp\.?|Academy|Microsoft|Meta|OpenAI|DeepMind|Anthropic|Technological)"
 )
-NAME_RE = re.compile(r"^[A-Z][A-Za-z\.\-']*(?:\s+[A-Z][A-Za-z\.\-']*){1,3}$")
+NAME_RE = re.compile(r"^[^\W\d_][\w.\-']*(?:\s+[^\W\d_][\w.\-']*){1,3}$")
 
 
 def _names_from_block(text: str) -> tuple[list[str], list[str]]:
@@ -654,16 +657,32 @@ def _names_from_block(text: str) -> tuple[list[str], list[str]]:
 
     names: list[str] = []
     orgs: list[str] = []
+    # ACL 等模板用作者后的机构编号分隔网格作者，而不是逗号：
+    # “Shih-Yang Liu 1 2 Chien-Yi Wang 1 …”。先利用原始编号切分。
+    for cand in re.split(r"(?:\s*[*†‡§¶#]?\s*\d+)+\s*", text):
+        cand = re.sub(r"\s+", " ", cand).strip(" .*†‡§¶#0123456789")
+        if NAME_RE.match(cand) and len(cand) <= 40 and not ORG_RE.search(cand):
+            names.append(cand)
     pieces = ORG_RE.split(clean)
     head, tail = pieces[0], pieces[1:]
     if head.strip():
-        for cand in re.split(r",| and |;", head):
+        for cand in re.split(r",| and |;|&", head):
             cand = re.sub(r"\s+", " ", cand).strip(" .0123456789")
-            if NAME_RE.match(cand) and len(cand) <= 40:
+            if NAME_RE.match(cand) and len(cand) <= 40 and cand not in names and not ORG_RE.search(cand):
+                names.append(cand)
+        # 中文期刊作者常为“罗文,王厚峰”或“张三、李四”。
+        for cand in re.split(r"[,，、;；]", head):
+            cand = re.sub(r"[\d*†‡§¶#]+", "", cand).strip()
+            if re.fullmatch(r"[\u4e00-\u9fff]{2,4}", cand):
                 names.append(cand)
     if tail:
         orgs.append(ORG_RE.sub(lambda m: m.group(0), clean).strip()[:200])
     return names, orgs
+
+
+def _abstract_prefix(text: str) -> re.Match | None:
+    # 中文期刊常把单位右括号与“摘 要”合并在同一块，不能只认块首。
+    return re.search(r"(?:^|\s)(?:abstract|摘\s*要)\s*[:：]?\s*", text or "", re.I)
 
 
 def _extract_meta(
@@ -672,65 +691,86 @@ def _extract_meta(
     """从第 1 页区块里抽标题 / 作者 / 单位 / 摘要。"""
     if not page1_blocks:
         return
-
-    # 标题：第 1 页字号最大的区块，排除 arXiv 水印、页眉、超短行
-    cand = [
-        b
-        for b in page1_blocks
-        if not b.text.startswith("arXiv:")
-        and not RE_ARXIV.match(b.text)
-        and len(b.text.strip()) >= 6
-        and b.kind in ("text", "heading")
-    ]
+    cand = [b for b in page1_blocks if not b.text.startswith("arXiv:")
+            and not RE_ARXIV.match(b.text) and len(b.text.strip()) >= 6
+            and b.kind in ("text", "heading")]
     title_blk = None
     if cand:
         title_blk = max(cand, key=lambda b: (b.size, -b.bbox[1]))
         if title_blk.size >= body * 1.1 and len(title_blk.text) < 300:
-            parsed.title = title_blk.text.strip()
+            # 同字号、紧邻的首页块属于多行/多段标题；按视觉行和 x 排序，
+            # 解决 ALBERT 同 y 双块逆序及 VGG 第二行丢失。
+            y0 = title_blk.bbox[1]
+            parts = [b for b in cand if abs(b.size - title_blk.size) <= 0.4
+                     and y0 - 3 <= b.bbox[1] <= y0 + 65 and not RE_ARXIV.match(b.text)]
+            parts.sort(key=lambda b: (round(b.bbox[1] / 5), b.bbox[0]))
+            parsed.title = " ".join(b.text.strip() for b in parts).strip()
+            if page1_lines:
+                # 块合并后 x/y 会包住多行，无法表达同行左右顺序；标题优先
+                # 回原始行排序，保证 ALBERT 同行两段与下一行的视觉顺序。
+                tlines = [ln for ln in page1_lines if abs(ln.size - title_blk.size) <= 0.4
+                          and y0 - 3 <= ln.bbox[1] <= y0 + 65 and not RE_ARXIV.match(ln.text)]
+                tlines.sort(key=lambda ln: (round(ln.bbox[1] / 5), ln.bbox[0]))
+                if tlines:
+                    parsed.title = " ".join(ln.text.strip() for ln in tlines).strip()
 
-    # 作者窗口：标题底边 → Abstract 顶边
-    abstract_blk = next(
-        (b for b in page1_blocks if b.kind == "heading" and b.text.lower().startswith("abstract")), None
-    )
+    abstract_blk = next((b for b in page1_blocks if _abstract_prefix(b.text)), None)
     if title_blk:
         top = title_blk.bbox[3] - 2
         bottom = abstract_blk.bbox[1] if abstract_blk else title_blk.bbox[3] + 320
-
-        # 优先用行级数据：作者是按"一人一行/一人一格"排的，块合并后会把两个人粘在一起
-        if page1_lines:
-            for ln in page1_lines:
-                if not (top <= ln.bbox[1] <= bottom):
-                    continue
-                nm, og = _names_from_block(ln.text)
-                parsed.authors.extend(nm)
-                parsed.affiliations.extend(og)
-        else:
+        source = page1_lines if page1_lines else page1_blocks
+        for b in source:
+            if not (top <= b.bbox[1] <= bottom):
+                continue
+            nm, og = _names_from_block(b.text)
+            parsed.authors.extend(nm)
+            parsed.affiliations.extend(og)
+        if not parsed.authors:
+            # 技术报告常只有机构作者（如 Phi-3 / Microsoft），如实保留机构而非留空。
             for b in page1_blocks:
-                if not (top <= b.bbox[1] <= bottom):
-                    continue
-                nm, og = _names_from_block(b.text)
-                parsed.authors.extend(nm)
-                parsed.affiliations.extend(og)
-
-    # 去重保序
+                t = b.text.strip()
+                if top <= b.bbox[1] <= bottom and len(t) <= 60 and ORG_RE.fullmatch(t):
+                    parsed.authors.append(t)
+                    break
     parsed.authors = list(dict.fromkeys(parsed.authors))[:24]
     parsed.affiliations = list(dict.fromkeys(parsed.affiliations))[:12]
 
-    # 摘要：Abstract 标题后到下一个标题前的连续正文
     for i, b in enumerate(page1_blocks):
-        if b.kind == "heading" and b.text.strip().lower().startswith("abstract"):
-            buf = []
-            for nb in page1_blocks[i + 1 :]:
-                if nb.kind == "heading" or nb.text.lower().startswith("introduction"):
-                    break
-                buf.append(nb.text)
-                if sum(len(x) for x in buf) > 2500:
-                    break
-            parsed.abstract = " ".join(buf).strip()
-            break
+        m = _abstract_prefix(b.text)
+        if not m:
+            continue
+        buf = []
+        inline = b.text[m.end():].strip()
+        if inline:
+            buf.append(inline)
+        for nb in page1_blocks[i + 1:]:
+            t = nb.text.strip()
+            if nb.kind == "heading" or re.match(r"^(?:\d+\.?\s+)?introduction\b", t, re.I) \
+                    or re.match(r"^(?:关键词|关键字|中图分类号)\s*[:：]", t):
+                break
+            if RE_ARXIV.match(t) or not t:
+                continue
+            buf.append(t)
+            if sum(len(x) for x in buf) > 2500:
+                break
+        parsed.abstract = " ".join(buf).strip()
+        break
 
-    # arXiv 号 / DOI 只从首页取：全文搜索会命中参考文献里"被引论文"的编号，
-    # 把本文误判成另一篇的同族版本（扫描件 OCR 后尤其容易踩到，页眉水印常被糊掉）。
+    if not parsed.abstract:
+        # 少数 arXiv 论文（如 RETRO）没有 Abstract 标签。只在明确的
+        # Introduction 之前取最后一段长正文；作者/机构/邮箱块不参与。
+        intro_idx = next((i for i, b in enumerate(page1_blocks)
+                          if re.match(r"^(?:\d+\.?\s*)+introduction\b", b.text.strip(), re.I)), None)
+        if intro_idx is not None:
+            candidates = []
+            for b in page1_blocks[:intro_idx]:
+                t = b.text.strip()
+                if len(t) >= 200 and b.kind == "text" and not RE_EMAIL.search(t) \
+                        and not ORG_RE.search(t) and not RE_ARXIV.match(t):
+                    candidates.append(t)
+            if candidates:
+                parsed.abstract = candidates[-1][:2500]
+
     head = " ".join(b.text for b in page1_blocks)[:4000]
     m = RE_ARXIV.search(head)
     if m:
@@ -749,49 +789,77 @@ def _extract_references(blocks: list[Block]) -> list[dict]:
     """
     refs: list[dict] = []
     pending_label = ""
+    last_numbered = False
+    suppress_unnumbered = False
+    seen_numeric: set[int] = set()
 
     for b in blocks:
         if b.kind != "reference":
             continue
         txt = b.text.strip()
-
+        if not txt or re.fullmatch(r"[\d\s.\-–—]+", txt):
+            continue
+        # 中文期刊末尾的作者介绍不属于参考文献，不能粘进最后一条。
+        if re.search(r"(?:主要研|通信作者|征稿启事|E-mail|（\d{4}[—–-]）)", txt, re.I):
+            # 双栏阅读顺序中，左栏作者简介可能排在右栏最后的参考文献之前；
+            # 只屏蔽无编号尾噪声，遇到后续合法 [n] 条目仍要恢复。
+            suppress_unnumbered = True
+            last_numbered = False
+            continue
         if RE_REF_LABEL.match(txt):
             pending_label = txt
             continue
 
-        if len(txt) < 25:
-            continue
-        if re.fullmatch(r"[\d\s.\-–—]+", txt):  # 纯页码 / 目录行
-            continue
-        if not re.search(r"(?:19|20)\d{2}", txt) and not txt.startswith("["):
-            continue
-
-        if pending_label and not txt.startswith("["):
-            txt = f"{pending_label} {txt}"
-        pending_label = ""
-
-        idx = len(refs) + 1
         m = RE_REF_ITEM.match(txt)
+        numeric_idx = None
         if m:
             for g in m.groups():
                 if g and g.isdigit():
-                    idx = int(g)
+                    numeric_idx = int(g)
                     break
 
-        refs.append(
-            {
-                "index": idx,
-                "text": txt,
-                "page": b.page,
-                "bbox": [round(v, 1) for v in b.bbox],
-                "anchor": b.anchor,
-            }
-        )
+        if suppress_unnumbered and numeric_idx is None:
+            continue
+        if numeric_idx is not None:
+            suppress_unnumbered = False
+
+        # 数字编号条目的续行没有自己的编号。先拼接再清洗，避免把每个
+        # 跨栏/跨页碎片都当成新文献（中文信息学报实测会膨胀到 2 倍）。
+        if refs and last_numbered and numeric_idx is None and not pending_label:
+            prev = refs[-1]
+            old = prev["text"].rstrip()
+            prev["text"] = old[:-1] + txt if old.endswith("-") else old + " " + txt
+            prev["bbox"] = [min(prev["bbox"][0], round(b.bbox[0], 1)),
+                            min(prev["bbox"][1], round(b.bbox[1], 1)),
+                            max(prev["bbox"][2], round(b.bbox[2], 1)),
+                            max(prev["bbox"][3], round(b.bbox[3], 1))]
+            continue
+
+        if len(txt) < 25 and numeric_idx is None:
+            continue
+        # 有编号的短首行（如“[123] ZHANG T, KISHORE”）必须保留并等待续行；
+        # 无编号块才需要年份/标签证据来排除页眉和尾噪声。
+        if numeric_idx is None and not re.search(r"(?:19|20)\d{2}", txt) and not txt.startswith("["):
+            continue
+        if pending_label and not txt.startswith("["):
+            txt = f"{pending_label} {txt}"
+        pending_label = ""
+        if numeric_idx is not None:
+            if numeric_idx in seen_numeric:
+                last_numbered = False
+                continue
+            seen_numeric.add(numeric_idx)
+            idx = numeric_idx
+        else:
+            idx = len(refs) + 1
+        refs.append({"index": idx, "text": txt, "page": b.page,
+                     "bbox": [round(v, 1) for v in b.bbox], "anchor": b.anchor})
+        last_numbered = numeric_idx is not None
     return refs
 
 
 # ---------------- 主入口 ----------------
-def parse_pdf(path: str, max_pages: int | None = None) -> ParsedDoc:
+def _parse_pdf_impl(path: str, max_pages: int | None = None) -> ParsedDoc:
     """解析整篇 PDF。max_pages 用于长书抽样或快速预览。"""
     doc = pymupdf.open(path)
     parsed = ParsedDoc(page_count=doc.page_count)
@@ -803,12 +871,16 @@ def parse_pdf(path: str, max_pages: int | None = None) -> ParsedDoc:
     page_widths: dict[int, float] = {}
 
     parsed_pages = 0
+    mupdf_warning_pages: list[int] = []
     for pno, page in enumerate(doc, start=1):
         if max_pages and pno > max_pages:
             break
         parsed_pages += 1
 
+        pymupdf.TOOLS.reset_mupdf_warnings()
         lines = _extract_lines(page, pno)
+        if pymupdf.TOOLS.mupdf_warnings().strip():
+            mupdf_warning_pages.append(pno)
         page_chars = sum(len(l.text) for l in lines)
         total_chars += page_chars
         if page_chars < 30:
@@ -832,6 +904,9 @@ def parse_pdf(path: str, max_pages: int | None = None) -> ParsedDoc:
         parsed.blocks.extend(blocks)
 
     doc.close()
+    if mupdf_warning_pages:
+        log.warning("MuPDF 内容流兼容警告：%d 页（页码 %s），已继续解析；逐条底层输出已抑制",
+                    len(mupdf_warning_pages), ",".join(map(str, mupdf_warning_pages[:30])))
 
     # 分类必须**全文一遍过**：参考文献区是跨页状态，逐页分类会导致
     # 第 2 页之后的参考文献被误判成正文（实测 40 条只认出 14 条）。
@@ -877,6 +952,17 @@ def parse_pdf(path: str, max_pages: int | None = None) -> ParsedDoc:
         len(parsed.sections), len(parsed.references), parsed.is_scanned,
     )
     return parsed
+
+
+def parse_pdf(path: str, max_pages: int | None = None) -> ParsedDoc:
+    """公共入口：底层兼容警告按篇汇总，调用异常不吞掉。"""
+    old_errors = pymupdf.TOOLS.mupdf_display_errors(False)
+    old_warnings = pymupdf.TOOLS.mupdf_display_warnings(False)
+    try:
+        return _parse_pdf_impl(path, max_pages=max_pages)
+    finally:
+        pymupdf.TOOLS.mupdf_display_errors(bool(old_errors))
+        pymupdf.TOOLS.mupdf_display_warnings(bool(old_warnings))
 
 
 def _fallback_ocr_references(blocks: list[Block]) -> list[dict]:

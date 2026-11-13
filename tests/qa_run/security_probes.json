@@ -1,0 +1,27 @@
+[
+  {
+    "case": "伪造PDF",
+    "http": 200,
+    "body": "{\"ok\":false,\"stage\":\"parse\",\"error\":\"Failed to open file 'D:\\\\\\\\projects\\\\\\\\sciagent\\\\\\\\data\\\\\\\\uploads\\\\\\\\4efdef65_fake.pdf' as type pdf.\"}"
+  },
+  {
+    "case": "路径穿越文档ID",
+    "http": 404,
+    "body": "{\"detail\":\"Not Found\"}"
+  },
+  {
+    "case": "不存在文档",
+    "http": 404,
+    "body": "{\"detail\":\"文档不存在\"}"
+  },
+  {
+    "case": "空写作主题",
+    "http": 422,
+    "body": "{\"detail\":[{\"type\":\"string_too_short\",\"loc\":[\"body\",\"idea\"],\"msg\":\"String should have at least 2 characters\",\"input\":\"\",\"ctx\":{\"min_length\":2}}]}"
+  },
+  {
+    "case": "后台参数读取鉴权",
+    "http": 401,
+    "body": "{\"detail\":\"需要登录后台\"}"
+  }
+]

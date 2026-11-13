@@ -517,7 +517,14 @@ def b02():
     items = r.get("items") or []
     if not items:
         return fail("未提炼出任何 Future Work", response=r)
-    return ok(f"提炼 {len(items)} 条，其中 {sum(1 for x in items if x.get('resolved_by'))} 条命中后续论文", items=items[:5])
+    engineering = [x for x in items if re.search(r"make the code|release the (?:dataset|source|model)|publish.*code", x.get("text", ""), re.I)]
+    evidence_bad = [m for x in items for m in x.get("resolved_by") or []
+                    if not (m.get("evidence") and m.get("page") and m.get("chunk_id"))]
+    if engineering or evidence_bad:
+        return fail(f"工程待办 {len(engineering)} 条；缺方法/结果证据 {len(evidence_bad)} 条",
+                    engineering=engineering[:2], evidence_bad=evidence_bad[:2])
+    return ok(f"提炼 {len(items)} 条，其中 {sum(1 for x in items if x.get('resolved_by'))} 条带方法/结果证据；工程待办 0 条",
+              items=items[:5])
 
 
 @case("B03", "innov", "b-2 三层语义去重 (8%)", "重新解析样本 PDF 得到入库时的 full_text，构造同族版本 / 近似文本 / 同名异内容，逐一验证 find_duplicates 的三层判据", "同族、SimHash 近似、标题相似三层各自按预期理由命中")

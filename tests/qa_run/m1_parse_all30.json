@@ -1,0 +1,1582 @@
+[
+ {
+  "file": "EN_1409.1556_Show_and_Tell.pdf",
+  "note": "扩充集全量逐篇解析",
+  "pages": 14,
+  "parsed_pages": 14,
+  "ms": 149,
+  "is_scanned": false,
+  "title": "VERY DEEP CONVOLUTIONAL NETWORKS FOR LARGE-SCALE IMAGE RECOGNITION",
+  "title_nonempty": true,
+  "title_match": null,
+  "authors_n": 2,
+  "authors": [
+   "Karen Simonyan",
+   "Visual Geometry Group"
+  ],
+  "affiliations_n": 1,
+  "abstract_chars": 885,
+  "sections_n": 15,
+  "section_levels": {
+   "2": 8,
+   "1": 7
+  },
+  "sections_head": [
+   "Karen Simonyan∗& Andrew Zisserman+",
+   "ABSTRACT",
+   "1 INTRODUCTION",
+   "2 CONVNET CONFIGURATIONS",
+   "3 CLASSIFICATION FRAMEWORK",
+   "4 CLASSIFICATION EXPERIMENTS"
+  ],
+  "references_n": 81,
+  "refs_sample": [
+   "database. CoRR, abs/1412.0623, 2014. Chatﬁeld, K., Simonyan, K., Vedaldi, A., and Zisserma",
+   "into convolutional nets. In Proc. BMVC., 2014. Cimpoi, M., Maji, S., and Vedaldi, A. Deep ",
+   "CoRR, abs/1411.6836, 2014. Ciresan, D. C., Meier, U., Masci, J., Gambardella, L. M., and S"
+  ],
+  "block_kinds": {
+   "text": 490,
+   "heading": 15,
+   "formula": 5,
+   "table": 12,
+   "reference": 286
+  },
+  "arxiv_id": "1409.1556v6",
+  "doi": "",
+  "char_count": 53649,
+  "problems": [],
+  "scan_detection": "PASS",
+  "status": "PASS"
+ },
+ {
+  "file": "EN_1409.3215_Neural_Machine_Translation_by_Jointl.pdf",
+  "note": "扩充集全量逐篇解析",
+  "pages": 9,
+  "parsed_pages": 9,
+  "ms": 82,
+  "is_scanned": false,
+  "title": "Sequence to Sequence Learning with Neural Networks",
+  "title_nonempty": true,
+  "title_match": null,
+  "authors_n": 3,
+  "authors": [
+   "Ilya Sutskever",
+   "Oriol Vinyals",
+   "Quoc V. Le"
+  ],
+  "affiliations_n": 1,
+  "abstract_chars": 1635,
+  "sections_n": 10,
+  "section_levels": {
+   "2": 3,
+   "1": 7
+  },
+  "sections_head": [
+   "Abstract",
+   "1 Introduction",
+   "2 The model",
+   "3 Experiments",
+   "Performance on long sentences",
+   "3.8 Model Analysis"
+  ],
+  "references_n": 31,
+  "refs_sample": [
+   "[1] M. Auli, M. Galley, C. Quirk, and G. Zweig. Joint language and translation modeling wi",
+   "[2] D. Bahdanau, K. Cho, and Y. Bengio. Neural machine translation by jointly learning to ",
+   "[3] Y. Bengio, R. Ducharme, P. Vincent, and C. Jauvin. A neural probabilistic language mod"
+  ],
+  "block_kinds": {
+   "text": 409,
+   "heading": 10,
+   "figure": 3,
+   "formula": 3,
+   "table": 3,
+   "reference": 61
+  },
+  "arxiv_id": "1409.3215v3",
+  "doi": "",
+  "char_count": 33291,
+  "problems": [],
+  "scan_detection": "PASS",
+  "status": "PASS"
+ },
+ {
+  "file": "EN_1511.06434_Pointer_Networks.pdf",
+  "note": "扩充集全量逐篇解析",
+  "pages": 16,
+  "parsed_pages": 16,
+  "ms": 579,
+  "is_scanned": false,
+  "title": "UNSUPERVISED REPRESENTATION LEARNING WITH DEEP CONVOLUTIONAL GENERATIVE ADVERSARIAL NETWORKS",
+  "title_nonempty": true,
+  "title_match": null,
+  "authors_n": 5,
+  "authors": [
+   "Alec Radford",
+   "Luke Metz",
+   "Soumith Chintala",
+   "Facebook AI",
+   "New York"
+  ],
+  "affiliations_n": 2,
+  "abstract_chars": 894,
+  "sections_n": 13,
+  "section_levels": {
+   "1": 10,
+   "2": 3
+  },
+  "sections_head": [
+   "ABSTRACT",
+   "1 INTRODUCTION",
+   "2 RELATED WORK",
+   "3 APPROACH AND MODEL ARCHITECTURE",
+   "4 DETAILS OF ADVERSARIAL TRAINING",
+   "5 EMPIRICAL VALIDATION OF DCGANS CAPABILITIES"
+  ],
+  "references_n": 40,
+  "refs_sample": [
+   "Bergstra, James and Bengio, Yoshua. Random search for hyper-parameter optimization. JMLR, ",
+   "Coates, Adam and Ng, Andrew. Selecting receptive ﬁelds in deep networks. NIPS, 2011.",
+   "Coates, Adam and Ng, Andrew Y. Learning feature representations with k-means. In Neural Ne"
+  ],
+  "block_kinds": {
+   "text": 123,
+   "heading": 13,
+   "figure": 11,
+   "table": 2,
+   "reference": 54
+  },
+  "arxiv_id": "1511.06434v2",
+  "doi": "",
+  "char_count": 35099,
+  "problems": [],
+  "scan_detection": "PASS",
+  "status": "PASS"
+ },
+ {
+  "file": "EN_1810.04805_BERT.pdf",
+  "note": "扩充集全量逐篇解析",
+  "pages": 16,
+  "parsed_pages": 16,
+  "ms": 156,
+  "is_scanned": false,
+  "title": "BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding",
+  "title_nonempty": true,
+  "title_match": null,
+  "authors_n": 4,
+  "authors": [
+   "Jacob Devlin",
+   "Ming-Wei Chang",
+   "Kenton Lee",
+   "Kristina Toutanova"
+  ],
+  "affiliations_n": 1,
+  "abstract_chars": 1081,
+  "sections_n": 30,
+  "section_levels": {
+   "2": 25,
+   "1": 5
+  },
+  "sections_head": [
+   "BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding",
+   "Abstract",
+   "1 Introduction",
+   "Representations",
+   "2 Related Work",
+   "2.2 Unsupervised Fine-tuning Approaches"
+  ],
+  "references_n": 63,
+  "refs_sample": [
+   "Alan Akbik, Duncan Blythe, and Roland Vollgraf. 2018. Contextual string embeddings for seq",
+   "Rami Al-Rfou, Dokook Choe, Noah Constant, Mandy Guo, and Llion Jones. 2018.",
+   "Rie Kubota Ando and Tong Zhang. 2005. A framework for learning predictive structures from "
+  ],
+  "block_kinds": {
+   "heading": 30,
+   "text": 736,
+   "figure": 5,
+   "formula": 2,
+   "table": 9,
+   "reference": 95
+  },
+  "arxiv_id": "1810.04805v2",
+  "doi": "",
+  "char_count": 62006,
+  "problems": [],
+  "scan_detection": "PASS",
+  "status": "PASS"
+ },
+ {
+  "file": "EN_1909.11942_ALBERT.pdf",
+  "note": "扩充集全量逐篇解析",
+  "pages": 17,
+  "parsed_pages": 17,
+  "ms": 100,
+  "is_scanned": false,
+  "title": "ALBERT: A LITE BERT FOR SELF-SUPERVISED LEARNING OF LANGUAGE REPRESENTATIONS",
+  "title_nonempty": true,
+  "title_match": null,
+  "authors_n": 6,
+  "authors": [
+   "Zhenzhong Lan",
+   "Mingda Chen",
+   "Sebastian Goodman",
+   "Kevin Gimpel",
+   "Piyush Sharma",
+   "Radu Soricut"
+  ],
+  "affiliations_n": 2,
+  "abstract_chars": 977,
+  "sections_n": 15,
+  "section_levels": {
+   "1": 10,
+   "2": 5
+  },
+  "sections_head": [
+   "FOR SELF-SUPERVISED LEARNING OF LANGUAGE REPRESENTATIONS",
+   "ALBERT: A LITE BERT",
+   "ABSTRACT",
+   "1 INTRODUCTION",
+   "2 RELATED WORK",
+   "3 THE ELEMENTS OF ALBERT"
+  ],
+  "references_n": 64,
+  "refs_sample": [
+   "Alexei Baevski and Michael Auli. Adaptive input representations for neural language modeli",
+   "Shaojie Bai, J. Zico Kolter, and Vladlen Koltun. Deep equilibrium models. In Neural Inform",
+   "Roy Bar-Haim, Ido Dagan, Bill Dolan, Lisa Ferro, Danilo Giampiccolo, Bernardo Magnini, and"
+  ],
+  "block_kinds": {
+   "text": 1029,
+   "heading": 15,
+   "figure": 4,
+   "table": 14,
+   "formula": 2,
+   "reference": 90
+  },
+  "arxiv_id": "1909.11942v6",
+  "doi": "",
+  "char_count": 58492,
+  "problems": [],
+  "scan_detection": "PASS",
+  "status": "PASS"
+ },
+ {
+  "file": "EN_1_RAG_arXiv2005.11401.pdf",
+  "note": "扩充集全量逐篇解析",
+  "pages": 19,
+  "parsed_pages": 19,
+  "ms": 173,
+  "is_scanned": false,
+  "title": "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
+  "title_nonempty": true,
+  "title_match": null,
+  "authors_n": 12,
+  "authors": [
+   "Patrick Lewis",
+   "Aleksandra Piktus",
+   "Fabio Petroni",
+   "Vladimir Karpukhin",
+   "Naman Goyal",
+   "Heinrich Küttler"
+  ],
+  "affiliations_n": 1,
+  "abstract_chars": 1611,
+  "sections_n": 59,
+  "section_levels": {
+   "2": 51,
+   "1": 8
+  },
+  "sections_head": [
+   "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
+   "Abstract",
+   "1 Introduction",
+   "2 Methods",
+   "2.1 Models",
+   "RAG-Sequence Model"
+  ],
+  "references_n": 68,
+  "refs_sample": [
+   "[1] Payal Bajaj, Daniel Campos, Nick Craswell, Li Deng, Jianfeng Gao, Xiaodong Liu, Rangan",
+   "[2] Petr Baudiš and Jan Šediv`y. Modeling of the question answering task in the yodaqa sys",
+   "[3] Jonathan Berant, Andrew Chou, Roy Frostig, and Percy Liang. Semantic Parsing on Freeba"
+  ],
+  "block_kinds": {
+   "heading": 59,
+   "text": 196,
+   "figure": 5,
+   "formula": 9,
+   "table": 7,
+   "reference": 194
+  },
+  "arxiv_id": "2005.11401v4",
+  "doi": "",
+  "char_count": 67755,
+  "problems": [],
+  "scan_detection": "PASS",
+  "status": "PASS"
+ },
+ {
+  "file": "EN_2002.08909_REALM.pdf",
+  "note": "扩充集全量逐篇解析",
+  "pages": 12,
+  "parsed_pages": 12,
+  "ms": 123,
+  "is_scanned": false,
+  "title": "REALM: Retrieval-Augmented Language Model Pre-Training",
+  "title_nonempty": true,
+  "title_match": null,
+  "authors_n": 5,
+  "authors": [
+   "Kelvin Guu",
+   "Kenton Lee",
+   "Zora Tung",
+   "Panupong Pasupat",
+   "Ming-Wei Chang"
+  ],
+  "affiliations_n": 0,
+  "abstract_chars": 1317,
+  "sections_n": 21,
+  "section_levels": {
+   "1": 9,
+   "2": 12
+  },
+  "sections_head": [
+   "REALM: Retrieval-Augmented Language Model Pre-Training",
+   "Abstract",
+   "1. Introduction",
+   "2. Background",
+   "3. Approach",
+   "3.1. REALM’s generative process"
+  ],
+  "references_n": 46,
+  "refs_sample": [
+   "Learning to retrieve reasoning paths over wikipedia graph for question answering. arXiv pr",
+   "Bahdanau, D., Cho, K., and Bengio, Y. Neural machine translation by jointly learning to al",
+   "Berant, J., Chou, A., Frostig, R., and Liang, P. Semantic parsing on freebase from questio"
+  ],
+  "block_kinds": {
+   "heading": 21,
+   "text": 255,
+   "figure": 4,
+   "formula": 4,
+   "table": 4,
+   "reference": 142
+  },
+  "arxiv_id": "2002.08909v1",
+  "doi": "",
+  "char_count": 48965,
+  "problems": [],
+  "scan_detection": "PASS",
+  "status": "PASS"
+ },
+ {
+  "file": "EN_2004.12832_Dense_Passage_Retrieval_for_Open-Dom.pdf",
+  "note": "扩充集全量逐篇解析",
+  "pages": 10,
+  "parsed_pages": 10,
+  "ms": 154,
+  "is_scanned": false,
+  "title": "ColBERT: Eﬀicient and Eﬀective Passage Search via Contextualized Late Interaction over BERT",
+  "title_nonempty": true,
+  "title_match": null,
+  "authors_n": 2,
+  "authors": [
+   "Omar Khatab",
+   "Matei Zaharia"
+  ],
+  "affiliations_n": 1,
+  "abstract_chars": 1987,
+  "sections_n": 26,
+  "section_levels": {
+   "2": 22,
+   "1": 4
+  },
+  "sections_head": [
+   "ABSTRACT",
+   "1 INTRODUCTION",
+   "Document",
+   "Query",
+   "Document",
+   "Query"
+  ],
+  "references_n": 42,
+  "refs_sample": [
+   "[1] Firas Abuzaid, Geet Sethi, Peter Bailis, and Matei Zaharia. 2019. To Index or Not to I",
+   "[2] Zhuyun Dai and Jamie Callan. 2019. Context-Aware Sentence/Passage Term Importance Esti",
+   "[3] Zhuyun Dai and Jamie Callan. 2019. Deeper Text Understanding for IR with Contextual Ne"
+  ],
+  "block_kinds": {
+   "text": 257,
+   "heading": 26,
+   "figure": 7,
+   "formula": 1,
+   "table": 4,
+   "reference": 42
+  },
+  "arxiv_id": "2004.12832v2",
+  "doi": "10.1145/3397271.3401075",
+  "char_count": 60037,
+  "problems": [],
+  "scan_detection": "PASS",
+  "status": "PASS"
+ },
+ {
+  "file": "EN_2104.07567_Leveraging_Passage_Retrieval_with_Ge.pdf",
+  "note": "扩充集全量逐篇解析",
+  "pages": 21,
+  "parsed_pages": 21,
+  "ms": 259,
+  "is_scanned": false,
+  "title": "Retrieval Augmentation Reduces Hallucination in Conversation",
+  "title_nonempty": true,
+  "title_match": null,
+  "authors_n": 6,
+  "authors": [
+   "Kurt Shuster",
+   "Spencer Poff",
+   "Moya Chen",
+   "Douwe Kiela",
+   "Jason Weston",
+   "Facebook AI"
+  ],
+  "affiliations_n": 1,
+  "abstract_chars": 1168,
+  "sections_n": 39,
+  "section_levels": {
+   "2": 27,
+   "1": 6,
+   "3": 6
+  },
+  "sections_head": [
+   "Retrieval Augmentation Reduces Hallucination in Conversation",
+   "Abstract",
+   "1 Introduction",
+   "2 Related Work",
+   "3 Model Architectures",
+   "3.2 BART"
+  ],
+  "references_n": 77,
+  "refs_sample": [
+   "Daniel Adiwardana, Minh-Thang Luong, David R So, Jamie Hall, Noah Fiedel, Romal Thoppilan,",
+   "Towards a human-like open-domain chatbot. arXiv preprint arXiv:2001.09977.",
+   "Akari Asai, Kazuma Hashimoto, Hannaneh Hajishirzi, Richard Socher, and Caiming Xiong. 2020"
+  ],
+  "block_kinds": {
+   "heading": 39,
+   "text": 1225,
+   "figure": 2,
+   "formula": 3,
+   "table": 20,
+   "reference": 293
+  },
+  "arxiv_id": "2104.07567v1",
+  "doi": "",
+  "char_count": 82171,
+  "problems": [],
+  "scan_detection": "PASS",
+  "status": "PASS"
+ },
+ {
+  "file": "EN_2204.05862_Training_Compute-Optimal_Large_Langu.pdf",
+  "note": "扩充集全量逐篇解析",
+  "pages": 74,
+  "parsed_pages": 74,
+  "ms": 2656,
+  "is_scanned": false,
+  "title": "Training a Helpful and Harmless Assistant with Reinforcement Learning from Human Feedback",
+  "title_nonempty": true,
+  "title_match": null,
+  "authors_n": 24,
+  "authors": [
+   "Yuntao Bai",
+   "Andy Jones",
+   "Kamal Ndousse",
+   "Amanda Askell",
+   "Anna Chen",
+   "Nova DasSarma"
+  ],
+  "affiliations_n": 1,
+  "abstract_chars": 1096,
+  "sections_n": 93,
+  "section_levels": {
+   "2": 73,
+   "1": 15,
+   "3": 5
+  },
+  "sections_head": [
+   "Training a Helpful and Harmless Assistant with Reinforcement Learning from Human Feedback",
+   "Abstract",
+   "Contents",
+   "1 Introduction",
+   "2 Data Collection",
+   "Preference Modeling for Helpfulness and Harmlessness"
+  ],
+  "references_n": 64,
+  "refs_sample": [
+   "[Amodei et al., 2016] Amodei, D., Olah, C., Steinhardt, J., Christiano, P., Schulman, J., ",
+   "[Askell et al., 2021] Askell, A., Bai, Y., Chen, A., Drain, D., Ganguli, D., Henighan, T.,",
+   "[Bender et al., 2021] Bender, E. M., Gebru, T., McMillan-Major, A., and Shmitchell, S. (20"
+  ],
+  "block_kinds": {
+   "heading": 93,
+   "text": 2375,
+   "figure": 48,
+   "formula": 11,
+   "reference": 66
+  },
+  "arxiv_id": "2204.05862v1",
+  "doi": "",
+  "char_count": 234262,
+  "problems": [],
+  "scan_detection": "PASS",
+  "status": "PASS"
+ },
+ {
+  "file": "EN_2210.03629_ReAct.pdf",
+  "note": "扩充集全量逐篇解析",
+  "pages": 33,
+  "parsed_pages": 33,
+  "ms": 288,
+  "is_scanned": false,
+  "title": "REACT: SYNERGIZING REASONING AND ACTING IN LANGUAGE MODELS",
+  "title_nonempty": true,
+  "title_match": null,
+  "authors_n": 7,
+  "authors": [
+   "Shunyu Yao",
+   "Jeffrey Zhao",
+   "Dian Yu",
+   "Nan Du",
+   "Izhak Shafran",
+   "Karthik Narasimhan"
+  ],
+  "affiliations_n": 2,
+  "abstract_chars": 1545,
+  "sections_n": 129,
+  "section_levels": {
+   "1": 81,
+   "2": 48
+  },
+  "sections_head": [
+   "Published as a conference paper at ICLR 2023",
+   "REACT: SYNERGIZING REASONING AND ACTING IN LANGUAGE MODELS",
+   "ABSTRACT",
+   "1 INTRODUCTION",
+   "Published as a conference paper at ICLR 2023",
+   "Ҽ"
+  ],
+  "references_n": 95,
+  "refs_sample": [
+   "Josh Abramson, Arun Ahuja, Iain Barr, Arthur Brussee, Federico Carnevale, Mary Cassin, Rac",
+   "Michael Ahn, Anthony Brohan, Noah Brown, Yevgen Chebotar, Omar Cortes, Byron David, Chelse",
+   "Inner speech: development, cognitive functions, phenomenology, and neurobiology. Psycholog"
+  ],
+  "block_kinds": {
+   "heading": 129,
+   "text": 289,
+   "figure": 6,
+   "table": 10,
+   "reference": 734
+  },
+  "arxiv_id": "2210.03629v3",
+  "doi": "",
+  "char_count": 107475,
+  "problems": [],
+  "scan_detection": "PASS",
+  "status": "PASS"
+ },
+ {
+  "file": "EN_2302.04761_Toolformer.pdf",
+  "note": "扩充集全量逐篇解析",
+  "pages": 17,
+  "parsed_pages": 17,
+  "ms": 158,
+  "is_scanned": false,
+  "title": "Toolformer: Language Models Can Teach Themselves to Use Tools",
+  "title_nonempty": true,
+  "title_match": null,
+  "authors_n": 8,
+  "authors": [
+   "Timo Schick",
+   "Jane Dwivedi-Yu",
+   "Roberto Dessì",
+   "Roberta Raileanu",
+   "Maria Lomeli",
+   "Luke Zettlemoyer"
+  ],
+  "affiliations_n": 1,
+  "abstract_chars": 1042,
+  "sections_n": 47,
+  "section_levels": {
+   "2": 41,
+   "1": 6
+  },
+  "sections_head": [
+   "Toolformer: Language Models Can Teach Themselves to Use Tools",
+   "Roberto Dessì†",
+   "Abstract",
+   "1 Introduction",
+   "Approach",
+   "Sampling API Calls"
+  ],
+  "references_n": 68,
+  "refs_sample": [
+   "Armen Aghajanyan, Dmytro Okhonko, Mike Lewis, Mandar Joshi, Hu Xu, Gargi Ghosh, and Luke Z",
+   "Eugene Agichtein and Luis Gravano. 2000. Snowball: Extracting relations from large plain-t",
+   "Ricardo Baeza-Yates, Berthier Ribeiro-Neto, et al. 1999."
+  ],
+  "block_kinds": {
+   "heading": 47,
+   "text": 402,
+   "figure": 4,
+   "formula": 14,
+   "table": 11,
+   "reference": 175
+  },
+  "arxiv_id": "2302.04761v1",
+  "doi": "",
+  "char_count": 69915,
+  "problems": [],
+  "scan_detection": "PASS",
+  "status": "PASS"
+ },
+ {
+  "file": "EN_2305.10601_Tree_of_Thoughts.pdf",
+  "note": "扩充集全量逐篇解析",
+  "pages": 14,
+  "parsed_pages": 14,
+  "ms": 113,
+  "is_scanned": false,
+  "title": "Tree of Thoughts: Deliberate Problem Solving with Large Language Models",
+  "title_nonempty": true,
+  "title_match": null,
+  "authors_n": 7,
+  "authors": [
+   "Shunyu Yao",
+   "Dian Yu",
+   "Jeffrey Zhao",
+   "Izhak Shafran",
+   "Thomas L. Griffiths",
+   "Yuan Cao"
+  ],
+  "affiliations_n": 2,
+  "abstract_chars": 1348,
+  "sections_n": 38,
+  "section_levels": {
+   "2": 27,
+   "1": 11
+  },
+  "sections_head": [
+   "Tree of Thoughts: Deliberate Problem Solving with Large Language Models",
+   "Abstract",
+   "1 Introduction",
+   "2 Background",
+   "3 Tree of Thoughts: Deliberate Problem Solving with LM",
+   "4 Experiments"
+  ],
+  "references_n": 44,
+  "refs_sample": [
+   "[1] T. Brown, B. Mann, N. Ryder, M. Subbiah, J. D. Kaplan, P. Dhariwal, A. Neelakantan, P.",
+   "[2] C. Browne, E. J. Powley, D. Whitehouse, S. M. M. Lucas, P. I. Cowling, P. Rohlfshagen,",
+   "[3] M. Campbell, A. J. Hoane Jr, and F.-h. Hsu. Deep blue. Artificial intelligence, 134(1-"
+  ],
+  "block_kinds": {
+   "heading": 38,
+   "text": 313,
+   "figure": 6,
+   "formula": 13,
+   "table": 4,
+   "reference": 99
+  },
+  "arxiv_id": "2305.10601v2",
+  "doi": "",
+  "char_count": 53854,
+  "problems": [],
+  "scan_detection": "PASS",
+  "status": "PASS"
+ },
+ {
+  "file": "EN_2307.08691_FlashAttention-2.pdf",
+  "note": "扩充集全量逐篇解析",
+  "pages": 14,
+  "parsed_pages": 14,
+  "ms": 1327,
+  "is_scanned": false,
+  "title": "FlashAttention-2: Faster Attention with Better Parallelism and Work Partitioning",
+  "title_nonempty": true,
+  "title_match": null,
+  "authors_n": 1,
+  "authors": [
+   "Tri Dao"
+  ],
+  "affiliations_n": 2,
+  "abstract_chars": 1745,
+  "sections_n": 19,
+  "section_levels": {
+   "1": 8,
+   "2": 11
+  },
+  "sections_head": [
+   "1 Introduction",
+   "2 Background",
+   "2.1 Hardware characteristics",
+   "2.2 Standard Attention Implementation",
+   "FlashAttention",
+   "FlashAttention-2: Algorithm, Parallelism, and Work Partition- ing"
+  ],
+  "references_n": 20,
+  "refs_sample": [
+   "[1] Joshua Ainslie, James Lee-Thorp, Michiel de Jong, Yury Zemlyanskiy, Federico Lebrón, a",
+   "[2] Iz Beltagy, Matthew E Peters, and Arman Cohan. Longformer: The long-document transform",
+   "[3] Beidi Chen, Tri Dao, Eric Winsor, Zhao Song, Atri Rudra, and Christopher Ré. Scatterbr"
+  ],
+  "block_kinds": {
+   "text": 891,
+   "heading": 19,
+   "formula": 32,
+   "figure": 7,
+   "table": 1,
+   "reference": 25
+  },
+  "arxiv_id": "2307.08691v1",
+  "doi": "",
+  "char_count": 38524,
+  "problems": [],
+  "scan_detection": "PASS",
+  "status": "PASS"
+ },
+ {
+  "file": "EN_2309.17453_Mistral_7B.pdf",
+  "note": "扩充集全量逐篇解析",
+  "pages": 21,
+  "parsed_pages": 21,
+  "ms": 8839,
+  "is_scanned": false,
+  "title": "EFFICIENT STREAMING LANGUAGE MODELS WITH ATTENTION SINKS",
+  "title_nonempty": true,
+  "title_match": null,
+  "authors_n": 6,
+  "authors": [
+   "Guangxuan Xiao",
+   "Yuandong Tian",
+   "Beidi Chen",
+   "Song Han",
+   "Mike Lewis",
+   "Carnegie Mellon"
+  ],
+  "affiliations_n": 3,
+  "abstract_chars": 1570,
+  "sections_n": 32,
+  "section_levels": {
+   "1": 10,
+   "2": 22
+  },
+  "sections_head": [
+   "EFFICIENT STREAMING LANGUAGE MODELS WITH ATTENTION SINKS",
+   "4 NVIDIA https://github.com/mit-han-lab/streaming-llm",
+   "ABSTRACT",
+   "1 INTRODUCTION",
+   "2 RELATED WORK",
+   "3 STREAMINGLLM"
+  ],
+  "references_n": 81,
+  "refs_sample": [
+   "Joshua Ainslie, Santiago Ontanon, Chris Alberti, Vaclav Cvicek, Zachary Fisher, Philip Pha",
+   "Ebtesam Almazrouei, Hamza Alobeidli, Abdulaziz Alshamsi, Alessandro Cappelli, Ruxandra Co-",
+   "Sotiris Anagnostidis, Dario Pavllo, Luca Biggio, Lorenzo Noci, Aurelien Lucchi, and Thomas"
+  ],
+  "block_kinds": {
+   "text": 405,
+   "heading": 32,
+   "figure": 20,
+   "table": 10,
+   "formula": 6,
+   "reference": 157
+  },
+  "arxiv_id": "2309.17453v4",
+  "doi": "",
+  "char_count": 70277,
+  "problems": [],
+  "scan_detection": "PASS",
+  "status": "PASS"
+ },
+ {
+  "file": "EN_2312.00752_Mixtral_of_Experts.pdf",
+  "note": "扩充集全量逐篇解析",
+  "pages": 36,
+  "parsed_pages": 36,
+  "ms": 313,
+  "is_scanned": false,
+  "title": "Mamba: Linear-Time Sequence Modeling with Selective State Spaces",
+  "title_nonempty": true,
+  "title_match": null,
+  "authors_n": 3,
+  "authors": [
+   "Albert Gu",
+   "Tri Dao",
+   "Machine Learning"
+  ],
+  "affiliations_n": 2,
+  "abstract_chars": 1664,
+  "sections_n": 69,
+  "section_levels": {
+   "1": 14,
+   "2": 43,
+   "3": 12
+  },
+  "sections_head": [
+   "Mamba: Linear-Time Sequence Modeling with Selective State Spaces",
+   "1 Introduction",
+   "2 State Space Models",
+   "Selective State Space Model",
+   "𝐴",
+   "𝐵!"
+  ],
+  "references_n": 173,
+  "refs_sample": [
+   "Martin Arjovsky, Amar Shah, and Yoshua Bengio. “Unitary Evolution Recurrent Neural Network",
+   "Žiga Avsec, Vikram Agarwal, Daniel Visentin, Joseph R Ledsam, Agnieszka Grabska-Barwinska,",
+   "Jimmy Ba, Geoffrey E Hinton, Volodymyr Mnih, Joel Z Leibo, and Catalin Ionescu. “Using Fas"
+  ],
+  "block_kinds": {
+   "heading": 69,
+   "text": 618,
+   "figure": 17,
+   "formula": 9,
+   "table": 15,
+   "reference": 424
+  },
+  "arxiv_id": "2312.00752v2",
+  "doi": "",
+  "char_count": 132182,
+  "problems": [],
+  "scan_detection": "PASS",
+  "status": "PASS"
+ },
+ {
+  "file": "EN_2402.09353_DoRA.pdf",
+  "note": "扩充集全量逐篇解析",
+  "pages": 23,
+  "parsed_pages": 23,
+  "ms": 1222,
+  "is_scanned": false,
+  "title": "DoRA: Weight-Decomposed Low-Rank Adaptation",
+  "title_nonempty": true,
+  "title_match": null,
+  "authors_n": 7,
+  "authors": [
+   "Shih-Yang Liu",
+   "Chien-Yi Wang",
+   "Hongxu Yin",
+   "Pavlo Molchanov",
+   "Yu-Chiang Frank Wang",
+   "Kwang-Ting Cheng"
+  ],
+  "affiliations_n": 0,
+  "abstract_chars": 1156,
+  "sections_n": 34,
+  "section_levels": {
+   "2": 26,
+   "1": 8
+  },
+  "sections_head": [
+   "DoRA: Weight-Decomposed Low-Rank Adaptation",
+   "Shih-Yang Liu 1 2 Chien-Yi Wang 1 Hongxu Yin 1 Pavlo Molchanov 1 Yu-Chiang Frank Wang 1",
+   "Kwang-Ting Cheng 2 Min-Hung Chen 1",
+   "Abstract",
+   "1. Introduction",
+   "2. Related Works"
+  ],
+  "references_n": 61,
+  "refs_sample": [
+   "Chen, X., Fang, H., Lin, T.-Y., Vedantam, R., Gupta, S., Doll´ar, P., and Zitnick, C. L. M",
+   "Dettmers, T., Pagnoni, A., Holtzman, A., and Zettlemoyer, L. Qlora: Efficient finetuning o",
+   "Goyal, Y., Khot, T., Summers-Stay, D., Batra, D., and Parikh, D. Making the v in vqa matte"
+  ],
+  "block_kinds": {
+   "heading": 34,
+   "text": 376,
+   "figure": 13,
+   "formula": 19,
+   "table": 15,
+   "reference": 257
+  },
+  "arxiv_id": "2402.09353v6",
+  "doi": "",
+  "char_count": 71746,
+  "problems": [],
+  "scan_detection": "PASS",
+  "status": "PASS"
+ },
+ {
+  "file": "EN_2402.19473_DoRA.pdf",
+  "note": "扩充集全量逐篇解析",
+  "pages": 22,
+  "parsed_pages": 22,
+  "ms": 955,
+  "is_scanned": false,
+  "title": "Retrieval-Augmented Generation for AI-Generated Content: A Survey",
+  "title_nonempty": true,
+  "title_match": null,
+  "authors_n": 12,
+  "authors": [
+   "Penghao Zhao",
+   "Hailin Zhang",
+   "Qinhan Yu",
+   "Zhengren Wang",
+   "Yunteng Geng",
+   "Fangcheng Fu"
+  ],
+  "affiliations_n": 0,
+  "abstract_chars": 2749,
+  "sections_n": 5,
+  "section_levels": {
+   "1": 2,
+   "2": 3
+  },
+  "sections_head": [
+   "Retrieval-Augmented Generation for AI-Generated Content: A Survey",
+   "Representation-based",
+   "Open-domain",
+   "Question",
+   "REFERENCES"
+  ],
+  "references_n": 353,
+  "refs_sample": [
+   "[1] T. B. Brown, B. Mann et al., “Language models are few-shot learners,” in NeurIPS, 2020",
+   "[2] M. Chen, J. Tworek et al., “Evaluating large language models trained on code,” arXiv:2",
+   "[3] OpenAI, “GPT-4 technical report,” arXiv:2303.08774, 2023."
+  ],
+  "block_kinds": {
+   "text": 600,
+   "heading": 5,
+   "figure": 12,
+   "reference": 398
+  },
+  "arxiv_id": "2402.19473v6",
+  "doi": "",
+  "char_count": 137878,
+  "problems": [],
+  "scan_detection": "PASS",
+  "status": "PASS"
+ },
+ {
+  "file": "EN_2404.14219_Phi-3_Technical_Report.pdf",
+  "note": "扩充集全量逐篇解析",
+  "pages": 24,
+  "parsed_pages": 24,
+  "ms": 1704,
+  "is_scanned": false,
+  "title": "Phi-3 Technical Report: A Highly Capable Language Model Locally on Your Phone",
+  "title_nonempty": true,
+  "title_match": null,
+  "authors_n": 1,
+  "authors": [
+   "Microsoft"
+  ],
+  "affiliations_n": 1,
+  "abstract_chars": 1489,
+  "sections_n": 22,
+  "section_levels": {
+   "1": 8,
+   "2": 12,
+   "3": 2
+  },
+  "sections_head": [
+   "Phi-3 Technical Report: A Highly Capable Language Model Locally on Your Phone",
+   "1 Introduction",
+   "2 Technical Specifications",
+   "3 Academic benchmarks",
+   "4 Multilingual and Long Context",
+   "5 Safety"
+  ],
+  "references_n": 73,
+  "refs_sample": [
+   "[AI23] Meta AI. Introducing meta llama 3: The most capable openly available llm to date, 2",
+   "[Ant24] AI Anthropic. The claude 3 model family: Opus, sonnet, haiku. Claude-3 Model Card,",
+   "[AON+21] Jacob Austin, Augustus Odena, Maxwell Nye, Maarten Bosma, Henryk Michalewski, Dav"
+  ],
+  "block_kinds": {
+   "heading": 22,
+   "text": 961,
+   "figure": 9,
+   "formula": 3,
+   "table": 7,
+   "reference": 304
+  },
+  "arxiv_id": "2404.14219v4",
+  "doi": "",
+  "char_count": 54931,
+  "problems": [],
+  "scan_detection": "PASS",
+  "status": "PASS"
+ },
+ {
+  "file": "EN_2_RETRO_arXiv2112.04426.pdf",
+  "note": "扩充集全量逐篇解析",
+  "pages": 43,
+  "parsed_pages": 43,
+  "ms": 527,
+  "is_scanned": false,
+  "title": "Improving language models by retrieving from trillions of tokens",
+  "title_nonempty": true,
+  "title_match": null,
+  "authors_n": 24,
+  "authors": [
+   "Sebastian Borgeaud",
+   "Arthur Mensch",
+   "Jordan Hoﬀmann",
+   "Trevor Cai",
+   "Eliza Rutherford",
+   "Katie Millican"
+  ],
+  "affiliations_n": 1,
+  "abstract_chars": 917,
+  "sections_n": 497,
+  "section_levels": {
+   "2": 60,
+   "1": 437
+  },
+  "sections_head": [
+   "Improving language models by retrieving from trillions of tokens",
+   "1. Introduction",
+   "10 Number of Non-Embedding Params (M)",
+   "Baseline",
+   "Retrieval dataset (B Tokens)",
+   "Number of neighbors"
+  ],
+  "references_n": 214,
+  "refs_sample": [
+   "M. Abadi, A. Chu, I. Goodfellow, H. B. McMahan, I. Mironov, K. Talwar, and L. Zhang. Deep ",
+   "S. Ahn, H. Choi, T. Pärnamaa, and Y. Bengio. A neural knowledge language model. arXiv prep",
+   "A. Baevski and M. Auli. Adaptive input representations for neural language modeling. In In"
+  ],
+  "block_kinds": {
+   "heading": 497,
+   "text": 889,
+   "figure": 13,
+   "formula": 13,
+   "table": 21,
+   "reference": 1202
+  },
+  "arxiv_id": "2112.04426v3",
+  "doi": "",
+  "char_count": 138080,
+  "problems": [],
+  "scan_detection": "PASS",
+  "status": "PASS"
+ },
+ {
+  "file": "ZH_1_大语言模型的工具使用综述.pdf",
+  "note": "扩充集全量逐篇解析",
+  "pages": 16,
+  "parsed_pages": 16,
+  "ms": 132,
+  "is_scanned": false,
+  "title": "大语言模型的工具使用综述",
+  "title_nonempty": true,
+  "title_match": null,
+  "authors_n": 14,
+  "authors": [
+   "郑逸宁",
+   "余 镇",
+   "李不凡",
+   "杨 捷",
+   "殷林琪",
+   "印张悦"
+  ],
+  "affiliations_n": 0,
+  "abstract_chars": 404,
+  "sections_n": 54,
+  "section_levels": {
+   "1": 46,
+   "2": 8
+  },
+  "sections_head": [
+   "大语言模型的工具使用综述",
+   "1 余 镇",
+   "1 李不凡",
+   "1 杨 捷",
+   "郑逸宁",
+   "1 陆嘉昊"
+  ],
+  "references_n": 101,
+  "refs_sample": [
+   "Achiam J, Adler S, Agarwal S, Ahmad L, Akkaya I, Aleman F L, et al. GPT-4 technical report",
+   "Liu W W, Huang X, Zeng X S, Hao X L, Yu S, Li D X, et al. ToolACE: Winning the points of L",
+   "Abdelaziz I, Basu K, Agarwal M, Kumaravel S, Stallone M, Panda R, et al. Granite-function "
+  ],
+  "block_kinds": {
+   "text": 803,
+   "heading": 54,
+   "reference": 135
+  },
+  "arxiv_id": "",
+  "doi": "10.16383/j.aas.c240793",
+  "char_count": 52279,
+  "problems": [],
+  "scan_detection": "PASS",
+  "status": "PASS"
+ },
+ {
+  "file": "ZH_2_基于大模型的具身智能系统综述.pdf",
+  "note": "扩充集全量逐篇解析",
+  "pages": 19,
+  "parsed_pages": 19,
+  "ms": 873,
+  "is_scanned": false,
+  "title": "基于大模型的具身智能系统综述",
+  "title_nonempty": true,
+  "title_match": null,
+  "authors_n": 7,
+  "authors": [
+   "王文晟",
+   "谭 宁",
+   "黄 凯",
+   "张雨浓",
+   "郑伟诗",
+   "孙富春"
+  ],
+  "affiliations_n": 0,
+  "abstract_chars": 471,
+  "sections_n": 19,
+  "section_levels": {
+   "1": 15,
+   "2": 4
+  },
+  "sections_head": [
+   "基于大模型的具身智能系统综述",
+   "1 谭 宁",
+   "1 黄 凯",
+   "王文晟",
+   "1 张雨浓",
+   "1 郑伟诗"
+  ],
+  "references_n": 139,
+  "refs_sample": [
+   "Turing A M. Computing machinery and intelligence. Mind, 1950, 59: 433−460",
+   "Roy N, Posner I, Barfoot T, Beaudoin P, Bengio Y, Bohg J, et al. From machine learning to ",
+   "Brooks R A. Intelligence without representation. Artificial In- telligence, 1991, 47(1−3):"
+  ],
+  "block_kinds": {
+   "text": 364,
+   "heading": 19,
+   "formula": 1,
+   "reference": 163
+  },
+  "arxiv_id": "",
+  "doi": "10.16383/j.aas.c240542",
+  "char_count": 62642,
+  "problems": [],
+  "scan_detection": "PASS",
+  "status": "PASS"
+ },
+ {
+  "file": "ZH_zwxxxb_2994_神经机器翻译前沿综述.pdf",
+  "note": "扩充集全量逐篇解析",
+  "pages": 18,
+  "parsed_pages": 18,
+  "ms": 1125,
+  "is_scanned": false,
+  "title": "神经机器翻译前沿综述",
+  "title_nonempty": true,
+  "title_match": null,
+  "authors_n": 3,
+  "authors": [
+   "冯洋",
+   "邵晨泽",
+   "北京"
+  ],
+  "affiliations_n": 0,
+  "abstract_chars": 196,
+  "sections_n": 30,
+  "section_levels": {
+   "1": 17,
+   "2": 13
+  },
+  "sections_head": [
+   "神经机器翻译前沿综述",
+   "FrontiersinNeuralMachineTranslation:ALiteratureReview",
+   "1 神经机器翻译",
+   "Weaver在《翻译》中提出了使用机器进行翻译的思",
+   "IBM 的PeterBrown等人发表了两篇",
+   "Cho"
+  ],
+  "references_n": 174,
+  "refs_sample": [
+   "[1] BrownPF,CockeJ,DellaPietraSA,etal.Astatisticalapproachtomachinetranslation[J].Computat",
+   "[2] BrownPF,PietraVJD,PietraS A D,etal.The mathematicsofstatisticalmachinetranslation:Para",
+   "[3] Kalchbrenner N,Blunsom P.Recurrentcontinuous translationmodels[C]//Proceedingsofthe201"
+  ],
+  "block_kinds": {
+   "text": 842,
+   "heading": 30,
+   "formula": 8,
+   "reference": 813
+  },
+  "arxiv_id": "",
+  "doi": "",
+  "char_count": 49463,
+  "problems": [],
+  "scan_detection": "PASS",
+  "status": "PASS"
+ },
+ {
+  "file": "ZH_zwxxxb_2995_从视觉到文本图像描述生成研究进展综述.pdf",
+  "note": "扩充集全量逐篇解析",
+  "pages": 11,
+  "parsed_pages": 11,
+  "ms": 171,
+  "is_scanned": false,
+  "title": "从视觉到文本:图像描述生成的研究进展综述",
+  "title_nonempty": true,
+  "title_match": null,
+  "authors_n": 7,
+  "authors": [
+   "魏忠钰",
+   "范智昊",
+   "王瑞泽",
+   "承怡菁",
+   "赵王榕",
+   "黄萱菁"
+  ],
+  "affiliations_n": 0,
+  "abstract_chars": 216,
+  "sections_n": 20,
+  "section_levels": {
+   "1": 9,
+   "2": 11
+  },
+  "sections_head": [
+   "从视觉到文本:图像描述生成的研究进展综述",
+   "FromVisiontoText:ABriefSurveyforImageCaptioning",
+   "0 引言",
+   "1 基于视觉的文本生成框架",
+   "RNN 的不同变种进行自动化的文本生成。基于端",
+   "2 基于视觉的文本生成的关键问题"
+  ],
+  "references_n": 86,
+  "refs_sample": [
+   "[1] HeX,DengL.Deeplearningforimage-to-textgeneration:Atechnicaloverview[J].IEEESignalProce",
+   "[2] HossainMZ,SohelF,ShiratuddinMF,etal.Acomprehensivesurveyofdeeplearningforimagecaptioni",
+   "[3] ZhangC,YangZ,HeX,etal.Multimodalintelligence:Representationlearning,informationfusion,"
+  ],
+  "block_kinds": {
+   "text": 1066,
+   "heading": 20,
+   "reference": 372
+  },
+  "arxiv_id": "",
+  "doi": "",
+  "char_count": 27384,
+  "problems": [],
+  "scan_detection": "PASS",
+  "status": "PASS"
+ },
+ {
+  "file": "ZH_zwxxxb_3055_知识图谱研究现状及军事应用.pdf",
+  "note": "扩充集全量逐篇解析",
+  "pages": 8,
+  "parsed_pages": 8,
+  "ms": 600,
+  "is_scanned": false,
+  "title": "知识图谱研究现状及军事应用",
+  "title_nonempty": true,
+  "title_match": null,
+  "authors_n": 6,
+  "authors": [
+   "林旺群",
+   "汪淼",
+   "王伟",
+   "王重楠",
+   "金松昌",
+   "北京"
+  ],
+  "affiliations_n": 0,
+  "abstract_chars": 181,
+  "sections_n": 3,
+  "section_levels": {
+   "1": 2,
+   "2": 1
+  },
+  "sections_head": [
+   "知识图谱研究现状及军事应用",
+   "ASurveytoKnowledgeGraphandItsMilitaryApplication",
+   "参考文献"
+  ],
+  "references_n": 36,
+  "refs_sample": [
+   "[1] 徐增林,盛泳潘,贺丽荣,等.知识图谱技术综述[J].电 子科技大学学报,2016,45(04):589-606.",
+   "[2] 漆桂林,高桓,吴天星.知识图谱研究进展[J].情报 工程,2017,3(1):4-25.",
+   "[3] 刘峤,李杨,段宏,等.知识图谱构建技术综述[J].计算 机研究与发展,2016,53(03):582-600."
+  ],
+  "block_kinds": {
+   "text": 445,
+   "heading": 3,
+   "formula": 1,
+   "reference": 149
+  },
+  "arxiv_id": "",
+  "doi": "",
+  "char_count": 15336,
+  "problems": [],
+  "scan_detection": "PASS",
+  "status": "PASS"
+ },
+ {
+  "file": "ZH_zwxxxb_3187_基于语言模型的预训练技术研究综述.pdf",
+  "note": "扩充集全量逐篇解析",
+  "pages": 15,
+  "parsed_pages": 15,
+  "ms": 498,
+  "is_scanned": false,
+  "title": "基于语言模型的预训练技术研究综述",
+  "title_nonempty": true,
+  "title_match": null,
+  "authors_n": 3,
+  "authors": [
+   "岳增营",
+   "叶霞",
+   "刘睿珩"
+  ],
+  "affiliations_n": 0,
+  "abstract_chars": 172,
+  "sections_n": 6,
+  "section_levels": {
+   "1": 5,
+   "2": 1
+  },
+  "sections_head": [
+   "基于语言模型的预训练技术研究综述",
+   "ASurveyofLanguageModelBasedPre-trainingTechnology",
+   "T∑",
+   "∑",
+   "θ Ez~Zt (∑",
+   "参考文献"
+  ],
+  "references_n": 62,
+  "refs_sample": [
+   "[1] FerroneL,ZanzottoF M.Symbolic,distributedand 岳增营等:基于语言模型的预训练技术研究综述 9期 distributionalre",
+   "[2] BengioY,DucharmeR,VincentP,etal.A neural probabilisticlanguage model[J].Journalof Mach",
+   "[3] MikolovT,ChenK,CorradoG,etal.Efficientestimationof wordrepresentationsin vectorspace[J"
+  ],
+  "block_kinds": {
+   "text": 1124,
+   "heading": 6,
+   "formula": 14,
+   "reference": 265
+  },
+  "arxiv_id": "",
+  "doi": "",
+  "char_count": 31108,
+  "problems": [],
+  "scan_detection": "PASS",
+  "status": "PASS"
+ },
+ {
+  "file": "ZH_zwxxxb_3314_多模态信息处理前沿综述.pdf",
+  "note": "扩充集全量逐篇解析",
+  "pages": 20,
+  "parsed_pages": 20,
+  "ms": 1256,
+  "is_scanned": false,
+  "title": "多模态信息处理前沿综述:应用、融合和预训练",
+  "title_nonempty": true,
+  "title_match": null,
+  "authors_n": 4,
+  "authors": [
+   "吴友政",
+   "李浩然",
+   "姚霆",
+   "何晓冬"
+  ],
+  "affiliations_n": 0,
+  "abstract_chars": 264,
+  "sections_n": 58,
+  "section_levels": {
+   "1": 10,
+   "2": 48
+  },
+  "sections_head": [
+   "多模态信息处理前沿综述:应用、融合和预训练",
+   "0 引言",
+   "Era)、1980-2000 年的计算时代(Computational",
+   "Era)、2000-2010 年的交互时代(InteractionEra)",
+   "1 多模态应用",
+   "CMU-MOSI"
+  ],
+  "references_n": 127,
+  "refs_sample": [
+   "[1] MorencyLP,BaltrusaitisT.Tutorialon multimodal machinelearning[C]//Proceedingsofthe55th",
+   "[2] ZhangC,YangZ,HeX,etal.Multimodalintelligence:representationlearning,informationfusiona",
+   "[3] SummairaJ,LiX,ShoibA M,etal.Recentadvances andtrendsinmultimodaldeeplearning:areview[J"
+  ],
+  "block_kinds": {
+   "text": 1433,
+   "heading": 58,
+   "formula": 4,
+   "reference": 576
+  },
+  "arxiv_id": "",
+  "doi": "",
+  "char_count": 47890,
+  "problems": [],
+  "scan_detection": "PASS",
+  "status": "PASS"
+ },
+ {
+  "file": "ZH_zwxxxb_3659_大语言模型评测综述.pdf",
+  "note": "扩充集全量逐篇解析",
+  "pages": 23,
+  "parsed_pages": 23,
+  "ms": 497,
+  "is_scanned": false,
+  "title": "大语言模型评测综述",
+  "title_nonempty": true,
+  "title_match": null,
+  "authors_n": 2,
+  "authors": [
+   "罗文",
+   "王厚峰"
+  ],
+  "affiliations_n": 0,
+  "abstract_chars": 316,
+  "sections_n": 16,
+  "section_levels": {
+   "1": 16
+  },
+  "sections_head": [
+   "大语言模型评测综述",
+   "n∑",
+   "1 BERTScore",
+   "m∑",
+   "n∑",
+   "2 BERTforMTE"
+  ],
+  "references_n": 143,
+  "refs_sample": [
+   "[1] KENTONJD M W C,TOUTANOVA L K.BERT: Pre-trainingofdeepbidirectionaltransformersforlangu",
+   "[2] RADFORD A,NARASIMHAN K,SALIMANS T, etal.Improvinglanguageunderstandingbygenerative pre",
+   "[3] LEWISM,LIUY,GOYALN,etal.BART:Denoisingsequence-to-sequencepre-trainingfornaturallangua"
+  ],
+  "block_kinds": {
+   "text": 1561,
+   "heading": 16,
+   "formula": 5,
+   "reference": 658
+  },
+  "arxiv_id": "",
+  "doi": "",
+  "char_count": 54991,
+  "problems": [],
+  "scan_detection": "PASS",
+  "status": "PASS"
+ },
+ {
+  "file": "ZH_zwxxxb_3660_医疗领域对话系统口语理解综述.pdf",
+  "note": "扩充集全量逐篇解析",
+  "pages": 12,
+  "parsed_pages": 12,
+  "ms": 686,
+  "is_scanned": false,
+  "title": "医疗领域对话系统口语理解综述",
+  "title_nonempty": true,
+  "title_match": null,
+  "authors_n": 5,
+  "authors": [
+   "任芳慧",
+   "郭熙铜",
+   "彭昕",
+   "杨锦锋",
+   "浙江宁波"
+  ],
+  "affiliations_n": 0,
+  "abstract_chars": 327,
+  "sections_n": 27,
+  "section_levels": {
+   "1": 9,
+   "2": 18
+  },
+  "sections_head": [
+   "医疗领域对话系统口语理解综述",
+   "ASurveyofSpokenLanguageUnderstandinginMedicalField",
+   "System,TOD)的重要组成部分,口语理解(Spoken",
+   "0 引言",
+   "LanguageUnderstanding,SLU)负责接收用户的语",
+   "1 口语理解任务简介"
+  ],
+  "references_n": 66,
+  "refs_sample": [
+   "[1] HEMPHILLCT,GODFREYJJ,DODDINGTONG R.The ATISspokenlanguagesystemspilotcorpus [C]//Proce",
+   "[2] COUCKEA,SAADEA,BALLA,etal.Snipsvoice platform:Anembeddedspokenlanguageunderstandingsys",
+   "[3] LUGOSCH L,RAVANELLIM,IGNOTO P,etal. Speech modelpre-trainingforend-to-endspokenlanguag"
+  ],
+  "block_kinds": {
+   "text": 714,
+   "heading": 27,
+   "formula": 3,
+   "reference": 377
+  },
+  "arxiv_id": "",
+  "doi": "",
+  "char_count": 26057,
+  "problems": [],
+  "scan_detection": "PASS",
+  "status": "PASS"
+ },
+ {
+  "file": "ZH_zwxxxb_3861_大语言模型微调方法研究综述.pdf",
+  "note": "扩充集全量逐篇解析",
+  "pages": 26,
+  "parsed_pages": 26,
+  "ms": 958,
+  "is_scanned": false,
+  "title": "大语言模型微调方法研究综述",
+  "title_nonempty": true,
+  "title_match": null,
+  "authors_n": 9,
+  "authors": [
+   "吴春志",
+   "赵玉龙",
+   "刘鑫",
+   "司念文",
+   "张鲁飞",
+   "范昊"
+  ],
+  "affiliations_n": 0,
+  "abstract_chars": 323,
+  "sections_n": 80,
+  "section_levels": {
+   "1": 11,
+   "2": 69
+  },
+  "sections_head": [
+   "大语言模型微调方法研究综述",
+   "FineTuningMethodsforLargeLanguageModels:ASurvey",
+   "0 引言",
+   "LLM),是自然语言处理领域的“语言模型”概念的",
+   "PFM)或大模型之上,通过参数微调进一步提升大语",
+   "1 大模型微调相关概念"
+  ],
+  "references_n": 155,
+  "refs_sample": [
+   "[1] OpenAI.ChatGPT:Optimizinglanguage modelsfor dialogue[EB/OL].https://onlinechatgpt. com",
+   "[2] OpenAI.GPT-4technicalreport[J/OL].arXiv:2303. 08774,2023.",
+   "[3] HOULSBY N,GIURGIU A,JASTRZEBSKIS,et al.Parameter-efficienttransferlearningforNLP[C]// "
+  ],
+  "block_kinds": {
+   "text": 2384,
+   "heading": 80,
+   "formula": 22,
+   "reference": 1009
+  },
+  "arxiv_id": "",
+  "doi": "",
+  "char_count": 58215,
+  "problems": [],
+  "scan_detection": "PASS",
+  "status": "PASS"
+ }
+]

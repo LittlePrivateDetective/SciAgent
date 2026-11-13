@@ -191,8 +191,9 @@ def main() -> int:
     s.call("Future Work", "GET", "/api/research/future-work", ok=lambda b: len(b.get("items", [])) > 0)
     s.call("复现性", "GET", "/api/research/reproducibility", ok=lambda b: len(b.get("items", [])) > 0)
     s.call("工具调用-GitHub", "POST", "/api/tools/invoke",
-           json_body={"tool": "github_repo_info", "args": {"repo": "huggingface/transformers"}},
-           allow=(200, 500), expect="在线或降级")
+           json_body={"tool": "github_repo", "args": {"repo": "huggingface/transformers"}},
+           ok=lambda b: bool(b.get("data")) and (b.get("ok") is True or (b.get("degraded") and bool(b.get("source")))),
+           expect="业务 ok 且有数据；或明确 degraded + source，不接受仅 HTTP 200")
     s.call("工具 Agent", "POST", "/api/tools/agent",
            json_body={"question": "Transformer 那个模型的开源代码有多少星"}, ok=lambda b: True)
     csv_text = "model,bleu\ntransformer_big,28.4\nconvseq,25.2\n"

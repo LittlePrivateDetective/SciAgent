@@ -1,0 +1,107 @@
+[
+ {
+  "case": "列表接口",
+  "expect": "返回库内文献列表",
+  "status": "PASS",
+  "detail": "HTTP 200，61 篇；首篇字段 ['abstract', 'affiliations', 'arxiv_id', 'authors', 'char_count', 'chunks', 'created_at', 'doi', 'family_key', 'filename', 'id', 'is_scanned']",
+  "ms": 0
+ },
+ {
+  "case": "单篇上传（英文双栏）",
+  "expect": "解析入库；重复执行时正确判重",
+  "status": "PASS",
+  "detail": "HTTP 200 doc_id=None 页=None 块=None 耗时 1.4s msg=库中已存在内容高度重合的文献",
+  "ms": 1386
+ },
+ {
+  "case": "同文件重复上传",
+  "expect": "按内容判重，不重复入库",
+  "status": "PASS",
+  "detail": "HTTP 200 stage=duplicate msg=库中已存在内容高度重合的文献 duplicates=3",
+  "ms": 1295
+ },
+ {
+  "case": "单篇上传（中文双栏综述）",
+  "expect": "中文解析入库；若隔离库已有则正确判重",
+  "status": "PASS",
+  "detail": "HTTP 200 doc_id=None 页=None 块=None 耗时 0.6s stage=duplicate msg=库中已存在内容高度重合的文献",
+  "ms": 637
+ },
+ {
+  "case": "批量上传 EN_1909.11942_ALBERT.pdf",
+  "expect": "逐篇入库；若隔离库已有则正确判重",
+  "status": "PASS",
+  "detail": "HTTP 200 id=None 页=None 块=None 0.2s stage=duplicate",
+  "ms": 184
+ },
+ {
+  "case": "批量上传 EN_2302.04761_Toolformer.p",
+  "expect": "逐篇入库；若隔离库已有则正确判重",
+  "status": "PASS",
+  "detail": "HTTP 200 id=None 页=None 块=None 0.3s stage=duplicate",
+  "ms": 257
+ },
+ {
+  "case": "批量上传 ZH_zwxxxb_3314_多模态信息处理前沿综述",
+  "expect": "逐篇入库；若隔离库已有则正确判重",
+  "status": "PASS",
+  "detail": "HTTP 200 id=None 页=None 块=None 1.4s stage=duplicate",
+  "ms": 1431
+ },
+ {
+  "case": "版本去重（库内 v7 → 传 v1）",
+  "expect": "识别库内更新版本并给出选择，不静默覆盖",
+  "status": "PASS",
+  "detail": "HTTP 200 stage=duplicate msg=库中已存在内容高度重合的文献 pending_id=a527049d83 dup_keys=['doc_id', 'filename', 'title', 'version', 'arxiv_id', 'reason', 'similarity', 'suggestion']",
+  "ms": 421
+ },
+ {
+  "case": "上传非 PDF",
+  "expect": "返回 400 与可读提示",
+  "status": "PASS",
+  "detail": "HTTP 400 body={\"detail\":\"只支持 PDF\"}",
+  "ms": 0
+ },
+ {
+  "case": "文献详情",
+  "expect": "返回结构化字段",
+  "status": "PASS",
+  "detail": "HTTP 200 keys=['id', 'filename', 'title', 'authors', 'affiliations', 'abstract', 'year', 'venue', 'arxiv_id', 'doi', 'page_count', 'char_count']",
+  "ms": 0
+ },
+ {
+  "case": "删除文献",
+  "expect": "进入回收站而非物理删除",
+  "status": "PASS",
+  "detail": "HTTP 200 body={\"ok\":true,\"trash\":true,\"message\":\"已移入回收站，可用 /api/documents/{id}/restore 恢复\"}",
+  "ms": 0
+ },
+ {
+  "case": "删除后列表",
+  "expect": "主列表不再出现该文献",
+  "status": "PASS",
+  "detail": "剩余 60 篇，目标仍在列表=False",
+  "ms": 0
+ },
+ {
+  "case": "回收站列表",
+  "expect": "可查到被删文献",
+  "status": "PASS",
+  "detail": "GET /api/documents/trash → {\"items\":[{\"doc_id\":\"df34bbf1c6055\",\"filename\":\"EN_1909.11942_ALBERT.pdf\",\"title\":\"FOR SELF-SUPERVISED LEARNING OF LANGUAGE REPRESENTATIONS\",\"chunk_count\":203,\"page_count\":17,\"actor\":\"ui\",\"reason\":\"ap",
+  "ms": 0
+ },
+ {
+  "case": "恢复文献",
+  "expect": "从回收站恢复",
+  "status": "PASS",
+  "detail": "POST /api/documents/df34bbf1c6055/restore → {\"ok\":true,\"restored\":true,\"doc_id\":\"d539e7aa290da\",\"old_doc_id\":\"df34bbf1c6055\",\"filename\":\"EN_1909.11942_ALBERT.pdf\",\"chunks\":205,\"message\":\"已从回收站恢复",
+  "ms": 0
+ },
+ {
+  "case": "强制覆盖上传",
+  "expect": "force=True 时允许重新解析覆盖",
+  "status": "PASS",
+  "detail": "HTTP 200 stage=None msg=None",
+  "ms": 16920
+ }
+]

@@ -1,0 +1,26 @@
+{
+  "main_qa": {
+    "total": 40,
+    "pass": 39,
+    "fail": 0,
+    "blocked": 1
+  },
+  "api": {
+    "pass": 49,
+    "total": 49
+  },
+  "unit": "107/107",
+  "parse30": {
+    "pass": 30,
+    "warn": 0
+  },
+  "m2": {
+    "pass": 12,
+    "total": 12
+  },
+  "citation": {
+    "hit": 98,
+    "graded": 98
+  },
+  "score_after": 93
+}

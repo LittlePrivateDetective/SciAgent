@@ -1,0 +1,388 @@
+[
+  {
+    "case": "CSV bar/mermaid",
+    "status": "PASS",
+    "detail": {
+      "http": 200,
+      "seconds": 0.0,
+      "numbers_ok": true,
+      "grammar": true,
+      "chars": 260,
+      "code_head": "xychart-beta\n    title \"模型对比\"\n    x-axis [\"Transformer\", \"BERT\", \"GPT-3\"]\n    y-axis \"value\" 0 --> 201.2\n    bar [28.4, 34.5, 41.0]  %% BLEU\n    bar [65, 110, 175]  %% Params\n    %% raw values: {\"BLEU\": [\"28.4\", \"34.5\", \"41.0\"], \"Params\": [\"65\", \"110\", \"175\"]}"
+    }
+  },
+  {
+    "case": "CSV bar/tikz",
+    "status": "PASS",
+    "detail": {
+      "http": 200,
+      "seconds": 0.0,
+      "numbers_ok": true,
+      "grammar": true,
+      "chars": 965,
+      "code_head": "% 需要 \\usepackage{pgfplots} 与 \\pgfplotsset{compat=1.18}\n\\begin{figure}[htbp]\n  \\centering\n  \\begin{tikzpicture}\n    \\begin{axis}[\n      width=0.9\\linewidth, height=5.2cm,\n      ybar, bar width=10pt, nodes near coords, nodes near coords style={font=\\tiny},\n      enlargelimits=0.12, ymin=0,\n      legen"
+    }
+  },
+  {
+    "case": "CSV bar/matplotlib",
+    "status": "PASS",
+    "detail": {
+      "http": 200,
+      "seconds": 0.0,
+      "numbers_ok": true,
+      "grammar": true,
+      "chars": 1387,
+      "code_head": "\"\"\"由 SciAgent 从 CSV 生成 —— 每个数值与源表逐格一致，可直接改样式。\"\"\"\nimport matplotlib\nmatplotlib.use(\"Agg\")\nimport matplotlib.pyplot as plt\nimport matplotlib.font_manager as fm\nimport numpy as np\n\n# 西文 Times + 中文回退：投稿模板一般要求 Times 系，中文标题也不能变方框\n_CJK = [\"SimHei\", \"Microsoft YaHei\", \"Noto Sans CJK SC\", \"PingFang SC\",\n    "
+    }
+  },
+  {
+    "case": "CSV line/mermaid",
+    "status": "PASS",
+    "detail": {
+      "http": 200,
+      "seconds": 0.0,
+      "numbers_ok": true,
+      "grammar": true,
+      "chars": 262,
+      "code_head": "xychart-beta\n    title \"模型对比\"\n    x-axis [\"Transformer\", \"BERT\", \"GPT-3\"]\n    y-axis \"value\" 0 --> 201.2\n    line [28.4, 34.5, 41.0]  %% BLEU\n    line [65, 110, 175]  %% Params\n    %% raw values: {\"BLEU\": [\"28.4\", \"34.5\", \"41.0\"], \"Params\": [\"65\", \"110\", \"175\"]}"
+    }
+  },
+  {
+    "case": "CSV line/tikz",
+    "status": "PASS",
+    "detail": {
+      "http": 200,
+      "seconds": 0.0,
+      "numbers_ok": true,
+      "grammar": true,
+      "chars": 940,
+      "code_head": "% 需要 \\usepackage{pgfplots} 与 \\pgfplotsset{compat=1.18}\n\\begin{figure}[htbp]\n  \\centering\n  \\begin{tikzpicture}\n    \\begin{axis}[\n      width=0.9\\linewidth, height=5.2cm,\n      grid=both, mark=*, mark size=1.6pt, line width=0.9pt,\n      enlargelimits=0.12, ymin=0,\n      legend style={at={(0.5,-0.16)}"
+    }
+  },
+  {
+    "case": "CSV line/matplotlib",
+    "status": "PASS",
+    "detail": {
+      "http": 200,
+      "seconds": 0.0,
+      "numbers_ok": true,
+      "grammar": true,
+      "chars": 1251,
+      "code_head": "\"\"\"由 SciAgent 从 CSV 生成 —— 每个数值与源表逐格一致，可直接改样式。\"\"\"\nimport matplotlib\nmatplotlib.use(\"Agg\")\nimport matplotlib.pyplot as plt\nimport matplotlib.font_manager as fm\nimport numpy as np\n\n# 西文 Times + 中文回退：投稿模板一般要求 Times 系，中文标题也不能变方框\n_CJK = [\"SimHei\", \"Microsoft YaHei\", \"Noto Sans CJK SC\", \"PingFang SC\",\n    "
+    }
+  },
+  {
+    "case": "CSV radar/tikz",
+    "status": "PASS",
+    "detail": {
+      "http": 200,
+      "seconds": 0.0,
+      "numbers_ok": true,
+      "grammar": true,
+      "chars": 836,
+      "code_head": "% 需要 \\usepackage{pgfplots} 与 \\pgfplotsset{compat=1.18}\n\\begin{figure}[htbp]\n  \\centering\n  \\begin{tikzpicture}\n    \\begin{polaraxis}[\n      width=6.6cm, height=6.6cm,\n      xtick={0, 120, 240}, xticklabels={Transformer, BERT, GPT-3},\n      ymin=0, ymax=192.5, yticklabel style={font=\\tiny},\n      gri"
+    }
+  },
+  {
+    "case": "CSV radar/matplotlib",
+    "status": "PASS",
+    "detail": {
+      "http": 200,
+      "seconds": 0.0,
+      "numbers_ok": true,
+      "grammar": true,
+      "chars": 1783,
+      "code_head": "\"\"\"由 SciAgent 从 CSV 生成 —— 每个数值与源表逐格一致，可直接改样式。\"\"\"\nimport matplotlib\nmatplotlib.use(\"Agg\")\nimport matplotlib.pyplot as plt\nimport matplotlib.font_manager as fm\nimport numpy as np\n\n# 西文 Times + 中文回退：投稿模板一般要求 Times 系，中文标题也不能变方框\n_CJK = [\"SimHei\", \"Microsoft YaHei\", \"Noto Sans CJK SC\", \"PingFang SC\",\n    "
+    }
+  },
+  {
+    "case": "CSV table/latex",
+    "status": "PASS",
+    "detail": {
+      "http": 200,
+      "seconds": 0.0,
+      "numbers_ok": true,
+      "grammar": true,
+      "chars": 403,
+      "code_head": "% 需要 \\usepackage{booktabs}；三线表是学术期刊最常用的表格形式\n\\begin{table}[htbp]\n  \\centering\n  \\caption{待补表注}\n  \\label{tab:result}\n  \\begin{tabular}{l r r}\n    \\toprule\n    Model & BLEU & Params \\\\\n    \\midrule\n    Transformer & 28.4 & 65 \\\\\n    BERT & 34.5 & 110 \\\\\n    GPT-3 & 41.0 & 175 \\\\\n    \\bottomrule\n  \\end{"
+    }
+  },
+  {
+    "case": "CSV table/markdown",
+    "status": "PASS",
+    "detail": {
+      "http": 200,
+      "seconds": 0.0,
+      "numbers_ok": true,
+      "grammar": true,
+      "chars": 124,
+      "code_head": "**模型对比**\n\n| Model | BLEU | Params |\n|---|---:|---:|\n| Transformer | 28.4 | 65 |\n| BERT | 34.5 | 110 |\n| GPT-3 | 41.0 | 175 |"
+    }
+  },
+  {
+    "case": "Figure Caption 数字回查",
+    "status": "PASS",
+    "detail": {
+      "http": 200,
+      "caption": {
+        "zh": "图 1　模型对比。该柱状图比较了 Transformer、BERT 和 GPT-3 三种模型在 BLEU 分数与参数量上的表现。BLEU 分数由 Transformer 的 28.4 上升至 GPT-3 的 41.0，增幅为 44.4%；参数量由 Transformer 的 65.0 增至 GPT-3 的 175，增长 169.2%。",
+        "en": "Figure 1. Model comparison. This bar chart compares performance and parameter counts across three models: Transformer, BERT, and GPT-3. BLEU scores increase from 28.4 (Transformer) to 41.0 (GPT-3), a rise of 44.4%. Parameter count rises from 65.0 (Transformer) to 175 (GPT-3), an increase of 169.2%.",
+        "trend_zh": "从 Transformer 到 GPT-3，BLEU 分数与参数量均显著上升。",
+        "trend_en": "BLEU score and parameter count both increase significantly from Transformer to GPT-3.",
+        "source": "llm",
+        "checks": {
+          "verified": 20,
+          "foreign": [],
+          "checked": 20
+        }
+      },
+      "caption_zh": null,
+      "caption_en": null,
+      "checks": null,
+      "raw_keys": [
+        "ok",
+        "code",
+        "format",
+        "kind",
+        "rows",
+        "columns",
+        "raw_values",
+        "labels",
+        "title",
+        "caption"
+      ]
+    }
+  },
+  {
+    "case": "无数据 CSV 拒绝",
+    "status": "PASS",
+    "detail": {
+      "http": 400,
+      "body": "{\"detail\":\"CSV 至少需要表头 + 1 行数据\"}"
+    }
+  },
+  {
+    "case": "不支持的图表组合拒绝",
+    "status": "PASS",
+    "detail": {
+      "http": 400,
+      "body": "{\"detail\":\"radar 不支持 mermaid，可用格式：tikz / matplotlib\"}"
+    }
+  },
+  {
+    "case": "架构拓扑四类代码",
+    "status": "PASS",
+    "detail": {
+      "http": 200,
+      "seconds": 7.02,
+      "nodes": [
+        {
+          "id": "n1",
+          "label": "PDF 文档",
+          "kind": "input",
+          "group": "数据层"
+        },
+        {
+          "id": "n2",
+          "label": "文本解析",
+          "kind": "module",
+          "group": "数据层"
+        },
+        {
+          "id": "n3",
+          "label": "分块向量化",
+          "kind": "module",
+          "group": "数据层"
+        },
+        {
+          "id": "n4",
+          "label": "混合检索",
+          "kind": "module",
+          "group": "模型层"
+        },
+        {
+          "id": "n5",
+          "label": "证据校验",
+          "kind": "module",
+          "group": "模型层"
+        },
+        {
+          "id": "n6",
+          "label": "答案生成",
+          "kind": "module",
+          "group": "模型层"
+        },
+        {
+          "id": "n7",
+          "label": "原文定位",
+          "kind": "module",
+          "group": "输出层"
+        },
+        {
+          "id": "n8",
+          "label": "查询输入",
+          "kind": "input",
+          "group": "数据层"
+        },
+        {
+          "id": "n9",
+          "label": "检索结果",
+          "kind": "data",
+          "group": "模型层"
+        },
+        {
+          "id": "n10",
+          "label": "验证结果",
+          "kind": "data",
+          "group": "模型层"
+        },
+        {
+          "id": "n11",
+          "label": "生成答案",
+          "kind": "data",
+          "group": "输出层"
+        },
+        {
+          "id": "n12",
+          "label": "定位锚点",
+          "kind": "data",
+          "group": "输出层"
+        }
+      ],
+      "edges": [
+        {
+          "from": "n1",
+          "to": "n2",
+          "label": ""
+        },
+        {
+          "from": "n2",
+          "to": "n3",
+          "label": ""
+        },
+        {
+          "from": "n8",
+          "to": "n4",
+          "label": ""
+        },
+        {
+          "from": "n3",
+          "to": "n4",
+          "label": ""
+        },
+        {
+          "from": "n4",
+          "to": "n9",
+          "label": ""
+        },
+        {
+          "from": "n9",
+          "to": "n5",
+          "label": ""
+        },
+        {
+          "from": "n5",
+          "to": "n10",
+          "label": ""
+        },
+        {
+          "from": "n10",
+          "to": "n6",
+          "label": ""
+        },
+        {
+          "from": "n6",
+          "to": "n11",
+          "label": ""
+        },
+        {
+          "from": "n11",
+          "to": "n7",
+          "label": ""
+        },
+        {
+          "from": "n7",
+          "to": "n12",
+          "label": ""
+        }
+      ],
+      "keys": [
+        "ok",
+        "title",
+        "source",
+        "nodes",
+        "edges",
+        "groups",
+        "formats",
+        "checks"
+      ],
+      "source": "llm"
+    }
+  },
+  {
+    "case": "写作大纲与真实 References",
+    "status": "PASS",
+    "detail": {
+      "http": 200,
+      "seconds": 9.0,
+      "title": "Cost and Performance Comparison of Low-Rank Adaptation and Quantized Fine-Tuning in Long-Document Scientific Question Answering",
+      "sections": [
+        {
+          "key": "abstract",
+          "name": "Abstract · 摘要",
+          "text": "This study investigates the trade-offs between low-rank adaptation (LoRA) and quantized fine-tuning (QLoRA) in the context of long-document scientific question answering, focusing on computational cost and task performance. While LoRA enables efficient parameter adaptation by introducing low-rank matrices to update only a subset of model weights [1], QLoRA extends this efficiency by combining 4-bit quantization with LoRA, allowing full-scale fine-tuning of large models on consumer-grade hardware [2]. We evaluate both methods on a benchmark dataset of complex scientific queries requiring multi-hop reasoning across lengthy documents. Metrics include inference latency, GPU memory consumption, and answer accuracy. Results indicate that QLoRA achieves comparable or superior performance to LoRA while reducing memory usage significantly—enabling fine-tuning of a 65B-parameter model on a single 48GB GPU [2]. However, LoRA remains advantageous in scenarios where full precision is required and training stability is critical. This work provides empirical guidance for selecting efficient adaptation strategies in resource-constrained scientific NLP applications.",
+          "citations": [
+            "[1]",
+            "[2]"
+          ]
+        },
+        {
+          "key": "introduction",
+          "name": "Introduction · 引言",
+          "text": "The increasing scale of pre-trained language models has intensified the need for efficient adaptation techniques that balance performance and computational cost. In scientific question answering tasks involving long, complex documents, the ability to fine-tune large models without prohibitive resource demands is essential. Full fine-tuning of models such as GPT-3 175B is impractical due to massive memory and storage requirements [1]. To address this challenge, low-rank adaptation (LoRA) was introduced as a method to adapt large models by updating only low-rank matrices, drastically reducing trainable parameters [1]. More recently, QLoRA further advances efficiency by integrating 4-bit quantization with LoRA, enabling full 16-bit performance fine-tuning of 65B models on a single 48GB GPU [2]. Despite these advancements, a systematic comparison of LoRA and QLoRA specifically in long-document scientific QA settings—where context length, reasoning complexity, and precision matter—is lacking. This paper aims to fill that gap by evaluating both approaches in terms of memory footprint, inference speed, and answer accuracy. Our analysis focuses on real-world constraints faced by researchers deploying models in academic environments, offering actionable insights into optimal adaptation strategies.",
+          "citations": [
+            "[1]",
+            "[2]"
+          ]
+        },
+        {
+          "key": "related_work",
+          "name": "Related Work · 相关工作",
+          "text": "Recent progress in efficient model adaptation has been driven by the need to reduce the computational burden of fine-tuning large language models. LoRA, introduced by Hu et al., proposes a low-rank decomposition strategy to update only a small fraction of model parameters during adaptation, maintaining high performance while minimizing memory overhead [1]. This approach has become widely adopted in domain-specific fine-tuning tasks. Building upon LoRA, QLoRA introduces 4-bit quantization of the frozen pretrained model, allowing gradients to be backpropagated through quantized layers into LoRA adapters [2]. This innovation enables fine-tuning of extremely large models on limited hardware, achieving performance equivalent to full 16-bit fine-tuning [2]. While prior works have demonstrated the effectiveness of both methods in general-purpose tasks, their comparative performance in long-document scientific QA remains underexplored. Scientific QA requires robust handling of extended context, multi-step reasoning, and precise factual recall—factors that may interact differently with quantization and low-rank updates. Existing studies focus primarily on model size reduction or training speed, but not on downstream task fidelity in complex, information-dense domains. Thus, there is a clear need for a targeted evaluation of LoRA and QLoRA in this specific application space.",
+          "citations": [
+            "[1]",
+            "[2]"
+          ]
+        },
+        {
+          "key": "plan",
+          "name": "Research Plan · 研究方案",
+          "text": "Our research plan consists of four phases: (1) Dataset preparation—curating a benchmark dataset of long-form scientific questions drawn from peer-reviewed papers, annotated with ground-truth answers requiring multi-hop reasoning; (2) Model setup—implementing both LoRA and QLoRA configurations on a 65B-scale base model, using identical hyperparameters except for adapter rank and quantization level; (3) Evaluation—measuring inference latency, peak GPU memory usage, and answer accuracy (via exact match and F1 scores) across multiple test sets; (4) Comparative analysis—assessing trade-offs between cost (memory, compute time) and performance (accuracy, robustness). All experiments will be conducted on a single 48GB GPU to reflect real-world constraints. The results will be analyzed using statistical tests to determine significance. The findings will inform best practices for deploying efficient fine-tuning in scientific NLP pipelines, particularly where access to high-end infrastructure is limited. Both LoRA [1] and QLoRA [2] will serve as foundational frameworks, with no external methods or datasets used beyond those specified.",
+          "citations": [
+            "[1]",
+            "[2]"
+          ]
+        }
+      ],
+      "references": [
+        {
+          "index": 1,
+          "gbt": "HU E, SHEN Y, WALLIS P, et al. LORA: LOW-RANK ADAPTATION OF LARGE LAN- GUAGE MODELS[EB/OL]. arXiv:2106.09685v2, 2021.",
+          "doc_id": "d3706de3b6864",
+          "title": "LORA: LOW-RANK ADAPTATION OF LARGE LAN- GUAGE MODELS",
+          "year": "2021",
+          "cited": true
+        },
+        {
+          "index": 2,
+          "gbt": "DETTMERS T, PAGNONI A, HOLTZMAN A, et al. QLORA: Efficient Finetuning of Quantized LLMs[EB/OL]. arXiv:2305.14314v1, 2023.",
+          "doc_id": "db3c184f9cffd",
+          "title": "QLORA: Efficient Finetuning of Quantized LLMs",
+          "year": "2023",
+          "cited": true
+        }
+      ],
+      "stats": null
+    }
+  }
+]

@@ -1,0 +1,148 @@
+17:01:33 | INFO    | app.parse.structure      | 解析完成 D:\projects\sciagent\tests\corpus\EN_1909.11942_ALBERT.pdf：17 页 / 1154 区块 / 16 标题 / 64 参考文献 / 扫描件=False
+
+### EN_1909.11942_ALBERT.pdf TITLE FOR SELF-SUPERVISED LEARNING OF LANGUAGE REPRESENTATIONS ABSLEN 977
+text 10.0 26.2 'Published as a conference paper at ICLR 2020'
+heading 17.2 77.6 'FOR SELF-SUPERVISED LEARNING OF LANGUAGE REPRESENTATIONS'
+heading 17.2 77.6 'ALBERT: A LITE BERT'
+text 10.0 135.4 'Mingda Chen2∗'
+text 10.0 135.5 'Zhenzhong Lan1'
+text 10.0 135.5 'Kevin Gimpel2 Piyush Sharma1'
+text 10.0 135.5 'Sebastian Goodman1'
+heading 10.0 153.8 'Radu Soricut1 1Google Research'
+text 10.0 171.9 '2Toyota Technological Institute at Chicago {lanzhzh, seabass, piyushsharma, rsoricut}@google.com {mchen, kgimpel}@ttic.edu'
+text 20.0 218.4 'arXiv:1909.11942v6 [cs.CL] 9 Feb 2020'
+heading 12.0 240.0 'ABSTRACT'
+text 10.0 265.9 'Increasing model size when pretraining natural language representations often re- sults in improved performance on downstream tasks. However, at some point fur- ther model increase'
+heading 12.0 429.4 '1 INTRODUCTION'
+text 10.0 454.9 'Full network pre-training (Dai & Le, 2015; Radford et al., 2018; Devlin et al., 2019; Howard & Ruder, 2018) has led to a series of breakthroughs in language representation learning'
+text 10.0 570.4 'Evidence from these improvements reveals that a large network is of crucial importance for achiev- ing state-of-the-art performance (Devlin et al., 2019; Radford et al., 2019). It '
+text 10.0 631.2 'An obstacle to answering this question is the memory limitations of available hardware. Given that current state-of-the-art models often have hundreds of millions or even billions '
+text 10.0 692.0 'Existing solutions to the aforementioned problems include model parallelization (Shazeer et al., 2018; Shoeybi et al., 2019) and clever memory management (Chen et al., 2016; Gomez '
+text 9.0 721.3 '∗Work done as an intern at Google Research, driving data processing and downstream task evaluations.'
+17:01:34 | INFO    | app.parse.structure      | 解析完成 D:\projects\sciagent\tests\corpus\EN_1409.1556_Show_and_Tell.pdf：14 页 / 808 区块 / 15 标题 / 81 参考文献 / 扫描件=False
+
+### EN_1409.1556_Show_and_Tell.pdf TITLE VERY DEEP CONVOLUTIONAL NETWORKS ABSLEN 923
+text 10.0 24.9 'Published as a conference paper at ICLR 2015'
+text 17.2 75.5 'VERY DEEP CONVOLUTIONAL NETWORKS'
+text 17.2 95.4 'FOR LARGE-SCALE IMAGE RECOGNITION'
+heading 10.0 133.7 'Karen Simonyan∗& Andrew Zisserman+'
+text 10.0 145.0 'Visual Geometry Group, Department of Engineering Science, University of Oxford {karen,az}@robots.ox.ac.uk'
+heading 12.0 195.1 'ABSTRACT'
+text 20.0 196.0 'arXiv:1409.1556v6 [cs.CV] 10 Apr 2015'
+text 10.0 222.4 'In this work we investigate the effect of the convolutional network depth on its'
+text 10.0 233.3 'accuracy in the large-scale image recognition setting. Our main contribution is'
+text 10.0 244.4 'a thorough evaluation of networks of increasing depth using an architecture with'
+text 10.0 255.3 'very small (3 × 3) convolution ﬁlters, which shows that a signiﬁcant improvement'
+text 10.0 266.2 'on the prior-art conﬁgurations can be achieved by pushing the depth to 16–19'
+text 10.0 277.3 'weight layers. These ﬁndings were the basis of our ImageNet Challenge 2014'
+text 10.0 288.2 'submission, where our team secured the ﬁrst and the second places in the localisa-'
+text 10.0 299.1 'tion and classiﬁcation tracks respectively. We also show that our representations'
+text 10.0 310.1 'generalise well to other datasets, where they achieve state-of-the-art results. We'
+text 10.0 321.1 'have made our two best-performing ConvNet models publicly available to facili-'
+text 10.0 332.0 'tate further research on the use of deep visual representations in computer vision.'
+17:01:34 | INFO    | app.parse.structure      | 解析完成 D:\projects\sciagent\tests\corpus\EN_1511.06434_Pointer_Networks.pdf：16 页 / 203 区块 / 13 标题 / 40 参考文献 / 扫描件=False
+
+### EN_1511.06434_Pointer_Networks.pdf TITLE UNSUPERVISED REPRESENTATION LEARNING WITH DEEP CONVOLUTIONAL GENERATIVE ADVERSARIAL NETWORKS ABSLEN 894
+text 10.0 27.8 'Under review as a conference paper at ICLR 2016'
+text 17.2 80.3 'UNSUPERVISED REPRESENTATION LEARNING WITH DEEP CONVOLUTIONAL GENERATIVE ADVERSARIAL NETWORKS'
+text 10.0 156.6 'Alec Radford & Luke Metz indico Research Boston, MA {alec,luke}@indico.io'
+text 10.0 217.7 'Soumith Chintala Facebook AI Research New York, NY soumith@fb.com'
+text 20.0 220.6 'arXiv:1511.06434v2 [cs.LG] 7 Jan 2016'
+heading 12.0 290.4 'ABSTRACT'
+text 10.0 315.1 'In recent years, supervised learning with convolutional networks (CNNs) has seen huge adoption in computer vision applications. Comparatively, unsupervised learning with CNNs has r'
+heading 12.0 466.8 '1 INTRODUCTION'
+text 10.0 491.6 'Learning reusable feature representations from large unlabeled datasets has been an area of active research. In the context of computer vision, one can leverage the practically unl'
+text 10.0 629.1 'In this paper, we make the following contributions'
+text 10.0 649.0 '• We propose and evaluate a set of constraints on the architectural topology of Convolutional GANs that make them stable to train in most settings. We name this class of architectu'
+text 10.0 711.0 '• We visualize the ﬁlters learnt by GANs and empirically show that speciﬁc ﬁlters have learned to draw speciﬁc objects.'
+text 10.0 752.2 '1'
+17:01:35 | INFO    | app.parse.structure      | 解析完成 D:\projects\sciagent\tests\corpus\EN_2307.08691_FlashAttention-2.pdf：14 页 / 975 区块 / 19 标题 / 20 参考文献 / 扫描件=False
+
+### EN_2307.08691_FlashAttention-2.pdf TITLE FlashAttention-2: Faster Attention with Better Parallelism and Work Partitioning ABSLEN 0
+text 17.2 107.4 'FlashAttention-2: Faster Attention with Better Parallelism and Work Partitioning'
+text 12.0 164.1 'Tri Dao1,2 1Department of Computer Science, Princeton University 2Department of Computer Science, Stanford University trid@cs.stanford.edu'
+text 20.0 218.9 'arXiv:2307.08691v1 [cs.LG] 17 Jul 2023'
+text 12.0 249.8 'July 18, 2023'
+text 9.1 288.0 'Abstract Scaling Transformers to longer sequence lengths has been a major problem in the last several years, promising to improve performance in language modeling and high-resoluti'
+heading 14.3 518.7 '1 Introduction'
+text 10.1 543.7 'Scaling up the context length of Transformers [18] is a challenge, since the attention layer at their heart has runtime and memory requirements quadratic in the input sequence leng'
+text 8.0 704.8 '1FlashAttention-2 is available at https://github.com/Dao-AILab/flash-attention'
+text 10.0 742.8 '1'
+17:01:37 | INFO    | app.parse.structure      | 解析完成 D:\projects\sciagent\tests\corpus\EN_2404.14219_Phi-3_Technical_Report.pdf：24 页 / 1306 区块 / 22 标题 / 73 参考文献 / 扫描件=False
+
+### EN_2404.14219_Phi-3_Technical_Report.pdf TITLE Phi-3 Technical Report: A Highly Capable Language Model Locally on Your Phone ABSLEN 0
+heading 17.2 101.0 'Phi-3 Technical Report: A Highly Capable Language Model Locally on Your Phone'
+text 12.0 157.3 'Microsoft'
+text 10.0 199.2 'Abstract We introduce phi-3-mini, a 3.8 billion parameter language model trained on 3.3 trillion tokens, whose overall performance, as measured by both academic benchmarks and inte'
+text 20.0 208.9 'arXiv:2404.14219v4 [cs.CL] 30 Aug 2024'
+heading 14.3 427.6 '1 Introduction'
+text 10.9 454.7 'The striking progress of AI in the last few years can be largely attributed to major efforts through- out the world towards scaling-up to ever-larger models and datasets. Large Lan'
+text 10.9 656.2 '[JSR+24] and GPT-3.5.'
+text 10.9 723.7 '1'
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+MuPDF error: syntax error: syntax error in content stream
+
+17:01:37 | INFO    | app.parse.structure      | 解析完成 D:\projects\sciagent\tests\corpus\ZH_zwxxxb_3659_大语言模型评测综述.pdf：23 页 / 2240 区块 / 17 标题 / 143 参考文献 / 扫描件=False
+
+### ZH_zwxxxb_3659_大语言模型评测综述.pdf TITLE 大语言模型评测综述 ABSLEN 0
+text 8.2 31.6 'Vol.38,No.1'
+text 8.2 33.0 '第38卷 第1期'
+text 9.7 34.0 '中文信息学报 JOURNALOFCHINESEINFORMATIONPROCESSING'
+text 8.2 43.3 ',2024'
+text 8.2 44.6 '2024年1月'
+text 8.2 44.6 'Jan.'
+text 9.7 73.0 '文章编号:1003-0077(2024)01-0001-23'
+heading 14.7 124.4 '大语言模型评测综述'
+text 11.2 152.1 '罗文,王厚峰'
+text 8.2 178.1 '(北京大学计算机学院,北京100871) 摘 要:大语言模型(LargeLanguageModels,LLMs)在多种自然语言处理(NaturalLanguageProcessing,NLP)任'
+text 8.2 211.8 '务中展现出了卓越性能,并为实现通用语言智能提供了可能。然而随着其应用范围的扩大,如何准确、全面地评估'
+text 8.2 226.1 '大语言模型已经成为了一个亟待解决的问题。现有评测基准和方法仍存在许多不足,如评测任务不合理和评测结'
+text 8.2 240.3 '果不可解释等。同时,随着模型鲁棒性和公平性等其它能力或属性的关注度提升,对更全面、更具解释性的评估方'
+text 8.2 254.6 '法的需求日益凸显。该文深入分析了大语言模型评测的现状和挑战,总结了现有评测范式,分析了现有评测的不'
+text 8.2 268.9 '足,介绍了大语言模型相关的评测指标和评测方法,并探讨了大语言模型评测的一些新方向。'
+text 8.2 283.1 '关键词:自然语言处理;大语言模型;模型评测'
+text 8.2 297.4 '中图分类号:TP391 文献标识码:A'
+heading 11.2 332.9 'EvaluatingLargeLanguageModels:ASurveyofResearchProgress'

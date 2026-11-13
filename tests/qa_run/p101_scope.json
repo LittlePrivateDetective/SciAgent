@@ -1,0 +1,55 @@
+[
+  {
+    "question": "Transformer 原文的编码器和解码器各有多少层？注意力头的数量是多少？请给出数值。",
+    "http": 200,
+    "text_id": "dce63a636cf64",
+    "scan_id": "dca501d1039dc",
+    "evidence_ids": [
+      "dce63a636cf64",
+      "dce63a636cf64",
+      "dce63a636cf64",
+      "dce63a636cf64",
+      "dce63a636cf64",
+      "dce63a636cf64",
+      "dce63a636cf64"
+    ],
+    "answer": "编码器和解码器各由 N = 6 层相同层堆叠而成；注意力头数为 h = 8。\n- 编码器由 N = 6 identical layers 堆叠，每层含两个子层：multi-head self-attention 与 position-wise fully connected feed-forward network [2]。\n- 解码器同样由 N = 6 identical layers 堆叠，并在两个子层之外插入第三个子层，对编码器堆叠输出做 multi-head attention [3]。\n- 原文采用 h = 8 parallel attention layers（即 heads），每个 head 取 dk = dv = dmodel/h = 64 [4]；Table 3 中 base 模型亦为 N=6、h=8 [1]。\n\n---\n**引用来源**\n\n| # | 文献 | 页 | 锚点 | 片段 |\n| --- | --- | --- | --- | --- |\n| 1 | 1706.03762v1.pdf | 9 | `[p9@107,71,505,370]` | Table 3: Variations on the Transformer architecture. Unlisted hyperparameter val |\n| 2 | 1706.03762v1.pdf | 2 | `[p2@107,601,505,678]` | The encoder is composed of a stack of N = 6 identical layers. Each layer has two |\n| 3 | 1706.03762v1.pdf | 2 | `[p2@108,601,504,752]` | Encoder: The decoder is also composed of a stack of N = 6 identical layers. In a |\n| 4 | 1706.03762v1.pdf | 4 | `[p4@107,537,504,651]` | MultiHead(Q, K, V ) = Concat(head1, ..., headh) where headi = Attention(QW Q i , |\n| 5 | 1706.03762v1.pdf | 1 | `[p1@143,361,469,523]` | The dominant sequence transduction models are based on complex recurrent or conv |\n| 6 | 1706.03762v1.pdf | 10 | `[p10@108,97,504,129]` | 9 In this work, we presented the Transformer, the ﬁrst sequence transduction mod |\n| 7 | 1706.03762v1.pdf | 9 | `[p9@108,103,274,113]` | 8 not be compared to per-word perplexities. |",
+    "status": "PASS"
+  },
+  {
+    "question": "Transformer 的 base 模型总参数量是多少？回答后给出可直接定位原文数值的页码与区域。",
+    "http": 200,
+    "text_id": "dce63a636cf64",
+    "scan_id": "dca501d1039dc",
+    "evidence_ids": [
+      "dce63a636cf64",
+      "dce63a636cf64",
+      "dce63a636cf64",
+      "dce63a636cf64",
+      "dce63a636cf64",
+      "dce63a636cf64",
+      "dce63a636cf64",
+      "dce63a636cf64"
+    ],
+    "answer": "Transformer 的 base 模型总参数量为 65×10⁶（即 65M）。依据：Table 3 中 base 行给出 params ×10⁶ 列为 65 [1]；该表注明未列出的超参数值与 base 模型相同，base 配置为 N=6、dmodel=512、dff=1024、h=8、dk=64、dv=64、Pdrop=0.1、ϵls=0.1、train steps=100K [1]。定位：第9页 Table 3（base 行最右侧 params 列）[1]。\n\n---\n**引用来源**\n\n| # | 文献 | 页 | 锚点 | 片段 |\n| --- | --- | --- | --- | --- |\n| 1 | 1706.03762v1.pdf | 9 | `[p9@107,71,505,370]` | Table 3: Variations on the Transformer architecture. Unlisted hyperparameter val |\n| 2 | 1706.03762v1.pdf | 8 | `[p8@107,71,504,240]` | Table 2: The Transformer achieves better BLEU scores than previous state-of-the- |\n| 3 | 1706.03762v1.pdf | 1 | `[p1@143,361,469,523]` | The dominant sequence transduction models are based on complex recurrent or conv |\n| 4 | 1706.03762v1.pdf | 1 | `[p1@10,184,497,560]` | Ashish Vaswani∗ Google Brain avaswani@google.com Noam Shazeer∗ Google Brain noam |\n| 5 | 1706.03762v1.pdf | 7 | `[p7@107,657,504,752]` | On the WMT 2014 English-to-German translation task, Our big transformer model (T |\n| 6 | 1706.03762v1.pdf | 2 | `[p2@107,601,505,678]` | The encoder is composed of a stack of N = 6 identical layers. Each layer has two |\n| 7 | 1706.03762v1.pdf | 9 | `[p9@108,103,274,113]` | 8 not be compared to per-word perplexities. |\n| 8 | 1706.03762v1.pdf | 8 | `[p8@108,270,505,315]` | 7 On the WMT 2014 English-to-French translation task, our big model achieves a B |",
+    "status": "PASS"
+  },
+  {
+    "question": "缓存复测",
+    "meta": {
+      "thinking": false,
+      "model": "deepseek-v4.1-flash",
+      "cache": "miss"
+    },
+    "evidence_ids": [
+      "dce63a636cf64",
+      "dce63a636cf64",
+      "dce63a636cf64",
+      "dce63a636cf64",
+      "dce63a636cf64",
+      "dce63a636cf64",
+      "dce63a636cf64"
+    ],
+    "status": "PASS"
+  }
+]

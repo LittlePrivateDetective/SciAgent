@@ -1,0 +1,503 @@
+{
+ "base": "http://127.0.0.1:8013",
+ "total": 49,
+ "pass": 49,
+ "fail": 0,
+ "by_status": {
+  "200": 47,
+  "400": 1,
+  "404": 1
+ },
+ "rows": [
+  {
+   "name": "系统信息",
+   "method": "GET",
+   "url": "/api/system/info",
+   "status": 200,
+   "ms": 23,
+   "pass": true,
+   "expect": "文档数与块数非零",
+   "detail": "{\"ok\": true, \"llm\": {\"route\": \"cloud\", \"model\": \"deepseek-v4.1-flash\", \"base_url\": \"https://dashscope.aliyuncs.com/compatible-mode/v1\", \"mock\": false}, \"vector_"
+  },
+  {
+   "name": "健康检查",
+   "method": "GET",
+   "url": "/health",
+   "status": 200,
+   "ms": 1,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"ok\": true, \"service\": \"sciagent\", \"version\": \"1.0.0\"}"
+  },
+  {
+   "name": "保活状态",
+   "method": "GET",
+   "url": "/api/keepalive",
+   "status": 200,
+   "ms": 1,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"ok\": true, \"enabled\": true, \"interval_s\": 300, \"warm_model\": true, \"warm_cloud\": false, \"started_at\": \"2026-11-13T14:46:51\", \"last_beat_at\": \"2026-11-13T15:46"
+  },
+  {
+   "name": "保活心跳",
+   "method": "POST",
+   "url": "/api/keepalive/beat",
+   "status": 200,
+   "ms": 1,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"ok\": true, \"enabled\": true, \"interval_s\": 300, \"warm_model\": true, \"warm_cloud\": false, \"started_at\": \"2026-11-13T14:46:51\", \"last_beat_at\": \"2026-11-13T15:48"
+  },
+  {
+   "name": "预热",
+   "method": "GET",
+   "url": "/api/warm",
+   "status": 200,
+   "ms": 1150,
+   "pass": true,
+   "expect": "检索预热成功",
+   "detail": "{\"ok\": true, \"route\": \"auto\", \"tag\": \"http\", \"tokens\": {\"path\": \"data\\\\bm25_tokens.txt\", \"exists\": true, \"mb\": 13.5, \"fingerprint\": \"20b16dcd79b0458f\"}, \"retrie"
+  },
+  {
+   "name": "任务列表",
+   "method": "GET",
+   "url": "/api/tasks",
+   "status": 200,
+   "ms": 5,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"tasks\": [{\"id\": \"t180718a6510a\", \"goal\": \"依据 LoRA 的矩阵分解定义计算：若 d_model=512、r=8，对单个权重矩阵使用 LoRA，A 和 B 的合理形状是什么？可训练参数共有多少个？给出计算过程。\", \"mode\": \"qa\", \"status\": \"done"
+  },
+  {
+   "name": "审计日志",
+   "method": "GET",
+   "url": "/api/audit",
+   "status": 200,
+   "ms": 9,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"items\": [{\"action\": \"delete\", \"doc_id\": \"d0a520d369a7d\", \"detail\": \"{\\\"doc_id\\\": \\\"d0a520d369a7d\\\", \\\"filename\\\": \\\"qa_probe_21.pdf\\\", \\\"title\\\": \\\"BLOOM: A 1"
+  },
+  {
+   "name": "工具目录",
+   "method": "GET",
+   "url": "/api/tools/catalog",
+   "status": 200,
+   "ms": 2,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"tools\": [{\"type\": \"function\", \"function\": {\"name\": \"arxiv_search\", \"description\": \"在 arXiv 上按关键词检索论文，返回标题、作者、arXiv 编号与年份\", \"parameters\": {\"type\": \"object\", \"p"
+  },
+  {
+   "name": "工具健康",
+   "method": "GET",
+   "url": "/api/tools/health",
+   "status": 200,
+   "ms": 1,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"ok\": true, \"tools\": [\"arxiv_search\", \"github_repo\", \"crossref_lookup\"], \"endpoints\": {\"arxiv\": \"export.arxiv.org\", \"github\": \"api.github.com\", \"crossref\": \"ap"
+  },
+  {
+   "name": "文献列表",
+   "method": "GET",
+   "url": "/api/documents",
+   "status": 200,
+   "ms": 36,
+   "pass": true,
+   "expect": "≥10 篇",
+   "detail": "{\"documents\": [{\"id\": \"ddb3dff6cab6a\", \"filename\": \"d3c48de1_2212.08073_Constitutional_AI_Harmlessness_from_AI_Feedback.pdf\", \"title\": \"Constitutional AI: Harml"
+  },
+  {
+   "name": "文献详情",
+   "method": "GET",
+   "url": "/api/documents/ddb3dff6cab6a",
+   "status": 200,
+   "ms": 2,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"id\": \"ddb3dff6cab6a\", \"filename\": \"d3c48de1_2212.08073_Constitutional_AI_Harmlessness_from_AI_Feedback.pdf\", \"title\": \"Constitutional AI: Harmlessness from AI"
+  },
+  {
+   "name": "章节树",
+   "method": "GET",
+   "url": "/api/documents/ddb3dff6cab6a/sections",
+   "status": 200,
+   "ms": 3,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"sections\": [{\"level\": 2, \"title\": \"Constitutional AI: Harmlessness from AI Feedback\", \"page\": 1}, {\"level\": 2, \"title\": \"Yuntao Bai∗, Saurav Kadavath, Sandipa"
+  },
+  {
+   "name": "块列表",
+   "method": "GET",
+   "url": "/api/documents/ddb3dff6cab6a/chunks",
+   "status": 200,
+   "ms": 17,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"chunks\": [{\"id\": \"c613b107a8efc\", \"page\": 1, \"bbox\": [115.6, 187.7, 496.4, 336.5], \"text\": \"Andy Jones, Anna Chen, Anna Goldie, Azalia Mirhoseini, Cameron McK"
+  },
+  {
+   "name": "页元数据",
+   "method": "GET",
+   "url": "/api/documents/ddb3dff6cab6a/pages",
+   "status": 200,
+   "ms": 11,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"pages\": [{\"page\": 1, \"width\": 612.0, \"height\": 792.0}, {\"page\": 2, \"width\": 612.0, \"height\": 792.0}, {\"page\": 3, \"width\": 612.0, \"height\": 792.0}, {\"page\": 4,"
+  },
+  {
+   "name": "页文本层",
+   "method": "GET",
+   "url": "/api/documents/ddb3dff6cab6a/page/1/text",
+   "status": 200,
+   "ms": 13,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"page\": 1, \"width\": 612.0, \"height\": 792.0, \"has_text_layer\": true, \"words\": [[\"Constitutional\", 117.3, 99.8, 105.2, 17.2], [\"AI:\", 226.8, 99.8, 24.9, 17.2], ["
+  },
+  {
+   "name": "页图",
+   "method": "GET",
+   "url": "/api/documents/ddb3dff6cab6a/page/1.png",
+   "status": 200,
+   "ms": 50,
+   "pass": true,
+   "expect": "",
+   "detail": "�PNG\r\n\u001a\n\u0000\u0000\u0000\rIHDR\u0000\u0000\u0004Q\u0000\u0000\u0005�\b\u0002\u0000\u0000\u0000��H\u0000\u0000\u0000\tpHYs\u0000\u0000\u0013�\u0000\u0000\u0013�\u0001\u0007�9�\u0000\u0002��IDATx���y�\r����#�BZTh�jѪ��E�J��T*)QiQ�\u0016y�\u0012�ZP\tEYʖP(�\u000b�D�D\"\u0012Y�(K��������̹��s�}���x=��\u001f��3g�53��|����I$\u0001\u0000"
+  },
+  {
+   "name": "参考文献表",
+   "method": "GET",
+   "url": "/api/documents/ddb3dff6cab6a/references",
+   "status": 200,
+   "ms": 5,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"total\": 0, \"entries\": []}"
+  },
+  {
+   "name": "引用跳正文",
+   "method": "GET",
+   "url": "/api/documents/ddb3dff6cab6a/references/1/cites",
+   "status": 200,
+   "ms": 5,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"ok\": true, \"index\": 1, \"total\": 0, \"occurrences\": 0, \"hits\": []}"
+  },
+  {
+   "name": "被引关系",
+   "method": "GET",
+   "url": "/api/documents/ddb3dff6cab6a/refs",
+   "status": 200,
+   "ms": 3,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"references\": [{\"index\": 1, \"text\": \"[Askell et al., 2021] Askell, A., Bai, Y., Chen, A., Drain, D., Ganguli, D., Henighan, T., Jones, A., Joseph, N., Mann, B."
+  },
+  {
+   "name": "版本差异",
+   "method": "GET",
+   "url": "/api/documents/ddb3dff6cab6a/diff?other_id=ddb3dff6cab6a",
+   "status": 200,
+   "ms": 14,
+   "pass": true,
+   "expect": "同族则 200，跨族 400/404",
+   "detail": "{\"ok\":true,\"summary\":{\"added_sections\":0,\"removed_sections\":0,\"changed_sections\":0,\"unchanged_sections\":45,\"added_senten"
+  },
+  {
+   "name": "回收站",
+   "method": "GET",
+   "url": "/api/documents/trash",
+   "status": 200,
+   "ms": 5,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"items\": [{\"doc_id\": \"d0a520d369a7d\", \"filename\": \"qa_probe_21.pdf\", \"title\": \"BLOOM: A 176B-Parameter Open-Access Multilingual Language Model\", \"chunk_count\":"
+  },
+  {
+   "name": "批量删除(空选择)",
+   "method": "POST",
+   "url": "/api/documents/batch-delete",
+   "status": 400,
+   "ms": 2,
+   "pass": true,
+   "expect": "空选择必须 400 拒绝",
+   "detail": "{\"detail\":\"没有选择任何文献\"}"
+  },
+  {
+   "name": "批量删除(不存在的 id)",
+   "method": "POST",
+   "url": "/api/documents/batch-delete",
+   "status": 200,
+   "ms": 2,
+   "pass": true,
+   "expect": "deleted=0，failed=1（同一 id 去重）",
+   "detail": "{\"ok\": true, \"deleted\": 0, \"ids\": [], \"failed\": [{\"id\": \"nope-batch-1\", \"error\": \"文档不存在\"}], \"message\": \"已移入回收站 0 篇，1 篇失败（左栏「回收」可恢复）\"}"
+  },
+  {
+   "name": "双语状态",
+   "method": "GET",
+   "url": "/api/documents/ddb3dff6cab6a/bilingual/status",
+   "status": 200,
+   "ms": 3,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"job\": {\"running\": false, \"done\": 0, \"total\": 0, \"error\": \"\"}, \"cached\": {\"total\": 204, \"done\": 45, \"ratio\": 0.221}}"
+  },
+  {
+   "name": "双语全文",
+   "method": "GET",
+   "url": "/api/documents/ddb3dff6cab6a/bilingual",
+   "status": 200,
+   "ms": 5,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"doc_id\":\"ddb3dff6cab6a\",\"page_from\":1,\"page_to\":1,\"page_count\":34,\"translated\":0,\"cached\":{\"total\":204,\"done\":45,\"rati"
+  },
+  {
+   "name": "中译英状态",
+   "method": "GET",
+   "url": "/api/documents/ddb3dff6cab6a/translate-en",
+   "status": 200,
+   "ms": 3,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"running\":false,\"total\":0,\"done\":0,\"segments\":0,\"skipped\":0,\"chars\":0,\"error\":\"\",\"ms\":0,\"preview\":\"\",\"path\":\"\",\"started"
+  },
+  {
+   "name": "中译英下载",
+   "method": "GET",
+   "url": "/api/documents/ddb3dff6cab6a/translate-en.md",
+   "status": 404,
+   "ms": 2,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"detail\":\"还没有生成英文版，请先点「译英」\"}"
+  },
+  {
+   "name": "整篇翻译(单页)",
+   "method": "POST",
+   "url": "/api/documents/ddb3dff6cab6a/bilingual/translate",
+   "status": 200,
+   "ms": 5,
+   "pass": true,
+   "expect": "单页翻译返回 ok（D-73 修复点）",
+   "detail": "{\"ok\": true, \"translated\": 0, \"cached\": {\"total\": 204, \"done\": 45, \"ratio\": 0.221}}"
+  },
+  {
+   "name": "按页翻译",
+   "method": "POST",
+   "url": "/api/documents/ddb3dff6cab6a/page/1/translate",
+   "status": 200,
+   "ms": 5,
+   "pass": true,
+   "expect": "页面翻译",
+   "detail": "{\"ok\": true, \"page\": 1, \"segs\": 4, \"translated\": 4, \"missing\": 0, \"en\": \"Andy Jones, Anna Chen, Anna Goldie, Azalia Mirhoseini, Cameron McKinnon, Carol Chen, Ca"
+  },
+  {
+   "name": "任意片段翻译",
+   "method": "POST",
+   "url": "/api/translate",
+   "status": 200,
+   "ms": 383,
+   "pass": true,
+   "expect": "返回中文",
+   "detail": "{\"ok\": true, \"src\": \"en\", \"to\": \"zh\", \"text\": \"注意力机制就是全部所需。\", \"zh\": \"注意力机制就是全部所需。\", \"chars\": 26, \"truncated\": false}"
+  },
+  {
+   "name": "扫描件页文本",
+   "method": "GET",
+   "url": "/api/documents/dca501d1039dc/page/1/text",
+   "status": 200,
+   "ms": 7,
+   "pass": true,
+   "expect": "扫描件允许空文本层",
+   "detail": "{\"page\": 1, \"width\": 612.0, \"height\": 792.48, \"has_text_layer\": false, \"words\": []}"
+  },
+  {
+   "name": "问答-事实",
+   "method": "POST",
+   "url": "/api/chat",
+   "status": 200,
+   "ms": 6161,
+   "pass": true,
+   "expect": "≥5 条证据 + 有答案",
+   "detail": "{\"task_id\": \"t1b8aa1e0877d\", \"answer\": \"自注意力每层的计算复杂度为 O(n² · d)。[2]\\n\\n- Table 1 按层类型逐行给出：Self-Attention 的 Complexity per Layer 为 O(n² · d)，Sequential Operation"
+  },
+  {
+   "name": "问答-对比",
+   "method": "POST",
+   "url": "/api/chat",
+   "status": 200,
+   "ms": 7055,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"task_id\": \"te18880cd5a0b\", \"answer\": \"| 维度 | BERT 的做法 | GPT 的做法 |\\n|---|---|---|\\n| 预训练目标类型 | 使用 masked language model（MLM）目标，随机 mask 输入中的部分 token 并预测这些被 mask"
+  },
+  {
+   "name": "问答-证据不足",
+   "method": "POST",
+   "url": "/api/chat",
+   "status": 200,
+   "ms": 5480,
+   "pass": true,
+   "expect": "应明确说没有",
+   "detail": "{\"task_id\": \"t083bc69c15aa\", \"answer\": \"证据未给出 GPT-5 的参数量，文献中未提及 GPT-5。证据中出现的旗舰模型参数量为 405B（405B trainable parameters，在 15.6T text tokens 上预训练）[1]；同一证据还提到，将 scali"
+  },
+  {
+   "name": "问答-限定文献",
+   "method": "POST",
+   "url": "/api/chat",
+   "status": 200,
+   "ms": 10129,
+   "pass": true,
+   "expect": "证据全部来自指定文献",
+   "detail": "{\"task_id\": \"te67791fa59ec\", \"answer\": \"论文提出 Constitutional AI（CAI）方法，在不使用任何人类有害性反馈标签的情况下训练出 non-evasive and relatively harmless 的 AI 助手 [1]。主要贡献包括：(1) 使用由 huma"
+  },
+  {
+   "name": "图谱",
+   "method": "GET",
+   "url": "/api/graph",
+   "status": 200,
+   "ms": 50,
+   "pass": true,
+   "expect": "节点>20 边>50",
+   "detail": "{\"nodes\": [{\"id\": \"d817ac4e56a32\", \"label\": \"Language Models are Few-Shot Learners\", \"filename\": \"2005.14165v4.pdf\", \"year\": \"2020\", \"pages\": 75, \"pagerank\": 0."
+  },
+  {
+   "name": "图谱综述(选题)",
+   "method": "POST",
+   "url": "/api/graph/survey",
+   "status": 200,
+   "ms": 3566,
+   "pass": true,
+   "expect": "有聚类则出综述，否则 400/404",
+   "detail": "{\"ok\":true,\"survey\":\"**领域脉络**\\n\\n序列转导模型长期以复杂的循环或卷积网络构成编码器-解码器架构，性能最好的模型还通过注意力机制连接编码器与解码器[2]。此后，Transformer 以更简单的网络架构被提出["
+  },
+  {
+   "name": "Future Work",
+   "method": "GET",
+   "url": "/api/research/future-work",
+   "status": 200,
+   "ms": 889,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"items\": [{\"doc_id\": \"dca501d1039dc\", \"page\": 10, \"bbox\": \"36.7,143.2,575.3,234.7\", \"section\": \"5 Training/6.3 English Constituency Parsing\", \"text\": \"We inten"
+  },
+  {
+   "name": "复现性",
+   "method": "GET",
+   "url": "/api/research/reproducibility",
+   "status": 200,
+   "ms": 2909,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"items\": [{\"doc_id\": \"dc7092cdf7b5c\", \"title\": \"Layer Normalization\", \"year\": \"2016\", \"repos\": [\"ivendrov/order-embedding\", \"cooijmanstim/Attentive_reader\"], \""
+  },
+  {
+   "name": "工具调用-GitHub",
+   "method": "POST",
+   "url": "/api/tools/invoke",
+   "status": 200,
+   "ms": 2,
+   "pass": true,
+   "expect": "在线或降级",
+   "detail": "{\"ok\":false,\"tool\":\"github_repo_info\",\"data\":null,\"source\":\"\",\"degraded\":false,\"fallback\":\"\",\"attempts\":0,\"latency_ms\":0"
+  },
+  {
+   "name": "工具 Agent",
+   "method": "POST",
+   "url": "/api/tools/agent",
+   "status": 200,
+   "ms": 1402,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"ok\": true, \"selected_by\": \"llm_function_call\", \"call\": {\"name\": \"github_repo\", \"arguments\": {\"repo\": \"huggingface/transformers\"}}, \"result\": {\"ok\": true, \"too"
+  },
+  {
+   "name": "CSV 转图表",
+   "method": "POST",
+   "url": "/api/tools/csv2chart",
+   "status": 200,
+   "ms": 1821,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"ok\": true, \"code\": \"xychart-beta\\n    title \\\"BLEU\\\"\\n    x-axis [\\\"transformer_big\\\", \\\"convseq\\\"]\\n    y-axis \\\"value\\\" 0 --> 32.66\\n    bar [28.4, 25.2]  %"
+  },
+  {
+   "name": "论文框架",
+   "method": "POST",
+   "url": "/api/write/outline",
+   "status": 200,
+   "ms": 9207,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"ok\": true, \"title\": \"On the Complexity-Accuracy Trade-off in Attention Mechanisms\", \"idea\": \"研究注意力机制的复杂度与精度权衡\", \"sections\": [{\"key\": \"abstract\", \"name\": \"Abst"
+  },
+  {
+   "name": "架构图",
+   "method": "POST",
+   "url": "/api/write/topology",
+   "status": 200,
+   "ms": 3231,
+   "pass": true,
+   "expect": "节点 + 四份代码",
+   "detail": "{\"ok\": true, \"title\": \"检索增强问答系统\", \"source\": \"llm\", \"nodes\": [{\"id\": \"n1\", \"label\": \"用户问题\", \"kind\": \"input\", \"group\": \"数据层\"}, {\"id\": \"n2\", \"label\": \"问题解析\", \"kind"
+  },
+  {
+   "name": "arXiv 搜索",
+   "method": "GET",
+   "url": "/api/discover/search?q=retrieval%20augmented%20generation",
+   "status": 200,
+   "ms": 1098,
+   "pass": true,
+   "expect": "在线 200，无外网 503/降级",
+   "detail": "{\"ok\":true,\"q\":\"retrieval augmented generation\",\"items\":[{\"arxiv_id\":\"2411.18583\",\"title\":\"Automated Literature Review U"
+  },
+  {
+   "name": "推荐理由",
+   "method": "GET",
+   "url": "/api/discover/recommend",
+   "status": 200,
+   "ms": 9021,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"ok\":true,\"topics\":[\"transformer\",\"attention\",\"normalization\",\"optimization\",\"scaling\"],\"window_days\":180,\"items\":[{\"ar"
+  },
+  {
+   "name": "推荐反馈统计",
+   "method": "GET",
+   "url": "/api/discover/feedback",
+   "status": 200,
+   "ms": 3,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"like\": 1, \"dislike\": 6, \"click\": 0, \"disliked_ids\": [\"2611.07510\", \"2611.12206\", \"2611.12392\", \"2611.12777\", \"2611.13543\", \"2611.14209\"], \"liked_ids\": [\"2611."
+  },
+  {
+   "name": "追踪状态",
+   "method": "GET",
+   "url": "/api/discover/watch",
+   "status": 200,
+   "ms": 1,
+   "pass": true,
+   "expect": "",
+   "detail": "{\"enabled\": false, \"interval_s\": 21600, \"days\": 7, \"started_at\": \"2026-11-13T14:46:51\", \"last_run_at\": null, \"next_run_at\": null, \"last_ms\": null, \"runs\": 0, \"f"
+  },
+  {
+   "name": "上传 PDF",
+   "method": "POST",
+   "url": "/api/documents/upload",
+   "status": 200,
+   "ms": 228,
+   "pass": true,
+   "expect": "新入库，或按内容判重",
+   "detail": "{\"ok\": false, \"stage\": \"duplicate\", \"message\": \"库中已存在内容高度重合的文献\", \"duplicates\": [{\"doc_id\": \"dcd82e8617cf8\", \"filename\": \"language_understanding_paper.pdf\", \"tit"
+  }
+ ]
+}

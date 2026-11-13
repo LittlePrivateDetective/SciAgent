@@ -1,0 +1,95 @@
+[
+ {
+  "id": "zwxxxb_3861",
+  "title": "大语言模型微调方法研究综述",
+  "authors": "吴春志 等",
+  "year": 2025,
+  "topic": "LLM 微调综述",
+  "file": "ZH_zwxxxb_3861_大语言模型微调方法研究综述.pdf",
+  "lang": "zh",
+  "status": "ok",
+  "bytes": 4109785,
+  "source": "http://jcip.cipsc.org.cn/cn/article/pdf/preview/zwxxxb_3861.pdf"
+ },
+ {
+  "id": "zwxxxb_3659",
+  "title": "大语言模型评测综述",
+  "authors": "罗文, 王厚峰",
+  "year": 2024,
+  "topic": "LLM 评测综述",
+  "file": "ZH_zwxxxb_3659_大语言模型评测综述.pdf",
+  "lang": "zh",
+  "status": "ok_cached",
+  "bytes": 2473075
+ },
+ {
+  "id": "zwxxxb_3660",
+  "title": "医疗领域对话系统口语理解综述",
+  "authors": "任芳慧 等",
+  "year": 2024,
+  "topic": "对话系统综述",
+  "file": "ZH_zwxxxb_3660_医疗领域对话系统口语理解综述.pdf",
+  "lang": "zh",
+  "status": "ok_cached",
+  "bytes": 3150041
+ },
+ {
+  "id": "zwxxxb_2994",
+  "title": "神经机器翻译前沿综述",
+  "authors": "冯洋, 邵晨泽",
+  "year": 2020,
+  "topic": "机器翻译综述",
+  "file": "ZH_zwxxxb_2994_神经机器翻译前沿综述.pdf",
+  "lang": "zh",
+  "status": "ok_cached",
+  "bytes": 6710729
+ },
+ {
+  "id": "zwxxxb_3314",
+  "title": "多模态信息处理前沿综述",
+  "authors": "吴友政 等",
+  "year": 2022,
+  "topic": "多模态综述",
+  "file": "ZH_zwxxxb_3314_多模态信息处理前沿综述.pdf",
+  "lang": "zh",
+  "status": "ok",
+  "bytes": 4659405,
+  "source": "http://jcip.cipsc.org.cn/cn/article/pdf/preview/zwxxxb_3314.pdf"
+ },
+ {
+  "id": "zwxxxb_3187",
+  "title": "基于语言模型的预训练技术研究综述",
+  "authors": "岳增营 等",
+  "year": 2021,
+  "topic": "预训练综述",
+  "file": "ZH_zwxxxb_3187_基于语言模型的预训练技术研究综述.pdf",
+  "lang": "zh",
+  "status": "ok",
+  "bytes": 1812586,
+  "source": "http://jcip.cipsc.org.cn/cn/article/pdf/preview/zwxxxb_3187.pdf"
+ },
+ {
+  "id": "zwxxxb_2995",
+  "title": "从视觉到文本图像描述生成研究进展综述",
+  "authors": "魏忠钰 等",
+  "year": 2020,
+  "topic": "图像描述综述",
+  "file": "ZH_zwxxxb_2995_从视觉到文本图像描述生成研究进展综述.pdf",
+  "lang": "zh",
+  "status": "ok",
+  "bytes": 1004100,
+  "source": "http://jcip.cipsc.org.cn/cn/article/pdf/preview/zwxxxb_2995.pdf"
+ },
+ {
+  "id": "zwxxxb_3055",
+  "title": "知识图谱研究现状及军事应用",
+  "authors": "林旺群 等",
+  "year": 2020,
+  "topic": "知识图谱",
+  "file": "ZH_zwxxxb_3055_知识图谱研究现状及军事应用.pdf",
+  "lang": "zh",
+  "status": "ok",
+  "bytes": 1965528,
+  "source": "http://jcip.cipsc.org.cn/cn/article/pdf/preview/zwxxxb_3055.pdf"
+ }
+]

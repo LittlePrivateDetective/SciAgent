@@ -1,0 +1,167 @@
+[
+ {
+  "arxiv": "1409.1556",
+  "title": "Very Deep Convolutional Networks for Large-Scale Image Recognition (VGG)",
+  "year": 2014,
+  "topic": "CNN 经典/计算机视觉",
+  "file": "EN_1409.1556_Show_and_Tell.pdf",
+  "status": "ok_cached",
+  "bytes": 200010
+ },
+ {
+  "arxiv": "1409.3215",
+  "title": "Sequence to Sequence Learning with Neural Networks",
+  "year": 2014,
+  "topic": "seq2seq 经典",
+  "file": "EN_1409.3215_Neural_Machine_Translation_by_Jointl.pdf",
+  "status": "ok_cached",
+  "bytes": 112084
+ },
+ {
+  "arxiv": "1511.06434",
+  "title": "Unsupervised Representation Learning with Deep Convolutional Generative Adversarial Networks (DCGAN)",
+  "year": 2015,
+  "topic": "生成模型",
+  "file": "EN_1511.06434_Pointer_Networks.pdf",
+  "status": "ok_cached",
+  "bytes": 7457198
+ },
+ {
+  "arxiv": "1810.04805",
+  "title": "BERT: Pre-training of Deep Bidirectional Transformers",
+  "year": 2018,
+  "topic": "预训练/双栏",
+  "file": "EN_1810.04805_BERT.pdf",
+  "status": "ok_cached",
+  "bytes": 775166
+ },
+ {
+  "arxiv": "1909.11942",
+  "title": "ALBERT: A Lite BERT for Self-supervised Learning",
+  "year": 2019,
+  "topic": "预训练",
+  "file": "EN_1909.11942_ALBERT.pdf",
+  "status": "ok",
+  "bytes": 419105,
+  "source": "https://arxiv.org/pdf/1909.11942.pdf"
+ },
+ {
+  "arxiv": "2002.08909",
+  "title": "REALM: Retrieval-Augmented Language Model Pre-Training",
+  "year": 2020,
+  "topic": "RAG",
+  "file": "EN_2002.08909_REALM.pdf",
+  "status": "ok_cached",
+  "bytes": 419037
+ },
+ {
+  "arxiv": "2004.12832",
+  "title": "Dense Passage Retrieval for Open-Domain QA",
+  "year": 2020,
+  "topic": "RAG",
+  "file": "EN_2004.12832_Dense_Passage_Retrieval_for_Open-Dom.pdf",
+  "status": "ok_cached",
+  "bytes": 4918165
+ },
+ {
+  "arxiv": "2104.07567",
+  "title": "Leveraging Passage Retrieval with Generative Models (FiD)",
+  "year": 2021,
+  "topic": "RAG",
+  "file": "EN_2104.07567_Leveraging_Passage_Retrieval_with_Ge.pdf",
+  "status": "ok_cached",
+  "bytes": 473836
+ },
+ {
+  "arxiv": "2204.05862",
+  "title": "Training Compute-Optimal Large Language Models (Chinchilla)",
+  "year": 2022,
+  "topic": "扩展律",
+  "file": "EN_2204.05862_Training_Compute-Optimal_Large_Langu.pdf",
+  "status": "ok_cached",
+  "bytes": 9503688
+ },
+ {
+  "arxiv": "2210.03629",
+  "title": "ReAct: Synergizing Reasoning and Acting in Language Models",
+  "year": 2022,
+  "topic": "Agent",
+  "file": "EN_2210.03629_ReAct.pdf",
+  "status": "ok_cached",
+  "bytes": 633805
+ },
+ {
+  "arxiv": "2302.04761",
+  "title": "Toolformer: Language Models Can Teach Themselves to Use Tools",
+  "year": 2023,
+  "topic": "工具调用",
+  "file": "EN_2302.04761_Toolformer.pdf",
+  "status": "ok_cached",
+  "bytes": 657966
+ },
+ {
+  "arxiv": "2305.10601",
+  "title": "Tree of Thoughts: Deliberate Problem Solving with LLMs",
+  "year": 2023,
+  "topic": "Agent",
+  "file": "EN_2305.10601_Tree_of_Thoughts.pdf",
+  "status": "ok_cached",
+  "bytes": 799685
+ },
+ {
+  "arxiv": "2307.08691",
+  "title": "FlashAttention-2: Faster Attention with Better Parallelism",
+  "year": 2023,
+  "topic": "效率优化",
+  "file": "EN_2307.08691_FlashAttention-2.pdf",
+  "status": "ok",
+  "bytes": 1660578,
+  "source": "https://arxiv.org/pdf/2307.08691.pdf"
+ },
+ {
+  "arxiv": "2309.17453",
+  "title": "Efficient Streaming Language Models with Attention Sinks",
+  "year": 2023,
+  "topic": "流式推理/效率",
+  "file": "EN_2309.17453_Mistral_7B.pdf",
+  "status": "ok_cached",
+  "bytes": 16952848
+ },
+ {
+  "arxiv": "2312.00752",
+  "title": "Mamba: Linear-Time Sequence Modeling with Selective State Spaces",
+  "year": 2023,
+  "topic": "状态空间模型/新架构",
+  "file": "EN_2312.00752_Mixtral_of_Experts.pdf",
+  "status": "ok_cached",
+  "bytes": 1168615
+ },
+ {
+  "arxiv": "2402.19473",
+  "title": "Retrieval-Augmented Generation for AI-Generated Content: A Survey",
+  "year": 2024,
+  "topic": "AIGC 综述",
+  "file": "EN_2402.19473_DoRA.pdf",
+  "status": "ok_cached",
+  "bytes": 4281893
+ },
+ {
+  "arxiv": "2404.14219",
+  "title": "Phi-3 Technical Report",
+  "year": 2024,
+  "topic": "小模型",
+  "file": "EN_2404.14219_Phi-3_Technical_Report.pdf",
+  "status": "ok",
+  "bytes": 3908493,
+  "source": "https://arxiv.org/pdf/2404.14219.pdf"
+ },
+ {
+  "arxiv": "2402.09353",
+  "title": "DoRA: Weight-Decomposed Low-Rank Adaptation",
+  "year": 2024,
+  "topic": "参数高效微调",
+  "file": "EN_2402.09353_DoRA.pdf",
+  "status": "ok",
+  "bytes": 7830644
+ }
+]

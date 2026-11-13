@@ -147,8 +147,10 @@ curl http://127.0.0.1:8000/health
 | 项 | 内容 |
 | --- | --- |
 | 访问地址 | `https://sciagent-research.app.workbuddy.host/?sharecode=CHBCOXLVVO` |
+| 当前版本 | **v1.1.0**：2026-11-13 全量 QA 修复版重新发布，`GET /health` 自报版本号 |
+| 版本历史 | v1.0（2026-11-12 首次发布，旧代码）→ v1.1（2026-11-13 修复版覆盖发布，链接不变） |
 | 托管方式 | WorkBuddy「发布应用」托管沙箱（非本机隧道，**不依赖演示电脑开机**） |
-| 上传目录 | `deploy/`（由 `scripts/build_deploy.py` 生成，223 MB，已 gitignore） |
+| 上传目录 | `deploy/`（由 `scripts/build_deploy.py` 生成，415 MB，已 gitignore） |
 | 启动方式 | `python run.py`（读平台注入的 `PORT`，绑 `0.0.0.0`，chdir 到 deploy 根） |
 | 向量后端 | `VECTOR_BACKEND=sqlite`（不带 Chroma：索引 394 MB，而 `chunks.embedding` 在 SQLite 里本就有一份） |
 | 后台 | 同域 `/admin`，口令在 `deploy/.env` 的 `ADMIN_PASSWORD`（16 位，不入库、不进文档） |
@@ -183,3 +185,10 @@ curl http://127.0.0.1:8000/health
 `::warning::本次是冷启动`，在 Actions 页面一眼能看到，不会静默失效。
 
 **退路**：若平台侧不可用，可本机 `uvicorn --port 8013` + `cloudflared tunnel --url http://127.0.0.1:8013` 临时顶上。
+
+## 已知限制（2026-11-13 修复轮）
+
+- **PDF 原位回填不实现**：翻译交付采用网页/HTML 中英对照与 Markdown 重排，保留公式、代码和引用；不承诺把译文写回原 PDF 的相同坐标。
+- **Docker 真构建**：当前机器没有 Docker 命令，无法执行真实镜像构建。等价目录布局与零密钥启动测试保留，但不能冒充容器构建证据；需在有 Docker 的干净环境执行 `docker compose up -d --build`。
+- **TikZ/LaTeX 外部编译**：当前机器没有 `xelatex`/`pdflatex`，只验证生成代码的结构、数值和浏览器预览；外部编译仍需安装 TeX Live/MiKTeX 后验证。Matplotlib 不依赖该限制。
+- **Graphviz 外部渲染**：当前机器没有 `dot` 命令；DOT 源码可导出，项目内拓扑预览不依赖系统 Graphviz。

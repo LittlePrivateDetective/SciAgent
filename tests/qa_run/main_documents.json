@@ -1,0 +1,314 @@
+[
+  {
+    "id": "ddb3dff6cab6a",
+    "filename": "d3c48de1_2212.08073_Constitutional_AI_Harmlessness_from_AI_Feedback.pdf",
+    "title": "Constitutional AI: Harmlessness from AI Feedback",
+    "pages": 34
+  },
+  {
+    "id": "daeeb827a8bc2",
+    "filename": "4197bebe_2204.02311_PaLM_Scaling_Language_Modeling_with_Pathways.pdf",
+    "title": "PaLM: Scaling Language Modeling with Pathways",
+    "pages": 87
+  },
+  {
+    "id": "d1703d51fa371",
+    "filename": "39d34110_1503.02531_Distilling_the_Knowledge_in_a_Neural_Network.pdf",
+    "title": "Distilling the Knowledge in a Neural Network",
+    "pages": 9
+  },
+  {
+    "id": "dfcbd40c38a15",
+    "filename": "aa1a1521_1412.6980_Adam_A_Method_for_Stochastic_Optimization.pdf",
+    "title": "ADAM: A METHOD FOR STOCHASTIC OPTIMIZATION",
+    "pages": 15
+  },
+  {
+    "id": "dea040ee12c27",
+    "filename": "b1cdbaae_1409.0473_Neural_Machine_Translation_by_Jointly_Learning_to_Align_and.pdf",
+    "title": "NEURAL MACHINE TRANSLATION BY JOINTLY LEARNING TO ALIGN AND TRANSLATE",
+    "pages": 15
+  },
+  {
+    "id": "df4bc26bb5d82",
+    "filename": "9c479b12_2106.01345_Decision_Transformer_Reinforcement_Learning_via_Sequence_Mod.pdf",
+    "title": "Decision Transformer: Reinforcement Learning via Sequence Modeling",
+    "pages": 21
+  },
+  {
+    "id": "dc409e0784b30",
+    "filename": "4c3c0ac9_1801.01290_Soft_Actor_Critic_Off_Policy_Maximum_Entropy_RL.pdf",
+    "title": "Soft Actor-Critic:",
+    "pages": 14
+  },
+  {
+    "id": "d15f8b51fec34",
+    "filename": "58470bfa_1312.5602_Playing_Atari_with_Deep_Reinforcement_Learning.pdf",
+    "title": "Playing Atari with Deep Reinforcement Learning",
+    "pages": 9
+  },
+  {
+    "id": "d5b8eb26eb7ad",
+    "filename": "d1c2389b_1502.03167_Batch_Normalization_Accelerating_Deep_Network_Training.pdf",
+    "title": "Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift",
+    "pages": 11
+  },
+  {
+    "id": "d74c57e412830",
+    "filename": "236dd827_1610.02391_Grad_CAM_Visual_Explanations_from_Deep_Networks.pdf",
+    "title": "Grad-CAM: Visual Explanations from Deep Networks",
+    "pages": 23
+  },
+  {
+    "id": "ddf4618639a58",
+    "filename": "caef22c3_1512.03385_Deep_Residual_Learning_for_Image_Recognition.pdf",
+    "title": "Deep Residual Learning for Image Recognition",
+    "pages": 12
+  },
+  {
+    "id": "d5eb03c8b9874",
+    "filename": "b0c8ccb0_2006.11239_Denoising_Diffusion_Probabilistic_Models.pdf",
+    "title": "Denoising Diffusion Probabilistic Models",
+    "pages": 25
+  },
+  {
+    "id": "dbd1f90ed8afa",
+    "filename": "63c83f82_1406.2661_Generative_Adversarial_Networks.pdf",
+    "title": "Generative Adversarial Nets",
+    "pages": 9
+  },
+  {
+    "id": "daa37c9aa3934",
+    "filename": "9d7b8785_1312.6114_Auto_Encoding_Variational_Bayes.pdf",
+    "title": "Auto-Encoding Variational Bayes",
+    "pages": 14
+  },
+  {
+    "id": "d7a55a3674e24",
+    "filename": "cn_paper.pdf",
+    "title": "基于注意力机制的中文问答检索增强方法",
+    "pages": 1
+  },
+  {
+    "id": "dca501d1039dc",
+    "filename": "1706.03762v1_img.pdf",
+    "title": "Attention Is All You Need",
+    "pages": 15
+  },
+  {
+    "id": "d98dddd7a5905",
+    "filename": "UnderstandingDeepLearning_02_09_26_C.pdf",
+    "title": "Understanding Deep Learning",
+    "pages": 541
+  },
+  {
+    "id": "d819e6fc0f986",
+    "filename": "N19-1423.pdf",
+    "title": "BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding",
+    "pages": 16
+  },
+  {
+    "id": "dcd82e8617cf8",
+    "filename": "language_understanding_paper.pdf",
+    "title": "Improving Language Understanding by Generative Pre-Training",
+    "pages": 12
+  },
+  {
+    "id": "d875afb2e5932",
+    "filename": "333078981_693988129081760_4712707815225756708_n.pdf",
+    "title": "LLaMA: Open and Efficient Foundation Language Models",
+    "pages": 27
+  },
+  {
+    "id": "d7c300e762602",
+    "filename": "2501.12948v2.pdf",
+    "title": "DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning",
+    "pages": 86
+  },
+  {
+    "id": "d01b0500ab8ae",
+    "filename": "2412.19437v1.pdf",
+    "title": "DeepSeek-V3 Technical Report",
+    "pages": 53
+  },
+  {
+    "id": "dc80b816ae34b",
+    "filename": "2412.15115v2.pdf",
+    "title": "Qwen2.5 Technical Report",
+    "pages": 26
+  },
+  {
+    "id": "d5203a02fc936",
+    "filename": "2407.21783v3.pdf",
+    "title": "The Llama 3 Herd of Models",
+    "pages": 92
+  },
+  {
+    "id": "d315cafab02d0",
+    "filename": "2406.14491v2.pdf",
+    "title": "Instruction Pre-Training: Language Models are Supervised Multitask Learners",
+    "pages": 22
+  },
+  {
+    "id": "d201464196e6f",
+    "filename": "2310.06825v1.pdf",
+    "title": "Mistral 7B",
+    "pages": 9
+  },
+  {
+    "id": "d3d0d60c92622",
+    "filename": "2307.09288v2.pdf",
+    "title": "Llama 2: Open Foundation and Fine-Tuned Chat Models",
+    "pages": 77
+  },
+  {
+    "id": "d41eb4c50f36f",
+    "filename": "2305.18290v3.pdf",
+    "title": "Direct Preference Optimization: Your Language Model is Secretly a Reward Model",
+    "pages": 27
+  },
+  {
+    "id": "db3c184f9cffd",
+    "filename": "2305.14314v1.pdf",
+    "title": "QLORA: Efficient Finetuning of Quantized LLMs",
+    "pages": 26
+  },
+  {
+    "id": "dc52bea1ce4da",
+    "filename": "2305.13048v2.pdf",
+    "title": "RWKV: Reinventing RNNs for the Transformer Era",
+    "pages": 30
+  },
+  {
+    "id": "d6feedd02fcae",
+    "filename": "2304.08485v2.pdf",
+    "title": "Visual Instruction Tuning",
+    "pages": 25
+  },
+  {
+    "id": "d7067487af4db",
+    "filename": "2303.08774v6.pdf",
+    "title": "GPT-4 Technical Report",
+    "pages": 100
+  },
+  {
+    "id": "df367909b3159",
+    "filename": "2212.04356v1.pdf",
+    "title": "Robust Speech Recognition via Large-Scale Weak Supervision",
+    "pages": 28
+  },
+  {
+    "id": "d72e61cbf5561",
+    "filename": "2211.05100v4.pdf",
+    "title": "BLOOM: A 176B-Parameter Open-Access Multilingual Language Model",
+    "pages": 73
+  },
+  {
+    "id": "d8d380ed3abb5",
+    "filename": "2210.02414v2.pdf",
+    "title": "GLM-130B: AN OPEN BILINGUAL PRE-TRAINED MODEL",
+    "pages": 56
+  },
+  {
+    "id": "d3f2c7ae3da68",
+    "filename": "2205.14135v2.pdf",
+    "title": "FlashAttention: Fast and Memory-Eﬃcient Exact Attention with IO-Awareness",
+    "pages": 34
+  },
+  {
+    "id": "d3b6f15a377ca",
+    "filename": "2203.02155v1.pdf",
+    "title": "Training language models to follow instructions with human feedback",
+    "pages": 68
+  },
+  {
+    "id": "deed9eb540748",
+    "filename": "2201.11903v6.pdf",
+    "title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models",
+    "pages": 43
+  },
+  {
+    "id": "d3706de3b6864",
+    "filename": "2106.09685v2.pdf",
+    "title": "LORA: LOW-RANK ADAPTATION OF LARGE LAN- GUAGE MODELS",
+    "pages": 26
+  },
+  {
+    "id": "d46b9a50a8416",
+    "filename": "2103.00020v1.pdf",
+    "title": "Learning Transferable Visual Models From Natural Language Supervision",
+    "pages": 48
+  },
+  {
+    "id": "d16a2835145ee",
+    "filename": "209_Emergent_Abilities_of_Larg.pdf",
+    "title": "Emergent Abilities of Large Language Models",
+    "pages": 30
+  },
+  {
+    "id": "dc842730fa072",
+    "filename": "2010.11929v2.pdf",
+    "title": "AN IMAGE IS WORTH 16X16 WORDS: TRANSFORMERS FOR IMAGE RECOGNITION AT SCALE",
+    "pages": 22
+  },
+  {
+    "id": "d1011ebd3a2b3",
+    "filename": "1910.10683v4.pdf",
+    "title": "Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer",
+    "pages": 67
+  },
+  {
+    "id": "d5e1461a7722b",
+    "filename": "1910.02054v3.pdf",
+    "title": "ZeRO: Memory Optimizations Toward Training Trillion Parameter Models",
+    "pages": 24
+  },
+  {
+    "id": "ddd3d54f80b5a",
+    "filename": "2107.03374v2.pdf",
+    "title": "Evaluating Large Language Models Trained on Code",
+    "pages": 35
+  },
+  {
+    "id": "d28f9c6d123e3",
+    "filename": "2101.03961v3.pdf",
+    "title": "Switch Transformers: Scaling to Trillion Parameter Models with Simple and Eﬃcient Sparsity",
+    "pages": 40
+  },
+  {
+    "id": "d817ac4e56a32",
+    "filename": "2005.14165v4.pdf",
+    "title": "Language Models are Few-Shot Learners",
+    "pages": 75
+  },
+  {
+    "id": "d6beecb8798e0",
+    "filename": "2002.04745v2.pdf",
+    "title": "On Layer Normalization in the Transformer Architecture",
+    "pages": 17
+  },
+  {
+    "id": "d8821b3e541fa",
+    "filename": "2001.08361v1.pdf",
+    "title": "Scaling Laws for Neural Language Models",
+    "pages": 30
+  },
+  {
+    "id": "d76ed4efdc9ae",
+    "filename": "1707.06347v2.pdf",
+    "title": "Proximal Policy Optimization Algorithms",
+    "pages": 12
+  },
+  {
+    "id": "dc7092cdf7b5c",
+    "filename": "1607.06450v1.pdf",
+    "title": "Layer Normalization",
+    "pages": 14
+  },
+  {
+    "id": "dce63a636cf64",
+    "filename": "1706.03762v1.pdf",
+    "title": "Attention Is All You Need",
+    "pages": 15
+  }
+]
