@@ -80,6 +80,45 @@ def gen(model, tok, messages: list[dict], max_new: int = 320) -> tuple[str, floa
     return text.strip(), len(text) / max(dt, 1e-6)
 
 
+def _load_env(path: Path) -> dict:
+    """读 .env 的 LLM_* 配置；密钥只留在内存里，不打印。"""
+    out: dict[str, str] = {}
+    if path.exists():
+        for line in path.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if line and not line.startswith("#") and "=" in line:
+                k, v = line.split("=", 1)
+                out[k.strip()] = v.strip()
+    return out
+
+
+def cloud_answer(messages: list[dict], cfg: dict, max_new: int = 320,
+                 timeout: int = 120) -> tuple[str, float]:
+    """调用 OpenAI 兼容接口，口径与本地一致：同一组 messages、temperature=0。"""
+    import json as _json
+    import time as _time
+    import urllib.request
+
+    base = (cfg.get("LLM_BASE_URL") or "").rstrip("/")
+    key = cfg.get("LLM_API_KEY") or ""
+    model = cfg.get("LLM_MODEL") or ""
+    if not (base and key and model):
+        raise SystemExit("云端列需要 .env 里的 LLM_BASE_URL / LLM_API_KEY / LLM_MODEL")
+    body = _json.dumps({
+        "model": model, "messages": messages, "temperature": 0, "max_tokens": max_new,
+    }).encode("utf-8")
+    req = urllib.request.Request(
+        f"{base}/chat/completions", data=body,
+        headers={"Content-Type": "application/json", "Authorization": f"Bearer {key}"},
+    )
+    t0 = _time.time()
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        data = _json.loads(resp.read().decode("utf-8"))
+    dt = _time.time() - t0
+    text = (data["choices"][0]["message"].get("content") or "").strip()
+    return text, len(text) / max(dt, 1e-6)
+
+
 def summarize(rows: list[dict], tag: str) -> dict:
     n = len(rows)
     if not n:
@@ -93,7 +132,7 @@ def summarize(rows: list[dict], tag: str) -> dict:
         "元话语率": round(sum(r["meta"] for r in rows) / n, 3),
         "空答案率": round(sum(r["empty"] for r in rows) / n, 3),
         "平均字数": round(sum(r["chars"] for r in rows) / n),
-        "拒答正确率": round(sum(r["deny_ok"] for r in deny) / len(deny), 3) if deny else None,
+        "拒答正确率": round(sum(bool(r["deny_ok"]) for r in deny) / len(deny), 3) if deny else None,
         "字/秒": round(sum(r["speed"] for r in rows) / n, 1),
     }
 
@@ -105,6 +144,7 @@ def main() -> None:
     ap.add_argument("--lora", default="", help="LoRA 权重目录；留空只评 base")
     ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--max-new", type=int, default=320)
+    ap.add_argument("--cloud", action="store_true", help="追加一列云端大模型（读 .env 的 LLM_*）")
     ap.add_argument("--out", default=str(DATA / "eval_result.json"))
     args = ap.parse_args()
 
@@ -124,12 +164,13 @@ def main() -> None:
     if tok.pad_token is None:
         tok.pad_token = tok.eos_token
 
-    def run(tag: str, model) -> list[dict]:
+    def run(tag: str, fn) -> list[dict]:
         out = []
         for i, s in enumerate(rows, 1):
             ev_body, ev_n = evidence_of(s)
-            text, speed = gen(model, tok, s["messages"][:-1], args.max_new)
-            r = score(text, ev_body, ev_n, s["deny"])
+            text, speed = fn(s["messages"][:-1])
+            r = score(text, ev_body, ev_n, bool(s.get("deny")))
+            r["deny"] = bool(s.get("deny"))
             r["speed"] = speed
             r["q"] = s["messages"][1]["content"].split("【问题】")[-1].strip()[:60]
             r["a"] = text
@@ -140,10 +181,13 @@ def main() -> None:
     results = {}
     base = AutoModelForCausalLM.from_pretrained(args.base, quantization_config=bnb,
                                                 device_map={"": 0}, torch_dtype=torch.float16)
-    results["base"] = run("base", base)
+    results["base"] = run("base", lambda m: gen(base, tok, m, args.max_new))
     if args.lora:
         ft = PeftModel.from_pretrained(base, args.lora)
-        results["ft"] = run("ft", ft)
+        results["ft"] = run("ft", lambda m: gen(ft, tok, m, args.max_new))
+    if args.cloud:
+        cfg = _load_env(ROOT / ".env")
+        results["cloud"] = run("cloud", lambda m: cloud_answer(m, cfg, args.max_new))
 
     table = [summarize(v, k) for k, v in results.items()]
     payload = {"table": table, "rows": results}

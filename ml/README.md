@@ -33,8 +33,17 @@ ml/.venv/Scripts/pip install transformers peft bitsandbytes accelerate datasets
 ml/.venv/Scripts/python.exe ml/train_lora.py --dry-run           # 先看编码与显存
 ml/.venv/Scripts/python.exe ml/train_lora.py                     # 正式
 
-# 3) 评测（同一批 dev 题，base vs 微调）
-ml/.venv/Scripts/python.exe ml/eval_ft.py --lora data/sft/out/lora-3b
+# 3) 合并 LoRA（fp16，在 CPU 上合并；6GB 显存合并不下）
+ml/.venv/Scripts/python.exe ml/merge_lora.py \
+  --lora data/sft/out/lora-3b --out data/sft/out/merged-3b
+
+# 4) 转 GGUF 并导入 Ollama（Modelfile 的 FROM 指向 sciagent-3b-f16.gguf）
+ml/.venv/Scripts/python.exe <llama.cpp>/convert_hf_to_gguf.py data/sft/out/merged-3b \
+  --outfile data/sft/out/sciagent-3b-f16.gguf --outtype f16
+ollama create sciagent-3b -f data/sft/Modelfile
+
+# 5) 三列评测（base / 微调 / 云端；云端读 .env 的 LLM_*）
+ml/.venv/Scripts/python.exe ml/eval_ft.py --lora data/sft/out/lora-3b --cloud
 ```
 
 ## 显存账（RTX 2060 6GB）
@@ -52,9 +61,12 @@ ml/.venv/Scripts/python.exe ml/eval_ft.py --lora data/sft/out/lora-3b
 
 ## 产物
 
-- `data/sft/out/lora-3b/`：LoRA 权重（几十 MB），**不进仓库**
-- `ml/models/`：底座权重（6.2GB），**不进仓库**
-- 训练日志与评测结果：`data/sft/`（不进仓库），结论写进 `docs/微调实验.md`
+- `data/sft/out/lora-3b/`：LoRA 权重（120MB），**不进仓库**
+- `data/sft/out/merged-3b/`：合并后的 fp16 权重（5.75GB），**不进仓库**
+- `data/sft/out/sciagent-3b-f16.gguf`：GGUF（6.17GB），**不进仓库**
+- Ollama 模型 `sciagent-3b:latest`（6.18GB，F16）存放在 `~/.ollama/models`
+- `ml/models/`：底座权重（5.8GB），**不进仓库**
+- 训练日志与评测结果：`data/sft/`（不进仓库）；结论见 `docs/微调实验.md`
 
 ## 已知边界
 
