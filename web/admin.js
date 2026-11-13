@@ -38,6 +38,10 @@ const app = createApp({
         llm: {}, ollama: {}, vector: {}, embedding: {}, rerank: {}, keepalive: {},
       },
       auditItems: [],
+      // 运行指标（近 24h）。数据源是 tasks 表，不另建指标表——
+      // 双写必然不一致，而不一致的指标比没有指标更误导人。
+      metrics: { total: 0, failed: 0, fail_rate: 0, avg_ms: 0,
+                 verify: {}, cache: {}, guard: {}, series: [], modes: [], slowest: [] },
       test: { visible: false, running: false, prompt: "用一句话说明什么是检索增强生成。", maxTokens: 512, result: null, raw: "" },
       importVisible: false,
       importText: "",
@@ -214,12 +218,27 @@ const app = createApp({
     },
 
     async loadOverview() {
-      this.overview = await this.api("/api/admin/overview");
+      // 两个请求并行：overview 要探测 Ollama（最多 2.5s），串行会让刷新明显变慢
+      const [ov, mt] = await Promise.all([
+        this.api("/api/admin/overview"),
+        this.api("/api/admin/metrics?hours=24").catch(() => null),
+      ]);
+      this.overview = ov;
+      if (mt && mt.ok) this.metrics = mt;
+    },
+
+    barHeight(b) {
+      const max = Math.max(1, ...this.metrics.series.map((x) => x.n));
+      return Math.max(4, Math.round((b.n / max) * 100));
     },
 
     async loadAudit() {
       const r = await this.api("/api/admin/audit?limit=60");
       this.auditItems = r.items || [];
+    },
+
+    pct(x, digits = 0) {
+      return `${((x || 0) * 100).toFixed(digits)}%`;
     },
 
     isDirty(p) {

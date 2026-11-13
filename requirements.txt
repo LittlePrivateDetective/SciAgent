@@ -7,6 +7,9 @@
 
 # ---- Web / API ----
 fastapi>=0.111
+# 访问防护中间件直接 import 了 starlette.middleware.base；虽然随 fastapi 装，
+# 但直接用到的包应当显式声明（否则 fastapi 哪天换底层实现就会静默坏掉）
+starlette>=0.37
 uvicorn[standard]>=0.30
 python-multipart>=0.0.9          # UploadFile 必需
 pydantic>=2.7

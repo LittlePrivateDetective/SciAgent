@@ -22,6 +22,26 @@ from app.core.logger import get_logger
 log = get_logger(__name__)
 
 
+# 上游的几类"不是代码问题、但必须让用户看懂"的错误。
+# 直接把原始 400 抛到界面上，用户看到的是一大段英文 JSON，第一反应是"系统崩了"；
+# 而真实原因往往是账户欠费或额度用尽——这类问题充值就能解决，说清楚能省一轮沟通。
+_UPSTREAM_HINTS = (
+    ("arrearage", "账户欠费", "模型账户欠费（如阿里云百炼的 Arrearage），请充值后重试"),
+    ("access denied", "账户异常", "模型账户状态异常或被拒绝访问，请检查账户余额与模型开通状态"),
+    ("insufficient", "额度不足", "账户额度不足，请充值或换用其它模型"),
+    ("rate limit", "触发限流", "上游模型触发限流，请稍后重试"),
+    ("invalid_api_key", "密钥无效", "API Key 无效，请在后台「云端模型」里更新"),
+)
+
+
+def upstream_hint(text: str) -> str:
+    low = (text or "").lower()
+    for needle, _, cn in _UPSTREAM_HINTS:
+        if needle in low:
+            return cn
+    return ""
+
+
 class LLMError(RuntimeError):
     """模型调用失败（网络/鉴权/额度/格式）。"""
 
@@ -196,6 +216,9 @@ class LLMGateway:
             json=payload,
         )
         if resp.status_code >= 400:
+            hint = upstream_hint(resp.text)
+            if hint:
+                raise LLMError(f"{hint}（HTTP {resp.status_code}）")
             raise LLMError(f"HTTP {resp.status_code}: {resp.text[:300]}")
 
         data = resp.json()

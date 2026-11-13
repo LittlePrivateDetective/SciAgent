@@ -13,6 +13,13 @@ data/index/
 data/*.pdf
 .DS_Store
 
+# 微调相关：训练环境、底座权重、训练数据与产物都不进仓库
+# （6.2GB 的底座 + 2.4GB 的 torch，进仓库会把 clone 变成灾难）
+ml/.venv/
+ml/models/
+ml/wheels/
+data/sft/
+
 # 评测产物：译文原文一堆，报告与结论在 docs/ 里，中间数据不重复进仓库
 data/trans_eval/
 data/*.log

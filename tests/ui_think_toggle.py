@@ -77,6 +77,10 @@ def run() -> dict:
                 break
             time.sleep(0.4)
 
+        # 关掉答案缓存：否则同一个问题第二次命中缓存，reason/token 事件变成回放，
+        # 测出来的"思考过程可见"就不是模型的思考了。
+        js("window.__SCIAGENT_NO_CACHE = 1; 1")
+
         # 1) 按钮存在且跟随后台
         init = js("""(()=>{const v=window.__sciagent;
               const b=document.querySelector('.think-btn');

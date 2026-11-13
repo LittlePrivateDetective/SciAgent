@@ -93,6 +93,15 @@ class Settings(BaseSettings):
     chunk_max_chars: int = 600
     chunk_overlap: int = 80
     hybrid_alpha: float = 0.6
+    # 证据条数按问题类型自适应：数值抽取不需要 10 条段落，跨文献对比则需要。
+    # 给多了不只是慢——无关段落会把"关键句"淹没，实测同一道复杂度题 8 条证据
+    # 反而比 5 条答得糊（模型开始罗列不相关的表格行）。
+    evidence_topk_fact: int = 5      # 数值/事实/定位类
+    evidence_topk_concept: int = 7   # 概念辨析/机制类
+    evidence_topk_compare: int = 10  # 跨文献对比
+    # 问答结果缓存秒数。同一问题在同一份语料上几分钟内答案不变，
+    # 演示时连点两次不必重跑 3–16 秒的链路；0 = 关闭（测试用）。
+    answer_cache_ttl: int = 600
 
     # ---------- 保活 ----------
     # 每 5 分钟一次心跳：刷新 DB 连接 + 让本地模型常驻显存（Ollama 默认 5 分钟卸载）
@@ -114,6 +123,17 @@ class Settings(BaseSettings):
     max_upload_mb: int = 120
     log_level: str = "INFO"
     demo_access_token: str = ""
+    # ---------- 访问防护 ----------
+    # 默认值刻意宽松：一个人正常点，一分钟最多十几次；只有脚本才会碰到天花板。
+    # 一旦被刷，代价是"额度耗尽、后来的人打不开"，所以宁可先有、再调紧。
+    rate_limit_per_min: int = 120        # 每 IP 每 60 秒的总请求数（0=不限）
+    rate_limit_ask_per_min: int = 30     # 其中问答/写作/上传这类"要花模型钱"的
+    # 豁免本机回环：开发和回归测试都从 127.0.0.1 来，不豁免会把测试自己打成 429。
+    # 公网访客走 X-Forwarded-For，不受影响；反代不透传 XFF 时才需要关掉它。
+    rate_limit_local: int = 1
+    upload_concurrency: int = 1          # 同时在解析的 PDF 数（解析是 CPU 密集）
+    # off=不校验令牌；warn=缺令牌只在响应头标记（可用来观察）；enforce=401
+    guard_mode: str = "off"
     # 后台控制台口令：只从环境变量读，不进数据库、不回显。留空 = 不鉴权（仅本机开发）
     admin_password: str = ""
 

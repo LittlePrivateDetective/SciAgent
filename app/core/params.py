@@ -175,6 +175,23 @@ P: list[Param] = [
           "排障时开 DEBUG，演示时用 INFO", ("DEBUG", "INFO", "WARNING", "ERROR")),
     Param("demo_access_token", "service", "演示访问令牌", "secret",
           "设置后所有写接口需要带 Authorization: Bearer <token>；留空表示不鉴权"),
+    Param("rate_limit_per_min", "service", "每 IP 每分钟请求数", "int",
+          "单个 IP 每 60 秒的总请求上限，0=不限。正常人手点一分钟十几次，"
+          "所以 120 只挡脚本；被刷时返回 429 并提示稍后再试", 0, 2000, 10, "次"),
+    Param("rate_limit_ask_per_min", "service", "问答类每分钟上限", "int",
+          "问答 / 写作 / 上传这类会花模型费用的接口单独计数，默认 30。"
+          "比总数小得多，因为一次问答的成本是一次翻页的几千倍", 0, 500, 5, "次"),
+    Param("rate_limit_local", "service", "豁免本机请求", "bool",
+          "来自 127.0.0.1 / ::1 的请求不计入限流。开发和回归测试都从这里来，"
+          "不豁免会把测试自己打成 429。反向代理不透传 X-Forwarded-For 时应关掉"),
+    Param("upload_concurrency", "service", "上传解析并发", "int",
+          "同时解析的 PDF 数量。解析吃 CPU，超过 1 会让问答也变慢；"
+          "排队比让所有人一起卡更好", 1, 4, 1, "个"),
+    Param("guard_mode", "service", "访问令牌校验", "enum",
+          "off=不校验（默认，保证拿到链接就能用）；"
+          "warn=缺令牌只在响应头标记，便于先观察；"
+          "enforce=缺令牌直接 401。收紧前先确认演示链接带上了 ?token=",
+          ("off", "warn", "enforce")),
     Param("keepalive_enabled", "service", "后台保活", "bool",
           "每 5 分钟一次心跳：刷新数据库连接，并让本地模型留在显存。"
           "关掉后 Ollama 会在空闲 5 分钟时卸掉模型，下一次请求要重新加载"),

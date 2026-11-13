@@ -26,6 +26,7 @@ from app.core.llm import LLMError, gateway
 from app.core.logger import get_logger
 from app.db.models import Lesson
 from app.db.session import SessionLocal
+from app.rag import budget
 from app.rag.anchors import attach_anchors, citation_table, verify
 from app.rag.hybrid import search_with_rerank, tokenize
 
@@ -69,6 +70,13 @@ def node_plan(state: dict) -> dict:
     lessons = _load_lessons(mode)
     state["lessons_used"] = lessons
 
+    # 规划与"查询改写"互不依赖，却是两次独立的模型调用。串行跑等于白等一次往返
+    # （实测 1.2s + 1.0s）；并行后这一段只花掉较慢的那一次。
+    from concurrent.futures import ThreadPoolExecutor
+
+    pool = ThreadPoolExecutor(max_workers=1)
+    fut = pool.submit(_expand_query, state["goal"])
+
     try:
         data = gateway.chat_json(
             [
@@ -85,7 +93,10 @@ def node_plan(state: dict) -> dict:
                 },
             ],
             temperature=0.1,
-            thinking=state.get("thinking"),
+            # 规划是一次结构化任务（拆 2–5 步、输出 JSON），思维链在这里只贡献
+            # 延迟不贡献质量：实测同一条指令，开思维链多 2–4 秒，步骤数一模一样。
+            # 深思模式留给"作答"那一步，规划恒定走快速。
+            thinking=False,
         )
         steps = data.get("steps") or []
         reasoning = data.get("reasoning", "")
@@ -109,6 +120,14 @@ def node_plan(state: dict) -> dict:
             seen.append(s)
     if not any(s["type"] == "retrieve" for s in seen):
         seen.insert(0, {"type": "retrieve", "query": state["goal"]})
+
+    # 收回并行的查询改写结果；失败不阻塞（_expand_query 内部已兜住异常）
+    try:
+        state["expanded_query"] = fut.result(timeout=20)
+    except Exception:  # noqa: BLE001
+        state["expanded_query"] = state["goal"]
+    finally:
+        pool.shutdown(wait=False)
 
     state["plan"] = seen
     state["plan_reasoning"] = reasoning
@@ -182,14 +201,25 @@ def node_retrieve(state: dict) -> dict:
             query = s["query"]
             break
 
-    expanded = _expand_query(query)
-    hits = search_with_rerank(expanded, state.get("doc_ids"), top_k=8)
+    mode = state.get("mode", "qa")
+    # 规划阶段已经并行算过改写（且 query 就是 goal 时可直接复用）；
+    # 走到重规划时 query 变了，才重新改写。
+    pre = state.get("expanded_query")
+    expanded = pre if (pre and query == state.get("goal")) else _expand_query(query)
+    # 证据条数按问题类型给：数值题 5 条、概念题 7 条、对比题 10 条。
+    # 这是"问答慢"最直接的杠杆——证据条数直接决定 prompt 长度，
+    # 而 16 秒的等待里相当一部分是在等 prefill。
+    k = budget.top_k(query, mode)
+    kn = budget.stitch_n(query, mode)
+    hits = search_with_rerank(expanded, state.get("doc_ids"), top_k=k, stitch_n=kn)
     evidence = [h.to_dict() for h in hits]
     state["evidence"] = evidence
     state["retrieval_query"] = expanded
+    state["intent"] = budget.classify(query, mode)
     _step(
         state, "retriever", "hybrid_search",
-        query=expanded, hits=len(evidence), latency_ms=int((time.time() - t0) * 1000),
+        query=expanded, hits=len(evidence), intent=state["intent"],
+        budget=k + kn, latency_ms=int((time.time() - t0) * 1000),
     )
     return state
 
@@ -272,6 +302,11 @@ def _evidence_block(evidence: list[dict], max_chars_each: int = 1600, query: str
             f"[{i}] 来源：{ev.get('doc_name')} 第{ev.get('page')}页{sec_info}{kind_hint} | {body}\n{key_line}"
         )
     return "\n".join(lines) if lines else "（无检索结果）"
+
+
+# 公开别名：流式接口（routes.chat_stream）要复用同一套证据排版，
+# 否则两条路径给模型的证据格式不一致，同一个问题流式与非流式的答案会漂。
+evidence_block = _evidence_block
 
 
 def node_answer(state: dict) -> dict:
@@ -403,6 +438,14 @@ def node_review(state: dict) -> dict:
     ):
         _step(state, "reviewer", "skip", note="upstream_answer_invalid")
         return state
+    # 审稿是一次额外的全量 LLM 调用（约 1.5–3 秒），只在不亏的时候做：
+    # - 深思模式：用户选了"想稳"，就该有这一遍；
+    # - 引用校验有未核实项：这时改写有明确收益；
+    # 快速模式且引用全对时跳过——否则"快速"两个字名不副实（实测 2.7s → 5.1s）。
+    invalid = int((state.get("verify") or {}).get("invalid") or 0)
+    if not state.get("thinking") and invalid == 0:
+        _step(state, "reviewer", "skip", note="fast_mode_and_citations_ok")
+        return state
     try:
         data = gateway.chat_json(
             [
@@ -449,6 +492,17 @@ def node_reflect(state: dict) -> dict:
     """把经验写进长期记忆。error_type="无" 也记，用于统计成功率。"""
     t0 = time.time()
     verify_info = state.get("verify") or {}
+    # 成功且无重试时，复盘结论恒为 error_type="无"，而下面的代码只有
+    # `error_type != "无"` 才写库——也就是说这一次调用 100% 白烧 0.9 秒。
+    # 只在真的出过问题（重试过 / 有 error / 有未核实引用）时才让模型复盘。
+    needs_llm = bool(state.get("retries") or state.get("error")
+                     or int(verify_info.get("invalid") or 0) > 0)
+    if not needs_llm:
+        state["reflection"] = {"scene": state.get("mode", "qa"), "error_type": "无",
+                               "action": "", "skipped": "clean_run"}
+        _step(state, "reflector", "write_memory", error_type="无",
+              latency_ms=int((time.time() - t0) * 1000), note="clean_run")
+        return state
     try:
         data = gateway.chat_json(
             [
@@ -465,7 +519,8 @@ def node_reflect(state: dict) -> dict:
                 },
             ],
             temperature=0.3,
-            thinking=state.get("thinking"),
+            # 复盘是"往经验表里写一句话"，同样不需要长推理。
+            thinking=False,
         )
     except LLMError:
         data = {}

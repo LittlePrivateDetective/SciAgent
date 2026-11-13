@@ -179,7 +179,12 @@ def run() -> dict:
         # 3) 点第一篇 → 切到阅读器，页图必须在视口内
         js("""(()=>{document.querySelector('.doc-item .doc-main').click(); return 1;})()""")
         wait("window.__sciagent.mobilePane === 'reader' && !!document.querySelector('.pdf-page')", 30)
-        time.sleep(1.6)
+        # 必须等页图真的解码完（complete && naturalWidth>0）：
+        # 图片还在加载时 getBoundingClientRect 拿到的宽度是原始尺寸或 0，
+        # 断言就会随机失败（实测同一版本跑两次，一次 reader_fit=true 一次 false）。
+        wait("(()=>{const i=document.querySelector('.pdf-page');"
+             " return !!(i && i.complete && i.naturalWidth > 0)})()", 25)
+        time.sleep(0.6)
         reader = js("""(()=>{
           const vm=window.__sciagent, de=document.documentElement;
           const img=document.querySelector('.pdf-page');

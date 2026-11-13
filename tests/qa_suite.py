@@ -919,7 +919,10 @@ def c07():
     try:
         t = time.time()
         with CLIENT.stream("POST", f"{BASE}/api/chat/stream",
-                           json={"question": "一句话说明 Transformer 的核心机制", "doc_ids": [], "mode": "qa"}) as r:
+                           # no_cache：这条用例要验的是"模型逐 token 吐字"，
+                           # 命中缓存时走的是回放，测不出真实的流式链路
+                           json={"question": "一句话说明 Transformer 的核心机制", "doc_ids": [],
+                                 "mode": "qa", "no_cache": True}) as r:
             if r.status_code != 200:
                 return blocked(f"流式接口不存在（HTTP {r.status_code}）", status=r.status_code)
             lines = [line for line in r.iter_lines() if line and line != "data: [DONE]"]

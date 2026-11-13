@@ -151,6 +151,55 @@
         </div>
 
         <div class="card">
+          <div class="card-head">
+            <span>近 24 小时问答</span>
+            <span class="muted">
+              {{ metrics.total }} 次 · 平均 {{ (metrics.avg_ms / 1000).toFixed(1) }}s ·
+              失败 {{ pct(metrics.fail_rate) }}
+            </span>
+          </div>
+          <div class="bars">
+            <div v-for="b in metrics.series" :key="b.h" class="bar"
+                 :title="`${b.h} · ${b.n} 次 · 平均 ${(b.avg_ms / 1000).toFixed(1)}s · 失败 ${b.fail}`">
+              <i :style="{ height: barHeight(b) + '%' }" :class="{ bad: b.fail }"></i>
+            </div>
+            <div v-if="!metrics.series.length" class="empty">这个时间段还没有问答记录</div>
+          </div>
+          <div class="kv">
+            <div class="k">引用校验</div>
+            <div class="v">
+              <template v-if="metrics.verify && metrics.verify.n">
+                平均 {{ metrics.verify.avg }} · 低于 0.75 的 {{ metrics.verify.below_075 }} 次
+                <span class="tag" v-if="metrics.verify.below_075">需关注</span>
+              </template>
+              <template v-else>暂无数据</template>
+            </div>
+            <div class="k">答案缓存</div>
+            <div class="v">
+              命中率 {{ pct(metrics.cache && metrics.cache.hit_rate) }} ·
+              在存 {{ metrics.cache ? metrics.cache.items : 0 }} 条 ·
+              TTL {{ metrics.cache ? metrics.cache.ttl_s : 0 }}s
+            </div>
+            <div class="k">访问防护</div>
+            <div class="v">
+              限流 {{ metrics.guard ? metrics.guard.rate_limit_per_min : '-' }}/分（问答
+              {{ metrics.guard ? metrics.guard.rate_limit_ask_per_min : '-' }}/分） ·
+              已拦 {{ metrics.guard ? metrics.guard.blocked : 0 }} 次 ·
+              令牌 {{ metrics.guard && metrics.guard.token_set ? (metrics.guard.token_mode === 'enforce' ? '强制' : metrics.guard.token_mode) : '未设置' }}
+            </div>
+          </div>
+          <div class="slow" v-if="metrics.slowest && metrics.slowest.length">
+            <div class="slow-head">最慢的几次</div>
+            <div v-for="(x, i) in metrics.slowest" :key="i" class="slow-row">
+              <span class="mono">{{ (x.ms / 1000).toFixed(1) }}s</span>
+              <span class="slow-goal">{{ x.goal }}</span>
+              <span class="tag">{{ x.mode }}</span>
+              <span class="slow-at">{{ x.at }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
           <div class="card-head"><span>参数生效方式</span></div>
           <div class="legend">
             <div class="legend-item"><span class="badge ok">立即生效</span>下一次请求就用新值，无需重启</div>

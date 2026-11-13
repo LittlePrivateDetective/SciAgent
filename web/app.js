@@ -3,6 +3,31 @@
  * 但保留了"组件化 + 状态驱动"的结构，后续换框架只替换视图层。
  */
 
+/* ---------- 演示令牌透传（对应后台「访问令牌校验」） ----------
+ * 后台把 guard_mode 切成 enforce 后，所有请求都要带令牌。这里统一包一层
+ * window.fetch，而不是去改二十几处调用点——改漏一处就是"只有那个功能 401"，
+ * 而以后新增的接口还会继续漏。
+ * 地址栏里的 token 读完立刻从 URL 抹掉：用户截图、复制链接时不该把令牌带出去。
+ */
+(() => {
+  const u = new URL(location.href);
+  const fromUrl = u.searchParams.get("token");
+  if (fromUrl) {
+    try { localStorage.setItem("sciagent_token", fromUrl); } catch (_) { /* 隐私模式下忽略 */ }
+    u.searchParams.delete("token");
+    history.replaceState({}, "", u.pathname + (u.search ? u.search : "") + u.hash);
+  }
+  let token = fromUrl || "";
+  try { token = token || localStorage.getItem("sciagent_token") || ""; } catch (_) { /* ignore */ }
+  if (!token) return;
+  const raw = window.fetch.bind(window);
+  window.fetch = (input, init = {}) => {
+    const headers = new Headers(init.headers || {});
+    if (!headers.has("X-Demo-Token")) headers.set("X-Demo-Token", token);
+    return raw(input, { ...init, headers });
+  };
+})();
+
 const { createApp, reactive, nextTick } = Vue;
 
 // ECharts 实例放在组件外：它持有大量 DOM 引用，放进响应式对象会被深度代理拖慢
@@ -1608,7 +1633,10 @@ const app = createApp({
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ question: q, doc_ids: this.docIdsFor(), mode: this.mode,
-                                 thinking: this.thinkDeep }),
+                                 thinking: this.thinkDeep,
+                                 // 回归测试会设 window.__SCIAGENT_NO_CACHE=1：
+                                 // 缓存命中的 token 事件是"回放"，测不出真实的流式链路
+                                 no_cache: !!window.__SCIAGENT_NO_CACHE }),
         });
         if (!resp.ok) throw new Error("HTTP " + resp.status);
         const reader = resp.body.getReader();

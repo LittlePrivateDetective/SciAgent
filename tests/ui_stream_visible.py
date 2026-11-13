@@ -89,6 +89,9 @@ def run() -> dict:
             time.sleep(0.4)
         time.sleep(1.0)
 
+        # 关掉答案缓存：缓存命中的 token 事件是"回放"（20ms 一段），
+        # 要验证的是模型真的在逐字吐字，不是回放得够不够快。
+        js("window.__SCIAGENT_NO_CACHE = 1; 1")
         conf = js("""(()=>{const v=window.__sciagent;
               v.centerView='chat';
               return {deep: !!v.thinkDeep, stream: !!v.streamMode}})()""")

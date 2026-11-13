@@ -10,7 +10,7 @@ import json
 import os
 import platform
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 import httpx
@@ -195,6 +195,75 @@ def overview(_=Depends(auth.require_admin), db: Session = Depends(get_db)):
              "at": a.created_at.strftime("%m-%d %H:%M:%S")}
             for a in db.scalars(select(AuditLog).order_by(AuditLog.created_at.desc()).limit(8)).all()
         ],
+    }
+
+
+@router.get("/metrics")
+def metrics(hours: int = Query(24, ge=1, le=168),
+            _=Depends(auth.require_admin), db: Session = Depends(get_db)):
+    """近 N 小时的运行指标：调用量、延迟、失败率、引用校验通过率、缓存与限流。
+
+    数据源就是 `tasks` 表——每次问答都会落一条，含耗时、模式、状态与校验结果。
+    不另建"指标表"：那需要双写，双写就会不一致，而不一致的指标比没有指标更糟。
+    """
+    since = datetime.now() - timedelta(hours=hours)
+    rows = db.execute(
+        select(Task.created_at, Task.mode, Task.status, Task.latency_ms,
+               Task.goal, Task.result_json)
+        .where(Task.created_at >= since)
+        .order_by(Task.created_at)
+    ).all()
+
+    buckets: dict[str, dict] = {}
+    modes: dict[str, dict] = {}
+    rates: list[float] = []
+    slow: list[dict] = []
+    for r in rows:
+        key = r.created_at.strftime("%m-%d %H:00")
+        b = buckets.setdefault(key, {"h": key, "n": 0, "ms_sum": 0, "fail": 0})
+        b["n"] += 1
+        b["ms_sum"] += r.latency_ms or 0
+        if r.status != "done":
+            b["fail"] += 1
+        m = modes.setdefault(r.mode or "qa", {"mode": r.mode or "qa", "n": 0, "ms_sum": 0})
+        m["n"] += 1
+        m["ms_sum"] += r.latency_ms or 0
+        try:
+            v = (json.loads(r.result_json or "{}").get("verify") or {}).get("rate")
+            if isinstance(v, (int, float)):
+                rates.append(float(v))
+        except (json.JSONDecodeError, TypeError):
+            pass
+        slow.append({"goal": (r.goal or "")[:70], "ms": int(r.latency_ms or 0),
+                     "mode": r.mode or "qa", "at": r.created_at.strftime("%m-%d %H:%M")})
+
+    series = [{"h": b["h"], "n": b["n"], "fail": b["fail"],
+               "avg_ms": int(b["ms_sum"] / b["n"]) if b["n"] else 0}
+              for b in buckets.values()]
+    slow.sort(key=lambda x: -x["ms"])
+
+    total = len(rows)
+    fails = sum(1 for r in rows if r.status != "done")
+    from app.core.cache import answer_cache
+    from app.core.guard import guard
+
+    return {
+        "ok": True,
+        "hours": hours,
+        "total": total,
+        "failed": fails,
+        "fail_rate": round(fails / total, 4) if total else 0.0,
+        "avg_ms": int(sum(r.latency_ms or 0 for r in rows) / total) if total else 0,
+        "verify": {"n": len(rates),
+                   "avg": round(sum(rates) / len(rates), 3) if rates else None,
+                   "below_075": sum(1 for x in rates if x < 0.75)},
+        "series": series,
+        "modes": [{"mode": m["mode"], "n": m["n"],
+                   "avg_ms": int(m["ms_sum"] / m["n"]) if m["n"] else 0}
+                  for m in modes.values()],
+        "slowest": slow[:5],
+        "cache": answer_cache.stats(),
+        "guard": guard.stats(),
     }
 
 

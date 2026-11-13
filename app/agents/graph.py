@@ -24,7 +24,7 @@ import time
 from typing import Any, Callable
 
 from app.agents import nodes
-from app.core.llm import gateway
+from app.core.llm import gateway, want_thinking
 from app.core.logger import get_logger
 from app.db.models import Task, TaskStep
 from app.db.session import SessionLocal
@@ -113,7 +113,10 @@ def run(
         "goal": goal,
         "mode": mode,
         "doc_ids": doc_ids or [],
-        "thinking": thinking,
+        # 在这里就归一成布尔：节点里大量 `if state.get("thinking")` 的判断，
+        # 而 None 表示"跟随后台设置"，落到节点里会被当成 False ——
+        # 深思模式于是静默跳过了审稿（实测对比题的 reviewer 一直 skip）。
+        "thinking": want_thinking(thinking),
         "retries": 0,
         "trace": [],
     }

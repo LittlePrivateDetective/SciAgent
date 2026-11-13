@@ -313,9 +313,47 @@ def _is_heading(block: Block, body: float) -> tuple[bool, int]:
     return False, 0
 
 
+# 希腊字母整段范围（U+0370–U+03FF）+ 常见数学算符。原先手写的那串只覆盖了
+# αβγδθλμπσφψω，恰好漏掉 χ、ϵ、ϕ、∇ —— 而 χ² 检验、Adam 的 ϵ、势函数 ϕ
+# 在论文里非常常见，正是被漏掉的那几个符号让整行公式被判成正文。
+_RE_GREEK = re.compile(r"[\u0370-\u03ff]")
+_RE_MATH_OP = re.compile(r"[=+×÷∑∏∫√≤≥≠≈≡∂∇∞±∈∉⊂⊃∀∃→←↔·⋅−]")
+
+
+def looks_formula_text(txt: str) -> bool:
+    """纯文本判据：这一行是不是"应当原样保留、不要翻译"的公式。
+
+    与老的 `_looks_formula` 的区别是加了**符号密度**，并显式豁免"成句的正文"：
+    - `χi χi j Cov[yi, yj | x] φ2` 这类块，希腊字母 3 个、长度 28，密度 0.11 → 公式；
+    - `We used the Adam optimizer [18] with β1 = 0.9, β2 = 0.98 and ϵ = 10−9.`
+      符号也有 5 个，但小写英文词有 7 个且以句号结尾 → 正文，必须翻译。
+
+    这条判据同时被翻译层（`bilingual.keep_verbatim`）和入库前的重分类脚本复用，
+    所以写成只依赖文本的纯函数——两边各写一份，迟早会出现"解析说公式、翻译说正文"。
+    """
+    t = (txt or "").strip()
+    if not t or len(t) > 200:
+        return False
+    sym = (len(_RE_MATH_OP.findall(t)) + len(_RE_GREEK.findall(t))
+           + t.count("^") + t.count("_"))
+    if sym < 2:
+        return False
+    low = re.findall(r"\b[a-z]{3,}\b", t)
+    # 成句正文：小写英文词成串（≥5 个）就按正文处理，即使符号很多。
+    # 不要求"以句号结尾"——实测 `Now let's perform some algebraic manipulations
+    # on the loss function. We seek:` 以冒号收尾，按结尾判会把整段正文吞成公式，
+    # 翻译时原样保留英文，用户看到的是"这一页没翻"。
+    if len(low) >= 5:
+        return False
+    density = sym / max(len(t), 1)
+    return density >= 0.08 or (len(low) <= 1 and sym >= 3)
+
+
 def _looks_formula(block: Block) -> bool:
-    """字体名带 CM/Math/Symbol，且几乎不含长英文单词 → 判公式。"""
+    """块级判据 = 纯文本判据 + 老的长度/词比规则（保留以兼容历史样本）。"""
     txt = block.text
+    if looks_formula_text(txt):
+        return True
     if len(txt) > 160:
         return False
     words = re.findall(r"[A-Za-z]{4,}", txt)

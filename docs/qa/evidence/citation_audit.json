@@ -1,0 +1,27 @@
+{
+ "generated_at": "2026-11-13 11:47:47",
+ "sampled": 100,
+ "graded": 98,
+ "unverifiable": 2,
+ "hit": 98,
+ "tight": 84,
+ "rate": 1.0,
+ "tight_rate": 0.8571,
+ "median_recall": 1.0,
+ "median_precision": 1.0,
+ "by_kind": {
+  "text": [
+   37,
+   38
+  ],
+  "table": [
+   33,
+   34
+  ],
+  "figure": [
+   28,
+   28
+  ]
+ },
+ "misses": []
+}

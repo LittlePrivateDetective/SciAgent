@@ -770,7 +770,8 @@ def _ensure_table_slot(query: str, final: list[Hit], pool: list[Hit], top_k: int
     return out
 
 
-def search_with_rerank(query: str, doc_ids: list[str] | None = None, top_k: int | None = None) -> list[Hit]:
+def search_with_rerank(query: str, doc_ids: list[str] | None = None, top_k: int | None = None,
+                       stitch_n: int = 3) -> list[Hit]:
     """召回 → 重排。优先用重排模型，不可用时用「关键词覆盖率 + 位置先验」兜底。
 
     候选池为什么是 top_k×4（而不是原来的 ×2）：cross-encoder 是唯一能把
@@ -779,6 +780,11 @@ def search_with_rerank(query: str, doc_ids: list[str] | None = None, top_k: int 
     第 55 名——候选池只有 16 条时它永远见不到重排模型，答案只能写"证据未给出"；
     候选池放到 40 条后它进了重排，得分 0.573 排到第一（详见缺陷 D-67）。
     代价是重排 token 约 ×2.5，单次调用约多花 0.001 元、多 100–200ms。
+
+    `stitch_n` 是"给前 n 条补一个同页邻块"的条数。它默认 3 是历史行为，
+    但调用方现在按问题类型给：数值题给 0（答案就在那一行，补出来的邻块只是
+    表格的下一行，白占 prompt），对比题给 3。总量控制不住的话，top_k=5
+    实际会变成 8 条，自适应就失去意义了。
     """
     top_k = top_k or settings.top_k
     cand_n = max(top_k * 4, 40)
@@ -803,7 +809,7 @@ def search_with_rerank(query: str, doc_ids: list[str] | None = None, top_k: int 
             reverse=True,
         )
         final = _ensure_table_slot(query, final, tables or remote, top_k)
-        return _stitch(final)
+        return _stitch(final, stitch_n) if stitch_n else final
 
     q_tokens = set(tokenize(query))
     max_sparse = max((h.sparse_score for h in hits), default=0.0) or 1.0
@@ -822,4 +828,4 @@ def search_with_rerank(query: str, doc_ids: list[str] | None = None, top_k: int 
         h.score = local_score(h)
     out = _ensure_mentioned_docs(reranked[:top_k], query, top_k)
     out = _ensure_table_slot(query, out, reranked, top_k)
-    return _stitch(out)
+    return _stitch(out, stitch_n) if stitch_n else out

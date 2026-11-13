@@ -13,6 +13,7 @@ from fastapi.staticfiles import StaticFiles
 from app.api.admin import router as admin_router
 from app.api.routes import router
 from app.core.config import BASE_DIR, settings
+from app.core.guard import GuardMiddleware
 from app.core.logger import get_logger, setup_logging
 from app.db.session import init_db
 from app.rag.store import get_store
@@ -25,6 +26,10 @@ app = FastAPI(
     description="双栏感知 PDF 解析 + 锚点可验证 RAG + 多 Agent 编排",
     version="1.0.0",
 )
+
+# 访问防护放在 CORS 之后注册 = 位于外层：先挡掉超频与无令牌请求，
+# 不让它们进到业务层（更不会花掉一次模型调用）。
+app.add_middleware(GuardMiddleware)
 
 app.add_middleware(
     CORSMiddleware,

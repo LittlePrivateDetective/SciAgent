@@ -1,6 +1,7 @@
 """HTTP 接口层：文档、检索问答、图谱、系统自检。"""
 from __future__ import annotations
 
+import copy
 import json
 import re
 import time
@@ -13,8 +14,11 @@ from pydantic import BaseModel, Field
 from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session
 
+from app.agents import nodes as agent_nodes
 from app.agents.graph import run as run_agent
+from app.core.cache import answer_cache, answer_ttl, make_key
 from app.core.config import resolve_doc_file, settings
+from app.core.guard import guard
 from app.core.llm import gateway, want_thinking
 from app.core.logger import get_logger
 from app.db.models import (
@@ -30,6 +34,7 @@ from app.db.models import (
 )
 from app.db.session import get_db
 from app.parse.ocr import ocr_available
+from app.rag import budget
 from app.rag.focus import annotate_focus
 from app.rag.bilingual import (
     build_segments,
@@ -156,7 +161,16 @@ async def upload_document(
         raise HTTPException(413, f"文件超过 {settings.max_upload_mb}MB 限制")
 
     path = save_upload(data, file.filename)
-    result = ingest(db, path, file.filename, force=force, replace_doc_id=replace_doc_id)
+    # 解析是 CPU 密集的（500 页约 20–40 秒）。两个人同时传，整机会卡到
+    # 连问答都超时；所以同一时刻只解析一份，第二个人得到明确提示而不是干等。
+    # 用 0.2 秒的短超时而不是排队 30 秒：用户宁可看到"稍后再传"，
+    # 也不愿意对着一个不动的进度条怀疑系统挂了。
+    if not guard.acquire_upload(timeout=0.2):
+        raise HTTPException(429, "正在解析另一份文献（约 10–40 秒），请稍后再传。")
+    try:
+        result = ingest(db, path, file.filename, force=force, replace_doc_id=replace_doc_id)
+    finally:
+        guard.release_upload()
 
     if not result.get("ok") and result.get("stage") == "duplicate":
         pending_id = uuid.uuid4().hex[:10]
@@ -790,6 +804,8 @@ class ChatIn(BaseModel):
     mode: str = "qa"
     # None=跟随后台全局设置；True=深思（开思维链）；False=快速
     thinking: bool | None = None
+    # 回归测试专用：跳过答案缓存（理由见 StreamIn.no_cache）
+    no_cache: bool = False
 
 
 @router.post("/chat")
@@ -807,13 +823,34 @@ def chat(body: ChatIn, db: Session = Depends(get_db)):
                 "verify": {},
             }
         body.doc_ids = None
-    res = run_agent(body.question.strip(), body.doc_ids, mode=body.mode,
-                    thinking=body.thinking)
+    q = body.question.strip()
+    lib_n = db.scalar(select(func.count()).select_from(Document)) or 0
+    deep = want_thinking(body.thinking)
+    ck = make_key(kind="answer_full", q=q, mode=body.mode,
+                  docs=sorted(body.doc_ids or []), model=settings.llm_model,
+                  deep=deep, lib=lib_n, k=budget.top_k(q, body.mode))
+    ttl = answer_ttl()
+    cached = (answer_cache.get(ck)
+              if ttl > 0 and not body.no_cache and gateway.route() != "mock" else None)
+    if cached:
+        res = copy.deepcopy(cached)
+        res["latency_ms"] = 0
+        res["meta"] = {"thinking": deep, "model": settings.llm_model, "cache": "hit"}
+        annotate_focus(res.get("evidence") or [], q, res.get("answer") or "")
+        return res
+
+    res = run_agent(q, body.doc_ids, mode=body.mode, thinking=body.thinking)
     # 把"这次实际用的是哪种模式"回给前端，回答上方才标得出「深思 · 3.4s」
-    res["meta"] = {"thinking": want_thinking(body.thinking), "model": settings.llm_model}
+    res["meta"] = {"thinking": deep, "model": settings.llm_model,
+                   "cache": "miss" if ttl > 0 else "off"}
     # 句级定位：chunk 往往是一整段，直接把 bbox 画成大矩形既挡字也看不出重点，
     # 这里按问题与答案挑出真正作答的句子，前端据此画成贴行的小框。
-    annotate_focus(res.get("evidence") or [], body.question.strip(), res.get("answer") or "")
+    annotate_focus(res.get("evidence") or [], q, res.get("answer") or "")
+    if ttl > 0 and not body.no_cache and res.get("answer") and not res.get("error"):
+        # 不缓存 task_id / latency_ms：命中时回一个 5 秒前的 task_id 会让
+        # 「执行轨迹」面板指向一条对不上的旧记录。
+        answer_cache.put(ck, {k: v for k, v in res.items()
+                              if k not in ("meta", "task_id", "latency_ms")})
     return res
 
 
@@ -1063,20 +1100,12 @@ def write_topology(body: TopologyIn):
 
 # ==================================================================== Token 级流式 + 思考过程
 def _intent_of(q: str, mode: str) -> str:
-    """粗略判断问题类型，只用于「规划」那一步的展示。
+    """问题类型的中文标签，用于「思考过程」展示。
 
-    不追求分类准确——它的作用是把"我按什么思路在检索"说清楚，
-    比一句固定的"任务规划：拆解问题与检索目标"更有信息量，也经得起追问。
+    实现搬到了 `app.rag.budget`：分类结果同时决定"给几条证据"，
+    两处各写一份正则迟早会出现"界面显示数值抽取、实际却给了 10 条对比证据"。
     """
-    if mode == "compare":
-        return "跨文献对比"
-    if re.search(r"多少|几[个块倍张层]|BLEU|参数量|FLOPs|占比|比例|分数|准确率|复杂度|大小", q):
-        return "数值抽取"
-    if re.search(r"区别|不同|关系|为什么|原理|机制|怎么实现|如何", q):
-        return "概念辨析"
-    if re.search(r"第\s*\d+\s*作者|是谁|哪个机构|哪一年|哪里", q):
-        return "事实定位"
-    return "资料检索"
+    return budget.label(q, mode)
 
 
 class StreamIn(BaseModel):
@@ -1084,6 +1113,10 @@ class StreamIn(BaseModel):
     doc_ids: list[str] = Field(default_factory=list)
     mode: str = "qa"
     thinking: bool | None = None
+    # 回归测试专用：跳过答案缓存，强制走完整链路。
+    # 否则同一个问题第二次会被缓存命中，token 事件变成"回放"，
+    # 而 ui_stream_visible 要验证的恰恰是"模型逐字吐字"。
+    no_cache: bool = False
 
 
 @router.post("/chat/stream")
@@ -1115,7 +1148,44 @@ def chat_stream(body: StreamIn, db: Session = Depends(get_db)):
         reason_buf: list[str] = []
         reason_sent = 0
 
+        # 缓存键带上模型 / 库规模 / 是否深思 / 检索预算：
+        # 少带任何一项都会制造"改了参数或传了新文献，答案却还是旧的"。
+        ck = make_key(kind="answer", q=q, mode=body.mode, docs=sorted(doc_ids or []),
+                      model=model, deep=deep, lib=scope_n,
+                      k=budget.top_k(q, body.mode))
+        ttl = answer_ttl()
+        # mock 下不缓存：api_params_effect 靠"改参数→行为变"做断言，
+        # 缓存会把这类断言全部变成假绿。
+        cached = (answer_cache.get(ck)
+                  if ttl > 0 and not body.no_cache and gateway.route() != "mock" else None)
+
         try:
+            if cached:
+                ev = copy.deepcopy(cached["evidence"])
+                annotate_focus(ev, q, cached["answer"])
+                age = max(0, int((time.time() - cached["ts"]) // 60))
+                yield emit("thinking", stage="plan", state="done",
+                           text=f"识别意图：{_intent_of(q, body.mode)} · 检索范围 {scope_n} 篇文献",
+                           scope=scope_n)
+                yield emit("thinking", stage="retrieve", state="done",
+                           text=f"命中缓存：同一问题 {age} 分钟前答过，直接复用（不重复检索与模型调用）",
+                           hits=len(ev), cached=True)
+                # 命中缓存也要**逐段回放**，不能一次性把 done 发出去：
+                # 前端靠 token 事件做打字效果，直接 done 会让界面"啪"地一次全文出现，
+                # 用户以为页面卡了一下才刷新；而"流式体验"本身就是这个功能的一半。
+                # 键名要兜两层：写入时存的是 answer（与 done 事件的 raw_answer 同义），
+                # 第一版这里读 raw_answer 读不到 → 回放 0 个 token，界面直接出全文，
+                # 而 C07「Token 级流式」用例会看到"0 个片段"。
+                raw = cached.get("raw_answer") or cached.get("answer") or ""
+                for i in range(0, len(raw), 24):
+                    yield emit("token", text=raw[i:i + 24])
+                    time.sleep(0.005)
+                yield emit("done", answer=cached["rendered"], raw_answer=cached["answer"],
+                           evidence=ev, verify=cached["verify"],
+                           meta={"thinking": deep, "model": model, "cache": "hit",
+                                 "intent": budget.classify(q, body.mode)})
+                return
+
             # 每一步都带**这一步真实发生了什么的数字**，而不是一句固定的流程说明：
             # 固定文案看两遍就会被认出是装饰，带命中数/耗时/字数才像真的在干活。
             yield emit("thinking", stage="plan", state="done",
@@ -1124,23 +1194,26 @@ def chat_stream(body: StreamIn, db: Session = Depends(get_db)):
             yield emit("thinking", stage="retrieve", state="run",
                        text="检索中：BM25 + 稠密向量 + RRF 融合 → 重排")
             t = time.time()
-            hits = search_with_rerank(q, doc_ids, top_k=8)
+            k = budget.top_k(q, body.mode)
+            kn = budget.stitch_n(q, body.mode)
+            hits = search_with_rerank(q, doc_ids, top_k=k, stitch_n=kn)
             evidence = [h.to_dict() for h in hits]
             ms = int((time.time() - t) * 1000)
             doc_names = {e.get("doc_name") for e in evidence}
             pages = {(e.get("doc_name"), e.get("page")) for e in evidence}
             yield emit("thinking", stage="retrieve", state="done",
-                       text=f"命中 {len(evidence)} 条证据 · 覆盖 {len(doc_names)} 篇 / {len(pages)} 页 · {ms} ms",
-                       hits=len(evidence), docs=len(doc_names), pages=len(pages), latency_ms=ms)
+                       text=(f"命中 {len(evidence)} 条证据（按「{_intent_of(q, body.mode)}」"
+                             f"取 {k} 条 + 邻块 {kn} 条） · 覆盖 {len(doc_names)} 篇 / {len(pages)} 页 · {ms} ms"),
+                       hits=len(evidence), docs=len(doc_names), pages=len(pages),
+                       latency_ms=ms, budget=k + kn)
             if not evidence:
                 yield emit("error", text="文献库中没有检索到相关内容")
                 yield emit("done", answer="没有检索到相关证据。", evidence=[], verify={})
                 return
 
-            block = "\n".join(
-                f"[{i}] 来源：{e['doc_name']} 第{e['page']}页 | {e['text'][:900]}"
-                for i, e in enumerate(evidence, start=1)
-            )
+            # 与 /api/chat 共用同一套证据排版：带「关键句」前置、表格保留换行。
+            # 早期这里是自己拼的 `text[:900]`，同一个问题流式与非流式会给出不同答案。
+            block = agent_nodes.evidence_block(evidence, 800, query=q)
             chars = sum(len(e.get("text") or "") for e in evidence)
             yield emit("thinking", stage="read", state="done",
                        text=f"通读 {len(evidence)} 条证据（{chars:,} 字），按句定位可引用原句",
@@ -1191,10 +1264,16 @@ def chat_stream(body: StreamIn, db: Session = Depends(get_db)):
                        text=(f"引用校验 {v.get('valid')}/{v.get('total')} 命中"
                              + (f" · {v.get('invalid')} 处未核实" if v.get("invalid") else "")),
                        rate=v.get("rate"))
+            if answer and ttl > 0 and not body.no_cache:
+                answer_cache.put(ck, {"rendered": rendered, "answer": answer,
+                                      "evidence": copy.deepcopy(evidence),
+                                      "verify": v, "ts": time.time()})
             yield emit("done", answer=rendered, raw_answer=answer,
                        evidence=evidence, verify=v,
                        meta={"thinking": deep, "model": model,
-                             "reasoning_chars": reason_chars})
+                             "reasoning_chars": reason_chars,
+                             "cache": "miss" if ttl > 0 else "off",
+                             "intent": budget.classify(q, body.mode)})
         except Exception as exc:  # noqa: BLE001 流内异常也要给前端可渲染的事件，不能断流
             log.exception("流式回答失败")
             yield emit("error", text=f"生成中断：{type(exc).__name__}: {str(exc)[:160]}")

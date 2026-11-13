@@ -47,24 +47,56 @@ async function pickDoc(minChunks) {
 
 async function testBilingual() {
   const doc = await pickDoc(60);
-  if (doc) say("选用文献 " + doc.filename + "（" + (doc.chunks || 0) + " 块）");
+  if (doc) {
+    say("选用文献 " + doc.filename + "（" + (doc.chunks || 0) + " 块）");
+    // 对照视图是**按页懒翻译**：新入库的文献一页都没译过，右栏就是空的，
+    // 这时测"双向同步滚动"必然失败（本轮补的 12 篇新文献就是这样把 B06 弄红的）。
+    // 先确保前两页有译文——接口是同步的，已译过则走缓存秒回。
+    try {
+      await fetch(`/api/documents/${doc.id}/bilingual/translate`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        // 译 6 页而不是 2 页：2 页只有 4 段，两侧内容高度都不足 700px，
+        // 滚动断言拿到的 scrollTop 恒为 0，会把"同步正常"误判成失败。
+        body: JSON.stringify({ page_from: 1, page_to: 6 }),
+      });
+      await f.contentWindow.__sciagent.openDoc(doc);
+      await wait(600);
+    } catch (e) { say("预翻译失败（后面会如实报错）：" + e); }
+  }
   const d = await ready((x) => x.querySelectorAll(".bi-pane").length === 2 &&
                               x.querySelectorAll(".bi-seg").length > 3);
   if (!d) return say("RESULT: FAIL 双栏未渲染");
   const [en, zh] = d.querySelectorAll(".bi-pane");
   const segs = en.querySelectorAll(".bi-seg").length;
-  say("双栏渲染 OK，已加载段落=" + segs);
+  // 滚动距离必须按**可滚动高度**算，不能写死 700/1300：
+  // 中文译文长度约为英文的 0.6 倍，同一批段落中文栏可能根本没有 700px 可滚，
+  // 设 scrollTop=700 会被浏览器夹回 0，看起来像"中文栏没跟随"。
+  // 本轮补的新文献就是这样把这条用例弄红的（英文滚 700、中文停在 0）。
+  // 对照视图是**按页预取**的（/bilingual 默认只返回当前页），所以初始只有一页内容，
+  // 高度往往不足一屏。真实用户会继续往下滚，前端触底再拉下一页——这里照样模拟：
+  // 反复滚到底，直到内容足够长或拉够 4 轮。不这么做，"可滚动高度=0"
+  // 会被误读成"双栏没联动"，实际只是还没加载第二页。
+  const enH = () => en.scrollHeight - en.clientHeight;
+  const zhH = () => zh.scrollHeight - zh.clientHeight;
+  for (let i = 0; i < 4 && (enH() < 200 || zhH() < 120); i++) {
+    en.scrollTop = en.scrollHeight; en.dispatchEvent(new Event("scroll"));
+    await wait(1100);
+  }
+  const enMax = enH(), zhMax = zhH();
+  say("双栏渲染 OK，已加载段落=" + en.querySelectorAll(".bi-seg").length
+      + "，可滚动高度 英文=" + enMax + " 中文=" + zhMax);
+  if (enMax < 120 || zhMax < 120) return say("RESULT: FAIL 内容不足以测滚动（预取未生效）");
 
-  en.scrollTop = 700; en.dispatchEvent(new Event("scroll"));
+  en.scrollTop = Math.round(enMax * 0.6); en.dispatchEvent(new Event("scroll"));
   await wait(400);
   const zh1 = Math.round(zh.scrollTop);
-  say("英文滚动 700 -> 中文 " + zh1);
+  say("英文滚到 60% -> 中文 " + zh1);
 
   const en0 = Math.round(en.scrollTop);
-  zh.scrollTop = 1300; zh.dispatchEvent(new Event("scroll"));
+  zh.scrollTop = Math.round(zhMax * 0.85); zh.dispatchEvent(new Event("scroll"));
   await wait(400);
   const en1 = Math.round(en.scrollTop);
-  say("中文滚动 1300 -> 英文 " + en0 + " => " + en1);
+  say("中文滚到 85% -> 英文 " + en0 + " => " + en1);
 
   const top = (pane) => {
     const s = [...pane.querySelectorAll(".bi-seg")]

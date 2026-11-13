@@ -28,6 +28,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.llm import LLMError, gateway
 from app.core.logger import get_logger
+from app.rag import glossary
 from app.db.models import Chunk, Document, Translation
 from app.db.session import session_scope
 from app.rag.chunker import strip_carry as _strip_carry
@@ -226,6 +227,14 @@ def _translate_batch(texts: list[str], to: str = "zh", model: str | None = None)
         sys_prompt = _SYS_EN_LITE if to == "en" else _SYS_LITE
     else:
         sys_prompt = _SYS_EN if to == "en" else _SYS
+
+    # 只注入本批真正出现的术语（最多 12 条）。整份表塞进去会多花 200 token/批，
+    # 而且模型会开始"为了用术语而用术语"，把通顺的句子改坏。
+    # 中译英不注入：方向相反时这张表等于反向词表，而模型对英文术语本来就熟。
+    if to == "zh":
+        terms = glossary.for_text("\n".join(texts))
+        if terms:
+            sys_prompt = sys_prompt + "\n\n" + glossary.prompt_block(terms)
     try:
         obj = gateway.chat_json(
             [
@@ -261,6 +270,12 @@ def _translate_batch(texts: list[str], to: str = "zh", model: str | None = None)
                         len(zh), len(src_text), zh[:20])
             zh = ""
         out.append(zh)
+    if to == "zh":
+        # 只统计、不改写：实测把"隐单元"正则替换成"隐藏单元"会改坏
+        # "隐单元的维度"这类正常表达，得不偿失。
+        bad = glossary.compliance(list(zip(texts, out)))
+        if bad:
+            log.info("本批术语不一致：%s", ", ".join(f"{b['en']}({b['ok']}/{b['n']})" for b in bad[:4]))
     return out
 
 
