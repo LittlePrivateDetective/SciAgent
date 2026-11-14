@@ -218,6 +218,9 @@ const app = createApp({
       // 只在 max-width:760px 的媒体查询里决定显示哪一块。
       mobilePane: "qa",
       info: {},
+      // 本次问答走哪个后端：cloud / local。只对"这一问"生效（请求头 X-LLM-Route），
+      // 不是全局路由开关——全局那份在后台参数中心，动了会换掉所有人的模型。
+      askRoute: "cloud",
       docs: [],
       // 勾选的文献 id：既是问答/写作的检索范围，也是批量删除的选中集
       selection: [],
@@ -337,6 +340,14 @@ const app = createApp({
   },
   computed: {
     activeDocId() { return this.activeDoc ? this.activeDoc.id : ""; },
+    // 本地模型是否真的可用：开关 + Ollama 端口可达 + 模型名在本机，三条件后端合判。
+    // 公网实例答案是 false，徽标就退化成只读标签——不给点了必错的选项。
+    localReady() { return !!(this.info.local && this.info.local.available); },
+    askRouteLabel() {
+      if (!this.info.llm) return "加载中";
+      if (this.askRoute === "local" && this.info.local) return `本地 ${this.info.local.model}`;
+      return this.info.llm.mock ? "模型未配置（模拟）" : this.info.llm.model;
+    },
     viewTitle() {
       return { reader: "阅读器", bilingual: "中英对照", graph: "引用图谱", write: "写作助手" }[this.centerView] || "阅读器";
     },
@@ -484,6 +495,9 @@ const app = createApp({
     async loadInfo() {
       const r = await fetch("/api/system/info").then((x) => x.json());
       this.info = r;
+      // 后台把全局路由钉成 local 时，界面默认就该显示本地——否则徽标写着云端、
+      // 实际跑的是本地，用户看不出这一问到底谁答的。
+      if (r && r.llm && r.llm.route === "local") this.askRoute = "local";
     },
     /* ---------------- 整篇中译英（官方 1.6.4） ---------------- */
 
@@ -1807,10 +1821,13 @@ const app = createApp({
         docIds = [this.activeDoc.id];
       }
       const t0 = Date.now();
+      // 在发请求这一刻把路由钉下来：等 30 秒本地出完答案时，用户可能已经把开关切回云端，
+      // 那一刻的 this.askRoute 不能代表"这条回答是谁答的"
+      const askedRoute = this.askRoute;
       try {
         const r = await fetch("/api/chat", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...this.routeHeader(askedRoute) },
           body: JSON.stringify({ question: q, doc_ids: docIds, mode: "qa",
                                  thinking: this.thinkDeep }),
         }).then((x) => x.json());
@@ -1821,7 +1838,7 @@ const app = createApp({
           evidence: r.evidence || [],
           verify: r.verify || {},
           trace: r.trace || [],
-          meta: this.modeLabel(((Date.now() - t0) / 1000).toFixed(1)),
+          meta: this.modeLabel(((Date.now() - t0) / 1000).toFixed(1), { route: askedRoute }),
         });
       } catch (e) {
         this.messages.push({ role: "assistant", html: "请求失败：" + e });
@@ -1842,9 +1859,40 @@ const app = createApp({
     },
 
     // 标签显示在回答上方。把耗时写出来是有意的：让"深思换到了什么"变成看得见的东西
+    // 带上"本地"二字同样是有意的：切到本地后的回答要能自证是本地跑的，否则截图里
+    // 云端和本地长得一模一样，加分项等于没做。
     modeLabel(seconds, meta) {
       const deep = meta && typeof meta.thinking === "boolean" ? meta.thinking : this.thinkDeep;
-      return `${deep ? "深思" : "快速"} · ${seconds}s`;
+      const local = meta && meta.route === "local" ? " · 本地" : "";
+      return `${deep ? "深思" : "快速"}${local} · ${seconds}s`;
+    },
+
+    // 切换"这一问"的后端。刻意不写后端全局配置：全局路由是全站共享的，
+    // 页面上点一下就把所有人（包括公网访客）的模型换掉，既不对也没法回滚。
+    async setAskRoute(route) {
+      if (route === this.askRoute) return;
+      if (route === "local") {
+        // 再探一次：用户可能刚关掉 Ollama 或改了模型名，10 秒缓存里的旧结论会让
+        // "按钮还在，一问就报错"重新出现。
+        const fresh = await fetch("/api/system/info").then((x) => x.json()).catch(() => null);
+        if (fresh && fresh.local) this.info.local = fresh.local;
+        if (!this.localReady) {
+          this.askRoute = "cloud";
+          ElementPlus.ElMessage.warning(
+            (this.info.local && this.info.local.reason) || "本地模型不可用，已保持云端");
+          return;
+        }
+        ElementPlus.ElMessage.info(
+          `本次提问走本地 ${this.info.local.model}：3B 出字约 6 字/秒，长答案要等 30 秒左右`);
+      }
+      this.askRoute = route;
+    },
+
+    // 明确告诉后端"这一问走哪"。只在两边不一致时才发头：一致时保持空请求，
+    // 线上抓包看到的默认流量与改动前完全一样，排查时不会多一个变量。
+    routeHeader(route) {
+      const global = (this.info.llm && this.info.llm.route) || "";
+      return route && route !== global ? { "X-LLM-Route": route } : {};
     },
 
     docIdsFor() {
@@ -1872,11 +1920,13 @@ const app = createApp({
       this.messages.push(msg);
       this.loading = true;
       const t0 = Date.now();
+      // 同 ask()：发请求那一刻钉住路由，标签才不会在等待期间被后来的切换改错
+      const askedRoute = this.askRoute;
       let raw = "";
       try {
         const resp = await fetch("/api/chat/stream", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...this.routeHeader(askedRoute) },
           body: JSON.stringify({ question: q, doc_ids: this.docIdsFor(), mode: "qa",
                                  thinking: this.thinkDeep,
                                  // 回归测试会设 window.__SCIAGENT_NO_CACHE=1：
@@ -1918,7 +1968,8 @@ const app = createApp({
               msg.html = mdToHtml(ev.answer || raw);
               msg.evidence = ev.evidence || [];
               msg.verify = ev.verify || {};
-              msg.meta = this.modeLabel(((Date.now() - t0) / 1000).toFixed(1), ev.meta);
+              msg.meta = this.modeLabel(((Date.now() - t0) / 1000).toFixed(1),
+                                        { ...(ev.meta || {}), route: askedRoute });
               // 答完就把推理收起来：它是过程，不是结论；要看还能再展开
               msg.reasonOpen = false;
             } else if (ev.event === "error") {

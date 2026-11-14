@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SciAgent · 科研智能体</title>
   <link rel="stylesheet" href="/static/vendor/element-plus.css" />
-  <link rel="stylesheet" href="/static/style.css?v=33" />
+  <link rel="stylesheet" href="/static/style.css?v=34" />
   <link rel="stylesheet" href="/static/vendor/katex.min.css" />
   <script src="/static/vendor/katex.min.js"></script>
   <script src="/static/vendor/katex-auto-render.min.js"></script>
@@ -30,7 +30,26 @@
       <span class="sub">锚点可验证的科研智能体</span>
     </div>
     <div class="badges">
-      <el-tag size="small" :type="info.llm && info.llm.mock ? 'warning' : 'success'" effect="plain">
+      <!-- 模型徽标兼作切换器：只有本机真的能用本地模型时才变成下拉。
+           公网实例没有 Ollama（local.available=false），这里退化成原来的只读标签，
+           不会给用户一个"点了一定报错"的选项。
+           切换只作用于**这一问**（请求头 X-LLM-Route），不改全局路由。 -->
+      <el-dropdown v-if="localReady && !(info.llm && info.llm.mock)" trigger="click" placement="bottom-end" @command="setAskRoute">
+        <el-tag size="small" effect="plain" :type="askRoute === 'local' ? 'warning' : 'success'" class="model-pick">
+          {{ askRouteLabel }}<span class="caret">▾</span>
+        </el-tag>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item command="cloud">
+              云端 · {{ info.llm && info.llm.model }}
+            </el-dropdown-item>
+            <el-dropdown-item command="local">
+              本地 · {{ info.local.model }}（自训，约 30 秒/答）
+            </el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
+      <el-tag v-else size="small" :type="info.llm && info.llm.mock ? 'warning' : 'success'" effect="plain">
         {{ info.llm ? (info.llm.mock ? '模型未配置（模拟）' : info.llm.model) : '加载中' }}
       </el-tag>
       <el-tag size="small" effect="plain">向量库 {{ info.vector_backend || '-' }}</el-tag>
@@ -979,6 +998,6 @@
   </nav>
 </div>
 
-<script src="/static/app.js?v=33"></script>
+<script src="/static/app.js?v=34"></script>
 </body>
 </html>

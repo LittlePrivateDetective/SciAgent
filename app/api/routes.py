@@ -19,7 +19,7 @@ from app.agents.graph import run as run_agent
 from app.core.cache import answer_cache, answer_ttl, make_key
 from app.core.config import resolve_doc_file, settings
 from app.core.guard import guard
-from app.core.llm import gateway, want_thinking
+from app.core.llm import gateway, local_model_status, want_thinking
 from app.core.logger import get_logger
 from app.db.models import (
     AuditLog,
@@ -78,6 +78,9 @@ def system_info(db: Session = Depends(get_db)):
     return {
         "ok": True,
         "llm": gateway.describe(),
+        # 本地模型能力：前端据此决定模型徽标是"只读标签"还是"可切换的下拉"。
+        # 公网实例没有 Ollama，这里会如实返回 available=false，按钮自然不出现。
+        "local": local_model_status(),
         "vector_backend": get_store().name,
         "ocr": ocr_available(),
         "embedding": {"provider": settings.emb_provider, "model": settings.emb_model, "dim": settings.emb_dim},
@@ -830,7 +833,10 @@ def chat(body: ChatIn, db: Session = Depends(get_db)):
     q = body.question.strip()
     lib_n = db.scalar(select(func.count()).select_from(Document)) or 0
     deep = want_thinking(body.thinking)
-    ck = make_key(kind="answer_full", q=q, mode=body.mode,
+    # 缓存键里必须带 route：本地/云端的模型名可以配成一样（都用 qwen 系列时），
+    # 只按 llm_model 做键会让"用本地 3B 问过一次"把云端答案的位置占掉，
+    # 换回云端提问时命中一条短得多、也弱得多的旧答案。
+    ck = make_key(kind="answer_full", q=q, mode=body.mode, route=gateway.route(),
                   docs=sorted(body.doc_ids or []), model=settings.llm_model,
                   deep=deep, lib=lib_n, k=budget.top_k(q, body.mode))
     ttl = answer_ttl()
@@ -1158,7 +1164,8 @@ def chat_stream(body: StreamIn, db: Session = Depends(get_db)):
 
         # 缓存键带上模型 / 库规模 / 是否深思 / 检索预算：
         # 少带任何一项都会制造"改了参数或传了新文献，答案却还是旧的"。
-        ck = make_key(kind="answer", q=q, mode=body.mode, docs=sorted(doc_ids or []),
+        ck = make_key(kind="answer", q=q, mode=body.mode, route=gateway.route(),
+                      docs=sorted(doc_ids or []),
                       model=model, deep=deep, lib=scope_n,
                       k=budget.top_k(q, body.mode))
         ttl = answer_ttl()

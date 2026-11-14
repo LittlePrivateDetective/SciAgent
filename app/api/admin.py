@@ -13,7 +13,6 @@ import time
 from datetime import datetime, timedelta
 from pathlib import Path
 
-import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
@@ -22,7 +21,7 @@ from sqlalchemy.orm import Session
 from app.core import auth
 from app.core import params as P
 from app.core.config import settings
-from app.core.llm import gateway
+from app.core.llm import gateway, local_model_status
 from app.core.logger import get_logger
 from app.db.models import AppSetting, AuditLog, Chunk, Document, Task
 from app.db.session import get_db
@@ -147,20 +146,10 @@ def overview(_=Depends(auth.require_admin), db: Session = Depends(get_db)):
     char_sum = db.scalar(select(func.coalesce(func.sum(Chunk.char_len), 0))) or 0
 
     store = get_store()
-    ollama = {"enabled": bool(settings.ollama_enabled), "url": settings.ollama_base_url,
-              "model": settings.ollama_model, "reachable": None, "latency_ms": None}
-    if settings.ollama_enabled:
-        t0 = time.time()
-        try:
-            with httpx.Client(timeout=2.5) as c:
-                r = c.get(settings.ollama_base_url.rstrip("/") + "/api/tags")
-            ollama["reachable"] = r.status_code == 200
-            ollama["latency_ms"] = int((time.time() - t0) * 1000)
-            if r.status_code == 200:
-                ollama["models"] = [m.get("name") for m in (r.json().get("models") or [])][:12]
-        except Exception as exc:  # noqa: BLE001 探测失败只如实标注，不抛给前端
-            ollama["reachable"] = False
-            ollama["error"] = str(exc)[:120]
+    # 与前端模型徽标、路由解析共用同一份探测逻辑（max_age=0 表示后台要当下真实值）。
+    # 以前这里手写了一遍探测，结果它只看"端口通不通"，而主流程要的是"这个模型名
+    # 在不在本机"——两套判据并存时最容易出现"后台显示正常、一用就 404"。
+    ollama = local_model_status(max_age=0)
 
     db_path = settings.db_path
     return {

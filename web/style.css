@@ -33,7 +33,10 @@ body {
 }
 .title { font-size: 15px; font-weight: 500; }
 .sub { font-size: 12px; color: var(--muted); }
-.badges { display: flex; gap: 6px; }
+.badges { display: flex; gap: 6px; align-items: center; }
+/* 模型徽标兼作切换器：光标造型要让人看出可点，否则没人会去点它 */
+.badges .model-pick { cursor: pointer; }
+.badges .model-pick .caret { margin-left: 4px; font-size: 10px; opacity: .6; }
 
 /* 三栏布局 */
 .layout {
@@ -1011,8 +1014,13 @@ body.is-dragging, body.is-dragging * { user-select: none !important; }
   .brand .sub { display: none; }
   .badges { gap: 4px; flex: 0 1 auto; min-width: 0; overflow: hidden; }
   .badges .el-tag { flex: 0 1 auto; min-width: 0; }
-  .badges .el-tag:first-child { max-width: 44vw; }
-  .badges .el-tag:first-child .el-tag__content {
+  /* 模型徽标可能被 el-dropdown 包一层（本机有本地模型时），截断规则要一并覆盖
+     它的外壳，否则手机上第一个徽标不省略、把后面几个挤出去 */
+  .badges .el-dropdown { flex: 0 1 auto; min-width: 0; max-width: 44vw; }
+  .badges .el-tag:first-child,
+  .badges .el-dropdown .el-tag { max-width: 44vw; }
+  .badges .el-tag:first-child .el-tag__content,
+  .badges .el-dropdown .el-tag__content {
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
   /* 第 2 个是「向量库」、第 4 个是「片段」：手机上优先留模型名与文献数 */

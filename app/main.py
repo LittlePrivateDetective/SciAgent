@@ -14,6 +14,7 @@ from app.api.admin import router as admin_router
 from app.api.routes import router
 from app.core.config import BASE_DIR, settings
 from app.core.guard import GuardMiddleware
+from app.core.llm import RouteOverrideMiddleware
 from app.core.logger import get_logger, setup_logging
 from app.db.session import init_db
 from app.rag.store import get_store
@@ -38,6 +39,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# 请求级模型路由（X-LLM-Route）最后注册 = 最外层：上下文覆盖要在进入业务层之前
+# 就位，并且要活到流式响应的最后一个 token 发完才撤销。
+app.add_middleware(RouteOverrideMiddleware)
 
 app.include_router(router)
 app.include_router(admin_router)
