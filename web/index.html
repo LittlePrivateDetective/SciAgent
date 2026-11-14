@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SciAgent · 科研智能体</title>
   <link rel="stylesheet" href="/static/vendor/element-plus.css" />
-  <link rel="stylesheet" href="/static/style.css?v=16" />
+  <link rel="stylesheet" href="/static/style.css?v=25" />
   <link rel="stylesheet" href="/static/vendor/katex.min.css" />
   <script src="/static/vendor/katex.min.js"></script>
   <script src="/static/vendor/katex-auto-render.min.js"></script>
@@ -131,6 +131,10 @@
               <span class="pager">{{ page }} / {{ pageCount }}</span>
               <el-button size="small" text :disabled="page>=pageCount" @click="goPage(page+1)">下一页</el-button>
             </span>
+            <el-button size="small" text @click="toggleZoom"
+                       :title="pageZoom === 'fit' ? '当前一页一屏，点此铺满宽度' : '当前铺满宽度，点此一页一屏'">
+              {{ pageZoom === "fit" ? "一页一屏" : "铺满宽度" }}
+            </el-button>
             <el-button size="small" text :loading="en.running" @click="openEn" title="把中文论文译成学术英文（官方 1.6.4）">
               {{ en.running ? `译英 ${en.done}/${en.total}` : '译英' }}
             </el-button>
@@ -164,17 +168,25 @@
         </div>
 
         <div class="page-stage" v-if="activeDoc" ref="pageStage" @scroll.passive="onPageScroll">
-          <!-- page-frame 是唯一定位基准：它恰好等于图片的渲染尺寸。
-               高亮框和文本层都用百分比相对它定位，才不会因为 .page-stage 的 padding
-               或图片居中出现整体偏移（之前 .hl 直接挂在外层容器上，窄屏会偏 12px）。 -->
-          <div class="page-frame" :class="{ 'is-failed': imgFailed }">
+          <!-- 连续滚动：所有页按顺序排在同一根滚动条下，滚过上一页底部直接接下一页，
+               不再"滚到底跳页"（跳页会闪一下白，观感像翻幻灯片）。
+               每页只渲染一个按原始宽高比撑开的占位框，图片交给浏览器原生懒加载：
+               541 页的长书也只请求视口附近那几张，DOM 里放 541 个占位框不卡。
+               文本层与高亮只挂在"当前页"上，避免一次塞几万个 span。 -->
+          <div v-for="p in pageList" :key="p" class="page-frame"
+               :data-page="p" :ref="'pf' + p"
+               :class="{ 'is-failed': failedPages[p], 'is-cur': p === page }"
+               :style="frameStyle(p)">
             <!-- draggable=false 必须有：扫描件没有文本层，鼠标一拖浏览器就把整张页图
                  当成可拖动图片拽走（ghost image 跟着光标跑），用户以为"文档被拖走了"。 -->
-            <img :src="pageUrl" class="pdf-page" ref="pageImg" draggable="false"
-                 :style="imgFailed ? 'visibility:hidden' : ''" @load="onImgLoad" @error="onImgError" />
+            <img :src="pageUrlFor(p)" class="pdf-page" :ref="'img' + p" draggable="false"
+                 loading="lazy" decoding="async"
+                 :style="failedPages[p] ? 'visibility:hidden' : ''"
+                 @load="onImgLoad(p)" @error="onImgError(p)" />
+            <div class="page-no">{{ p }}</div>
             <!-- 页图加载失败原来只显示一个破图标，用户不知道是网络、文件缺失还是后端崩了。
                  这里给一句人话 + 重试；具体原因看服务端日志里的「页图渲染失败」。 -->
-            <div class="img-fail" v-if="imgFailed">
+            <div class="img-fail" v-if="failedPages[p]">
               <div class="img-fail-t">这一页没加载出来</div>
               <div class="img-fail-s">
                 可能是源文件缺失或渲染失败。可以先点「重新加载」；
@@ -182,27 +194,29 @@
               </div>
               <el-button size="small" type="primary" plain @click="retryImg">重新加载</el-button>
             </div>
-            <!-- 句级高亮：一句一组的多个小框（贴行），而不是把整段涂成一个大矩形。
-                 approx=true 表示没有词级文本层（扫描件），只能退回区块级范围，用虚线区分。 -->
-            <div class="hl" v-for="(box,i) in highlights" :key="i" :style="box.style"
-                 :class="{ approx: box.approx }" :title="box.text"></div>
-            <!-- 透明文本层：视觉完全来自页图，这层只负责「可选、可点」。
-                 容器必须显式给宽高（pt），否则绝对定位的子元素不撑开父级，
-                 容器会是 0×0，几何校验和某些浏览器的选择行为都会出问题。 -->
-            <div class="text-layer" v-if="tl.words.length"
-                 :style="{ width: tl.W + 'px', height: tl.H + 'px', transform: `scale(${tl.scale})` }"
-                 @mouseup="onTextSelect">
-              <!-- 悬停翻译时把"正在译的那一句"整句框出来：否则用户只看到弹窗里一段
-                   译文，对不上是原文哪句（尤其句子里有公式/数字时）。按行拆成多条，
-                   不会把行间空白也涂上。 -->
-              <div v-for="(r,i) in hover.rects" :key="'hs'+i" class="hsent" :style="r"></div>
-              <span v-for="(w,i) in tl.words" :key="i"
-                    class="tw" :class="{ cite: w.cite, refhit: w.refhit }"
-                    :style="w.style"
-                    @mouseenter="onWordEnter(w, i, $event)"
-                    @mouseleave="onWordLeave"
-                    @click="onWordClick(w, $event)">{{ w.t + ' ' }}</span>
-            </div>
+            <template v-if="p === page">
+              <!-- 句级高亮：一句一组的多个小框（贴行），而不是把整段涂成一个大矩形。
+                   approx=true 表示没有词级文本层（扫描件），只能退回区块级范围，用虚线区分。 -->
+              <div class="hl" v-for="(box,i) in highlights" :key="i" :style="box.style"
+                   :class="{ approx: box.approx }" :title="box.text"></div>
+              <!-- 透明文本层：视觉完全来自页图，这层只负责「可选、可点」。
+                   容器必须显式给宽高（pt），否则绝对定位的子元素不撑开父级，
+                   容器会是 0×0，几何校验和某些浏览器的选择行为都会出问题。 -->
+              <div class="text-layer" v-if="tl.words.length && tl.page === p"
+                   :style="{ width: tl.W + 'px', height: tl.H + 'px', transform: `scale(${tl.scale})` }"
+                   @mouseup="onTextSelect">
+                <!-- 悬停翻译时把"正在译的那一句"整句框出来：否则用户只看到弹窗里一段
+                     译文，对不上是原文哪句（尤其句子里有公式/数字时）。按行拆成多条，
+                     不会把行间空白也涂上。 -->
+                <div v-for="(r,i) in hover.rects" :key="'hs'+i" class="hsent" :style="r"></div>
+                <span v-for="(w,i) in tl.words" :key="i"
+                      class="tw" :class="{ cite: w.cite, refhit: isRefhit(w) }"
+                      :style="w.style"
+                      @mouseenter="onWordEnter(w, i, $event)"
+                      @mouseleave="onWordLeave"
+                      @click="onWordClick(w, $event)">{{ w.t + ' ' }}</span>
+              </div>
+            </template>
           </div>
         </div>
         <div v-else class="empty big">选择左侧文献开始阅读</div>
@@ -230,7 +244,8 @@
           <div class="bi-pane" ref="biEn" @scroll="onBiScroll('en')">
             <div class="bi-col-title">EN · 原文</div>
             <div v-for="s in bi.segs" :key="'en'+s.chunk_id" class="bi-seg" :data-i="s.i"
-                 :class="{cur: bi.cur === s.i}" @click="biJump(s)">
+                 :class="{hov: bi.hover === s.i}" @click="biJump(s)"
+                 @mouseenter="biHover(s.i)" @mouseleave="biHover(-1)">
               <div class="bi-meta">
                 <span class="bi-page" :title="'跳到原文第 ' + s.page + ' 页'">p{{ s.page }}</span>
                 <span class="bi-sec" v-if="s.section">{{ s.section }}</span>
@@ -244,7 +259,8 @@
           <div class="bi-pane zh" ref="biZh" @scroll="onBiScroll('zh')">
             <div class="bi-col-title">ZH · 译文</div>
             <div v-for="s in bi.segs" :key="'zh'+s.chunk_id" class="bi-seg" :data-i="s.i"
-                 :class="{cur: bi.cur === s.i}" @click="biJump(s)">
+                 :class="{hov: bi.hover === s.i}" @click="biJump(s)"
+                 @mouseenter="biHover(s.i)" @mouseleave="biHover(-1)">
               <div class="bi-meta">
                 <span class="bi-page" :title="'跳到原文第 ' + s.page + ' 页'">p{{ s.page }}</span>
                 <span class="bi-sec" v-if="s.section">{{ s.section }}</span>
@@ -524,14 +540,11 @@
       <div class="panel-head">
         <span>智能问答</span>
         <div class="chat-tools">
-          <el-select v-model="scope" size="small" class="scope-select">
+          <el-select v-model="scope" size="small" class="scope-select"
+                     title="当前文献：只在这篇里找证据；全部文献：跨库检索。问题里带「对比/区别」时，选全部文献即可自动生成对照答案">
             <el-option label="当前文献" value="doc" :disabled="!activeDoc"></el-option>
             <el-option label="全部文献" value="all"></el-option>
           </el-select>
-          <el-radio-group v-model="mode" size="small" class="mode-group">
-            <el-radio-button label="qa">问答</el-radio-button>
-            <el-radio-button label="compare">对比</el-radio-button>
-          </el-radio-group>
           <el-switch v-model="streamMode" size="small" active-text="流式" class="stream-switch"
                      :title="streamMode
                        ? '流式：边检索边输出，能看到规划 / 检索 / 通读 / 推理的过程；关掉则一次性返回整段答案'
@@ -943,6 +956,6 @@
   </nav>
 </div>
 
-<script src="/static/app.js?v=16"></script>
+<script src="/static/app.js?v=25"></script>
 </body>
 </html>

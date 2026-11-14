@@ -225,6 +225,8 @@ const app = createApp({
       activeDoc: null,
       page: 1,
       pageCount: 1,
+      // 连续滚动的页面尺寸：fit=一页约一屏（能同时看到两页拼接处），width=铺满宽度
+      pageZoom: "fit",
       pageSizes: {},
       sections: [],
       showTree: false,
@@ -235,6 +237,8 @@ const app = createApp({
       // 页图加载失败：原来是浏览器默认的破图标，什么信息都不给。
       // 换成明确的一句"这一页没加载出来 + 重新加载"，评委知道是环境问题还是内容问题。
       imgFailed: false,
+      // 连续滚动下每页都可能单独失败；记录到页码上，滚回去还能看到重试入口
+      failedPages: {},
       imgNonce: 0,          // 重试用：拼在 URL 上绕开浏览器缓存
       refIndex: {},   // 引用编号 → {index,page,bbox,text}
       // 对话模式：false=快速（直接作答），true=深思（模型先推理再作答）。
@@ -266,7 +270,7 @@ const app = createApp({
       },
       messages: [],
       question: "",
-      mode: "qa",
+      mode: "qa",   // 保留字段兼容后端；前端不再暴露"对比"开关
       scope: "all",
       // 流式默认开：官方要求能展示思考过程，而检索/通读/推理这几步只有流式
       // 才逐个推得出来（非流式是一次性返回整段，用户只看到一个 loading 圈）。
@@ -298,6 +302,9 @@ const app = createApp({
         loadingMore: false,
         sync: true,
         cur: 0,
+        // 鼠标指向的段落：左右两栏同时高亮同一段，这是"指哪看哪"的唯一依据。
+        // 之前用滚动位置算高亮，滚动时整段反复闪，反而看不出对应关系。
+        hover: -1,
         cached: { total: 0, done: 0, ratio: 0 },
         job: { running: false, done: 0, total: 0, error: "" },
         docId: "",
@@ -321,10 +328,12 @@ const app = createApp({
       return { reader: "阅读器", bilingual: "中英对照", graph: "引用图谱", write: "写作助手" }[this.centerView] || "阅读器";
     },
     pageUrl() {
-      if (!this.activeDoc) return "";
-      // 原来这里拼的是 Date.now()：每次重算都换 URL，翻回上一页也要重新下载 70KB。
-      // 改成只有点「重新加载」才变（imgNonce），其余交给服务端的 max-age 缓存。
-      return `/api/documents/${this.activeDoc.id}/page/${this.page}.png?dpi=130&v=${this.imgNonce}`;
+      return this.pageUrlFor(this.page);
+    },
+    /// 连续滚动要一次列出全部页码：渲染成 1..pageCount 的占位框，图片按需加载。
+    pageList() {
+      const n = Math.max(1, this.pageCount || 1);
+      return Array.from({ length: n }, (_, i) => i + 1);
     },
     enHtml() {
       return mdToHtml(this.en.text || "");
@@ -854,6 +863,8 @@ const app = createApp({
       this.page = 1;
       this.pageCount = d.page_count || 1;
       this.highlights = [];
+      this.refIndex = {};           // 先清空上一篇的条目，避免角标临时指错文献
+      this.failedPages = {};
       this.bi.segs = [];
       this.bi.loaded = 0;
       this.bi.docId = d.id;
@@ -869,52 +880,121 @@ const app = createApp({
       // 引用索引按整篇加载一次即可：正文角标 → References 条目的映射与页码无关
       await this.loadRefIndex(d.id);
       this.loadTextLayer();
+      // 换文献要从第 1 页看起：连续滚动下滚动位置不会自己归零，不重置会停在上一次的页码
+      this.$nextTick(() => {
+        this._scrollLock = 0;
+        this.scrollToPage(1, false);
+      });
       // 对照视图下切文献要立刻换成新文献的段落，否则会继续显示上一篇
       if (this.centerView === "bilingual") this.loadBi(true);
+    },
+
+    pageUrlFor(p) {
+      if (!this.activeDoc) return "";
+      // 原来这里拼的是 Date.now()：每次重算都换 URL，翻回上一页也要重新下载 70KB。
+      // 改成只有点「重新加载」才变（imgNonce），其余交给服务端的 max-age 缓存。
+      return `/api/documents/${this.activeDoc.id}/page/${p}.png?dpi=130&v=${this.imgNonce}`;
+    },
+
+    /// 占位框按该页真实宽高比撑开。
+    /// fit：一页高度 ≈ 一个视口，滚到页缝时上下两页都能露出来（"两页拼在一起"）；
+    /// width：铺满可用宽度，字更大，但一页比视口高，需要多滚几下。
+    /// 两种都保留，因为读图和读字的需求是相反的。
+    frameStyle(p) {
+      const meta = this.pageSizes[p];
+      const w = (meta && meta.width) || 612;
+      const h = (meta && meta.height) || 792;
+      const ratio = w / h;
+      // 注意别在 min() 里写 100%：flex 交叉轴上的百分比在部分内核里解析失败，
+      // 整个 min() 会退化成最大分支（移动端实测 390px 视口里排出 900px 宽，横向溢出）。
+      // 百分比统一交给 maxWidth，这里只算"一页一屏"对应的长度上限。
+      const width = this.pageZoom === "width"
+        ? "900px"
+        : `min(900px, calc((100vh - 118px) * ${ratio.toFixed(4)}))`;
+      return { aspectRatio: `${w} / ${h}`, width, maxWidth: "100%" };
     },
 
     goPage(p) {
       if (p < 1 || p > this.pageCount) return;
       this.page = p;
-      this.imgFailed = false;
+      this.imgFailed = !!this.failedPages[p];
       this.highlights = [];
       this.sel.visible = false;
       this.citePop.visible = false;
       this.loadTextLayer();
+      this.$nextTick(() => this.scrollToPage(p));
     },
 
-    /// 滚到页底自动进入下一页：省掉反复点「下一页」。
-    /// 只在确实能滚动（内容高于容器）时判定，否则整页一屏放得下的短页
-    /// 会在图片加载引起的 scroll 事件里被误翻；翻页后必须回顶，不然冷却一过又翻一页。
+    /// 切换页面尺寸后页高全变了，原来的滚动位置会指向别的页；切完回到当前页顶部。
+    toggleZoom() {
+      this.pageZoom = this.pageZoom === "fit" ? "width" : "fit";
+      this.$nextTick(() => this.scrollToPage(this.page, false));
+    },
+
+    scrollToPage(p, smooth = true) {
+      const stage = this.$refs.pageStage;
+      const frame = stage && stage.querySelector(`.page-frame[data-page="${p}"]`);
+      if (!stage || !frame) return;
+      // 程序化滚动会一路触发 scroll 事件，沿途每一页都会被算成"当前页"，
+      // 于是文本层被反复加载、页码乱跳。锁 700ms，让平滑滚动走完再交还给用户。
+      this._scrollLock = Date.now() + 700;
+      const top = Math.max(0, frame.offsetTop - 8);
+      // 不用 CSS scroll-behavior：它会让"瞬移"也变平滑，跳引用时会横穿整篇文档
+      if (smooth) stage.scrollTo({ top, behavior: "smooth" });
+      else stage.scrollTop = top;
+    },
+
+    /// 连续滚动下不再有"翻页"，只做一件事：算出当前看的是第几页。
+    /// 以视口中线所在的页为当前页——比"顶部对齐"更符合阅读直觉（正在读的那页）。
     onPageScroll(e) {
       if (this.centerView !== "reader" || !this.activeDoc) return;
-      const el = e.target;
-      if (!el || el.scrollHeight - el.clientHeight < 40) return;
-      const gap = el.scrollHeight - el.clientHeight - el.scrollTop;
-      if (gap > 80) return;
-      if (this.page >= this.pageCount) return;
-      const now = Date.now();
-      if (now < (this._flipLock || 0)) return;
-      this._flipLock = now + 800;
-      this.goPage(this.page + 1);
-      this.$nextTick(() => {
-        const s = this.$refs.pageStage;
-        if (s) s.scrollTop = 0;
+      if (Date.now() < (this._scrollLock || 0)) return;
+      const stage = e.target;
+      if (!stage) return;
+      if (this._pageRaf) return;
+      this._pageRaf = requestAnimationFrame(() => {
+        this._pageRaf = 0;
+        const mid = stage.scrollTop + stage.clientHeight * 0.4;
+        const frames = stage.querySelectorAll(".page-frame");
+        let cur = this.page;
+        for (const f of frames) {
+          if (f.offsetTop <= mid) cur = Number(f.dataset.page);
+          else break;
+        }
+        if (cur !== this.page) {
+          this.page = cur;
+          this.imgFailed = !!this.failedPages[cur];
+          this.highlights = [];
+          this.sel.visible = false;
+          this.citePop.visible = false;
+          // 文本层只跟当前页，切页才请求；滚动中连续请求会被"页码对不上就丢弃"挡掉
+          this.loadTextLayer();
+        }
       });
     },
 
     /* ---------------- 页内文本层：让页图上的文字可选、角标可点 ---------------- */
 
     async loadRefIndex(docId) {
-      this.refIndex = {};
+      // 不在这里清空：清空会让"索引已到但新的还没回来"的几百毫秒里，
+      // 正文所有角标都退化成"不可跳"的橙色，用户正好在这时点就是一次误报。
+      // 换文献时由 openDoc 同步清空，保证不会串到上一篇的条目上。
       try {
         const r = await fetch(`/api/documents/${docId}/references`).then((x) => x.json());
+        if (!this.activeDoc || this.activeDoc.id !== docId) return;  // 期间切了文献
         const map = {};
         (r.entries || []).forEach((e) => (map[e.index] = e));
         this.refIndex = map;
       } catch (e) {
         console.warn("引用索引加载失败", e);
       }
+    },
+
+    /// 角标能不能跳，取决于"此刻"的引用索引。
+    /// 原来在 makeWord 时算一次存进 w.refhit，索引晚到（并发加载/切换文献）
+    /// 就会永久留成不可点的橙色角标，必须刷新页面才好——改成渲染时现查。
+    isRefhit(w) {
+      return !!w.cite && !!this.refIndex[w.refIndex];
     },
 
     async loadTextLayer() {
@@ -980,9 +1060,11 @@ const app = createApp({
     },
 
     syncTextScale() {
-      const img = this.$refs.pageImg;
-      if (!img || !img.clientWidth || !this.tl.W) return;
-      this.tl.scale = img.clientWidth / this.tl.W;
+      // 连续滚动后一页对应一张图，ref 不能再写死成 pageImg；直接按页码取当前页那张
+      const img = this.$refs["img" + this.page];
+      const el = Array.isArray(img) ? img[0] : img;
+      if (!el || !el.clientWidth || !this.tl.W) return;
+      this.tl.scale = el.clientWidth / this.tl.W;
     },
 
     onWordClick(w, ev) {
@@ -1396,7 +1478,9 @@ const app = createApp({
       }
     },
 
-    onImgError() {
+    onImgError(p) {
+      this.failedPages = { ...this.failedPages, [p]: true };
+      if (p !== this.page) return;   // 别的页失败不影响当前阅读，等滚过去再说
       this.imgFailed = true;
       // 顺手把文本层清掉：页图都没出来，叠加一层透明文字只会更混乱
       this.tl = { ...this.tl, words: [], sents: [], loaded: false };
@@ -1404,10 +1488,12 @@ const app = createApp({
 
     retryImg() {
       this.imgFailed = false;
+      this.failedPages = {};
       this.imgNonce += 1;
     },
 
-    onImgLoad(e) {
+    onImgLoad(p) {
+      if (p !== this.page) return;
       this.imgFailed = false;
       // 已存在的高亮在换页/缩放后需要按新尺寸重算
       this.highlights = this.highlights.map((h) => ({
@@ -1575,6 +1661,10 @@ const app = createApp({
       // 必须 await：句级高亮要用这一页的词级坐标，文本层没到位就只能退回大矩形。
       if (this.tl.page !== this.page || !this.tl.loaded) await this.loadTextLayer();
       await nextTick();
+      // 连续滚动下目标页可能隔了几十屏：先无动画落到那一页，再按高亮位置微调。
+      // 直接对高亮做 smooth 会看到滚动条横穿整篇文档，观感很差。
+      this.scrollToPage(this.page, false);
+      await nextTick();
       this.highlights = this.buildHighlights(ev);
       // 必须滚到"高亮框"而不是滚整个阅读区：参考文献条目常在页面底部，
       // 只让阅读区进入视口的话目标仍在视野外，用户会以为跳转失败了（实测如此）。
@@ -1605,8 +1695,10 @@ const app = createApp({
       // 检索范围：勾选了文献就用勾选的；否则按"当前文献"限定时只用正在读的那篇。
       // 没有这个约束，库内 37 篇时问"这篇论文的第六作者"会被别的文献抢答。
       let docIds = this.selection.length ? this.selection : [];
-      // 对比模式必须跨文献，否则"当前文献"会把对比限制成一篇自己跟自己比
-      if (!docIds.length && this.mode !== "compare" && this.scope === "doc" && this.activeDoc) {
+      // 不再有"对比模式"开关：跨不跨文献由范围决定，问题里带「对比/区别」时
+      // 后端会自己切对比模板（COMPARE_HINT）。选「当前文献」就只有一篇，
+      // 自然也不会被强行做成对比表——这正是原来那个按钮的重复之处。
+      if (!docIds.length && this.scope === "doc" && this.activeDoc) {
         docIds = [this.activeDoc.id];
       }
       const t0 = Date.now();
@@ -1614,7 +1706,7 @@ const app = createApp({
         const r = await fetch("/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ question: q, doc_ids: docIds, mode: this.mode,
+          body: JSON.stringify({ question: q, doc_ids: docIds, mode: "qa",
                                  thinking: this.thinkDeep }),
         }).then((x) => x.json());
 
@@ -1651,9 +1743,9 @@ const app = createApp({
     },
 
     docIdsFor() {
-      // 对比模式必须跨文献，否则"当前文献"会把对比限制成一篇自己跟自己比
+      // 对比不再由开关控制：跨不跨文献看范围；问题里的「对比/区别」由后端切模板
       let ids = this.selection.length ? this.selection : [];
-      if (!ids.length && this.mode !== "compare" && this.scope === "doc" && this.activeDoc) {
+      if (!ids.length && this.scope === "doc" && this.activeDoc) {
         ids = [this.activeDoc.id];
       }
       return ids;
@@ -1680,7 +1772,7 @@ const app = createApp({
         const resp = await fetch("/api/chat/stream", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ question: q, doc_ids: this.docIdsFor(), mode: this.mode,
+          body: JSON.stringify({ question: q, doc_ids: this.docIdsFor(), mode: "qa",
                                  thinking: this.thinkDeep,
                                  // 回归测试会设 window.__SCIAGENT_NO_CACHE=1：
                                  // 缓存命中的 token 事件是"回放"，测不出真实的流式链路
@@ -2265,7 +2357,12 @@ const app = createApp({
      */
     _biLock() {
       // 程序性滚动会再次触发 scroll 事件，用时间戳护栏防回环
-      this._biLockUntil = performance.now() + 140;
+      this._biLockUntil = performance.now() + 120;
+    },
+
+    /// 鼠标指向某段：左右两侧同时高亮同一段（不滚动，滚动交给用户自己）。
+    biHover(i) {
+      this.bi.hover = i;
     },
 
     onBiScroll(side) {
@@ -2277,6 +2374,19 @@ const app = createApp({
       if (src.scrollTop + src.clientHeight > src.scrollHeight - 500) this.loadBi(false);
 
       if (!this.bi.sync || !dst || performance.now() < (this._biLockUntil || 0)) return;
+      // 每个滚动事件都同步一次会把主线程排满（两栏各有几百个段落，
+      // 每帧都做二分 + 布局读取就是"卡卡的"的来源）。合并到下一帧只算一次。
+      if (this._biRaf) return;
+      this._biRaf = requestAnimationFrame(() => {
+        this._biRaf = 0;
+        this._syncBiScroll(side);
+      });
+    },
+
+    _syncBiScroll(side) {
+      const src = side === "en" ? this.$refs.biEn : this.$refs.biZh;
+      const dst = side === "en" ? this.$refs.biZh : this.$refs.biEn;
+      if (!src || !dst || performance.now() < (this._biLockUntil || 0)) return;
       const segs = src.querySelectorAll(".bi-seg");
       if (!segs.length) return;
 
@@ -2291,8 +2401,12 @@ const app = createApp({
       const ratio = Math.min(1, Math.max(0, (src.scrollTop - s.offsetTop) / Math.max(s.offsetHeight, 1)));
       const t = dst.querySelector(`.bi-seg[data-i="${s.dataset.i}"]`);
       if (t) {
-        this._biLock();
-        dst.scrollTop = t.offsetTop + ratio * t.offsetHeight;
+        const want = t.offsetTop + ratio * t.offsetHeight;
+        // 差 2px 以内不回写：微小的反复纠正会让另一栏持续抖动
+        if (Math.abs(dst.scrollTop - want) > 2) {
+          this._biLock();
+          dst.scrollTop = want;
+        }
       }
       this.bi.cur = Number(s.dataset.i);
     },

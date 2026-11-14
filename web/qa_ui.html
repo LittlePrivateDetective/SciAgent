@@ -123,12 +123,14 @@ async function testAnchor() {
   d.querySelector(".chat-list").appendChild(a);
   a.dispatchEvent(new w.MouseEvent("click", { bubbles: true }));
   await wait(1200);
-  const img = d.querySelector(".page-stage img.pdf-page");
-  const hl = d.querySelectorAll(".page-stage .hl");
+  // 连续滚动后一页一张图，取"当前页"那张，而不是文档里第一个 img
+  const cur = d.querySelector('.page-stage .page-frame.is-cur img.pdf-page')
+             || d.querySelector(".page-stage img.pdf-page");
+  const hl = d.querySelectorAll(".page-stage .page-frame.is-cur .hl");
   const pager = d.querySelector(".pager");
-  say("img.src=" + (img ? img.getAttribute("src") : "none"));
+  say("img.src=" + (cur ? cur.getAttribute("src") : "none"));
   say("高亮框数量=" + hl.length + " 页码显示=" + (pager ? pager.textContent.trim() : "none"));
-  const okImg = img && /\/page\/3\.png/.test(img.getAttribute("src") || "");
+  const okImg = cur && /\/page\/3\.png/.test(cur.getAttribute("src") || "");
   const okHl = hl.length >= 1;
   say(okImg && okHl ? "RESULT: PASS 锚点一键跳到 p3 且绘制 bbox 高亮"
                     : "RESULT: FAIL 跳转或高亮缺失");

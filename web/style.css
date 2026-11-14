@@ -175,18 +175,35 @@ body {
 .tree-item:hover { background: #f2f4f8; }
 .lvl { color: #9aa1ad; font-size: 10px; margin-right: 5px; }
 .page-stage {
-  position: relative; flex: 1; overflow: auto; padding: 12px;
-  background: #eceef2; display: flex; justify-content: center; align-items: flex-start;
+  position: relative; flex: 1; overflow: auto; padding: 12px 12px 28px;
+  background: #eceef2;
+  /* 连续滚动：所有页纵向排列，页与页之间留一条缝，像 PDF 阅读器那样一路滑下去 */
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
 }
 /* page-frame 恰好等于页图的渲染尺寸，是所有覆盖层的唯一定位基准。
  * 之前 .hl 直接挂在外层 .page-stage 上，容器有 12px padding，窄屏图片一旦贴边
- * 高亮框就会整体偏 12px —— 只是之前没人逐像素核对过。 */
+ * 高亮框就会整体偏 12px —— 只是之前没人逐像素核对过。
+ * 连续滚动下宽度固定（不再跟着图片 fit-content），高度由 aspect-ratio 撑开：
+ * 图片没下载完占位就对，滚动条不会因为懒加载一路乱跳。 */
 .page-frame {
-  position: relative; width: fit-content; max-width: 100%;
+  position: relative; width: 100%; max-width: 900px;
   box-shadow: 0 1px 6px rgba(0, 0, 0, .12); background: #fff; line-height: 0;
+  flex: none;
+  /* 文本层按 PDF 原始 pt 布局（宽 612px）再整体 scale 缩小，它的布局宽度
+     不会跟着 transform 变，窄屏上就会把滚动容器撑出横向滚动条（实测 390px
+     视口里 scrollWidth=910）。裁在页框内，缩放后的可视区域刚好等于页图。 */
+  overflow: hidden;
+}
+.page-frame.is-cur { box-shadow: 0 2px 12px rgba(0, 0, 0, .18); }
+/* 页脚角标：连续滚动时用户需要一个"这是第几页"的参照，否则滚到一半完全没概念 */
+.page-no {
+  position: absolute; right: 6px; bottom: 6px; z-index: 3;
+  font-size: 10.5px; line-height: 1; color: #6b7280;
+  background: rgba(255, 255, 255, .86); border-radius: 8px; padding: 3px 6px;
+  pointer-events: none;
 }
 .pdf-page {
-  display: block; max-width: 100%; height: auto;
+  display: block; width: 100%; height: 100%; object-fit: contain;
   /* 扫描件没有文本层，默认图片可拖：拖一下整张页图就被浏览器拽走，
      只剩下一个幽灵影像跟着光标，看起来像"文档被拖跑了"。 */
   -webkit-user-drag: none; user-select: none;
@@ -392,6 +409,13 @@ body {
 .bi-seg { padding: 8px 10px 10px; border-bottom: 1px dashed #eef0f4; cursor: pointer; }
 .bi-seg:hover { background: #f6f9ff; }
 .bi-seg.cur { background: #edf3ff; box-shadow: inset 3px 0 0 var(--brand); }
+/* 鼠标指向的段落：左右两侧同时点亮。用底色 + 左侧色条，不用描边——
+   描边会让相邻两段之间多出一条缝，看起来像表格而不是段落。 */
+.bi-seg.hov {
+  background: #e8f0ff;
+  box-shadow: inset 3px 0 0 var(--brand);
+  border-radius: 3px;
+}
 .bi-meta { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; font-size: 10.5px; color: #9aa4b2; }
 .bi-page {
   flex: none; color: var(--brand); background: #eef2fe; border-radius: 4px;

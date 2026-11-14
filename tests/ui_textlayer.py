@@ -124,12 +124,14 @@ def run(url: str = BASE + "/", shot_dir: Path = OUT) -> dict:
             return result
 
         geo = js("""(()=>{
-          const img = document.querySelector('.pdf-page');
-          const layer = document.querySelector('.text-layer');
-          const frame = document.querySelector('.page-frame');
+          // 连续滚动后 DOM 里有全部页的占位框，必须按"当前页"取，否则量到的是第 1 页
+          const cp = window.__sciagent.page;
+          const frame = document.querySelector('.page-frame[data-page="'+cp+'"]');
+          const img = frame.querySelector('.pdf-page');
+          const layer = frame.querySelector('.text-layer');
           const ir = img.getBoundingClientRect(), lr = layer.getBoundingClientRect();
           const fr = frame.getBoundingClientRect();
-          const tws = [...document.querySelectorAll('.text-layer .tw')];
+          const tws = [...frame.querySelectorAll('.text-layer .tw')];
           // 抽查最后一个词：位置远但同样受同一个 scale 约束，最能暴露缩放错误
           const last = tws[tws.length-1].getBoundingClientRect();
           const inside = tws.filter(el=>{
