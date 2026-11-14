@@ -212,6 +212,23 @@ def _hq_model() -> str | None:
     return m if m and m != settings.trans_model else None
 
 
+def _model_label(model: str | None = None) -> str:
+    """落库标签必须是**实际执行**的那个模型，而不是配置里写的那个。
+
+    本地路由下 chat 走的是 `ollama_model`，而这里原来一律写 `trans_model`。
+    后果不是显示难看，而是数据错：3B 的译文被标成 qwen-flash，对照视图照常展示它，
+    缓存也认为"这页已译过"（命中判断只按 chunk_id），切回云端再也不会重译。
+    实测就是这么发现的——用本地翻完一页，库里多出一批 model=qwen-flash 的 3B 译文。
+    """
+    if model == "verbatim":  # 公式/代码原样保留，不是模型产出
+        return model
+    from app.core.llm import gateway  # 延迟导入：避免 core 层在导入期反向依赖
+
+    if gateway.route() == "local":
+        return settings.ollama_model
+    return model or settings.trans_model
+
+
 def _translate_batch(texts: list[str], to: str = "zh", model: str | None = None) -> list[str]:
     """一次译若干段，返回严格等长的译文列表；失败返回空列表由调用方降级。
 
@@ -282,6 +299,7 @@ def _translate_batch(texts: list[str], to: str = "zh", model: str | None = None)
 def _save(db: Session, doc_id: str, pairs: list[tuple[Chunk, str]], model: str = "") -> int:
     if not pairs:
         return 0
+    label = _model_label(model)
     for chunk, zh in pairs:
         db.merge(
             Translation(
@@ -289,7 +307,7 @@ def _save(db: Session, doc_id: str, pairs: list[tuple[Chunk, str]], model: str =
                 doc_id=doc_id,
                 page=chunk.page,
                 zh=zh,
-                model=model or settings.trans_model,
+                model=label,
             )
         )
     db.commit()

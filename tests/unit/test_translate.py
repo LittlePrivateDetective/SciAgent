@@ -78,3 +78,34 @@ def test_fix_caption_colon():
     assert _fix_caption("图 2.1：线性回归模型。") == "图 2.1：线性回归模型。"
     # 不是图注的不动
     assert _fix_caption("如图所示，误差随层数增加。") == "如图所示，误差随层数增加。"
+
+
+def test_model_label_follows_effective_route(monkeypatch):
+    """落库标签必须写实际执行模型：本地路由下不能写 trans_model。
+
+    这是实测踩出来的：用本地 3B 翻完一页，库里多出一批 model=qwen-flash 的译文。
+    因为"这页译过了"只按 chunk_id 判，标错的后果是切回云端也永远不会重译。
+    """
+    from app.core.config import settings
+    from app.rag import bilingual
+    from app.core import llm
+
+    monkeypatch.setattr(settings, "trans_model", "qwen-flash")
+    monkeypatch.setattr(settings, "ollama_model", "sciagent-3b-v2")
+
+    class _G:
+        def __init__(self, route):
+            self._r = route
+
+        def route(self):
+            return self._r
+
+    monkeypatch.setattr(llm, "gateway", _G("local"))
+    assert bilingual._model_label(None) == "sciagent-3b-v2"
+    assert bilingual._model_label("qwen-flash") == "sciagent-3b-v2"
+    # 公式/代码是原样保留，不是模型产物，标签不能被改写
+    assert bilingual._model_label("verbatim") == "verbatim"
+
+    monkeypatch.setattr(llm, "gateway", _G("cloud"))
+    assert bilingual._model_label(None) == "qwen-flash"
+    assert bilingual._model_label("qwen3.8-max") == "qwen3.8-max"
