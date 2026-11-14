@@ -484,12 +484,14 @@
               </div>
               <div class="viz-pane">
                 <div class="viz-bar"><span class="viz-bar-t">预览</span></div>
-                <div class="viz-prev" v-if="wv.chart.format === 'mermaid' && wv.chart.kind !== 'radar'">
+                <!-- 预览画的是"数据形状"，与导出格式无关：柱/线/雷达都用 ECharts 画，
+                     这样选 TikZ / Matplotlib 也能看到图，而不是只剩一行"需编译"的提示。 -->
+                <div class="viz-prev" v-if="wv.chart.kind === 'table' && wv.chart.format === 'markdown'"
+                     v-html="mdTableHtml(wv.chart.code)"></div>
+                <div class="viz-prev-hint" v-else-if="wv.chart.kind === 'table'">{{ fmtHint(wv.chart.format) }}</div>
+                <div class="viz-prev" v-else>
                   <div ref="chartChart" class="chart-chart"></div>
                 </div>
-                <div class="viz-prev" v-else-if="wv.chart.format === 'mermaid'" v-html="wv.chartSvg"></div>
-                <div class="viz-prev" v-else-if="wv.chart.format === 'markdown'" v-html="mdTableHtml(wv.chart.code)"></div>
-                <div class="viz-prev-hint" v-else>{{ fmtHint(wv.chart.format) }}</div>
               </div>
             </div>
 

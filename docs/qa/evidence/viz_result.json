@@ -14,9 +14,9 @@
     "title": "块稀疏RAG架构",
     "source": "llm",
     "checks": {
-     "node_count": 7,
-     "edge_count": 6,
-     "group_count": 3,
+     "node_count": 9,
+     "edge_count": 8,
+     "group_count": 4,
      "dropped_edges": 0,
      "formats": [
       "mermaid",
@@ -25,12 +25,13 @@
       "matplotlib"
      ]
     },
-    "nodes": 7,
-    "edges": 6,
+    "nodes": 9,
+    "edges": 8,
     "groups": [
      "数据层",
      "模型层",
-     "输出层"
+     "输出层",
+     "训练层"
     ],
     "codeKeys": [
      "mermaid",
@@ -39,46 +40,46 @@
      "matplotlib"
     ],
     "codeLen": {
-     "mermaid": 315,
-     "dot": 1330,
-     "tikz": 1583,
-     "matplotlib": 4436
+     "mermaid": 414,
+     "dot": 1649,
+     "tikz": 1864,
+     "matplotlib": 4825
     },
     "idHits": {
-     "mermaid": 7,
-     "dot": 7,
-     "tikz": 7,
-     "matplotlib": 7
+     "mermaid": 9,
+     "dot": 9,
+     "tikz": 9,
+     "matplotlib": 9
     },
     "canvas": true,
-    "drawn": 7,
-    "drawnLinks": 6,
-    "chartH": 396,
+    "drawn": 9,
+    "drawnLinks": 8,
+    "chartH": 518,
     "chars": {
      "mermaid": "flowchart LR\n  subgraph G0[\"数据层\"]\n    n1([\"长文档输入\"])\n    n2[\"",
      "dot": "// 块稀疏RAG架构\ndigraph architecture {\n  rankdir=TB;\n  graph [fo",
      "tikz": "% 需要 \\usepackage{tikz}；中文标签请用 ctex 或 XeLaTeX 编译\n\\begin{figur",
      "matplotlib": "\"\"\"由 SciAgent 生成的架构图脚本（官方 1.6.2）。\n运行：python architecture.py "
     },
-    "wait_s": 3.0
+    "wait_s": 4.0
    }
   },
   {
    "fmt_switch": {
     "mermaid": {
-     "len": 315,
+     "len": 414,
      "miss": false
     },
     "dot": {
-     "len": 1330,
+     "len": 1649,
      "miss": false
     },
     "tikz": {
-     "len": 1583,
+     "len": 1864,
      "miss": false
     },
     "matplotlib": {
-     "len": 4436,
+     "len": 4825,
      "miss": false
     }
    }
@@ -114,9 +115,9 @@
      3
     ],
     "capSource": "llm",
-    "capZh": "图 1　不同模型在 BLEU 分数与参数量上的对比。BLEU 分数从 Transformer 的 28.4 上升至 GPT-3 的 41.0，增幅达 44.4%；参数量则由 Transformer 的 65.0 增至 GPT-3 的 175，增长 169.2%。GPT-3 在两项指标上均达到峰值，而 Transformer 在两项指标上均处于最低水平。",
-    "capEn": "Figure 1. Comparison of BLEU scores and parameter counts across Transformer, BERT, and GPT-3. The BLEU score increases from 28.4 (Transformer) to 41.0 (GPT-3), a rise of 44.4%. Parameter count rises from 65.0 (Transformer) to 175 (GPT-3), an increase of 169.2%. GPT-3 achieves the highest BLEU score and parameter count, while Transformer exhibits the lowest values in both metrics.",
-    "capTrend": "从 Transformer 到 GPT-3，BLEU 分数和参数量均呈单调上升趋势，GPT-3 在两项指标上均达到最高值。",
+    "capZh": "图 1　不同模型在 BLEU 分数与参数量上的对比。BLEU 分数从 Transformer 的 28.4 上升至 GPT-3 的 41.0，增幅达 44.4%；参数量则由 Transformer 的 65 增至 GPT-3 的 175，增长 169.2%。GPT-3 在两项指标上均达到峰值，而 Transformer 在两项指标上均处于最低水平。",
+    "capEn": "Figure 1. Comparison of BLEU scores and parameter counts across Transformer, BERT, and GPT-3. BLEU scores range from 28.4 (Transformer) to 41.0 (GPT-3), with a 44.4% increase from the lowest to highest value. Parameter counts rise from 65.0 (Transformer) to 175 (GPT-3), representing a 169.2% increase. GPT-3 achieves the highest BLEU score and parameter count, while Transformer exhibits the lowest values in both metrics.",
+    "capTrend": "GPT-3 在 BLEU 分数和参数量上均达到最高值（41.0 和 175），而 Transformer 则分别最低（28.4 和 65.0）。",
     "capChecks": {
      "verified": 21,
      "foreign": [],
@@ -131,7 +132,7 @@
      "图注由模型撰写",
      "图注数字核对 21/21"
     ],
-    "wait_s": 4.0
+    "wait_s": 3.0
    }
   },
   {
@@ -155,7 +156,7 @@
     "ok": true,
     "err": "",
     "hasPolar": true,
-    "hintDom": "TikZ：粘进 .tex 导言区加 tikz 宏包；中文标签用 ctex / XeLaTeX 编译",
+    "hintDom": "",
     "cap": "llm"
    }
   },

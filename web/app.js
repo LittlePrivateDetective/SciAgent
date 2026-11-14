@@ -2045,12 +2045,72 @@ const app = createApp({
      * 从 0 起的——预览和代码不一致，还会把"差 13 分"看成"差 3 倍"。
      * 预览改用 ECharts 自己画：纵轴强制 0 起，柱顶标数值，与导出代码同一份数据。
      */
-    renderChartChart() {
+    renderChartChart(retry = 0) {
       const c = this.wv.chart;
       const el = this.$refs.chartChart;
       if (!c || !el || !window.echarts) return;
+      if (c.kind === "table") return;   // 表格由模板渲染，不进 ECharts
+      el.style.height = c.kind === "radar" ? "360px" : "320px";
+      // 与架构图同因：面板刚切过来 clientWidth 还是 0，零尺寸画布会把图压成一小团
+      const availW = el.clientWidth;
+      if (availW < 40) {
+        if (retry < 6) setTimeout(() => this.renderChartChart(retry + 1), 80);
+        return;
+      }
+      if (_chartChart && _chartChart.getDom() !== el) {
+        _chartChart.dispose();
+        _chartChart = null;
+      }
+      if (!_chartChart) _chartChart = window.echarts.init(el, null, { renderer: "canvas", width: availW });
+      else _chartChart.resize({ width: availW });
+
       const rows = c.raw_values || {};
       const labels = c.labels || [];
+      const num = (v) => {
+        const n = parseFloat(String(v).replace(/[^0-9.\-]/g, ""));
+        return Number.isFinite(n) ? n : 0;
+      };
+
+      // 雷达：角度轴 = CSV 第一列（方法），每条多边形 = 一个指标——与导出的
+      // TikZ polaraxis 完全同一套语义，预览和代码不能各画各的。
+      if (c.kind === "radar") {
+        const cols = Object.keys(rows);
+        if (!cols.length || !labels.length) return;
+        const all = cols.flatMap((k) => (rows[k] || []).map(num));
+        const top = Math.max(...all, 1) * 1.12;
+        const maxOf = cols.map((k) => Math.max(...(rows[k] || []).map(num), 1));
+        const spread = Math.max(...maxOf) / Math.max(Math.min(...maxOf), 1);
+        _chartChart.setOption({
+          animationDuration: 320,
+          title: {
+            text: c.title || "", left: "center", top: 4,
+            subtext: spread > 8 ? "各指标量纲差异较大，形状仅供示意" : "",
+            textStyle: { fontSize: 13, fontWeight: 600, color: "#3a4150" },
+            subtextStyle: { fontSize: 11, color: "#b26a2f" },
+          },
+          tooltip: {},
+          legend: { bottom: 0, textStyle: { fontSize: 11, color: "#6b7280" } },
+          radar: {
+            center: ["50%", "54%"], radius: "60%",
+            indicator: labels.map((l) => ({ name: l, max: Math.ceil(top) })),
+            axisName: { fontSize: 11, color: "#50596a" },
+            splitLine: { lineStyle: { color: "#e6ebf3" } },
+            splitArea: { areaStyle: { color: ["#fbfcfe", "#f4f7fb"] } },
+          },
+          series: [{
+            type: "radar",
+            symbolSize: 4,
+            data: cols.map((k) => ({
+              name: k,
+              value: labels.map((_, i) => num((rows[k] || [])[i])),
+              areaStyle: { opacity: 0.06 },
+              lineStyle: { width: 1.4 },
+            })),
+          }],
+        }, true);
+        return;
+      }
+
       const kind = c.kind === "line" ? "line" : "bar";
       const series = Object.keys(rows).map((name) => ({
         name,
@@ -2058,16 +2118,10 @@ const app = createApp({
         smooth: kind === "line",
         symbolSize: 7,
         barMaxWidth: 46,
-        data: (rows[name] || []).map((v) => {
-          const n = parseFloat(String(v).replace(/[^0-9.\-]/g, ""));
-          return Number.isFinite(n) ? n : 0;
-        }),
+        data: (rows[name] || []).map(num),
         // 点位标数值：评委不用对着轴估，这也是"逐格可核对"的一部分
         label: { show: labels.length <= 6, position: "top", fontSize: 10, color: "#50596a" },
       }));
-      el.style.height = "320px";
-      if (!_chartChart) _chartChart = window.echarts.init(el, null, { renderer: "canvas" });
-      _chartChart.resize();
       _chartChart.setOption({
         animationDuration: 320,
         grid: { left: 52, right: 20, top: 46, bottom: 36 },
