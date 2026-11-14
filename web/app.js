@@ -341,12 +341,14 @@ const app = createApp({
   computed: {
     activeDocId() { return this.activeDoc ? this.activeDoc.id : ""; },
     // 本地模型是否真的可用：开关 + Ollama 端口可达 + 模型名在本机，三条件后端合判。
-    // 公网实例答案是 false，徽标就退化成只读标签——不给点了必错的选项。
+    // 公网实例答案是 false，这里就不渲染切换按钮——不给点了必错的选项。
     localReady() { return !!(this.info.local && this.info.local.available); },
-    askRouteLabel() {
-      if (!this.info.llm) return "加载中";
-      if (this.askRoute === "local" && this.info.local) return `本地 ${this.info.local.model}`;
-      return this.info.llm.mock ? "模型未配置（模拟）" : this.info.llm.model;
+    // 当前生效的模型名：按钮旁边那一行小字。切到本地就显示自训模型名，
+    // 让"这一问到底谁答的"在界面上有字面证据，而不是只靠耗时猜。
+    activeModelName() {
+      if (!this.info.llm) return "";
+      if (this.askRoute === "local" && this.info.local) return this.info.local.model;
+      return this.info.llm.mock ? "模拟" : this.info.llm.model;
     },
     viewTitle() {
       return { reader: "阅读器", bilingual: "中英对照", graph: "引用图谱", write: "写作助手" }[this.centerView] || "阅读器";

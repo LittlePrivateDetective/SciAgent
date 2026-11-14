@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SciAgent · 科研智能体</title>
   <link rel="stylesheet" href="/static/vendor/element-plus.css" />
-  <link rel="stylesheet" href="/static/style.css?v=34" />
+  <link rel="stylesheet" href="/static/style.css?v=37" />
   <link rel="stylesheet" href="/static/vendor/katex.min.css" />
   <script src="/static/vendor/katex.min.js"></script>
   <script src="/static/vendor/katex-auto-render.min.js"></script>
@@ -30,25 +30,18 @@
       <span class="sub">锚点可验证的科研智能体</span>
     </div>
     <div class="badges">
-      <!-- 模型徽标兼作切换器：只有本机真的能用本地模型时才变成下拉。
-           公网实例没有 Ollama（local.available=false），这里退化成原来的只读标签，
-           不会给用户一个"点了一定报错"的选项。
-           切换只作用于**这一问**（请求头 X-LLM-Route），不改全局路由。 -->
-      <el-dropdown v-if="localReady && !(info.llm && info.llm.mock)" trigger="click" placement="bottom-end" @command="setAskRoute">
-        <el-tag size="small" effect="plain" :type="askRoute === 'local' ? 'warning' : 'success'" class="model-pick">
-          {{ askRouteLabel }}<span class="caret">▾</span>
-        </el-tag>
-        <template #dropdown>
-          <el-dropdown-menu>
-            <el-dropdown-item command="cloud">
-              云端 · {{ info.llm && info.llm.model }}
-            </el-dropdown-item>
-            <el-dropdown-item command="local">
-              本地 · {{ info.local.model }}（自训，约 30 秒/答）
-            </el-dropdown-item>
-          </el-dropdown-menu>
-        </template>
-      </el-dropdown>
+      <!-- 模型切换：两个明确的按钮，不是"看起来像状态标签"的下拉。
+           只有本机探测到可用本地模型时才出现——公网实例没有 Ollama，
+           这里保持只读徽标，不给出点了必错的选项。
+           切换只作用于**这一次提问**，不改后台全局路由。 -->
+      <div v-if="localReady && !(info.llm && info.llm.mock)" class="model-switch"
+           title="切换本次提问使用的模型（不影响后台全局设置，下一问即生效）">
+        <button type="button" class="ms-btn" :class="{ on: askRoute === 'cloud' }"
+                @click="setAskRoute('cloud')">云端</button>
+        <button type="button" class="ms-btn" :class="{ on: askRoute === 'local', local: askRoute === 'local' }"
+                @click="setAskRoute('local')">本地 3B</button>
+        <span class="ms-name">{{ activeModelName }}</span>
+      </div>
       <el-tag v-else size="small" :type="info.llm && info.llm.mock ? 'warning' : 'success'" effect="plain">
         {{ info.llm ? (info.llm.mock ? '模型未配置（模拟）' : info.llm.model) : '加载中' }}
       </el-tag>
@@ -998,6 +991,6 @@
   </nav>
 </div>
 
-<script src="/static/app.js?v=34"></script>
+<script src="/static/app.js?v=37"></script>
 </body>
 </html>

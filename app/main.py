@@ -123,11 +123,17 @@ def health():
     return {"ok": True, "service": "sciagent", "version": app.version}
 
 
+# 首页 HTML 必须每次回源校验：JS/CSS 都挂了 ?v=N 版本号，唯独这个 HTML 没有，
+# 于是浏览器缓存住旧 HTML 时，页面会一直引用旧版本的脚本——改了前端却"看不见"，
+# 实测就是这么卡住过一次（本地已换成按钮，浏览器里还是旧徽标）。
+NO_CACHE = {"Cache-Control": "no-cache, must-revalidate"}
+
+
 @app.get("/")
 def index():
     idx = WEB_DIR / "index.html"
     if idx.exists():
-        return FileResponse(idx)
+        return FileResponse(idx, headers=NO_CACHE)
     return {"message": "前端未构建，请访问 /docs 使用 API"}
 
 
@@ -136,7 +142,7 @@ def admin_page():
     """后台控制台。独立单页，不依赖主界面的构建链。"""
     page = WEB_DIR / "admin.html"
     if page.exists():
-        return FileResponse(page)
+        return FileResponse(page, headers=NO_CACHE)
     return {"message": "后台页面未找到"}
 
 

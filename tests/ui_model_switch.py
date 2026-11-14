@@ -85,10 +85,14 @@ def run() -> dict:
             time.sleep(0.4)
         js("window.__SCIAGENT_NO_CACHE = 1; 1")
 
-        # 1) 初始状态：默认云端，徽标是否可点取决于本机有没有本地模型
+        # 1) 初始状态：默认云端，是否有切换按钮取决于本机有没有本地模型
         init = js("""(()=>{const v=window.__sciagent;
-              const t=document.querySelector('.badges .model-pick') || document.querySelector('.badges .el-tag');
-              return {route:v.askRoute, ready:!!v.localReady, label:t?t.textContent.trim():'',
+              const sw=document.querySelector('.badges .model-switch');
+              const btns=sw?[...sw.querySelectorAll('.ms-btn')].map(b=>b.textContent.trim()):[];
+              const name=document.querySelector('.badges .ms-name');
+              return {route:v.askRoute, ready:!!sw, btns:btns,
+                      name:name?name.textContent.trim():'',
+                      label:(document.querySelector('.badges .el-tag')||{textContent:''}).textContent.trim(),
                       available:v.info && v.info.local ? !!v.info.local.available : false,
                       model:v.info && v.info.local ? v.info.local.model : '',
                       reason:v.info && v.info.local ? v.info.local.reason : ''}})()""")
@@ -99,28 +103,47 @@ def run() -> dict:
         if os.environ.get("EXPECT_LOCAL", "1") != "1":
             res["errors"] = js("window.__err||[]")
             res["checks"] = {
-                "no_dropdown_without_local": not bool(js("!!document.querySelector('.badges .model-pick')")),
+                "no_button_without_local": not bool(js("!!document.querySelector('.badges .model-switch')")),
                 "badge_still_shows_model": bool((init.get("label") or "").strip()),
                 "no_js_errors": not res["errors"],
             }
             res["ok"] = all(res["checks"].values())
             return res
 
-        # 2) 展开下拉：菜单会被 teleport 到 body，按文案找项
-        js("(()=>{const t=document.querySelector('.badges .model-pick'); if(t) t.click(); return 1})()")
-        time.sleep(0.6)
-        items = js("""(()=>[...document.querySelectorAll('.el-dropdown-menu__item')]
-              .map(e=>e.textContent.replace(/\\s+/g,' ').trim()))()""")
-        res["steps"].append({"menu": items})
-
-        # 3) 选「本地」
-        js("""(()=>{const it=[...document.querySelectorAll('.el-dropdown-menu__item')]
-              .find(e=>e.textContent.includes('本地')); if(it) it.click(); return 1})()""")
+        # 2) 点「本地 3B」按钮（原来这里是展开下拉再选项；改成按钮后一次点击到位，
+        #    也顺手验证了"按钮真的在、真的可点"）
+        js("""(()=>{const b=[...document.querySelectorAll('.badges .ms-btn')]
+              .find(e=>e.textContent.includes('本地')); if(b) b.click(); return 1})()""")
         time.sleep(0.8)
         picked = js("""(()=>{const v=window.__sciagent;
-              const t=document.querySelector('.badges .model-pick');
-              return {route:v.askRoute, label:t?t.textContent.trim():''}})()""")
+              const on=document.querySelector('.badges .ms-btn.on');
+              const name=document.querySelector('.badges .ms-name');
+              const styles=[...document.querySelectorAll('.badges .ms-btn')].map(b=>{
+                const s=getComputedStyle(b);
+                return {t:b.textContent.trim(), on:b.classList.contains('on'),
+                        bg:s.backgroundColor, fg:s.color, bd:s.borderColor};});
+              return {route:v.askRoute, active:on?on.textContent.trim():'',
+                      hasLocalClass:on?on.classList.contains('local'):false,
+                      styles:styles,
+                      name:name?name.textContent.trim():''}})()""")
         res["steps"].append({"picked_local": picked})
+
+        # 只查渲染、不真调模型（排查"界面上看不到按钮"用）：
+        #   CHECK_ONLY=1 BASE=... 跑这一支，2 秒出结果
+        if os.environ.get("CHECK_ONLY") == "1":
+            res["errors"] = js("window.__err||[]")
+            res["checks"] = {
+                "switch_rendered": bool(init.get("ready")),
+                "two_buttons": len(init.get("btns") or []) == 2,
+                "click_switches_to_local": picked.get("route") == "local",
+                "name_follows_route": (init.get("model") or "") in (picked.get("name") or ""),
+                "no_js_errors": not res["errors"],
+            }
+            res["ok"] = all(res["checks"].values())
+            shot = call("Page.captureScreenshot", {"format": "png"}).get("data")
+            if shot:
+                (OUT / "model_switch_check.png").write_bytes(base64.b64decode(shot))
+            return res
 
         # 4) 本地提问
         js(f"(()=>{{window.__sciagent.ask({QUESTION!r}); return 1}})()")
@@ -136,12 +159,11 @@ def run() -> dict:
         res["steps"].append({"local_answer": local_state, "elapsed_s": round(time.time() - t0, 1)})
 
         # 5) 切回云端再问（反向也要通，否则等于只能切过去不能切回来）
-        js("(()=>{const t=document.querySelector('.badges .model-pick'); if(t) t.click(); return 1})()")
+        js("""(()=>{const b=[...document.querySelectorAll('.badges .ms-btn')]
+              .find(e=>e.textContent.includes('云端')); if(b) b.click(); return 1})()""")
         time.sleep(0.6)
-        js("""(()=>{const it=[...document.querySelectorAll('.el-dropdown-menu__item')]
-              .find(e=>e.textContent.includes('云端')); if(it) it.click(); return 1})()""")
-        time.sleep(0.6)
-        back = js("(()=>{const v=window.__sciagent;return {route:v.askRoute}})()")
+        back = js("""(()=>{const v=window.__sciagent;const on=document.querySelector('.badges .ms-btn.on');
+              return {route:v.askRoute, active:on?on.textContent.trim():''}})()""")
         js(f"(()=>{{window.__sciagent.ask({QUESTION!r}); return 1}})()")
         cloud_state = {}
         t0 = time.time()
@@ -162,11 +184,11 @@ def run() -> dict:
 
         res["checks"] = {
             "default_cloud": init.get("route") == "cloud",
-            "dropdown_when_available": (init.get("ready") is True) or (init.get("available") is False),
-            "menu_has_both": len(items or []) >= 2
-            and any("云端" in x for x in items) and any("本地" in x for x in items),
+            "switch_when_available": (init.get("ready") is True) or (init.get("available") is False),
+            "two_buttons": len(init.get("btns") or []) == 2,
             "click_switches_to_local": picked.get("route") == "local",
-            "label_shows_local_model": (init.get("model") or "") in (picked.get("label") or ""),
+            "active_btn_is_local": picked.get("hasLocalClass") is True,
+            "name_follows_route": (init.get("model") or "") in (picked.get("name") or ""),
             "local_answer_tagged": "本地" in (local_state.get("meta") or ""),
             "local_answer_nonempty": (local_state.get("chars") or 0) > 20,
             "click_back_to_cloud": back.get("route") == "cloud",
