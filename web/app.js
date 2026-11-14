@@ -218,6 +218,8 @@ const app = createApp({
       // 只在 max-width:760px 的媒体查询里决定显示哪一块。
       mobilePane: "qa",
       info: {},
+      // 正在解析入库的文件数：上传 25 页 PDF 要 13 秒，没有 loading 就会被当成"没反应"
+      upQueue: 0,
       // 本次问答走哪个后端：cloud / local。只对"这一问"生效（请求头 X-LLM-Route），
       // 不是全局路由开关——全局那份在后台参数中心，动了会换掉所有人的模型。
       askRoute: "cloud",
@@ -343,6 +345,7 @@ const app = createApp({
     // 本地模型是否真的可用：开关 + Ollama 端口可达 + 模型名在本机，三条件后端合判。
     // 公网实例答案是 false，这里就不渲染切换按钮——不给点了必错的选项。
     localReady() { return !!(this.info.local && this.info.local.available); },
+    uploading() { return this.upQueue > 0; },
     // 当前生效的模型名：按钮旁边那一行小字。切到本地就显示自训模型名，
     // 让"这一问到底谁答的"在界面上有字面证据，而不是只靠耗时猜。
     activeModelName() {
@@ -843,18 +846,31 @@ const app = createApp({
     async doUpload(opt) {
       const fd = new FormData();
       fd.append("file", opt.file);
-      const r = await fetch("/api/documents/upload", { method: "POST", body: fd }).then((x) => x.json());
-      if (r.stage === "duplicate") {
-        this.dup = { visible: true, message: r.message, items: r.duplicates || [], pendingId: r.pending_id };
-        return;
+      this.upQueue += 1;
+      try {
+        const resp = await fetch("/api/documents/upload", { method: "POST", body: fd });
+        // 后端没起、或网关把连接掐掉时 fetch 会直接抛，也可能返回 502 的纯文本。
+        // 原来这里既没 try/catch 也不看 resp.ok，结果是"点了上传什么都不发生"——
+        // 看起来像功能坏了，其实是请求根本没到达后端。
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const r = await resp.json();
+        if (r.stage === "duplicate") {
+          this.dup = { visible: true, message: r.message, items: r.duplicates || [], pendingId: r.pending_id };
+          return;
+        }
+        if (!r.ok) {
+          ElementPlus.ElMessage.error(r.error || "上传失败");
+          return;
+        }
+        ElementPlus.ElMessage.success(`入库成功：切成 ${r.chunks} 段原文，用时 ${r.elapsed_ms}ms`);
+        this.loadDocs();
+        this.loadInfo();
+      } catch (e) {
+        ElementPlus.ElMessage.error(
+          `上传失败：${(e && e.message) || e}。请确认后端在 8013 端口运行（可双击 ops/start_8013.bat）`);
+      } finally {
+        this.upQueue = Math.max(0, this.upQueue - 1);
       }
-      if (!r.ok) {
-        ElementPlus.ElMessage.error(r.error || "上传失败");
-        return;
-      }
-      ElementPlus.ElMessage.success(`入库成功：切成 ${r.chunks} 段原文，用时 ${r.elapsed_ms}ms`);
-      this.loadDocs();
-      this.loadInfo();
     },
 
     async resolveDup(action) {

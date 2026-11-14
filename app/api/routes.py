@@ -149,6 +149,34 @@ def system_reembed():
     return reembed_all()
 
 
+def _decode_filename(name: str) -> str:
+    """修中文文件名乱码。
+
+    浏览器按 RFC 5987 的实践直接发 UTF-8 字节，而 Starlette 解 multipart 时按
+    latin-1 解码，于是"计算机学报2023_…"变成"¼ÆËã»úÑ§±¨…"。
+    只在"能按 latin-1 还原成合法 UTF-8"时才改写：纯 ASCII 名不动，
+    本来就是 latin-1 的欧美名也原样返回。
+    """
+    if not name or name.isascii():
+        return name
+    try:
+        raw = name.encode("latin-1")
+    except UnicodeEncodeError:
+        return name  # 已经是对的 Unicode，别动
+    for enc in ("utf-8", "gbk"):
+        try:
+            fixed = raw.decode(enc)
+        except UnicodeDecodeError:
+            continue
+        # GBK 兜底要加闸：latin-1 的欧美名（Müller）按 GBK 也能"解"出乱码，
+        # 只有真的解出至少两个汉字才认，否则原样返回。
+        if enc == "gbk" and sum(1 for ch in fixed if "\u4e00" <= ch <= "\u9fff") < 2:
+            continue
+        if fixed and "\ufffd" not in fixed:
+            return fixed
+    return name
+
+
 @router.post("/documents/upload")
 async def upload_document(
     file: UploadFile = File(...),
@@ -156,7 +184,8 @@ async def upload_document(
     replace_doc_id: str | None = Form(None),
     db: Session = Depends(get_db),
 ):
-    if not file.filename.lower().endswith(".pdf"):
+    filename = _decode_filename(file.filename or "")
+    if not filename.lower().endswith(".pdf"):
         raise HTTPException(400, "只支持 PDF")
 
     data = await file.read()
@@ -165,7 +194,7 @@ async def upload_document(
     if not data.startswith(b"%PDF-"):
         raise HTTPException(400, "文件内容不是有效的 PDF，请重新导出后再上传")
 
-    path = save_upload(data, file.filename)
+    path = save_upload(data, filename)
     # 解析是 CPU 密集的（500 页约 20–40 秒）。两个人同时传，整机会卡到
     # 连问答都超时；所以同一时刻只解析一份，第二个人得到明确提示而不是干等。
     # 用 0.2 秒的短超时而不是排队 30 秒：用户宁可看到"稍后再传"，
@@ -173,7 +202,7 @@ async def upload_document(
     if not guard.acquire_upload(timeout=0.2):
         raise HTTPException(429, "正在解析另一份文献（约 10–40 秒），请稍后再传。")
     try:
-        result = ingest(db, path, file.filename, force=force, replace_doc_id=replace_doc_id)
+        result = ingest(db, path, filename, force=force, replace_doc_id=replace_doc_id)
     finally:
         guard.release_upload()
 
@@ -181,7 +210,7 @@ async def upload_document(
         raise HTTPException(400, result.get("error") or "PDF 解析失败，请检查文件")
     if not result.get("ok") and result.get("stage") == "duplicate":
         pending_id = uuid.uuid4().hex[:10]
-        PENDING[pending_id] = {"path": path, "name": file.filename}
+        PENDING[pending_id] = {"path": path, "name": filename}
         result["pending_id"] = pending_id
         return JSONResponse(result, status_code=200)
 

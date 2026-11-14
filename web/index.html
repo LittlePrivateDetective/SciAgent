@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SciAgent · 科研智能体</title>
   <link rel="stylesheet" href="/static/vendor/element-plus.css" />
-  <link rel="stylesheet" href="/static/style.css?v=37" />
+  <link rel="stylesheet" href="/static/style.css?v=38" />
   <link rel="stylesheet" href="/static/vendor/katex.min.css" />
   <script src="/static/vendor/katex.min.js"></script>
   <script src="/static/vendor/katex-auto-render.min.js"></script>
@@ -68,8 +68,11 @@
       </div>
 
       <div class="upload-area">
-        <el-upload :show-file-list="false" :http-request="doUpload" accept=".pdf" multiple>
-          <el-button type="primary" size="small" style="width:100%">上传 PDF</el-button>
+        <el-upload :show-file-list="false" :http-request="doUpload" accept=".pdf" multiple
+                   :disabled="uploading">
+          <el-button type="primary" size="small" style="width:100%" :loading="uploading">
+            {{ uploading ? "解析入库中…" : "上传 PDF" }}
+          </el-button>
         </el-upload>
         <el-button size="small" style="width:100%;margin-top:6px" @click="rescan" :loading="rescanning">
           一键导入官方测试集（{{ info.official_pdfs || 0 }} 篇）
@@ -991,6 +994,6 @@
   </nav>
 </div>
 
-<script src="/static/app.js?v=37"></script>
+<script src="/static/app.js?v=38"></script>
 </body>
 </html>
