@@ -253,6 +253,21 @@ def _reading_order(blocks: list[Block]) -> list[Block]:
 NOT_HEADING_CHARS = ("·", "[", "%", "±", "→", "↑", "↓", "≤", "≥", "<", ">", "=", "|", "／")
 
 
+def _starts_like_title(s: str) -> bool:
+    """标题正文的第一个"实字"符不符合标题习惯。
+
+    中文标题（"1　引言"、"3.2　混合检索"）首字是汉字，`isupper()` 永远为假——
+    原来的实现因此把中文论文的章节全部判成正文，章节树里只剩论文题目一项。
+    英文仍要求首字母大写，避免把 "3.1 4.2 的结果" 这类正文碎片认成标题。
+    额外的 `\\u3000`（全角空格）也要剥：中文排版里编号与标题之间用的就是它。
+    """
+    s = s.lstrip(". \t\u3000")
+    if not s:
+        return False
+    ch = s[0]
+    return ch.isupper() or ("\u4e00" <= ch <= "\u9fff")
+
+
 def _is_heading(block: Block, body: float) -> tuple[bool, int]:
     txt = block.text.strip()
     if not txt or len(txt) > 220:
@@ -285,8 +300,8 @@ def _is_heading(block: Block, body: float) -> tuple[bool, int]:
     if m and len(txt) < 120:
         depth = m.group(1).count(".") + 1
         # 编号 + 字号偏大 或 加粗 → 判标题；且编号后的文字必须像短语（首字母大写、不含小数点续写）
-        rest = txt[len(m.group(1)) :].lstrip(". ")
-        looks_like_title = bool(rest) and rest[0].isupper() and not re.match(r"^\d", rest)
+        rest = txt[len(m.group(1)) :]
+        looks_like_title = _starts_like_title(rest) and not re.match(r"^\d", rest)
         if looks_like_title and block.size >= body * 0.98:
             return True, min(depth, 4)
 
@@ -299,7 +314,7 @@ def _is_heading(block: Block, body: float) -> tuple[bool, int]:
     if block.bold and block.size >= body * 0.95 and len(txt) < 90 and not txt.endswith("."):
         if m:
             return True, min(m.group(1).count(".") + 1, 4)
-        if txt[0].isupper():
+        if _starts_like_title(txt):
             return True, 2
 
     # 白名单关键词 + 短句 + 字号不小
@@ -309,7 +324,7 @@ def _is_heading(block: Block, body: float) -> tuple[bool, int]:
     # 纯字号驱动（大标题无编号，例如论文题目、章节大字）
     if block.size >= body * 1.35 and len(txt) < 80 and not txt.endswith("."):
         return True, 1
-    if block.size >= body * 1.12 and len(txt) < 60 and txt[0].isupper() and not txt.endswith("."):
+    if block.size >= body * 1.12 and len(txt) < 60 and _starts_like_title(txt) and not txt.endswith("."):
         return True, 2
     return False, 0
 
