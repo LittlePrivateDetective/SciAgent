@@ -883,6 +883,26 @@ const app = createApp({
       this.loadTextLayer();
     },
 
+    /// 滚到页底自动进入下一页：省掉反复点「下一页」。
+    /// 只在确实能滚动（内容高于容器）时判定，否则整页一屏放得下的短页
+    /// 会在图片加载引起的 scroll 事件里被误翻；翻页后必须回顶，不然冷却一过又翻一页。
+    onPageScroll(e) {
+      if (this.centerView !== "reader" || !this.activeDoc) return;
+      const el = e.target;
+      if (!el || el.scrollHeight - el.clientHeight < 40) return;
+      const gap = el.scrollHeight - el.clientHeight - el.scrollTop;
+      if (gap > 80) return;
+      if (this.page >= this.pageCount) return;
+      const now = Date.now();
+      if (now < (this._flipLock || 0)) return;
+      this._flipLock = now + 800;
+      this.goPage(this.page + 1);
+      this.$nextTick(() => {
+        const s = this.$refs.pageStage;
+        if (s) s.scrollTop = 0;
+      });
+    },
+
     /* ---------------- 页内文本层：让页图上的文字可选、角标可点 ---------------- */
 
     async loadRefIndex(docId) {

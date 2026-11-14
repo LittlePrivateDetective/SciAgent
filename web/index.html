@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SciAgent · 科研智能体</title>
   <link rel="stylesheet" href="/static/vendor/element-plus.css" />
-  <link rel="stylesheet" href="/static/style.css?v=15" />
+  <link rel="stylesheet" href="/static/style.css?v=16" />
   <link rel="stylesheet" href="/static/vendor/katex.min.css" />
   <script src="/static/vendor/katex.min.js"></script>
   <script src="/static/vendor/katex-auto-render.min.js"></script>
@@ -163,7 +163,7 @@
           </div>
         </div>
 
-        <div class="page-stage" v-if="activeDoc">
+        <div class="page-stage" v-if="activeDoc" ref="pageStage" @scroll.passive="onPageScroll">
           <!-- page-frame 是唯一定位基准：它恰好等于图片的渲染尺寸。
                高亮框和文本层都用百分比相对它定位，才不会因为 .page-stage 的 padding
                或图片居中出现整体偏移（之前 .hl 直接挂在外层容器上，窄屏会偏 12px）。 -->
@@ -943,6 +943,6 @@
   </nav>
 </div>
 
-<script src="/static/app.js?v=15"></script>
+<script src="/static/app.js?v=16"></script>
 </body>
 </html>
