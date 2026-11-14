@@ -225,8 +225,18 @@ const app = createApp({
       activeDoc: null,
       page: 1,
       pageCount: 1,
-      // 连续滚动的页面尺寸：fit=一页约一屏（能同时看到两页拼接处），width=铺满宽度
-      pageZoom: "fit",
+      // 连续滚动的页面尺寸：fit=一页约一屏（能同时看到两页拼接处），width=铺满宽度。
+      // 默认给 width：面板宽 800 左右时，fit 按屏高算出来只有 530 宽，
+      // 正文小到看不清——这是用户实际反馈"pdf 太小"的原因。想两页同屏再切 fit。
+      pageZoom: (() => {
+        try { return localStorage.getItem("sciagent.pageZoom") === "fit" ? "fit" : "width"; }
+        catch (e) { return "width"; }
+      })(),
+      // 在此基础上再乘一个缩放比例（%）。只改 CSS 宽度不改布局结构，
+      // 放大后由阅读区横向滚动承接，文字层靠同一个 scale 自动跟随。
+      zoom: 100,
+      // 阅读区实测宽度（像素）。frameStyle 用它算页宽，见 measureStage()
+      stageW: 0,
       pageSizes: {},
       sections: [],
       showTree: false,
@@ -443,12 +453,25 @@ const app = createApp({
       if (this.citePop.visible && !e.target.closest(".cite-pop") && !e.target.closest(".tw.cite")) {
         this.citePop.visible = false;
       }
+      // 阅读区可用宽度：页框按像素算宽度时要靠它，窗口变化必须重新量
+      this.measureStage();
     });
     // 图谱在容器尺寸变化后必须重算布局，否则窗口一缩节点就叠在左上角
     window.addEventListener("resize", () => {
       if (this.centerView === "graph" && _chart) _chart.resize();
       if (_topoChart) _topoChart.resize();
+      this.measureStage();
       this.syncTextScale();
+    });
+    // Ctrl/⌘ + / - / 0：只影响页图缩放。输入框里打字不拦截，
+    // 否则在问题框里按 Ctrl+减号会被当成缩放，输入法符号打不出来。
+    document.addEventListener("keydown", (e) => {
+      if (!(e.ctrlKey || e.metaKey) || this.centerView !== "reader") return;
+      const tag = (e.target && e.target.tagName) || "";
+      if (tag === "INPUT" || tag === "TEXTAREA" || (e.target && e.target.isContentEditable)) return;
+      if (e.key === "=" || e.key === "+") { e.preventDefault(); this.zoomBy(1); }
+      else if (e.key === "-" || e.key === "_") { e.preventDefault(); this.zoomBy(-1); }
+      else if (e.key === "0") { e.preventDefault(); this.setZoom(100); }
     });
   },
   methods: {
@@ -883,6 +906,7 @@ const app = createApp({
       // 换文献要从第 1 页看起：连续滚动下滚动位置不会自己归零，不重置会停在上一次的页码
       this.$nextTick(() => {
         this._scrollLock = 0;
+        this.measureStage();      // 阅读区宽度可能因章节树开关而变，重算页宽
         this.scrollToPage(1, false);
       });
       // 对照视图下切文献要立刻换成新文献的段落，否则会继续显示上一篇
@@ -891,27 +915,104 @@ const app = createApp({
 
     pageUrlFor(p) {
       if (!this.activeDoc) return "";
+      // 放大后按档位提高渲染 dpi：130dpi 的页图在 180% 以上会明显发虚，
+      // 但每档都换 URL 会让所有已加载页重下，所以只用三档，不逐像素跟随。
       // 原来这里拼的是 Date.now()：每次重算都换 URL，翻回上一页也要重新下载 70KB。
       // 改成只有点「重新加载」才变（imgNonce），其余交给服务端的 max-age 缓存。
-      return `/api/documents/${this.activeDoc.id}/page/${p}.png?dpi=130&v=${this.imgNonce}`;
+      const dpi = this.zoom >= 175 ? 220 : this.zoom >= 140 ? 165 : 130;
+      return `/api/documents/${this.activeDoc.id}/page/${p}.png?dpi=${dpi}&v=${this.imgNonce}`;
     },
 
     /// 占位框按该页真实宽高比撑开。
     /// fit：一页高度 ≈ 一个视口，滚到页缝时上下两页都能露出来（"两页拼在一起"）；
     /// width：铺满可用宽度，字更大，但一页比视口高，需要多滚几下。
-    /// 两种都保留，因为读图和读字的需求是相反的。
+    /// 两种都保留，因为读图和读字的需求是相反的；再乘上 zoom 才是最终宽度。
+    ///
+    /// 宽度必须用像素算，不能交一个百分数给 CSS：
+    /// 100% 会被容器的 maxWidth 钳住，而放大到 110% 时又不钳了，
+    /// 结果"从 100% 调到 110%"会突然跳一大截（实测 768px → 990px）。
+    /// 这里先用容器可用宽算出基准像素，再乘档位，缩放就是严格线性的。
     frameStyle(p) {
       const meta = this.pageSizes[p];
       const w = (meta && meta.width) || 612;
       const h = (meta && meta.height) || 792;
       const ratio = w / h;
-      // 注意别在 min() 里写 100%：flex 交叉轴上的百分比在部分内核里解析失败，
-      // 整个 min() 会退化成最大分支（移动端实测 390px 视口里排出 900px 宽，横向溢出）。
-      // 百分比统一交给 maxWidth，这里只算"一页一屏"对应的长度上限。
-      const width = this.pageZoom === "width"
-        ? "900px"
-        : `min(900px, calc((100vh - 118px) * ${ratio.toFixed(4)}))`;
-      return { aspectRatio: `${w} / ${h}`, width, maxWidth: "100%" };
+      const avail = Math.max(240, (this.stageW || 900) - 24);   // 减掉 .page-stage 左右 padding
+      const fitW = Math.min(avail, 900, (window.innerHeight - 118) * ratio);
+      const base = this.pageZoom === "width" ? Math.min(avail, 900) : fitW;
+      const z = this.zoom / 100;
+      return {
+        aspectRatio: `${w} / ${h}`,
+        width: `${Math.round(base * z)}px`,
+        maxWidth: "none",       // 基准已经算过容器宽度，这里再钳就会让放大失效
+      };
+    },
+
+    /// 缩放档位：手点一次走一格，避免 1% 一格点几十次
+    zoomSteps() {
+      return [50, 67, 75, 80, 90, 100, 110, 125, 150, 175, 200, 250, 300];
+    },
+
+    /// 量一次阅读区可用宽度。frameStyle 需要它把页宽算成像素，
+    /// 否则只能靠 CSS 百分比，而百分比在"基准宽度"和"放大宽度"两种算法下不一致。
+    measureStage() {
+      const st = this.$refs.pageStage;
+      const w = st ? st.clientWidth : 0;
+      if (w && w !== this.stageW) {
+        this.stageW = w;
+        this.$nextTick(() => this.syncTextScale());
+      }
+    },
+
+    zoomBy(dir) {
+      const steps = this.zoomSteps();
+      const i = steps.findIndex((s) => s >= this.zoom);
+      const cur = i < 0 ? steps.length - 1 : (steps[i] === this.zoom ? i : Math.max(0, i - 1));
+      const next = steps[Math.min(steps.length - 1, Math.max(0, cur + dir))];
+      this.setZoom(next);
+    },
+
+    /// 换缩放时保持"正在看的那一页的同一位置"不动：
+    /// 直接重排会让视口跳到别的段落，放大一下还要重新找刚才读到哪儿。
+    setZoom(v) {
+      const z = Math.max(50, Math.min(300, Math.round(v)));
+      if (z === this.zoom) return;
+      const stage = this.$refs.pageStage;
+      let anchor = null;
+      if (stage) {
+        const top = stage.scrollTop + 4;
+        const frames = stage.querySelectorAll(".page-frame");
+        let el = null;
+        for (const f of frames) {
+          if (f.offsetTop <= top) el = f;
+          else break;
+        }
+        if (el) anchor = { page: Number(el.dataset.page), ratio: (top - el.offsetTop) / Math.max(el.offsetHeight, 1) };
+      }
+      this.zoom = z;
+      this.$nextTick(() => {
+        const st = this.$refs.pageStage;
+        if (st && anchor) {
+          const f = st.querySelector(`.page-frame[data-page="${anchor.page}"]`);
+          if (f) {
+            this._scrollLock = Date.now() + 400;
+            st.scrollTop = f.offsetTop + anchor.ratio * f.offsetHeight - 4;
+          }
+        }
+        this.syncTextScale();
+      });
+    },
+
+    onStageWheel(e) {
+      // Ctrl/⌘ + 滚轮：与浏览器缩放同一套习惯，但在阅读器内只缩放页图，
+      // 不把整个界面（含左右两栏）一起放大，否则工具栏会被挤出屏幕。
+      if (!(e.ctrlKey || e.metaKey)) return;
+      e.preventDefault();
+      this._wheelAcc = (this._wheelAcc || 0) + e.deltaY;
+      if (Math.abs(this._wheelAcc) < 40) return;
+      const dir = this._wheelAcc > 0 ? -1 : 1;
+      this._wheelAcc = 0;
+      this.zoomBy(dir);
     },
 
     goPage(p) {
@@ -928,6 +1029,7 @@ const app = createApp({
     /// 切换页面尺寸后页高全变了，原来的滚动位置会指向别的页；切完回到当前页顶部。
     toggleZoom() {
       this.pageZoom = this.pageZoom === "fit" ? "width" : "fit";
+      try { localStorage.setItem("sciagent.pageZoom", this.pageZoom); } catch (e) { /* 隐私模式 */ }
       this.$nextTick(() => this.scrollToPage(this.page, false));
     },
 
@@ -2374,13 +2476,23 @@ const app = createApp({
       if (src.scrollTop + src.clientHeight > src.scrollHeight - 500) this.loadBi(false);
 
       if (!this.bi.sync || !dst || performance.now() < (this._biLockUntil || 0)) return;
-      // 每个滚动事件都同步一次会把主线程排满（两栏各有几百个段落，
-      // 每帧都做二分 + 布局读取就是"卡卡的"的来源）。合并到下一帧只算一次。
-      if (this._biRaf) return;
-      this._biRaf = requestAnimationFrame(() => {
-        this._biRaf = 0;
+      // 不要用 requestAnimationFrame 做节流：无头浏览器 + 虚拟时间下 rAF 可能
+      // 长时间不回调，滚动事件全部被吞掉，表现就是"两侧完全不联动"（实测 5 次里挂 2 次）。
+      // 改成 16ms 时间闸 + setTimeout 尾随：跟手、可预测，也不打满主线程。
+      const now = performance.now();
+      const gap = now - (this._biLastAt || 0);
+      if (gap >= 16) {
+        this._biLastAt = now;
         this._syncBiScroll(side);
-      });
+        return;
+      }
+      this._biPending = side;
+      if (this._biTimer) return;
+      this._biTimer = setTimeout(() => {
+        this._biTimer = 0;
+        this._biLastAt = performance.now();
+        this._syncBiScroll(this._biPending || side);
+      }, 16);
     },
 
     _syncBiScroll(side) {
@@ -2390,22 +2502,28 @@ const app = createApp({
       const segs = src.querySelectorAll(".bi-seg");
       if (!segs.length) return;
 
-      // 二分找"顶部第一条与视口相交的段落"
-      const top = src.scrollTop + 4;
-      let lo = 0, hi = segs.length - 1, idx = 0;
-      while (lo <= hi) {
-        const mid = (lo + hi) >> 1;
-        if (segs[mid].offsetTop <= top) { idx = mid; lo = mid + 1; } else { hi = mid - 1; }
+      // 一律用 rect 差值算，不用 offsetTop。
+      // offsetTop 是相对 offsetParent 的，而 offsetParent 取决于哪一级祖先有定位；
+      // 一换布局（或某次渲染前后节点被替换）基准就变，算出来的落点会离谱到
+      // "英文滚到 60%，中文跳回 25px"。rect 差值只和两栏视口有关，跟层级无关。
+      const sr = src.getBoundingClientRect();
+      const topEdge = sr.top + 4;
+      let s = segs[segs.length - 1];
+      for (const el of segs) {
+        if (el.getBoundingClientRect().bottom > topEdge) { s = el; break; }
       }
-      const s = segs[idx];
-      const ratio = Math.min(1, Math.max(0, (src.scrollTop - s.offsetTop) / Math.max(s.offsetHeight, 1)));
+      const sRect = s.getBoundingClientRect();
+      const ratio = Math.min(1, Math.max(0, (topEdge - sRect.top) / Math.max(sRect.height, 1)));
+
       const t = dst.querySelector(`.bi-seg[data-i="${s.dataset.i}"]`);
       if (t) {
-        const want = t.offsetTop + ratio * t.offsetHeight;
-        // 差 2px 以内不回写：微小的反复纠正会让另一栏持续抖动
-        if (Math.abs(dst.scrollTop - want) > 2) {
+        const dr = dst.getBoundingClientRect();
+        const tr = t.getBoundingClientRect();
+        // 目标段落里"同一比例位置"当前离 dst 顶部有多远，就把 dst 滚多少
+        const delta = (tr.top - dr.top) + ratio * tr.height;
+        if (Math.abs(delta) > 2) {
           this._biLock();
-          dst.scrollTop = want;
+          dst.scrollTop = Math.max(0, dst.scrollTop + delta);
         }
       }
       this.bi.cur = Number(s.dataset.i);

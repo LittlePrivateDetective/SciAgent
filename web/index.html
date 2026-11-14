@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SciAgent · 科研智能体</title>
   <link rel="stylesheet" href="/static/vendor/element-plus.css" />
-  <link rel="stylesheet" href="/static/style.css?v=25" />
+  <link rel="stylesheet" href="/static/style.css?v=32" />
   <link rel="stylesheet" href="/static/vendor/katex.min.css" />
   <script src="/static/vendor/katex.min.js"></script>
   <script src="/static/vendor/katex-auto-render.min.js"></script>
@@ -135,6 +135,15 @@
                        :title="pageZoom === 'fit' ? '当前一页一屏，点此铺满宽度' : '当前铺满宽度，点此一页一屏'">
               {{ pageZoom === "fit" ? "一页一屏" : "铺满宽度" }}
             </el-button>
+            <!-- 缩放：- / 百分比 / + 。百分比本身可点，恢复 100%。
+                 工具条已经很挤，所以不做下拉，只保留最常用的这三个动作。 -->
+            <span class="zoom-group">
+              <el-button size="small" text :disabled="zoom <= 50" @click="zoomBy(-1)"
+                         title="缩小（Ctrl + 滚轮向下，或 Ctrl + -）">−</el-button>
+              <span class="zoom-pct" @click="setZoom(100)" title="点击恢复 100%">{{ zoom }}%</span>
+              <el-button size="small" text :disabled="zoom >= 300" @click="zoomBy(1)"
+                         title="放大（Ctrl + 滚轮向上，或 Ctrl + +）">＋</el-button>
+            </span>
             <el-button size="small" text :loading="en.running" @click="openEn" title="把中文论文译成学术英文（官方 1.6.4）">
               {{ en.running ? `译英 ${en.done}/${en.total}` : '译英' }}
             </el-button>
@@ -167,7 +176,8 @@
           </div>
         </div>
 
-        <div class="page-stage" v-if="activeDoc" ref="pageStage" @scroll.passive="onPageScroll">
+        <div class="page-stage" v-if="activeDoc" ref="pageStage" @scroll.passive="onPageScroll"
+             @wheel="onStageWheel">
           <!-- 连续滚动：所有页按顺序排在同一根滚动条下，滚过上一页底部直接接下一页，
                不再"滚到底跳页"（跳页会闪一下白，观感像翻幻灯片）。
                每页只渲染一个按原始宽高比撑开的占位框，图片交给浏览器原生懒加载：
@@ -956,6 +966,6 @@
   </nav>
 </div>
 
-<script src="/static/app.js?v=25"></script>
+<script src="/static/app.js?v=32"></script>
 </body>
 </html>

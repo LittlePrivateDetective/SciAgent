@@ -108,6 +108,13 @@ body {
   font-size: 12px; color: var(--muted); padding: 0 6px;
   font-variant-numeric: tabular-nums; text-align: center; min-width: 52px;
 }
+/* 缩放控件：- 百分比 +，比下拉菜单少一次点击，工具条上也放得下 */
+.zoom-group { display: inline-flex; align-items: center; gap: 0; flex: none; }
+.zoom-pct {
+  font-size: 12px; color: #3a4150; min-width: 44px; text-align: center;
+  font-variant-numeric: tabular-nums; cursor: pointer; border-radius: 4px; padding: 2px 4px;
+}
+.zoom-pct:hover { background: #eef2fe; color: var(--brand); }
 
 /* 左栏 */
 .upload-area { padding: 10px; border-bottom: 1px solid var(--line); }
@@ -177,8 +184,10 @@ body {
 .page-stage {
   position: relative; flex: 1; overflow: auto; padding: 12px 12px 28px;
   background: #eceef2;
-  /* 连续滚动：所有页纵向排列，页与页之间留一条缝，像 PDF 阅读器那样一路滑下去 */
-  display: flex; flex-direction: column; align-items: center; gap: 14px;
+  /* 连续滚动：所有页纵向排列，页与页之间留一条缝，像 PDF 阅读器那样一路滑下去。
+     align-items 必须是 flex-start + 子项 margin:auto，不能用 center：
+     放大到超过容器宽度时，center 会把左侧那截挤到可视区之外且滚不回去。 */
+  display: flex; flex-direction: column; align-items: flex-start; gap: 14px;
 }
 /* page-frame 恰好等于页图的渲染尺寸，是所有覆盖层的唯一定位基准。
  * 之前 .hl 直接挂在外层 .page-stage 上，容器有 12px padding，窄屏图片一旦贴边
@@ -187,6 +196,7 @@ body {
  * 图片没下载完占位就对，滚动条不会因为懒加载一路乱跳。 */
 .page-frame {
   position: relative; width: 100%; max-width: 900px;
+  margin: 0 auto;             /* 不超宽时居中；超宽时由 align-items:flex-start 保底，左端可滚 */
   box-shadow: 0 1px 6px rgba(0, 0, 0, .12); background: #fff; line-height: 0;
   flex: none;
   /* 文本层按 PDF 原始 pt 布局（宽 612px）再整体 scale 缩小，它的布局宽度
