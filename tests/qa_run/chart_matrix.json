@@ -1,0 +1,64 @@
+[
+ {
+  "kind": "radar",
+  "fmt": "tikz",
+  "http": 200,
+  "ok": true,
+  "chars": 1000,
+  "nums_hit": [
+   "88.6",
+   "86.2",
+   "84.1",
+   "80.3"
+  ],
+  "caption_source": "llm",
+  "foreign": [],
+  "head": "% 需要 \\usepackage{pgfplots} 与 \\pgfplotsset{compat=1.18}\n\\begin{figure}[htbp]\n  \\c"
+ },
+ {
+  "kind": "radar",
+  "fmt": "matplotlib",
+  "http": 200,
+  "ok": true,
+  "chars": 1816,
+  "nums_hit": [
+   "88.6",
+   "86.2",
+   "84.1",
+   "80.3"
+  ],
+  "caption_source": "llm",
+  "foreign": [],
+  "head": "\"\"\"由 SciAgent 从 CSV 生成 —— 每个数值与源表逐格一致，可直接改样式。\"\"\"\nimport matplotlib\nmatplotlib.us"
+ },
+ {
+  "kind": "table",
+  "fmt": "latex",
+  "http": 200,
+  "ok": true,
+  "chars": 450,
+  "nums_hit": [
+   "28.4",
+   "30.1",
+   "41.0"
+  ],
+  "caption_source": "llm",
+  "foreign": [],
+  "head": "% 需要 \\usepackage{booktabs}；三线表是学术期刊最常用的表格形式\n\\begin{table}[htbp]\n  \\centering\n  \\"
+ },
+ {
+  "kind": "table",
+  "fmt": "markdown",
+  "http": 200,
+  "ok": true,
+  "chars": 151,
+  "nums_hit": [
+   "28.4",
+   "30.1",
+   "41.0"
+  ],
+  "caption_source": "llm",
+  "foreign": [],
+  "head": "**对比实验**\n\n| ﻿Model | BLEU | Params(B) |\n|---|---:|---:|\n| Transformer | 28.4 | 6"
+ }
+]

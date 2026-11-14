@@ -47,7 +47,10 @@ _FMT_ALIAS = {"pgfplots": "tikz", "tex": "latex", "md": "markdown", "py": "matpl
 
 # ------------------------------------------------------------------ 解析
 def parse_csv(raw: str) -> dict:
-    rows = list(csv.reader(io.StringIO((raw or "").strip())))
+    # Excel「另存为 CSV」默认带 UTF-8 BOM；不剥掉的话第一列表头会变成 "\ufeffModel"，
+    # 导出的 Markdown/LaTeX 表头里就混进一个不可见字符（实测踩到）。
+    raw = (raw or "").lstrip("\ufeff")
+    rows = list(csv.reader(io.StringIO(raw.strip())))
     if len(rows) < 2:
         raise ValueError("CSV 至少需要表头 + 1 行数据")
     header = [h.strip() for h in rows[0]]

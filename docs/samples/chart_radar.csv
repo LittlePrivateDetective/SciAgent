@@ -1,4 +1,4 @@
-﻿Method,Accuracy,F1,Latency
+Method,Accuracy,F1,Latency
 Ours,88.6,86.2,45
 Baseline-A,84.1,82.7,52
 Baseline-B,80.3,79.5,38

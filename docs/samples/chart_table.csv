@@ -1,0 +1,4 @@
+Method,Accuracy,F1,Params(M),Latency(ms)
+Ours,88.6,86.2,110,45
+Baseline-A,84.1,82.7,65,52
+Baseline-B,80.3,79.5,175,38
