@@ -27,11 +27,14 @@ ml/.venv/Scripts/pip install transformers peft bitsandbytes accelerate datasets
 # 1) 造数据（在**主站 venv** 里跑：要用 app 的解析与提示词）
 .venv/Scripts/python.exe ml/prepare_sft.py --n 700 --deny 80     # → data/sft/qa.jsonl
 .venv/Scripts/python.exe ml/prepare_trans.py                     # → data/sft/trans.jsonl
-.venv/Scripts/python.exe ml/split.py                             # → train.jsonl / dev.jsonl
+.venv/Scripts/python.exe ml/split.py                             # → train/dev + trans_train/trans_dev
 
 # 2) 训练（ml/.venv；3B QLoRA，6GB 显存）
 ml/.venv/Scripts/python.exe ml/train_lora.py --dry-run           # 先看编码与显存
-ml/.venv/Scripts/python.exe ml/train_lora.py                     # 正式
+# 只训问答：--data data/sft/train.jsonl
+# 问答+翻译混合（推荐，v2）：--data data/sft/train.jsonl data/sft/trans_train.jsonl
+ml/.venv/Scripts/python.exe ml/train_lora.py \
+  --data data/sft/train.jsonl data/sft/trans_train.jsonl --out data/sft/out/lora-3b-v2
 
 # 3) 合并 LoRA（fp16，在 CPU 上合并；6GB 显存合并不下）
 ml/.venv/Scripts/python.exe ml/merge_lora.py \
@@ -42,8 +45,9 @@ ml/.venv/Scripts/python.exe <llama.cpp>/convert_hf_to_gguf.py data/sft/out/merge
   --outfile data/sft/out/sciagent-3b-f16.gguf --outtype f16
 ollama create sciagent-3b -f data/sft/Modelfile
 
-# 5) 三列评测（base / 微调 / 云端；云端读 .env 的 LLM_*）
-ml/.venv/Scripts/python.exe ml/eval_ft.py --lora data/sft/out/lora-3b --cloud
+# 5) 评测：问答三列 + 翻译 base vs 微调
+ml/.venv/Scripts/python.exe ml/eval_ft.py --lora data/sft/out/lora-3b-v2 --cloud
+ml/.venv/Scripts/python.exe ml/eval_trans_ft.py --lora data/sft/out/lora-3b-v2
 ```
 
 ## 显存账（RTX 2060 6GB）
@@ -61,10 +65,11 @@ ml/.venv/Scripts/python.exe ml/eval_ft.py --lora data/sft/out/lora-3b --cloud
 
 ## 产物
 
-- `data/sft/out/lora-3b/`：LoRA 权重（120MB），**不进仓库**
-- `data/sft/out/merged-3b/`：合并后的 fp16 权重（5.75GB），**不进仓库**
-- `data/sft/out/sciagent-3b-f16.gguf`：GGUF（6.17GB），**不进仓库**
-- Ollama 模型 `sciagent-3b:latest`（6.18GB，F16）存放在 `~/.ollama/models`
+- `data/sft/out/lora-3b/`：LoRA 权重（120MB，只训 QA），**不进仓库**
+- `data/sft/out/lora-3b-v2/`：LoRA 权重（115MB，QA+翻译混合），**不进仓库**
+- `data/sft/out/merged-3b{,-v2}/`：合并后的 fp16 权重（各 5.75GB），**不进仓库**
+- `data/sft/out/sciagent-3b{,-v2}-f16.gguf`：GGUF（各 6.17GB），**不进仓库**
+- Ollama 模型 `sciagent-3b:latest` / `sciagent-3b-v2:latest`（各 6.18GB，F16）存放在 `~/.ollama/models`
 - `ml/models/`：底座权重（5.8GB），**不进仓库**
 - 训练日志与评测结果：`data/sft/`（不进仓库）；结论见 `docs/微调实验.md`
 

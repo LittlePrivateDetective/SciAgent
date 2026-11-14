@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import random
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -35,6 +36,42 @@ def main(n_dev: int = 40) -> None:
 
     dump(DATA / "train.jsonl", train)
     dump(DATA / "dev.jsonl", dev)
+
+    split_trans()
+
+
+def split_trans(n_dev: int = 8) -> None:
+    """翻译样本按「首段原文」分组切分：同段落的不同批次只能落在一侧。
+
+    trans.jsonl 的 meta 只有 source，没有 chunk_id，所以用首段正文做分组键；
+    只要两条样本引用了同一段原文，就一定同侧，避免"训练见过这段、dev 只换批次"。
+    """
+    src = DATA / "trans.jsonl"
+    if not src.exists():
+        print("[skip] 没有 trans.jsonl")
+        return
+    rows = [json.loads(x) for x in src.read_text(encoding="utf-8").splitlines() if x.strip()]
+    groups: dict[str, list[dict]] = {}
+    for r in rows:
+        try:
+            first = json.loads(r["messages"][1]["content"])[0]
+        except Exception:
+            first = r["messages"][1]["content"]
+        key = re.sub(r"\s+", " ", str(first))[:80]
+        groups.setdefault(key, []).append(r)
+
+    keys = sorted(groups)
+    rng = random.Random(20261114)
+    rng.shuffle(keys)
+    n_group = max(1, round(len(keys) * n_dev / max(len(rows), 1)))
+    dev_keys = set(keys[:n_group])
+    dev = [r for k in dev_keys for r in groups[k]]
+    train = [r for k in keys if k not in dev_keys for r in groups[k]]
+    for name, data in (("trans_train.jsonl", train), ("trans_dev.jsonl", dev)):
+        path = DATA / name
+        path.write_text("\n".join(json.dumps(r, ensure_ascii=False) for r in data) + "\n",
+                        encoding="utf-8")
+        print(f"{name}: {len(data)} 条")
 
 
 if __name__ == "__main__":
