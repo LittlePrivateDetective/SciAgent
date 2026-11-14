@@ -161,6 +161,28 @@ def _col_of(bbox, width: float, two_col: bool) -> int:
 
 
 # ---------------- 区块合并 ----------------
+def _is_cjk(ch: str) -> bool:
+    return "\u4e00" <= ch <= "\u9fff"
+
+
+def _join_lines(buf: list[Line]) -> str:
+    """按"视觉上是不是同一行"决定拼不拼空格。
+
+    中文的这几种情况必须不带空格：一行被拆成两段（"1 引" + "言"）、
+    一个名字被拆成两个（"林" + "威"）；而两个名字之间要留空格（"黄震华" + "林威"）。
+    判据是水平间隙相对字号的大小：≤1.2 个字宽就没有真正的空白。
+    """
+    if not buf:
+        return ""
+    out = [buf[0].text]
+    for prev, cur in zip(buf, buf[1:]):
+        h_gap = cur.bbox[0] - prev.bbox[2]
+        a, b = prev.text[-1:], cur.text[:1]
+        tight = (_is_cjk(a) and _is_cjk(b) and h_gap <= 1.2 * max(cur.size, 1.0))
+        out.append(("" if tight else " ") + cur.text)
+    return "".join(out)
+
+
 def _merge_lines(lines: list[Line], width: float, two_col: bool) -> list[Block]:
     """同栏、同字号、垂直相邻的行合并为一个区块。
 
@@ -178,7 +200,7 @@ def _merge_lines(lines: list[Line], width: float, two_col: bool) -> list[Block]:
         y0 = min(l.bbox[1] for l in buf)
         x1 = max(l.bbox[2] for l in buf)
         y1 = max(l.bbox[3] for l in buf)
-        text = " ".join(l.text for l in buf).strip()
+        text = _join_lines(buf)
         text = re.sub(r"\s{2,}", " ", text)
         blocks.append(
             Block(
@@ -208,8 +230,15 @@ def _merge_lines(lines: list[Line], width: float, two_col: bool) -> list[Block]:
         same_size = abs(prev.size - ln.size) <= 0.6
         gap = ln.bbox[1] - prev.bbox[3]
         line_h = max(prev.bbox[3] - prev.bbox[1], 1.0)
+        # 同一行的多段：中文排版常把一行拆成好几段（"1 引"+"言"、一个名字拆成"林"+"威"），
+        # 它们的 y 几乎相同、垂直重叠很大。旧判据只看"垂直间隙 ≤ 0.85 行高"，
+        # 同行的 gap 是负数（-16px）直接被判成"不同行"，于是每个碎片都成了独立区块。
+        # 左右两栏虽然 y 相同，但 col 不同，上一步的 same_col 已经挡住。
+        v_overlap = min(prev.bbox[3], ln.bbox[3]) - max(prev.bbox[1], ln.bbox[1])
+        ln_h = max(ln.bbox[3] - ln.bbox[1], 1.0)
+        same_line = v_overlap > 0.5 * min(line_h, ln_h)
         # 行距阈值：正常行距 < 0.8 行高；超大间距视为另一个区块
-        adjacent = -1.5 <= gap <= line_h * 0.85
+        adjacent = same_line or (-1.5 <= gap <= line_h * 0.85)
         # 上一行已收尾（句号/冒号）且新行像新段落 → 断开
         sentence_end = prev.text.rstrip().endswith((".", "。", "?", "！", ":", "："))
         new_para = sentence_end and gap > line_h * 0.35
@@ -279,8 +308,28 @@ def _is_heading(block: Block, body: float) -> tuple[bool, int]:
         return False, 0
     if any(c in txt for c in NOT_HEADING_CHARS):
         return False, 0
-    # 邮箱行、以冒号收尾的标签行（"Encoder:"）都不是标题
-    if "@" in txt or txt.endswith(":"):
+    # 公式碎片与半句正文：真正的章节标题不会带全角逗号/顿号/分号，
+    # 也不会出现求和、根号、不等号这类符号。中文期刊的公式常被拆成
+    # "S( )"、"K ∑"、"务序列(D1，C1，Y1)，…" 这样的短块，字号又比正文大，
+    # 不拦就会被当成小标题塞进章节树。
+    if any(c in txt for c in "，、；"):
+        return False, 0
+    if any(c in txt for c in "∑∫√≤≥≈⊙∂±×÷≠"):
+        return False, 0
+    # 至少要有两个实字（汉字或字母数字）："S( )" 这种只剩一个 S
+    if sum(1 for c in txt if c.isalnum() or _is_cjk(c)) < 2:
+        return False, 0
+    # 邮箱行、以冒号收尾的标签行（"Encoder:" / "时间复杂度为："）都不是标题
+    if "@" in txt or txt.rstrip().endswith((":", "：")):
+        return False, 0
+    # 空括号只会出现在公式碎片里："exp ( )"、"M T (a( )"
+    if re.search(r"\(\s*\)", txt):
+        return False, 0
+    # 以运算符结尾的是被切断的半行公式（"…时间复杂度为：O (T ((m + 1) s +"）
+    if txt[-1] in "+-=×÷/·(（[{":
+        return False, 0
+    # 私有区字符是 PDF 字体替换出来的占位符（"13. \ue00f"），肉眼看不见但会进章节树
+    if re.search(r"[\ue000-\uf8ff]", txt):
         return False, 0
     # 纯人名行：只在第 1 页作者区（标题下方、摘要上方）判定。
     # 不能全局用，否则 "Model Architecture" 这种两词标题会被误杀。
@@ -380,8 +429,30 @@ def _looks_formula(block: Block) -> bool:
 
 def classify(blocks: list[Block], body: float) -> list[Block]:
     in_refs = False
+    # 第 1 页"题目之下、摘要之上"是作者与单位区。中文期刊把姓名排成大字号，
+    # 字号规则必然把它们判成一级标题——章节树里就会冒出"薄琳 1） 庞亮 2）"。
+    # 位置是这里唯一可靠的判据，所以按版面区间排除，而不是靠字数猜。
+    page1 = [b for b in blocks if b.page == 1]
+    title_blk = max(page1, key=lambda b: b.size) if page1 else None
+    abs_blk = next((b for b in page1 if _abstract_prefix(b.text)), None)
+    author_band: tuple[float, float] | None = None
+    if title_blk and abs_blk and abs_blk.bbox[1] > title_blk.bbox[3]:
+        author_band = (title_blk.bbox[3] - 2, abs_blk.bbox[1] - 1)
+
     for b in blocks:
         txt = b.text.strip()
+
+        # 论文题目本身不是章节：章节树应当从"1 引言"开始。
+        # title_blk 只覆盖"最大的那一块"；英文标题常被拆成两行两块，
+        # 所以按"第 1 页、摘要上方、字号接近题目"整片排除。
+        # 只有"题目 + 摘要"都在时才敢认定为题目区：单测里那段只有参考文献的
+        # 页面没有摘要，此时"最大块"就是参考文献标题，不能被当成题目跳过。
+        if author_band and (b is title_blk or (
+                b.page == 1 and b.bbox[1] < abs_blk.bbox[1]
+                and b.size >= title_blk.size * 0.8)):
+            continue
+        if author_band and b.page == 1 and author_band[0] <= b.bbox[1] <= author_band[1]:
+            continue
 
         if RE_REF_HEAD.match(txt):
             in_refs = True
