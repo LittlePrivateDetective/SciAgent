@@ -1,0 +1,27 @@
+{
+  "run_id": "20261114_165518",
+  "base": "http://127.0.0.1:8013",
+  "timestamp": "2026-11-14T16:55:23.352236",
+  "summary": {
+    "total": 1,
+    "pass": 1,
+    "fail": 0,
+    "blocked": 0
+  },
+  "results": [
+    {
+      "id": "C05",
+      "group": "perf",
+      "point": "c-3 20+ 图谱渲染帧率",
+      "steps": "浏览器加载图谱并测量首帧与交互帧间隔",
+      "expected": "节点 >20 且首帧 <3s",
+      "actual": "图谱节点=52 首帧耗时=251ms canvas=998x672\n1s 内 rAF 回调=2（无头虚拟时钟，仅参考）\nRESULT: PASS 20+ 节点图谱渲染，首帧 251ms",
+      "status": "PASS",
+      "elapsed_s": 4.8,
+      "evidence": {
+        "dom_length": 8636,
+        "raw": "图谱节点=52 首帧耗时=251ms canvas=998x672\n1s 内 rAF 回调=2（无头虚拟时钟，仅参考）\nRESULT: PASS 20+ 节点图谱渲染，首帧 251ms"
+      }
+    }
+  ]
+}

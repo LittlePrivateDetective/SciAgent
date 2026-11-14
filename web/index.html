@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SciAgent · 科研智能体</title>
   <link rel="stylesheet" href="/static/vendor/element-plus.css" />
-  <link rel="stylesheet" href="/static/style.css?v=32" />
+  <link rel="stylesheet" href="/static/style.css?v=33" />
   <link rel="stylesheet" href="/static/vendor/katex.min.css" />
   <script src="/static/vendor/katex.min.js"></script>
   <script src="/static/vendor/katex-auto-render.min.js"></script>
@@ -107,16 +107,19 @@
     <!-- 中：阅读器 / 图谱 -->
     <main class="panel center">
       <div class="panel-head">
-        <span>{{ viewTitle }}
+        <!-- 视图切换放在最左边、独立成项：它是全界面最常用的导航，
+             位置一旦随"右侧按钮多少"漂移，用户每切一次视图都要重新找。
+             固定在最左侧之后，无论哪个视图它都停在同一处。 -->
+        <el-radio-group v-model="centerView" size="small" class="view-switch" @change="onViewChange">
+          <el-radio-button label="reader">阅读</el-radio-button>
+          <el-radio-button label="bilingual">对照</el-radio-button>
+          <el-radio-button label="graph">图谱</el-radio-button>
+          <el-radio-button label="write">写作</el-radio-button>
+        </el-radio-group>
+        <span class="ph-title">{{ viewTitle }}
           <small v-if="(centerView === 'reader' || centerView === 'bilingual') && activeDoc">{{ activeDoc.filename }}</small>
         </span>
         <div class="viewer-tools">
-          <el-radio-group v-model="centerView" size="small" @change="onViewChange">
-            <el-radio-button label="reader">阅读</el-radio-button>
-            <el-radio-button label="bilingual">对照</el-radio-button>
-            <el-radio-button label="graph">图谱</el-radio-button>
-            <el-radio-button label="write">写作</el-radio-button>
-          </el-radio-group>
           <template v-if="centerView === 'reader'">
             <el-button size="small" text @click="toggleTree">章节树</el-button>
             <!-- 悬停翻译（官方 1.3.3.1）：默认关。开着的时候鼠标每停一句就打一次模型，
@@ -156,6 +159,14 @@
             <!-- 整篇译文的可读性输出（官方 1.3.3.2）：已译段落拼成 Markdown，可预览可下载 -->
             <el-button size="small" text :loading="zh.loading" @click="openZh"
                        title="把已缓存的译文导出成 Markdown">导出中译</el-button>
+            <!-- 对照区缩放：只放大两栏正文字号，不动布局（栅格一改，联动锚点会漂） -->
+            <span class="zoom-group">
+              <el-button size="small" text :disabled="bi.zoom <= 70" @click="biZoomBy(-1)"
+                         title="缩小正文（Ctrl + 滚轮向下）">−</el-button>
+              <span class="zoom-pct" @click="biSetZoom(100)" title="点击恢复 100%">{{ bi.zoom }}%</span>
+              <el-button size="small" text :disabled="bi.zoom >= 200" @click="biZoomBy(1)"
+                         title="放大正文（Ctrl + 滚轮向上）">＋</el-button>
+            </span>
           </template>
           <template v-else-if="centerView === 'write'">
             <span class="pager" style="margin-right:6px">References 只取自库内真实文献</span>
@@ -239,8 +250,10 @@
         </div>
       </div>
 
-      <!-- 中英对照：左原文右译文，任一侧滚动另一侧跟随 -->
-      <div class="bi-wrap" v-show="centerView === 'bilingual'">
+      <!-- 中英对照：左原文右译文，任一侧滚动另一侧跟随。bi.zoom 只调字号，
+           两栏宽度与段落结构不变，联动锚点因此不会被缩放打乱。 -->
+      <div class="bi-wrap" v-show="centerView === 'bilingual'"
+           :style="{ '--bi-scale': (bi.zoom / 100).toFixed(2) }">
         <div class="bi-head">
           <span class="bi-hint">
             左原文 · 右译文 · 拖动任一侧另一侧自动跟随 · 点段落可跳回原文
@@ -251,7 +264,7 @@
         </div>
 
         <div class="bi-body" v-if="activeDoc">
-          <div class="bi-pane" ref="biEn" @scroll="onBiScroll('en')">
+          <div class="bi-pane" ref="biEn" @scroll="onBiScroll('en')" @wheel="onBiWheel">
             <div class="bi-col-title">EN · 原文</div>
             <div v-for="s in bi.segs" :key="'en'+s.chunk_id" class="bi-seg" :data-i="s.i"
                  :class="{hov: bi.hover === s.i}" @click="biJump(s)"
@@ -266,7 +279,7 @@
             <div class="bi-end" v-else-if="bi.loaded >= pageCount && bi.segs.length">— 全文结束 —</div>
           </div>
 
-          <div class="bi-pane zh" ref="biZh" @scroll="onBiScroll('zh')">
+          <div class="bi-pane zh" ref="biZh" @scroll="onBiScroll('zh')" @wheel="onBiWheel">
             <div class="bi-col-title">ZH · 译文</div>
             <div v-for="s in bi.segs" :key="'zh'+s.chunk_id" class="bi-seg" :data-i="s.i"
                  :class="{hov: bi.hover === s.i}" @click="biJump(s)"
@@ -966,6 +979,6 @@
   </nav>
 </div>
 
-<script src="/static/app.js?v=32"></script>
+<script src="/static/app.js?v=33"></script>
 </body>
 </html>

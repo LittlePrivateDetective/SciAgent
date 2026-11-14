@@ -63,6 +63,18 @@ body {
   color: var(--muted); font-weight: 400; margin-left: 6px; font-size: 11.5px;
 }
 
+/* 中栏头部：三段固定结构 —— 视图切换 / 标题 / 工具。
+ * 之前视图切换混在右侧那排工具里，工具数量随视图变化（阅读 7 个、图谱 3 个），
+ * 整组被右对齐推着左右漂移，切一次视图按钮就换个位置。
+ * 现在切换钉在最左、标题紧随其后、工具用 margin-left:auto 靠右，位置恒定。 */
+.panel.center .panel-head { gap: 8px; }
+.panel.center .panel-head > .view-switch { flex: none; }
+.panel.center .panel-head > .ph-title {
+  flex: 0 1 auto; min-width: 0; max-width: 46%;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.panel.center .panel-head > .viewer-tools { margin-left: auto; }
+
 /* 工具栏：中栏翻页与右栏模式切换共用同一套对齐规则 */
 .viewer-tools, .chat-tools {
   display: flex; align-items: center; gap: 6px; flex: 0 0 auto;
@@ -426,18 +438,20 @@ body {
   box-shadow: inset 3px 0 0 var(--brand);
   border-radius: 3px;
 }
-.bi-meta { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; font-size: 10.5px; color: #9aa4b2; }
+.bi-meta { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; color: #9aa4b2; }
 .bi-page {
   flex: none; color: var(--brand); background: #eef2fe; border-radius: 4px;
   padding: 0 4px; font-variant-numeric: tabular-nums;
 }
 .bi-sec { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .bi-text {
-  margin: 0; font-size: 12.5px; line-height: 1.62; color: #2a2f38;
+  margin: 0; font-size: calc(12.5px * var(--bi-scale, 1)); line-height: 1.62; color: #2a2f38;
   white-space: pre-wrap; word-break: break-word;
 }
-.bi-text.zh { font-size: 13px; line-height: 1.78; color: #1c1f26; }
+.bi-text.zh { font-size: calc(13px * var(--bi-scale, 1)); line-height: 1.78; color: #1c1f26; }
 .bi-text.pending { color: #b9c0cb; font-style: italic; }
+/* 段落头（页码 + 章节名）跟着正文一起放大，否则正文变大、标签还是小字，读起来割裂 */
+.bi-meta { font-size: calc(10.5px * var(--bi-scale, 1)); }
 .bi-more, .bi-end { padding: 12px; text-align: center; font-size: 11.5px; color: var(--muted); }
 
 /* 流式思考过程时间线 */

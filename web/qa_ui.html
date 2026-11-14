@@ -139,7 +139,8 @@ async function testAnchor() {
 async function testGraph() {
   const d = await ready((x) => x.querySelector(".viewer-tools") && x.querySelector(".chat-list"));
   if (!d) return say("RESULT: FAIL 主界面未渲染");
-  const radios = [...d.querySelectorAll(".viewer-tools .el-radio-button")];
+  // 视图切换已移出 .viewer-tools，固定在中栏头部最左侧
+  const radios = [...d.querySelectorAll(".panel.center .panel-head .el-radio-button")];
   const graphBtn = radios.find((r) => (r.textContent || "").includes("图谱"));
   if (!graphBtn) return say("RESULT: FAIL 未找到图谱切换按钮");
   graphBtn.click();

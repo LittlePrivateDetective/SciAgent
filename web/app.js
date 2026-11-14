@@ -315,6 +315,9 @@ const app = createApp({
         // 鼠标指向的段落：左右两栏同时高亮同一段，这是"指哪看哪"的唯一依据。
         // 之前用滚动位置算高亮，滚动时整段反复闪，反而看不出对应关系。
         hover: -1,
+        // 对照区字号缩放（%）。只改 font-size，不改栏宽与段落结构，
+        // 否则两侧同一段的相对位置会变，联动算出来的落点就偏了。
+        zoom: 100,
         cached: { total: 0, done: 0, ratio: 0 },
         job: { running: false, done: 0, total: 0, error: "" },
         docId: "",
@@ -2465,6 +2468,64 @@ const app = createApp({
     /// 鼠标指向某段：左右两侧同时高亮同一段（不滚动，滚动交给用户自己）。
     biHover(i) {
       this.bi.hover = i;
+    },
+
+    biZoomSteps() {
+      return [70, 80, 90, 100, 110, 125, 140, 160, 180, 200];
+    },
+
+    biZoomBy(dir) {
+      const steps = this.biZoomSteps();
+      const i = steps.indexOf(this.bi.zoom);
+      const cur = i < 0 ? steps.indexOf(100) : i;
+      const next = steps[Math.min(steps.length - 1, Math.max(0, cur + dir))];
+      this.biSetZoom(next);
+    },
+
+    biSetZoom(v) {
+      const z = Math.max(70, Math.min(200, Math.round(v)));
+      if (z === this.bi.zoom) return;
+      // 记下两栏各自的"顶部段落 + 段内比例"，缩放后原样还原：
+      // 字号一变段落高度全变，不锚定的话视口会莫名跳到别的段落。
+      const anchorOf = (pane) => {
+        if (!pane) return null;
+        const segs = pane.querySelectorAll(".bi-seg");
+        if (!segs.length) return null;
+        const dr = pane.getBoundingClientRect();
+        for (const el of segs) {
+          const r = el.getBoundingClientRect();
+          if (r.bottom > dr.top + 4) {
+            return { i: Number(el.dataset.i), ratio: Math.max(0, (dr.top + 4 - r.top) / Math.max(r.height, 1)) };
+          }
+        }
+        return null;
+      };
+      const aEn = anchorOf(this.$refs.biEn);
+      const aZh = anchorOf(this.$refs.biZh);
+      this.bi.zoom = z;
+      this.$nextTick(() => {
+        const restore = (pane, a) => {
+          if (!pane || !a) return;
+          const el = pane.querySelector(`.bi-seg[data-i="${a.i}"]`);
+          if (!el) return;
+          const dr = pane.getBoundingClientRect();
+          const r = el.getBoundingClientRect();
+          this._biLockUntil = performance.now() + 200;
+          pane.scrollTop += (r.top - dr.top) + a.ratio * r.height - 4;
+        };
+        restore(this.$refs.biEn, aEn);
+        restore(this.$refs.biZh, aZh);
+      });
+    },
+
+    onBiWheel(e) {
+      if (!(e.ctrlKey || e.metaKey)) return;
+      e.preventDefault();
+      this._biWheelAcc = (this._biWheelAcc || 0) + e.deltaY;
+      if (Math.abs(this._biWheelAcc) < 40) return;
+      const dir = this._biWheelAcc > 0 ? -1 : 1;
+      this._biWheelAcc = 0;
+      this.biZoomBy(dir);
     },
 
     onBiScroll(side) {
