@@ -39,10 +39,10 @@
      "matplotlib"
     ],
     "codeLen": {
-     "mermaid": 321,
-     "dot": 1336,
-     "tikz": 1587,
-     "matplotlib": 4440
+     "mermaid": 315,
+     "dot": 1330,
+     "tikz": 1583,
+     "matplotlib": 4436
     },
     "idHits": {
      "mermaid": 7,
@@ -66,19 +66,19 @@
   {
    "fmt_switch": {
     "mermaid": {
-     "len": 321,
+     "len": 315,
      "miss": false
     },
     "dot": {
-     "len": 1336,
+     "len": 1330,
      "miss": false
     },
     "tikz": {
-     "len": 1587,
+     "len": 1583,
      "miss": false
     },
     "matplotlib": {
-     "len": 4440,
+     "len": 4436,
      "miss": false
     }
    }
@@ -114,13 +114,13 @@
      3
     ],
     "capSource": "llm",
-    "capZh": "图 1　Transformer、BERT 和 GPT-3 三种模型在 BLEU 分数与参数量上的对比。BLEU 分数从 Transformer 的 28.4 上升至 GPT-3 的 41.0，参数量则由 Transformer 的 65.0 增至 GPT-3 的 175.0，增幅达 169.2%。GPT-3 在两项指标上均达到峰值，而 Transformer 则处于最低水平。",
-    "capEn": "Figure 1. Comparison of BLEU scores and parameter counts across Transformer, BERT, and GPT-3. BLEU scores increase from 28.4 (Transformer) to 41.0 (GPT-3), while parameters rise from 65.0 to 175.0, representing a 169.2% increase. GPT-3 achieves the highest BLEU score and parameter count, whereas Transformer exhibits the lowest values.",
-    "capTrend": "BLEU 分数与参数量均从 Transformer 到 GPT-3 递增，GPT-3 达到最高值。",
+    "capZh": "图 1　不同模型在 BLEU 分数与参数量上的对比。BLEU 分数从 Transformer 的 28.4 上升至 GPT-3 的 41.0，增幅达 44.4%；参数量则由 Transformer 的 65.0 增至 GPT-3 的 175，增长 169.2%。GPT-3 在两项指标上均达到峰值，而 Transformer 在两项指标上均处于最低水平。",
+    "capEn": "Figure 1. Comparison of BLEU scores and parameter counts across Transformer, BERT, and GPT-3. The BLEU score increases from 28.4 (Transformer) to 41.0 (GPT-3), a rise of 44.4%. Parameter count rises from 65.0 (Transformer) to 175 (GPT-3), an increase of 169.2%. GPT-3 achieves the highest BLEU score and parameter count, while Transformer exhibits the lowest values in both metrics.",
+    "capTrend": "从 Transformer 到 GPT-3，BLEU 分数和参数量均呈单调上升趋势，GPT-3 在两项指标上均达到最高值。",
     "capChecks": {
-     "verified": 19,
+     "verified": 21,
      "foreign": [],
-     "checked": 19
+     "checked": 21
     },
     "capCardDom": true,
     "trendDom": true,
@@ -129,9 +129,9 @@
      "3 行 × 2 列",
      "3 个横轴刻度",
      "图注由模型撰写",
-     "图注数字核对 19/19"
+     "图注数字核对 21/21"
     ],
-    "wait_s": 3.0
+    "wait_s": 4.0
    }
   },
   {

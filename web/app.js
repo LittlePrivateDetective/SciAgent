@@ -249,7 +249,7 @@ const app = createApp({
         tLoading: false, tError: "", topology: null, tFmt: "mermaid", svg: "",
         csv: "",
         cKind: "bar", cFmt: "mermaid", cTitle: "实验结果",
-        cLoading: false, cError: "", chart: null, chartSvg: "",
+        cLoading: false, cError: "", chart: null, chartSvg: "", chartStale: false,
         sampleCsv: "Model,BLEU,Params\nTransformer,28.4,65\nBERT,34.5,110\nGPT-3,41.0,175",
       },
       sel: { visible: false, loading: false, src: "", zh: "", title: "划词翻译", style: {}, truncated: false, dragging: false, x: 0, y: 0 },
@@ -341,6 +341,15 @@ const app = createApp({
     chartFmtLabel() {
       const f = this.chartFmts.find((x) => x.k === this.wv.cFmt);
       return f ? f.label : "图表代码";
+    },
+    // 代码区标题必须描述"页面上这份结果"，而不是当前下拉框：
+    // 切换类型/格式后旧结果还在，用下拉值当标题会出现"标题 Mermaid、正文 TikZ"的错位。
+    chartResultLabel() {
+      const c = this.wv.chart;
+      if (!c) return "图表代码";
+      const kind = { bar: "柱状", line: "折线", radar: "雷达", table: "表格" }[c.kind] || c.kind;
+      const f = (CHART_FMTS[c.kind] || []).find((x) => x.k === c.format);
+      return `${kind} · ${f ? f.label : c.format}`;
     },
   },
   mounted() {
@@ -1869,10 +1878,25 @@ const app = createApp({
     /// 用 ECharts 自己画分层架构图：按 group 分行、行内均分。
     /// 不用 Mermaid 渲染预览的原因：它的 dagre 布局把流水线拉成一根竖柱，
     /// 在写作视图这 700px 宽的栏里缩到看不清；而 TikZ / DOT 的排版又需要外部工具。
-    renderTopoChart() {
+    renderTopoChart(retry = 0) {
       const t = this.wv.topology;
       const el = this.$refs.topoChart;
       if (!t || !el || !window.echarts) return;
+
+      // 先给容器一个高度，再确认它有真实宽度。面板刚切过来/刚生成时
+      // clientWidth 可能还是 0，此时 echarts.init 出来的 canvas 只有几十像素，
+      // 整张图会被压成左下角一小团（实测截图）。等布局稳定再画，最多重试 6 次。
+      el.style.height = `${Math.max(260, t.groups.length * 122 + 30)}px`;
+      const availW = el.clientWidth;
+      if (availW < 40) {
+        if (retry < 6) setTimeout(() => this.renderTopoChart(retry + 1), 80);
+        return;
+      }
+      // 面板被 v-if 销毁重建后，旧实例绑在已移除的 DOM 上，必须重建
+      if (_topoChart && _topoChart.getDom() !== el) {
+        _topoChart.dispose();
+        _topoChart = null;
+      }
 
       const byGroup = new Map(t.groups.map((g) => [g, []]));
       t.nodes.forEach((n) => {
@@ -1890,8 +1914,11 @@ const app = createApp({
       });
 
       el.style.height = `${Math.max(260, t.groups.length * ROW_H + 30)}px`;
-      if (!_topoChart) _topoChart = window.echarts.init(el, null, { renderer: "canvas" });
-      _topoChart.resize();
+      if (!_topoChart) {
+        _topoChart = window.echarts.init(el, null, { renderer: "canvas", width: availW });
+      } else {
+        _topoChart.resize({ width: availW });
+      }
 
       // 节点类型 → 填充/描边，与 TikZ、Matplotlib 两套模板同一组配色
       const PALETTE = {
@@ -1949,6 +1976,15 @@ const app = createApp({
       const list = CHART_FMTS[this.wv.cKind] || [];
       if (!list.some((f) => f.k === this.wv.cFmt)) this.wv.cFmt = list[0] ? list[0].k : "latex";
     },
+    onChartKindChange() {
+      this.syncChartFmt();
+      this.markChartStale();
+    },
+    markChartStale() {
+      // 换类型/格式不会自动重算（一次生成要调模型写图注，不该偷偷花钱），
+      // 但旧结果留在页面上、标题却跟着下拉变，用户会以为三个选项出图一样。
+      if (this.wv.chart) this.wv.chartStale = true;
+    },
 
     onCsvFile(e) {
       const f = e.target.files && e.target.files[0];
@@ -1990,6 +2026,7 @@ const app = createApp({
         } else {
           this.wv.chart = r;
           this.wv.chartSvg = "";
+          this.wv.chartStale = false;
           await this.$nextTick();
           this.renderChartChart();
         }

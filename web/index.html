@@ -431,13 +431,13 @@
           </div>
           <div class="write-actions">
             <div class="chart-opts">
-              <el-radio-group v-model="wv.cKind" size="small" @change="syncChartFmt">
+              <el-radio-group v-model="wv.cKind" size="small" @change="onChartKindChange">
                 <el-radio-button label="bar">柱状</el-radio-button>
                 <el-radio-button label="line">折线</el-radio-button>
                 <el-radio-button label="radar">雷达</el-radio-button>
                 <el-radio-button label="table">表格</el-radio-button>
               </el-radio-group>
-              <el-select v-model="wv.cFmt" size="small" class="fmt-select">
+              <el-select v-model="wv.cFmt" size="small" class="fmt-select" @change="markChartStale">
                 <el-option v-for="f in chartFmts" :key="f.k" :label="f.label" :value="f.k"></el-option>
               </el-select>
               <el-input v-model="wv.cTitle" size="small" class="title-input"
@@ -468,12 +468,13 @@
                     :class="wv.chart.caption.checks.foreign.length ? 'bad' : 'ok'">
                 图注数字核对 {{ wv.chart.caption.checks.verified }}/{{ wv.chart.caption.checks.checked }}
               </span>
+              <span class="wc-item bad" v-if="wv.chartStale">参数已改，点「生成图表 + 图注」更新</span>
             </div>
 
             <div class="viz-split">
               <div class="viz-pane">
                 <div class="viz-bar">
-                  <span class="viz-bar-t">{{ chartFmtLabel }}</span>
+                  <span class="viz-bar-t">{{ chartResultLabel }}</span>
                   <div class="viz-acts">
                     <el-button size="small" text @click="copyText(wv.chart.code, '图表代码')">复制</el-button>
                     <el-button size="small" text @click="downloadText(wv.chart.code, 'figure', wv.chart.format)">下载</el-button>
