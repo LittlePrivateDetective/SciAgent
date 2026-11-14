@@ -1,0 +1,6 @@
+选用文献 d3c48de1_2212.08073_Constitutional_AI_Harmlessness_from_AI_Feedback.pdf（401 块）
+双栏渲染 OK，已加载段落=13，可滚动高度 英文=1578 中文=1539
+英文滚到 60% -&gt; 中文 985
+中文滚到 85% -&gt; 英文 947 =&gt; 1270
+顶部段落序号 英文=6 中文=6
+RESULT: PASS 双向联动生效且按段落对齐

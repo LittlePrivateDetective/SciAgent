@@ -1,0 +1,106 @@
+{
+  "run_id": "20261114_153612",
+  "base": "http://127.0.0.1:8013",
+  "timestamp": "2026-11-14T15:36:28.942284",
+  "summary": {
+    "total": 1,
+    "pass": 1,
+    "fail": 0,
+    "blocked": 0
+  },
+  "results": [
+    {
+      "id": "F04",
+      "group": "write",
+      "point": "f-1 写作视图前端渲染（官方 1.6.1）",
+      "steps": "真实浏览器：切「写作」→ 填 idea → 生成 → 检查四段与 References 渲染，点条目能否打开原文",
+      "expected": "四段渲染完整、统计条正确、点 References 能打开对应文献",
+      "actual": "10.5s 渲染 4 段 + 5 条 References；统计条「References 5 条，全部来自库内 / 模型编造条目 0 条」；点 [1] 打开 2412.19437v1.pdf",
+      "status": "PASS",
+      "elapsed_s": 16.4,
+      "evidence": {
+        "steps": [
+          {
+            "write_view_display": "flex"
+          },
+          {
+            "render": {
+              "err": "",
+              "title": "Sparse Attention for Efficient Long-Document Retrieval-Augmented Generation with Reduced Memory Footprint",
+              "elapsed": {
+                "citations_total": 20,
+                "citations_valid": 5,
+                "citations_invalid": [],
+                "refs_from_library": 5,
+                "refs_generated_by_llm": 0,
+                "cited_refs": 5
+              },
+              "secs": [
+                {
+                  "name": "Abstract · 摘要",
+                  "len": 1340,
+                  "html": "<div class=\"write-sec-head\"><span>Abstract · 摘要</span><span class=\"write-sec-cites\">[1] [2] [3] [4] [5]</span></div><p class=\"write-sec-text\">Retrieval-augmented generation (RAG) for long documents faces a critical chall"
+                },
+                {
+                  "name": "Introduction · 引言",
+                  "len": 1902,
+                  "html": "<div class=\"write-sec-head\"><span>Introduction · 引言</span><span class=\"write-sec-cites\">[1] [2] [3] [4] [5]</span></div><p class=\"write-sec-text\">Long-document retrieval-augmented generation (RAG) systems face a fundamen"
+                },
+                {
+                  "name": "Related Work · 相关工作",
+                  "len": 1702,
+                  "html": "<div class=\"write-sec-head\"><span>Related Work · 相关工作</span><span class=\"write-sec-cites\">[1] [2] [3] [4] [5]</span></div><p class=\"write-sec-text\">Efficient attention mechanisms have been extensively studied to mitigate"
+                },
+                {
+                  "name": "Research Plan · 研究方案",
+                  "len": 1338,
+                  "html": "<div class=\"write-sec-head\"><span>Research Plan · 研究方案</span><span class=\"write-sec-cites\">[1] [2] [3] [4] [5]</span></div><p class=\"write-sec-text\">Our research plan consists of four phases: (1) Design and implementatio"
+                }
+              ],
+              "refs": 5,
+              "refsSample": [
+                {
+                  "idx": "[1]",
+                  "text": "佚名. DeepSeek-V3 Technical Report[EB/OL]. arXiv:2412.19437v1, 2024."
+                },
+                {
+                  "idx": "[2]",
+                  "text": "TEAM Q. Qwen2.5 Technical Report[EB/OL]. arXiv:2412.15115v2, 2024."
+                }
+              ],
+              "dimRefs": 0,
+              "checksDom": [
+                "References 5 条，全部来自库内",
+                "模型编造条目 0 条",
+                "越界引用 0 处",
+                "正文引用 20 处 · 命中文献 5 篇"
+              ],
+              "allRefsHaveDoc": true,
+              "bodyScroll": 1347,
+              "elapsed_s": 10.5
+            }
+          },
+          {
+            "sections": "PASS"
+          },
+          {
+            "refs_real": "PASS"
+          },
+          {
+            "no_invalid_cite": "PASS"
+          },
+          {
+            "open_ref": {
+              "before": "write",
+              "after": "reader",
+              "doc": "2412.19437v1.pdf",
+              "docId": "d01b0500ab8ae"
+            }
+          }
+        ],
+        "ok": true,
+        "error": ""
+      }
+    }
+  ]
+}

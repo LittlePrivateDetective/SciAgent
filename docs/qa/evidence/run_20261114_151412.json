@@ -1,0 +1,80 @@
+{
+  "run_id": "20261114_151412",
+  "base": "http://127.0.0.1:8013",
+  "timestamp": "2026-11-14T15:14:27.740604",
+  "summary": {
+    "total": 1,
+    "pass": 1,
+    "fail": 0,
+    "blocked": 0
+  },
+  "results": [
+    {
+      "id": "A02",
+      "group": "agent",
+      "point": "a-1 Multi-Agent 路由 (9%)",
+      "steps": "qa 模式问不含对比意图的问题、compare 模式问对比问题，比较 writer.route 的 template / trigger 与答案形态",
+      "expected": "qa→qa 模板（trigger=default）要点式；compare→compare 模板（trigger=explicit_mode）表格",
+      "actual": "qa→qa(default) / compare→compare(explicit_mode)，决策写入 trace",
+      "status": "PASS",
+      "elapsed_s": 14.8,
+      "evidence": {
+        "routes": {
+          "qa": {
+            "status": 200,
+            "question": "Transformer 的编码器每一层由哪几个子层组成？",
+            "route": {
+              "agent": "writer",
+              "tool": "route",
+              "t": 1794640456.341,
+              "mode": "qa",
+              "template": "qa",
+              "trigger": "default",
+              "intent_hint": false,
+              "evidence_docs": 4
+            },
+            "agents": [
+              "planner",
+              "retriever",
+              "writer",
+              "writer",
+              "reviewer",
+              "reviewer",
+              "reflector"
+            ],
+            "evidence": 8,
+            "is_table": true,
+            "answer_head": "编码器每一层由两个子层组成：第一个是 multi-head self-attention mechanism，第二个是简单的 position-wise fully connected feed-forward network。\n- 每个子"
+          },
+          "compare": {
+            "status": 200,
+            "question": "对比 BERT 与 GPT-3 在训练目标上的差异",
+            "route": {
+              "agent": "writer",
+              "tool": "route",
+              "t": 1794640462.045,
+              "mode": "compare",
+              "template": "compare",
+              "trigger": "explicit_mode",
+              "intent_hint": true,
+              "evidence_docs": 3
+            },
+            "agents": [
+              "planner",
+              "retriever",
+              "writer",
+              "writer",
+              "reviewer",
+              "reviewer",
+              "reflector"
+            ],
+            "evidence": 13,
+            "is_table": true,
+            "answer_head": "| 维度 | BERT 的做法 | GPT-3 的做法 |\n|---|---|---|\n| 训练目标类型 | 使用两个无监督任务进行预训练，而非传统的从左到右或从右到左的语言模型 [2]；具体为 masked language model（"
+          }
+        },
+        "note": "产品按意图优先：显式 qa 模式遇到含「对比」的问题仍会走 compare 模板，trigger=intent_hint 记录该决策；本用例用不同问题隔离两种显式模式"
+      }
+    }
+  ]
+}

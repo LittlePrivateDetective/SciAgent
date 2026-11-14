@@ -1,0 +1,27 @@
+{
+  "run_id": "20261114_152913",
+  "base": "http://127.0.0.1:8013",
+  "timestamp": "2026-11-14T15:29:18.032664",
+  "summary": {
+    "total": 1,
+    "pass": 1,
+    "fail": 0,
+    "blocked": 0
+  },
+  "results": [
+    {
+      "id": "B07",
+      "group": "ui",
+      "point": "b-3 引用一键跳转 (7%)",
+      "steps": "点击答案里的锚点徽章，检查阅读器页码与高亮框",
+      "expected": "页码正确切换且 bbox 覆盖层出现",
+      "actual": "img.src=/api/documents/ddb3dff6cab6a/page/3.png?dpi=130&amp;v=0\n高亮框数量=1 页码显示=3 / 34\nRESULT: PASS 锚点一键跳到 p3 且绘制 bbox 高亮",
+      "status": "PASS",
+      "elapsed_s": 4.5,
+      "evidence": {
+        "dom_length": 8612,
+        "raw": "img.src=/api/documents/ddb3dff6cab6a/page/3.png?dpi=130&amp;v=0\n高亮框数量=1 页码显示=3 / 34\nRESULT: PASS 锚点一键跳到 p3 且绘制 bbox 高亮"
+      }
+    }
+  ]
+}
