@@ -386,14 +386,33 @@ const app = createApp({
     }
     this.loadInfo();
     this.loadDocs();
-    document.addEventListener("click", (e) => {
+    document.addEventListener("click", async (e) => {
       const wc = e.target.closest(".wcite");
       if (wc) {
-        this.jumpToRef(wc.dataset.i);
+        const idx = Number(wc.dataset.i);
+        const ref = ((this.wr.result && this.wr.result.references) || [])
+          .find((r) => r.index === idx);
+        if (ref && ref.doc_id) {
+          // 写作页正文的 [n] 点下去就是"去读原文"：直接切阅读器并打开该文献。
+          // 不能要求用户先手动点"阅读"——对照/图谱视图下也没有 .write-ref 可滚。
+          const d = this.docs.find((x) => x.id === ref.doc_id);
+          this.centerView = "reader";
+          if (d) await this.openDoc(d);
+          else this.onViewChange("reader");
+          return;
+        }
+        this.jumpToRef(idx);
         return;
       }
       const el = e.target.closest(".anchor");
       if (!el) return;
+      // 锚点常点在写作/对照/图谱视图里：先切回阅读器并等 DOM 挂载，
+      // 否则 jump() 找不到阅读器节点，表现就是"点了没反应"。
+      if (this.centerView !== "reader") {
+        this.centerView = "reader";
+        this.onViewChange("reader");
+        await this.$nextTick();
+      }
       const [x0, y0, x1, y1] = el.dataset.bbox.split(",").map(Number);
       const page = Number(el.dataset.page);
       const bbox = [x0, y0, x1, y1];
