@@ -24,7 +24,7 @@ log = get_logger(__name__)
 # 解析器版本：章节树的判定规则一变，库里已有的 sections 就过期了。
 # 云端 data 目录是持久化的（换代码不换数据），所以启动时要靠这个版本号
 # 判断"要不要把老文档的章节树按新规则重算一遍"。改动分类/合并逻辑必须同步 +1。
-PARSE_VERSION = "2026.11.15"
+PARSE_VERSION = "2026.11.15.2"
 
 # ---------------- 正则 ----------------
 RE_NUM_HEADING = re.compile(r"^(\d{1,2}(?:\.\d{1,2}){0,3})\.?\s+\S")
@@ -52,6 +52,10 @@ RE_REF_HEAD = re.compile(
 RE_REF_ITEM = re.compile(r"^\s*[\[［](\d{1,3})[\]］]|^\s*(\d{1,3})\.\s+[A-Z]|^\s*[\[［][A-Z][A-Za-z0-9+.\-]{1,14}[\]］]")
 # 单独成块的引用标签（[SLA+18] 这种），需要粘回下一条正文
 RE_REF_LABEL = re.compile(r"^\s*[\[［][A-Za-z][A-Za-z0-9+.\-]{0,14}[\]］]\s*$")
+# 目录行：点线（"…… 1" / ". . . . . 15" / "····· 7"）
+RE_TOC_LEADER = re.compile(r"(?:\.\s*){6,}|(?:…\s*){3,}|(?:·\s*){6,}")
+# 目录里单独一行的页码
+RE_TOC_PAGENO = re.compile(r"^\d{1,4}$")
 # 参考文献区的"起点"：以 [n] / ［n］ 开头的条目行
 RE_REF_START = re.compile(r"^\s*[\[［](\d{1,3})[\]］]")
 RE_ARXIV = re.compile(r"arXiv:\s*(\d{4}\.\d{4,5})(v\d+)?", re.I)
@@ -310,6 +314,105 @@ def _line_is_num_heading(ln: Line, body_font: str, left: float | None = None) ->
     return ln.font != body_font or ln.bold or len(txt) <= 24
 
 
+def _is_toc_page(lines: list[Line]) -> bool:
+    """整页是不是"书的目录"。
+
+    目录条目在文本层里就是"编号 + 标题 + 页码"，与正文章节标题同字形同字号，
+    分类器没有任何依据区分它们——Understanding Deep Learning 的章节树因此
+    前半截全是目录（`1.5.1 Structured outputs`、`1.2 Unsupervised learning`…），
+    还因为目录是两栏、行距紧，互相粘成 `1.5.5 1.1 New approach` 这种怪条目。
+
+    判据只看版面，两条任一：
+    1. 点线目录 ≥4 行（`1.1 Supervised learning . . . . . 1`）；
+    2. 一页里 ≥8 行只有页码数字，且没有长段落——正文页不可能这样。
+    正文里偶尔出现一个省略号或一个页码，都够不到阈值。
+    """
+    if len(lines) < 6:
+        return False
+    leaders = sum(1 for ln in lines if RE_TOC_LEADER.search(ln.text))
+    if leaders >= 4:
+        return True
+    num_lines = sum(1 for ln in lines if RE_TOC_PAGENO.match(ln.text.strip()))
+    longest = max(len(ln.text.strip()) for ln in lines)
+    # 没有点线的目录（右对齐页码）：一页几乎全是"编号/页码"这种短行，没有一个长句。
+    # 阈值必须卡紧：带公式的正文页会产出大量 "1"、"43" 这种行（公式编号），
+    # 实测第 57 页就有 10 行纯数字，但它有 89 字的正文行——不能算目录。
+    return num_lines >= 10 and longest <= 45
+
+
+_RE_CHAPTER_NUM = re.compile(r"^(?:Chapter|CHAPTER|第)\s*(\d{1,3}|[一二三四五六七八九十]{1,3})\s*(?:章)?$")
+
+
+def _drop_running_headers(blocks: list[Block]) -> list[Block]:
+    """去掉页眉/页脚：书里每一页顶部都印着"当前小节名 + 页码"。
+
+    这类页眉在文本层里长得和章节标题一模一样（`1.1 Supervised learning 3`），
+    分类器必然把它们全收进章节树——Understanding Deep Learning 的树里
+    「1.1 Supervised learning」因此重复了十几次，页码还粘在标题上。
+
+    判据是"重复"：同一段文字（数字抹成 #）出现在 ≥3 个不同页面的顶部，
+    那它只能是页眉，不可能是章节标题——真正的标题在最前面出现一次。
+    """
+    band = 150.0   # 顶部页边距带（pt）：A4/Letter 的书页眉都在 60–120pt
+
+    def key(t: str) -> str:
+        return re.sub(r"\d+", "#", t).strip().strip(".")
+
+    pages: dict[str, set[int]] = {}
+    for b in blocks:
+        t = b.text.strip()
+        if b.bbox[1] <= band and 0 < len(t) <= 80:
+            pages.setdefault(key(t), set()).add(b.page)
+
+    repeated = {k for k, ps in pages.items() if len(ps) >= 3 and re.search(r"\d", k)}
+    # 有的书页眉只有章名、不含页码：收紧到最顶端 90pt 且重复 ≥5 次才算
+    pages_top: dict[str, set[int]] = {}
+    for b in blocks:
+        t = b.text.strip()
+        if b.bbox[1] <= 90 and 0 < len(t) <= 40:
+            pages_top.setdefault(key(t), set()).add(b.page)
+    repeated |= {k for k, ps in pages_top.items() if len(ps) >= 5}
+
+    # 更直接的一条：页眉 = "小节名 + 页码"，所以文字以裸数字结尾，且位于页面顶部。
+    # 章节标题不会以数字收尾，正文也不会把数字孤零零地留在行尾顶部。
+    drop_ids = {id(b) for b in blocks
+                if b.kind == "heading" and b.bbox[1] <= band and re.search(r"\d{1,4}$", b.text.strip())}
+    if not repeated and not drop_ids:
+        return blocks
+    out = [b for b in blocks
+           if id(b) not in drop_ids
+           and not (b.bbox[1] <= band and len(b.text.strip()) <= 80 and key(b.text) in repeated)]
+    dropped = len(blocks) - len(out)
+    if dropped:
+        log.debug("去掉页眉/页脚 %d 块（%d 种重复文字）", dropped, len(repeated))
+    return out
+
+
+def _merge_chapter_number(blocks: list[Block]) -> list[Block]:
+    """`Chapter 1` + `Introduction` → `1 Introduction`（一级标题）。
+
+    书里章标题是两块：小字号的 "Chapter 1" 和大字号的章名。前者不像标题
+    （字号小、不加粗），后者无编号会被排成"上一节的子级"，
+    于是第一章的标题在树里成了「Acknowledgments → Introduction」的子节点。
+    """
+    out: list[Block] = []
+    i = 0
+    while i < len(blocks):
+        b = blocks[i]
+        m = _RE_CHAPTER_NUM.match(b.text.strip())
+        nxt = blocks[i + 1] if i + 1 < len(blocks) else None
+        if m and nxt is not None and nxt.kind == "heading" and b.page == nxt.page:
+            nxt.text = f"{m.group(1)} {nxt.text.strip()}"
+            nxt.kind, nxt.level = "heading", 1
+            nxt.bbox = (min(b.bbox[0], nxt.bbox[0]), min(b.bbox[1], nxt.bbox[1]),
+                        max(b.bbox[2], nxt.bbox[2]), max(b.bbox[3], nxt.bbox[3]))
+            i += 1            # 跳过 "Chapter N" 本身
+            continue
+        out.append(b)
+        i += 1
+    return out
+
+
 def _merge_lines(lines: list[Line], width: float, two_col: bool) -> list[Block]:
     """同栏、同字号、垂直相邻的行合并为一个区块。
 
@@ -534,7 +637,9 @@ def _is_heading(block: Block, body: float, left: float | None = None,
                 and block.size >= body * 0.98:
             return True, min(depth, 4)
 
-    if RE_APPENDIX.match(txt) and len(txt) < 100:
+    # 附录标题必须有"标题的样子"：正文里"Appendix A Notation"这种交叉引用行
+    # 也会以 Appendix 开头，不加这条就会在正文中间凭空多出一节。
+    if RE_APPENDIX.match(txt) and len(txt) < 100 and (block.bold or block.size >= body * 1.05):
         return True, 1
 
     # 加粗 + 短句 + 不带句号 → 二级标题。
@@ -748,8 +853,11 @@ def classify(blocks: list[Block], body: float) -> list[Block]:
     # 必须先判标题：绝大多数英文论文走上面的正规路径，不能被这条猜测规则干扰。
     if not ref_head_found:
         blocks = _infer_reference_section(blocks, body)
+    # 页眉要在"排层级"之前去掉：页眉被当成标题参与层级计算，会把后面所有小节压低一级。
+    blocks = _drop_running_headers(blocks)
     blocks = _normalize_headings(_demote_table_rows(blocks))
-    return _join_wrapped_heading(blocks)
+    blocks = _join_wrapped_heading(blocks)
+    return _merge_chapter_number(blocks)
 
 
 # 这些短标题本身就是完整章节名，绝不能被当成上一行标题的折行尾巴
@@ -1452,6 +1560,7 @@ def _parse_pdf_impl(path: str, max_pages: int | None = None) -> ParsedDoc:
 
     parsed_pages = 0
     mupdf_warning_pages: list[int] = []
+    toc_pages: list[int] = []
     for pno, page in enumerate(doc, start=1):
         if max_pages and pno > max_pages:
             break
@@ -1469,6 +1578,15 @@ def _parse_pdf_impl(path: str, max_pages: int | None = None) -> ParsedDoc:
         if not lines:
             continue
 
+        # 目录页整页丢掉：书的目录本身就是一长串"编号 + 标题 + 页码"，
+        # 与章节标题在字形/字号上完全一样，分类器无从区分，结果就是章节树里
+        # 前半截全是目录条目（还因为两栏排版互相粘成"1.5.5 1.1 New approach"）。
+        # 判据只看版面：整页满是点线（"1.1 Supervised learning . . . . 1"）
+        # 或大量纯页码行——正文页两条都不会有。
+        if _is_toc_page(lines):
+            toc_pages.append(pno)
+            continue
+
         size_counter_local = {round(ln.size, 1): 0 for ln in lines}
         for ln in lines:
             size_counter_local[round(ln.size, 1)] = size_counter_local.get(round(ln.size, 1), 0) + len(ln.text)
@@ -1484,6 +1602,8 @@ def _parse_pdf_impl(path: str, max_pages: int | None = None) -> ParsedDoc:
         parsed.blocks.extend(blocks)
 
     doc.close()
+    if toc_pages:
+        log.info("跳过目录页 %d 页（页码 %s）", len(toc_pages), ",".join(map(str, toc_pages[:20])))
     if mupdf_warning_pages:
         log.warning("MuPDF 内容流兼容警告：%d 页（页码 %s），已继续解析；逐条底层输出已抑制",
                     len(mupdf_warning_pages), ",".join(map(str, mupdf_warning_pages[:30])))
