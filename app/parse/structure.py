@@ -24,7 +24,7 @@ log = get_logger(__name__)
 # 解析器版本：章节树的判定规则一变，库里已有的 sections 就过期了。
 # 云端 data 目录是持久化的（换代码不换数据），所以启动时要靠这个版本号
 # 判断"要不要把老文档的章节树按新规则重算一遍"。改动分类/合并逻辑必须同步 +1。
-PARSE_VERSION = "2026.11.15.4"
+PARSE_VERSION = "2026.11.15.5"
 
 # ---------------- 正则 ----------------
 RE_NUM_HEADING = re.compile(r"^(\d{1,2}(?:\.\d{1,2}){0,3})\.?\s+\S")
@@ -438,6 +438,26 @@ def _merge_chapter_number(blocks: list[Block]) -> list[Block]:
             continue
         out.append(b)
         i += 1
+    return out
+
+
+def _dedupe_adjacent_headings(blocks: list[Block]) -> list[Block]:
+    """相邻且同名的标题只留第一条。
+
+    书的索引页每页顶部都印着 "Index"，7 页就是 7 个同名节点；
+    正文里真正的重复标题（每章各有一个 "Notes"）中间隔着别的标题，不会被误删。
+    """
+    out: list[Block] = []
+    prev: tuple[str, int] | None = None
+    for b in blocks:
+        if b.kind != "heading":
+            out.append(b)
+            continue
+        key = (b.text.strip(), b.level)
+        if key == prev:
+            continue          # 与上一个标题同名同层 → 页眉式的重复
+        prev = key
+        out.append(b)
     return out
 
 
@@ -889,6 +909,7 @@ def classify(blocks: list[Block], body: float) -> list[Block]:
     blocks = _drop_running_headers(blocks)
     blocks = _normalize_headings(_demote_table_rows(blocks))
     blocks = _join_wrapped_heading(blocks)
+    blocks = _dedupe_adjacent_headings(blocks)
     return _merge_chapter_number(blocks)
 
 
