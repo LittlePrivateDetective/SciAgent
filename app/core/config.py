@@ -26,6 +26,10 @@ class Settings(BaseSettings):
     llm_model: str = "deepseek-v4.1-flash"
     llm_temperature: float = 0.2
     llm_max_tokens: int = 2048
+    # 本机 3B 的独立长度上限。llm_max_tokens 是按云端设的（4096），而本地只有约
+    # 49 tok/s：4096 个 token 要 80 秒以上，兜底场景等不起，也更容易跑偏。
+    # 512 大约 10 秒，正好是"离线还能拿到一段可核查答案"的量。
+    ollama_max_tokens: int = 512
     llm_timeout: int = 90
     # 默认关闭：没有 key 时 gateway.route() 本身就会退回 mock，不需要这个开关兜底。
     # 而它默认开着会让"后台恢复默认"顺手把真实调用切成模拟回复，是个隐蔽的坑。

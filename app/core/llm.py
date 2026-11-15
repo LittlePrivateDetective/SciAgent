@@ -367,7 +367,11 @@ class LLMGateway:
             "stream": False,
             "options": {
                 "temperature": settings.llm_temperature if temperature is None else temperature,
-                "num_predict": settings.llm_max_tokens if max_tokens is None else max_tokens,
+                # 本地不吃云端的 4096：49 tok/s 下那是 80 秒以上
+                "num_predict": min(
+                    max_tokens if max_tokens is not None else settings.ollama_max_tokens,
+                    settings.ollama_max_tokens,
+                ),
             },
         }
         if json_mode:
@@ -412,7 +416,12 @@ class LLMGateway:
                 "model": settings.ollama_model,
                 "messages": list(messages),
                 "stream": True,
-                "options": {"temperature": settings.llm_temperature},
+                # 必须显式给 num_predict：不传时 Ollama 会一直生成到上下文上限，
+                # 本地 3B 因此出现过 76–102 秒才出答案（云端 4096 被继承过来的后果）。
+                "options": {
+                    "temperature": settings.llm_temperature,
+                    "num_predict": settings.ollama_max_tokens,
+                },
             }
             headers = {}
         else:
