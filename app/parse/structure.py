@@ -24,7 +24,7 @@ log = get_logger(__name__)
 # 解析器版本：章节树的判定规则一变，库里已有的 sections 就过期了。
 # 云端 data 目录是持久化的（换代码不换数据），所以启动时要靠这个版本号
 # 判断"要不要把老文档的章节树按新规则重算一遍"。改动分类/合并逻辑必须同步 +1。
-PARSE_VERSION = "2026.11.15.2"
+PARSE_VERSION = "2026.11.15.3"
 
 # ---------------- 正则 ----------------
 RE_NUM_HEADING = re.compile(r"^(\d{1,2}(?:\.\d{1,2}){0,3})\.?\s+\S")
@@ -1645,6 +1645,13 @@ def _parse_pdf_impl(path: str, max_pages: int | None = None) -> ParsedDoc:
                     "anchor": b.anchor,
                 }
             )
+    # 目录页被整页丢弃后，树里留一个"目录"节点：读者仍然能一键跳到目录，
+    # 但不会再出现"目录里的每一章都变成一个章节"。
+    if toc_pages:
+        parsed.sections.insert(0, {
+            "level": 1, "title": "目录", "page": toc_pages[0], "order": -1,
+            "bbox": [], "anchor": "",
+        })
 
     log.info(
         "解析完成 %s：%d 页 / %d 区块 / %d 标题 / %d 参考文献 / 扫描件=%s",

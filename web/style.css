@@ -532,6 +532,27 @@ body {
 }
 .tw::selection { background: rgba(64, 120, 255, .30); }
 
+/* 点章节树跳转后的高亮提示：标题文字闪 1 秒（默认时长，可用
+   localStorage sciagent.secFlashMs 调）。只闪标题那几个词，不是整页涂色——
+   整页涂色在 541 页的书里等于没提示，读者仍然不知道"跳到哪一行了"。*/
+.tw.secflash {
+  background: rgba(255, 196, 0, .55);
+  border-radius: 2px;
+  box-shadow: 0 0 0 2px rgba(255, 176, 0, .45);
+  animation: secflash 1s ease-out;
+}
+@keyframes secflash {
+  0%   { background: rgba(255, 196, 0, .95); }
+  70%  { background: rgba(255, 196, 0, .55); }
+  100% { background: rgba(255, 196, 0, .55); }
+}
+/* 没有文字层（扫描件）时退化成整页描边闪烁 */
+.page-frame.sec-flash { animation: pageflash 1s ease-out; }
+@keyframes pageflash {
+  0%   { box-shadow: 0 0 0 3px rgba(255, 176, 0, .95); }
+  100% { box-shadow: 0 2px 12px rgba(0, 0, 0, .18); }
+}
+
 /* 悬停翻译的原句高亮：贴在页图上的一层淡琥珀色，pointer-events:none 保证
    鼠标还能穿过它落到词上（否则移进去就 leave，气泡会闪）。
    用琥珀而不是蓝色：蓝色已经被"引用角标可点"和"划词选中"占了，语义会混。 */

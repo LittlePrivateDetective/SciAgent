@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SciAgent · 科研智能体</title>
   <link rel="stylesheet" href="/static/vendor/element-plus.css" />
-  <link rel="stylesheet" href="/static/style.css?v=38" />
+  <link rel="stylesheet" href="/static/style.css?v=39" />
   <link rel="stylesheet" href="/static/vendor/katex.min.css" />
   <script src="/static/vendor/katex.min.js"></script>
   <script src="/static/vendor/katex-auto-render.min.js"></script>
@@ -197,7 +197,7 @@
         <div v-if="showTree" class="tree">
           <div class="tree-title">章节导航</div>
           <div v-for="(s,i) in sections" :key="i" class="tree-item" :style="{paddingLeft: (8 + (s.level-1)*12) + 'px'}"
-               @click="goPage(s.page)">
+               @click="goSection(s)">
             <span class="lvl">L{{ s.level }}</span>{{ s.title }}
           </div>
         </div>
@@ -211,7 +211,7 @@
                文本层与高亮只挂在"当前页"上，避免一次塞几万个 span。 -->
           <div v-for="p in pageList" :key="p" class="page-frame"
                :data-page="p" :ref="'pf' + p"
-               :class="{ 'is-failed': failedPages[p], 'is-cur': p === page }"
+               :class="{ 'is-failed': failedPages[p], 'is-cur': p === page, 'sec-flash': p === secFlashPage }"
                :style="frameStyle(p)">
             <!-- draggable=false 必须有：扫描件没有文本层，鼠标一拖浏览器就把整张页图
                  当成可拖动图片拽走（ghost image 跟着光标跑），用户以为"文档被拖走了"。 -->
@@ -246,7 +246,7 @@
                      不会把行间空白也涂上。 -->
                 <div v-for="(r,i) in hover.rects" :key="'hs'+i" class="hsent" :style="r"></div>
                 <span v-for="(w,i) in tl.words" :key="i"
-                      class="tw" :class="{ cite: w.cite, refhit: isRefhit(w) }"
+                      class="tw" :class="{ cite: w.cite, refhit: isRefhit(w), secflash: w.secflash }"
                       :style="w.style"
                       @mouseenter="onWordEnter(w, i, $event)"
                       @mouseleave="onWordLeave"
@@ -994,6 +994,6 @@
   </nav>
 </div>
 
-<script src="/static/app.js?v=38"></script>
+<script src="/static/app.js?v=39"></script>
 </body>
 </html>

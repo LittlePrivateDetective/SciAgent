@@ -246,6 +246,8 @@ const app = createApp({
       sections: [],
       showTree: false,
       highlights: [],
+      // 点章节树跳转时高亮 1 秒：secFlashPage 是"没有文字层时可退化的整页描边"
+      secFlashPage: 0,
       // 页内文本层：words 里每项带预处理好的 style，避免每帧现算 200+ 个词的定位。
       // scale 由图片实际渲染宽度换算，文本层内部一律按 PDF 原始 pt 布局。
       tl: { words: [], sents: [], loaded: false, scale: 1, W: 0, H: 0, page: 0, zhLoading: false },
@@ -1059,6 +1061,92 @@ const app = createApp({
       this.citePop.visible = false;
       this.loadTextLayer();
       this.$nextTick(() => this.scrollToPage(p));
+    },
+
+    /* ---------------- 章节树跳转：跳过去 + 高亮 1 秒 ---------------- */
+
+    /**
+     * 点章节树：翻到该节所在页，并把**标题文字**高亮 1 秒。
+     *
+     * 为什么只闪标题而不是整页：541 页的书里翻到某一页，读者仍然不知道
+     * "这一节的标题在哪一行"；把标题那几个词点亮，视线一下就落上去。
+     * 定位用页面文本层的词坐标做匹配（章节表里没有 bbox，也不必为此改数据库）。
+     * 匹配不到（扫描件没有文字层、或标题被拆行）时退化成整页描边闪一下。
+     */
+    async goSection(s) {
+      if (!s) return;
+      this.goPage(s.page);
+      const page = this.page;
+      const docId = this.activeDoc && this.activeDoc.id;
+      const started = Date.now();
+      // 等这一页的文本层到位：goPage 里是异步请求，,最多等 1.5s 就放弃高亮
+      while (Date.now() - started < 1500) {
+        if (this.tl.page === page && this.tl.loaded) break;
+        await new Promise((r) => setTimeout(r, 60));
+      }
+      if (!this.activeDoc || this.activeDoc.id !== docId || this.page !== page) return;
+      this.flashSection(s, page);
+    },
+
+    flashSection(s, page) {
+      clearTimeout(this._secFlashTimer);
+      const ms = Number(localStorage.getItem("sciagent.secFlashMs")) || 1000;
+      const words = this.page === page && this.tl.page === page ? this.tl.words : [];
+      const hit = words.length ? this.matchSectionWords(words, s.title) : [];
+      if (hit.length) {
+        hit.forEach((w) => { w.secflash = true; });
+        this._secFlashTimer = setTimeout(() => {
+          hit.forEach((w) => { w.secflash = false; });
+        }, ms);
+        return;
+      }
+      // 没有文字层：整页描边闪一下，至少让读者知道"跳到这一页了"
+      this.secFlashPage = 0;
+      this.$nextTick(() => {
+        this.secFlashPage = page;
+        this._secFlashTimer = setTimeout(() => { this.secFlashPage = 0; }, ms);
+      });
+    },
+
+    /// 在页面词层里找出"标题那一行"，返回该行的词数组。
+    matchSectionWords(words, title) {
+      const norm = (t) => String(t || "").replace(/\s+/g, "").toLowerCase();
+      const target = norm(title);
+      if (!target) return [];
+      const lines = [];
+      for (const w of words) {
+        // 同一个视觉行：y 相差小于 3pt。竖排/水印词（h 很大）不参与匹配。
+        if (w.h > 40) continue;
+        let line = lines.find((l) => Math.abs(l.y - w.y) < 3);
+        if (!line) { line = { y: w.y, words: [] }; lines.push(line); }
+        line.words.push(w);
+      }
+      for (const l of lines) {
+        l.words.sort((a, b) => a.x - b.x);
+        l.text = norm(l.words.map((w) => w.t).join(""));
+      }
+      // 先整行匹配；书名/期刊名里标题常带页码或连字符，再退一步用前 8 个字符
+      const keys = [target];
+      if (target.length > 8) keys.push(target.slice(0, 8));
+      for (const k of keys) {
+        if (k.length < 2) continue;
+        for (const l of lines) {
+          const at = l.text.indexOf(k);
+          if (at < 0) continue;
+          // 只点亮标题那几个词：中文期刊常把"正文 + 小节标题"排在同一行，
+          // 整行涂色会连半句正文一起染黄，看起来像误选。
+          let acc = 0;
+          const sel = [];
+          for (const w of l.words) {
+            const t = norm(w.t);
+            const start = acc;
+            acc += t.length;
+            if (acc > at && start < at + k.length) sel.push(w);
+          }
+          return sel.length ? sel : l.words;
+        }
+      }
+      return [];
     },
 
     /// 切换页面尺寸后页高全变了，原来的滚动位置会指向别的页；切完回到当前页顶部。
