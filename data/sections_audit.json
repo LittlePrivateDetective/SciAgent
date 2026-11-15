@@ -2273,8 +2273,8 @@
  {
   "file": "2002.04745v2.pdf",
   "title": "On Layer Normalization in the Transformer Architecture",
-  "headings": 40,
-  "refs": 853,
+  "headings": 38,
+  "refs": 854,
   "blocks": 1425,
   "issues": [],
   "rows": [
@@ -2388,12 +2388,6 @@
     "text": "Post-LN Transformer v.s. Pre-LN Transformer",
     "num": [],
     "size": 10.0
-   },
-   {
-    "level": 3,
-    "text": "Theorem 1 (Gradients of the last layer in the Transformer). Assume tha",
-    "num": [],
-    "size": 10.1
    },
    {
     "level": 3,
@@ -2539,12 +2533,6 @@
     "text": "G. Examples of (ϵ, δ)-bounded random variables",
     "num": [],
     "size": 12.0
-   },
-   {
-    "level": 2,
-    "text": "Proposition 1 (Sub-exponential tail bound). Suppose that",
-    "num": [],
-    "size": 10.0
    }
   ]
  },
@@ -3397,7 +3385,7 @@
  {
   "file": "2101.03961v3.pdf",
   "title": "Switch Transformers: Scaling to Trillion Parameter Models wi",
-  "headings": 36,
+  "headings": 34,
   "refs": 61,
   "blocks": 786,
   "issues": [],
@@ -3458,12 +3446,6 @@
      2,
      4
     ],
-    "size": 10.9
-   },
-   {
-    "level": 3,
-    "text": "Regularizing large sparse models. Our paper considers the common NLP a",
-    "num": [],
     "size": 10.9
    },
    {
@@ -3543,12 +3525,6 @@
      5
     ],
     "size": 12.0
-   },
-   {
-    "level": 2,
-    "text": "Reviewing the Feed-Forward Network (FFN) Layer. We use the FFN layer a",
-    "num": [],
-    "size": 10.9
    },
    {
     "level": 2,
@@ -4649,9 +4625,9 @@
  {
   "file": "2201.11903v6.pdf",
   "title": "Chain-of-Thought Prompting Elicits Reasoning in Large Langua",
-  "headings": 40,
+  "headings": 38,
   "refs": 629,
-  "blocks": 1001,
+  "blocks": 1002,
   "issues": [],
   "rows": [
    {
@@ -4710,20 +4686,6 @@
      3
     ],
     "size": 10.0
-   },
-   {
-    "level": 3,
-    "text": "Variable compute only. Another intuition is that chain of",
-    "num": [],
-    "size": 10.1
-   },
-   {
-    "level": 1,
-    "text": "20 Chain of thought after answer. Another potential beneﬁt of",
-    "num": [
-     20
-    ],
-    "size": 10.1
    },
    {
     "level": 2,
@@ -5716,8 +5678,8 @@
  {
   "file": "2210.02414v2.pdf",
   "title": "GLM-130B: AN OPEN BILINGUAL PRE-TRAINED MODEL",
-  "headings": 34,
-  "refs": 1178,
+  "headings": 32,
+  "refs": 1179,
   "blocks": 1560,
   "issues": [],
   "rows": [
@@ -5783,12 +5745,6 @@
      5,
      1
     ],
-    "size": 10.0
-   },
-   {
-    "level": 3,
-    "text": "Pile. The Pile test-set (Gao et al., 2020) includes a series",
-    "num": [],
     "size": 10.0
    },
    {
@@ -5897,12 +5853,6 @@
    {
     "level": 2,
     "text": "Zeropoint Quantization",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 2,
-    "text": "Lesson 6 (Numerical Instability: Embedding Gradient Shrink). Shrinking",
     "num": [],
     "size": 10.0
    },
@@ -7732,8 +7682,8 @@
  {
   "file": "2305.13048v2.pdf",
   "title": "RWKV: Reinventing RNNs for the Transformer Era",
-  "headings": 76,
-  "refs": 483,
+  "headings": 75,
+  "refs": 484,
   "blocks": 976,
   "issues": [],
   "rows": [
@@ -8250,12 +8200,6 @@
    {
     "level": 2,
     "text": "RWKV-4-Raven-14B Test the convergence of P∞",
-    "num": [],
-    "size": 10.9
-   },
-   {
-    "level": 1,
-    "text": "I want to make something more special. What about red braised pork bel",
     "num": [],
     "size": 10.9
    }
@@ -9997,9 +9941,9 @@
  {
   "file": "2407.21783v3.pdf",
   "title": "The Llama 3 Herd of Models",
-  "headings": 45,
+  "headings": 40,
   "refs": 282,
-  "blocks": 2113,
+  "blocks": 2112,
   "issues": [],
   "rows": [
    {
@@ -10115,18 +10059,6 @@
     "size": 10.5
    },
    {
-    "level": 3,
-    "text": "Method. Specifically, Singh et al. (2024) propose to",
-    "num": [],
-    "size": 9.9
-   },
-   {
-    "level": 3,
-    "text": "Results. In Table 15, we report the percentage of",
-    "num": [],
-    "size": 10.0
-   },
-   {
     "level": 2,
     "text": "5.2 Post-trained Language Model",
     "num": [
@@ -10134,12 +10066,6 @@
      2
     ],
     "size": 10.5
-   },
-   {
-    "level": 3,
-    "text": "MGSM (Shi et al., 2022). We use the same native",
-    "num": [],
-    "size": 10.1
    },
    {
     "level": 2,
@@ -10158,12 +10084,6 @@
      4
     ],
     "size": 10.5
-   },
-   {
-    "level": 3,
-    "text": "Finetuning data. The quality and design of safety",
-    "num": [],
-    "size": 10.1
    },
    {
     "level": 1,
@@ -10305,12 +10225,6 @@
      5
     ],
     "size": 10.5
-   },
-   {
-    "level": 3,
-    "text": "Prosody modeling. To evaluate the performance of the",
-    "num": [],
-    "size": 10.1
    },
    {
     "level": 1,

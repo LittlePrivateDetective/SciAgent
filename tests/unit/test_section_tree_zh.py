@@ -154,3 +154,24 @@ def test_body_numbered_headings_survive():
     blocks = [blk("1 Introduction"), blk("2 Approach"), blk("3 Experiments")]
     out = _enforce_numbering(blocks)
     assert all(b.kind == "heading" for b in out)
+
+
+# ---------- 7. 段首加粗引导词（run-in heading）不是标题 ----------
+def test_run_in_sentence_is_not_heading():
+    """Llama 3 正文里满是"加粗引导词 + 同段正文"，形态与加粗小标题完全一样。"""
+    from app.parse.structure import _looks_like_sentence
+
+    assert _looks_like_sentence("Method. Specifically, Singh et al. (2024) propose to")
+    assert _looks_like_sentence("MGSM (Shi et al., 2022). We use the same native")
+    assert _looks_like_sentence("Finetuning data. The quality and diversity of our data")
+
+
+def test_abbreviations_do_not_look_like_sentences():
+    """缩写 `vs.` / `v.s.` / 附录字母 `D.` 后面也跟大写，不能当句中断句。"""
+    from app.parse.structure import _looks_like_sentence
+
+    assert not _looks_like_sentence("4 QLoRA vs. Standard Finetuning")
+    assert not _looks_like_sentence("Appendix D. Preprocessed Examples")
+    assert not _looks_like_sentence("F.1. Distillation v.s. Reinforcement Learning")
+    assert not _looks_like_sentence("5.2 Multilingual")
+    assert not _looks_like_sentence("A. Evaluation Datasets.")

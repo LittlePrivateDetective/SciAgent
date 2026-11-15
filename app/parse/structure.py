@@ -24,7 +24,7 @@ log = get_logger(__name__)
 # 解析器版本：章节树的判定规则一变，库里已有的 sections 就过期了。
 # 云端 data 目录是持久化的（换代码不换数据），所以启动时要靠这个版本号
 # 判断"要不要把老文档的章节树按新规则重算一遍"。改动分类/合并逻辑必须同步 +1。
-PARSE_VERSION = "2026.11.15.6"
+PARSE_VERSION = "2026.11.15.7"
 
 # ---------------- 正则 ----------------
 RE_NUM_HEADING = re.compile(r"^(\d{1,2}(?:\.\d{1,2}){0,3})\.?\s+\S")
@@ -60,7 +60,9 @@ RE_TOC_PAGENO = re.compile(r"^\d{1,4}$")
 RE_DECIMAL = re.compile(r"\d+\.\d+")
 # 标题自己的编号：`5.2`、`5.2.1`、`A.2.2`、`B.4.1.` —— 统计"数据密度"前要先摘掉它，
 # 否则附录标题（A.2.2）会被自己的编号算成两个小数而误判成表格行。
-_LEAD_NUM_ANY = re.compile(r"^\s*(?:[A-Z](?:\.\d{1,3}){1,3}|\d{1,2}(?:\.\d{1,2}){0,3})\s*[.．]?\s*")
+_LEAD_NUM_ANY = re.compile(
+    r"^\s*(?:[A-Z]\.(?:\d{1,3}\.){0,3}|\d{1,2}(?:\.\d{1,2}){0,3}\.?)\s*"
+)
 # 独立的小数（前后都不是字母/数字/点）：`64.2`、`71.5` 算，`v1.1`、`1.7T` 不算
 RE_BARE_DECIMAL = re.compile(r"(?<![\w.])\d+\.\d+(?![\w.])")
 
@@ -313,6 +315,26 @@ def _plausible_heading_tail(rest: str) -> bool:
     # 全大写单字标题也是有的（ViT 的 "1 INTRODUCTION"、"5.1 BASELINES"），
     # 只要够长就放行；"83 GB"、"0.5 M" 这类数量+单位的短尾巴仍然被挡住。
     return len(words) >= 2 or (t.isupper() and len(t) >= 6)
+
+
+def _looks_like_sentence(txt: str) -> bool:
+    """块里出现"句中断句"→ 这是正文句子，不是标题。
+
+    Llama 3 的正文大量使用"加粗引导词 + 同段正文"（run-in heading）：
+    `Method. Specifically, Singh et al. (2024) propose to …`、
+    `MGSM (Shi et al., 2022). We use the same native …`。
+    它们加粗、字号与正文相同、长度不到 90 字、又不以句号结尾，
+    四条正好符合"加粗小标题"的判据，于是在章节树里排成一串句子。
+
+    标题不会在中间断句：先摘掉自己的编号（`1.` / `A.2.`），剩下的部分
+    如果出现"句号 + 大写开头"，就只能是正文。
+    """
+    rest = _LEAD_NUM_ANY.sub("", (txt or "").strip(), count=1)
+    # 只认"长词/右括号 + 句号 + 空格 + 大写词开头"。缩写必须放过：
+    # `vs.`、`v.s.`、`VS.`、`D.`（附录字母）、`et al.` 这些点后面也跟大写，
+    # 一律当句子会把 "4 QLoRA vs. Standard Finetuning"、"Appendix D. Preprocessed
+    # Examples" 这类真标题误杀（实测一次丢 20+ 条）。
+    return bool(re.search(r"(?:\w{3,}|\))\.\s+[A-Z][a-z\"\'(]", rest))
 
 
 def _line_is_num_heading(ln: Line, body_font: str, left: float | None = None) -> bool:
@@ -711,6 +733,9 @@ def _is_heading(block: Block, body: float, left: float | None = None,
     if block.page == 1 and (ORG_RE.search(txt) or (block.bbox[1] < 300 and (
             NAME_RE.match(txt) or ("," in txt and not RE_NUM_HEADING.match(txt))))):
         return False, 0
+    # 正文句子（含"加粗引导词 + 同段正文"的 run-in heading）不是标题
+    if _looks_like_sentence(txt):
+        return False, 0
     # 表格里的一行数据：以数字开头、后面全是列值（"67.8 Nationality 64.2 61.6"）。
     # 这类行行列位置也贴栏左、字号也不小，只有"数字密度"能把它和标题分开。
     if _looks_like_data_row(txt):
@@ -1097,7 +1122,7 @@ def _normalize_headings(blocks: list[Block]) -> list[Block]:
             b.level = min(prev_num_depth + 1, 4) if prev_num_depth else max(1, min(b.level, 2))
         # 像句子的不要
         words = len(txt.split())
-        if len(txt) > 110 or "。" in txt or words >= 14:
+        if len(txt) > 110 or "。" in txt or words >= 14 or _looks_like_sentence(txt):
             b.kind, b.level = "text", 0
             continue
         if b.level == 1:
