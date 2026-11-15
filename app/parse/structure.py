@@ -24,7 +24,7 @@ log = get_logger(__name__)
 # 解析器版本：章节树的判定规则一变，库里已有的 sections 就过期了。
 # 云端 data 目录是持久化的（换代码不换数据），所以启动时要靠这个版本号
 # 判断"要不要把老文档的章节树按新规则重算一遍"。改动分类/合并逻辑必须同步 +1。
-PARSE_VERSION = "2026.11.15.3"
+PARSE_VERSION = "2026.11.15.4"
 
 # ---------------- 正则 ----------------
 RE_NUM_HEADING = re.compile(r"^(\d{1,2}(?:\.\d{1,2}){0,3})\.?\s+\S")
@@ -56,6 +56,32 @@ RE_REF_LABEL = re.compile(r"^\s*[\[［][A-Za-z][A-Za-z0-9+.\-]{0,14}[\]］]\s*$"
 RE_TOC_LEADER = re.compile(r"(?:\.\s*){6,}|(?:…\s*){3,}|(?:·\s*){6,}")
 # 目录里单独一行的页码
 RE_TOC_PAGENO = re.compile(r"^\d{1,4}$")
+# 数据行判据用：小数（表格里的列值几乎都是 "67.8"/"64.2" 这种）
+RE_DECIMAL = re.compile(r"\d+\.\d+")
+# 标题自己的编号：`5.2`、`5.2.1`、`A.2.2`、`B.4.1.` —— 统计"数据密度"前要先摘掉它，
+# 否则附录标题（A.2.2）会被自己的编号算成两个小数而误判成表格行。
+_LEAD_NUM_ANY = re.compile(r"^\s*(?:[A-Z](?:\.\d{1,3}){1,3}|\d{1,2}(?:\.\d{1,2}){0,3})\s*[.．]?\s*")
+# 独立的小数（前后都不是字母/数字/点）：`64.2`、`71.5` 算，`v1.1`、`1.7T` 不算
+RE_BARE_DECIMAL = re.compile(r"(?<![\w.])\d+\.\d+(?![\w.])")
+
+
+def _looks_like_data_row(txt: str) -> bool:
+    """整块文字是不是**表格里的一行数据**。
+
+    典型样本（Llama 3 的 CrowS-Pairs 表）：`67.8 Nationality 64.2 61.6`、
+    `76.2 Socioeconomic status 71.5`。它们以数字开头、行列位置又贴着栏左，
+    于是被"编号 + 标题"的规则整行收进章节树，读者看到的是 "67.8 这些数字是什么"。
+
+    判据只看数字密度：章节标题除自己的编号外最多带一两个数字
+    （`5.2 CrowS-Pairs`、`4.1 GPT-4 (1.7T)`、`4.2 SQuAD v1.1`），
+    表格行则是每个列值一个独立的数。
+    """
+    rest = _LEAD_NUM_ANY.sub("", txt, count=1)
+    if RE_BARE_DECIMAL.search(rest):
+        return True
+    # 三个以上独立整数也可能是数据行（"8 4 2.48"），但章节名里有 "GPT-4 vs 175B"，
+    # 所以只在出现 ≥3 个纯数字时才判——正常标题很难凑出三个。
+    return len(re.findall(r"(?<![\w.])\d{1,4}(?![\w.])", rest)) >= 3
 # 参考文献区的"起点"：以 [n] / ［n］ 开头的条目行
 RE_REF_START = re.compile(r"^\s*[\[［](\d{1,3})[\]］]")
 RE_ARXIV = re.compile(r"arXiv:\s*(\d{4}\.\d{4,5})(v\d+)?", re.I)
@@ -301,6 +327,8 @@ def _line_is_num_heading(ln: Line, body_font: str, left: float | None = None) ->
     if re.match(r"^\d", rest) or not _starts_like_title(rest):
         return False
     if not _plausible_heading_tail(rest):
+        return False
+    if _looks_like_data_row(txt):
         return False
     # 标题必须从栏左起排。表格单元格（"7.5 B Model (GB)"、"90 M speakers"）从栏中间开始。
     if left is not None and ln.bbox[0] > left + 1.2 * max(ln.size, 1.0):
@@ -613,6 +641,10 @@ def _is_heading(block: Block, body: float, left: float | None = None,
     # 不能全局用，否则 "Model Architecture" 这种两词标题会被误杀。
     if block.page == 1 and (ORG_RE.search(txt) or (block.bbox[1] < 300 and (
             NAME_RE.match(txt) or ("," in txt and not RE_NUM_HEADING.match(txt))))):
+        return False, 0
+    # 表格里的一行数据：以数字开头、后面全是列值（"67.8 Nationality 64.2 61.6"）。
+    # 这类行行列位置也贴栏左、字号也不小，只有"数字密度"能把它和标题分开。
+    if _looks_like_data_row(txt):
         return False, 0
     # 短且带数字却不是编号开头 → 表格数据行（"WSJ 23 F1"）
     if len(txt) < 30 and any(c.isdigit() for c in txt) and not RE_NUM_HEADING.match(txt):

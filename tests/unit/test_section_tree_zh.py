@@ -102,3 +102,18 @@ def test_person_name_shape():
     assert not _looks_person_name("Related Work")
     assert not _looks_person_name("Model Architecture")
     assert not _looks_person_name("新闻推荐方法")
+
+
+# ---------- 5. 表格里的数据行 ----------
+def test_data_rows_are_not_headings():
+    """Llama 3 的 CrowS-Pairs 表：每行都是"百分数 + 列名 + 百分数"。"""
+    from app.parse.structure import _looks_like_data_row
+
+    assert _looks_like_data_row("67.8 Nationality 64.2 61.6")
+    assert _looks_like_data_row("62.9 Disability 66.7")
+    assert _looks_like_data_row("76.2 Socioeconomic status 71.5")
+    # 真标题不能被连坐：编号本身是小数、"1.7T" 这种带单位的数也不算列值
+    assert not _looks_like_data_row("5.2 CrowS-Pairs")
+    assert not _looks_like_data_row("3.1 Transformer with Post-Layer Normalization")
+    assert not _looks_like_data_row("4.1 GPT-4 (1.7T params)")
+    assert not _looks_like_data_row("5.4 与现有方法的性能对比")
