@@ -24,7 +24,7 @@ log = get_logger(__name__)
 # 解析器版本：章节树的判定规则一变，库里已有的 sections 就过期了。
 # 云端 data 目录是持久化的（换代码不换数据），所以启动时要靠这个版本号
 # 判断"要不要把老文档的章节树按新规则重算一遍"。改动分类/合并逻辑必须同步 +1。
-PARSE_VERSION = "2026.11.15.8"
+PARSE_VERSION = "2026.11.16.1"
 
 # ---------------- 正则 ----------------
 RE_NUM_HEADING = re.compile(r"^(\d{1,2}(?:\.\d{1,2}){0,3})\.?\s+\S")
@@ -746,6 +746,26 @@ def _starts_like_title(s: str) -> bool:
     return ch.isupper() or ("\u4e00" <= ch <= "\u9fff")
 
 
+def _num_heading_tail_ok(rest: str, block: Block, body: float) -> bool:
+    """编号后面的那段文字够不够"标题样"——`_plausible_heading_tail` 的放宽版。
+
+    `_plausible_heading_tail` 是为"表格单元格 vs 数量+单位"设计的，代价是把两类
+    真标题也挡在门外，而它们都是整章节点，漏掉一个整节就没了：
+
+    - `3 BERT` / `2 T5`：编号 + 全大写缩写。字号比正文大（12pt vs 10.9pt）就不是表格。
+    - `4.1 GLUE` / `5.1 BASELINES`：编号 + 全大写单词。原判据要求全大写词 ≥6 字符，
+      GLUE 只有 4 个字母，于是 BERT 的第 4.1 节整节消失，章节树从 4 直接跳到 4.2。
+    """
+    if _plausible_heading_tail(rest):
+        return True
+    if not _starts_like_title(rest):
+        return False
+    core = rest.strip(" .:：")
+    if block.bold and core.isupper() and 3 <= len(core) <= 20 and " " not in core:
+        return True
+    return block.size >= body * 1.05
+
+
 def _is_heading(block: Block, body: float, left: float | None = None,
                 siblings: int = 0) -> tuple[bool, int]:
     # 先归一编号（"3. 1　标题" → "3.1 标题"）：后面所有正则与层级计数都依赖它。
@@ -753,6 +773,19 @@ def _is_heading(block: Block, body: float, left: float | None = None,
     txt = _norm_num_text(block.text.strip())
     if not txt or len(txt) > 220:
         return False, 0
+    # `Task #2: Next Sentence Prediction (NSP)`：这是论文里给任务起名的行内标签，
+    # "#编号" 不是章节号。加粗、与正文同字号、形态与二级标题一致，只能按这个特征排除。
+    if re.match(r"^[A-Za-z][\w /()\-]{0,24}#\s?\d+\b", txt):
+        return False, 0
+    # 冒号后面是一串小写正文（"No NSP: A bidirectional model which is trained"）：
+    # 句子被切断的痕迹。真标题的冒号后面是 `A Survey of …` 这种标题短语，
+    # 不会连着出现三个以上的小写实词。
+    # 只对**无编号**的块生效：`5.3 Guanaco: QLoRA trained on OASST1 is a …`
+    # 是带章节号的真小节，冒号后面同样是小写正文，编号一出现就必须放行。
+    if ": " in txt and not (RE_NUM_HEADING.match(txt) or _RE_ALPHA_HEAD.match(txt)):
+        tail_after_colon = txt.split(": ", 1)[1]
+        if len(re.findall(r"\b[a-z]{3,}\b", tail_after_colon)) >= 3:
+            return False, 0
     # arXiv 水印 / 页眉 / 纯数字行一律不是标题
     if txt.startswith("arXiv:") or RE_ARXIV.match(txt) or "/" in txt[:6]:
         return False, 0
@@ -813,6 +846,24 @@ def _is_heading(block: Block, body: float, left: float | None = None,
     if RE_REF_HEAD.match(txt):
         return True, 1
 
+    # 标题里混进了下一句的开头——"paragraph 式小标题"被版面合并毁了：
+    # `Pre-training data The pre-training procedure`（加粗导语 + 正文首词被粘成一行）、
+    # `Masked LM and the Masking Procedure As-suming the unlabeled sentence is`。
+    # 这类块没有编号、加粗、与正文同字号，长度又超过一般小节名，靠这两条特征认出来。
+    # 不能扩大成"凡是加粗行内标题都不算章节"：Pre-LN / Whisper / CLIP 的附录小节
+    # 全是 `\paragraph{}` 风格（实测一次丢 18–22 条真小节），只能卡"被粘坏"这一种。
+    if not (RE_NUM_HEADING.match(txt) or _RE_ALPHA_HEAD.match(txt)) \
+            and block.bold and block.size <= body * 1.02:
+        # 结尾停在功能词上（"… the unlabeled sentence is"）才是被切断的句子；
+        # 句首大写的短语式标题（"Vague Response with Context Distillation"）
+        # 结尾是实词，不能因为小写词多就删——Llama 2 附录里有好几个这种小节。
+        if len(txt) >= 40 and len(re.findall(r"\b[a-z]{3,}\b", txt)) >= 4 \
+                and re.search(r"\b(is|are|was|were|be|been|has|have|had|to|of|in|and|or|with)\W*$",
+                              txt.lower()):
+            return False, 0
+        if re.search(r"\s(?:The|A|An|We|In|This|These|It|Such|There|Our|Their)\s+[a-z]", txt):
+            return False, 0
+
     m = RE_NUM_HEADING.match(txt)
     # 标题独占一行、贴着栏左起排：与它共享基线还有别的文字块 → 表格行；
     # 从栏中间起排 → 也是表格单元格（"7.5 B Model (GB)"、"90 M speakers"）。
@@ -822,7 +873,7 @@ def _is_heading(block: Block, body: float, left: float | None = None,
         # 编号 + 字号偏大 或 加粗 → 判标题；且编号后的文字必须像短语（首字母大写、不含小数点续写）
         rest = txt[len(m.group(1)) :].lstrip(" .\u3000\t")
         looks_like_title = (_starts_like_title(rest) and not re.match(r"^\d", rest)
-                            and _plausible_heading_tail(rest))
+                            and _num_heading_tail_ok(rest, block, body))
         # 目录条目：编号标题 + 行尾裸页码（"3 Empirical Results and Basic Power Laws 7"）
         trailing_page = bool(re.search(r"\s\d{1,3}$", txt))
         if looks_like_title and at_left and siblings < 2 and not trailing_page \
