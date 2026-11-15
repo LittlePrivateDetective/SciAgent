@@ -323,6 +323,9 @@ const app = createApp({
         translated: 0, missing: 0, verbatim: 0, ratio: 0, title: "", docId: "", truncated: false,
       },
       messages: [],
+      // 消息自增 id：模板的 :key 用它而不是下标。删中间一条时，下标会让
+      // 后面的节点复用前一条的 DOM（气泡里是 v-html），出现"删了 A 却显示 B"。
+      msgSeq: 0,
       question: "",
       mode: "qa",   // 保留字段兼容后端；前端不再暴露"对比"开关
       scope: "all",
@@ -1998,7 +2001,7 @@ const app = createApp({
       const q = (text || this.question || "").trim();
       if (!q || this.loading) return;
       this.question = "";
-      this.messages.push({ role: "user", html: mdToHtml(q) });
+      this.messages.push({ id: ++this.msgSeq, role: "user", html: mdToHtml(q) });
       this.scrollChat();
       if (this.streamMode) return this.askStream(q);
       this.loading = true;
@@ -2027,6 +2030,7 @@ const app = createApp({
         }).then((x) => x.json());
 
         this.messages.push({
+          id: ++this.msgSeq,
           role: "assistant",
           html: mdToHtml(r.answer || "（无返回）"),
           evidence: r.evidence || [],
@@ -2035,11 +2039,51 @@ const app = createApp({
           meta: this.modeLabel(((Date.now() - t0) / 1000).toFixed(1), { route: askedRoute }),
         });
       } catch (e) {
-        this.messages.push({ role: "assistant", html: "请求失败：" + e });
+        this.messages.push({ id: ++this.msgSeq, role: "assistant", html: "请求失败：" + e });
       } finally {
         this.loading = false;
         this.scrollChat();
       }
+    },
+
+    /// 删除单条消息（提问或回答）。
+    /// 生成中禁删：流式回答还在往这条 msg 上写，删掉之后再写就是往已卸载的节点上写，
+    /// 轻则报错重则整条流断掉。
+    delMsg(i) {
+      if (this.loading) {
+        ElementPlus.ElMessage.warning("正在生成回答，等这一轮结束再删");
+        return;
+      }
+      const m = this.messages[i];
+      if (!m) return;
+      this.messages.splice(i, 1);
+      ElementPlus.ElMessage({
+        message: m.role === "user" ? "已删除这条提问" : "已删除这条回答",
+        type: "info", duration: 1200,
+      });
+    },
+
+    /// 清空整个对话。聊天记录只存在内存里（刷新即空），所以这里不做二次存储，
+    /// 只清数组；确认框是为了防手滑——一次删掉几十条回答没法找回。
+    async clearChat() {
+      if (!this.messages.length) return;
+      if (this.loading) {
+        ElementPlus.ElMessage.warning("正在生成回答，等这一轮结束再清空");
+        return;
+      }
+      const n = this.messages.length;
+      try {
+        await ElementPlus.ElMessageBox.confirm(
+          `将删除当前对话的全部 ${n} 条记录（提问与回答）。\n聊天记录不落盘，删掉就找不回来了。`,
+          "清空对话",
+          { type: "warning", confirmButtonText: "全部删除", cancelButtonText: "取消" }
+        );
+      } catch (e) {
+        return;
+      }
+      this.messages.splice(0, this.messages.length);
+      this.scrollChat();
+      ElementPlus.ElMessage({ message: `已清空 ${n} 条记录`, type: "success", duration: 1500 });
     },
 
     toggleThink() {
@@ -2115,6 +2159,7 @@ const app = createApp({
       // 所有中间态（逐字正文、推理增量、阶段状态）都会被吞掉，直到 done 时才
       // 因为 loading 变化一次性画出来。这正是"流式看不出来"的真正原因。
       const msg = reactive({
+        id: ++this.msgSeq,
         role: "assistant", html: "", evidence: [], verify: {}, trace: [], thinking: [],
         // 推理原文（深思模式下模型真的在想什么），逐段追加；完成前默认展开
         reasonText: "", reasonChars: 0, reasonOpen: true,

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SciAgent · 科研智能体</title>
   <link rel="stylesheet" href="/static/vendor/element-plus.css" />
-  <link rel="stylesheet" href="/static/style.css?v=44" />
+  <link rel="stylesheet" href="/static/style.css?v=45" />
   <link rel="stylesheet" href="/static/vendor/katex.min.css" />
   <script src="/static/vendor/katex.min.js"></script>
   <script src="/static/vendor/katex-auto-render.min.js"></script>
@@ -586,6 +586,11 @@
                      :title="streamMode
                        ? '流式：边检索边输出，能看到规划 / 检索 / 通读 / 推理的过程；关掉则一次性返回整段答案'
                        : '当前为一次性返回，看不到中间过程；打开可看到检索与推理步骤'"></el-switch>
+          <!-- 聊天记录只存在内存里，刷新即空；这条入口是给"演示时想重新开一轮"用的 -->
+          <button v-if="messages.length" type="button" class="chat-clear"
+                  :disabled="loading"
+                  :title="'清空当前对话（共 ' + messages.length + ' 条）'"
+                  @click="clearChat()">清空</button>
         </div>
       </div>
 
@@ -596,7 +601,7 @@
             {{ q }}
           </button>
         </div>
-        <div v-for="(m,i) in messages" :key="i" class="msg" :class="m.role">
+        <div v-for="(m,i) in messages" :key="m.id || i" class="msg" :class="m.role">
           <div class="bubble">
             <div v-if="m.meta" class="msg-meta">{{ m.meta }}</div>
             <div v-if="m.thinking && m.thinking.length" class="think-timeline">
@@ -642,6 +647,11 @@
               </div>
             </div>
           </div>
+          <!-- 删除按钮放在气泡外侧：放里面会压住正文第一行，而消息右上角又常常是
+               「快速 · 2.4s」这行元信息。hover 才出现，不干扰阅读。 -->
+          <button type="button" class="msg-del"
+                  :title="m.role === 'user' ? '删除这条提问' : '删除这条回答'"
+                  @click.stop="delMsg(i)">×</button>
         </div>
         <!-- 只在"还没有任何正文"时显示等待气泡：流式期间正文已经在写了，
              底下再挂一个"Agent 正在执行…"会让人以为卡住了 -->
@@ -998,6 +1008,6 @@
   </nav>
 </div>
 
-<script src="/static/app.js?v=44"></script>
+<script src="/static/app.js?v=45"></script>
 </body>
 </html>
