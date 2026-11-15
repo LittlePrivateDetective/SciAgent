@@ -1,0 +1,11182 @@
+[
+ {
+  "file": "1607.06450v1.pdf",
+  "sections": 28,
+  "toc": 19,
+  "toc_missing": [],
+  "issues": [],
+  "rows": [
+   {
+    "level": 1,
+    "title": "Abstract",
+    "page": 1
+   },
+   {
+    "level": 1,
+    "title": "1 Introduction",
+    "page": 1
+   },
+   {
+    "level": 1,
+    "title": "2 Background",
+    "page": 2
+   },
+   {
+    "level": 1,
+    "title": "3 Layer normalization",
+    "page": 2
+   },
+   {
+    "level": 2,
+    "title": "3.1 Layer normalized recurrent neural networks",
+    "page": 3
+   },
+   {
+    "level": 1,
+    "title": "4 Related work",
+    "page": 3
+   },
+   {
+    "level": 1,
+    "title": "5 Analysis",
+    "page": 3
+   },
+   {
+    "level": 2,
+    "title": "Invariance under weights and data transformations",
+    "page": 3
+   },
+   {
+    "level": 2,
+    "title": "5.2 Geometry of parameter space during learning",
+    "page": 4
+   },
+   {
+    "level": 3,
+    "title": "5.2.1 Riemannian metric",
+    "page": 4
+   },
+   {
+    "level": 4,
+    "title": "The geometry of normalized generalized linear models",
+    "page": 5
+   },
+   {
+    "level": 1,
+    "title": "6 Experimental results",
+    "page": 6
+   },
+   {
+    "level": 2,
+    "title": "6.1 Order embeddings of images and language",
+    "page": 6
+   },
+   {
+    "level": 2,
+    "title": "6.2 Teaching machines to read and comprehend",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "6.3 Skip-thought vectors",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "6.4 Modeling binarized MNIST using DRAW",
+    "page": 9
+   },
+   {
+    "level": 2,
+    "title": "6.5 Handwriting sequence generation",
+    "page": 9
+   },
+   {
+    "level": 2,
+    "title": "6.6 Permutation invariant MNIST",
+    "page": 10
+   },
+   {
+    "level": 2,
+    "title": "6.7 Convolutional Networks",
+    "page": 10
+   },
+   {
+    "level": 1,
+    "title": "7 Conclusion",
+    "page": 10
+   },
+   {
+    "level": 1,
+    "title": "Acknowledgments",
+    "page": 10
+   },
+   {
+    "level": 1,
+    "title": "References",
+    "page": 11
+   },
+   {
+    "level": 2,
+    "title": "Supplementary Material",
+    "page": 13
+   },
+   {
+    "level": 2,
+    "title": "Application of layer normalization to each experiment",
+    "page": 13
+   },
+   {
+    "level": 2,
+    "title": "Teaching machines to read and comprehend and handwriting sequence generation",
+    "page": 13
+   },
+   {
+    "level": 2,
+    "title": "Order embeddings and skip-thoughts",
+    "page": 13
+   },
+   {
+    "level": 2,
+    "title": "Modeling binarized MNIST using DRAW",
+    "page": 14
+   },
+   {
+    "level": 2,
+    "title": "Learning the magnitude of incoming weights",
+    "page": 14
+   }
+  ]
+ },
+ {
+  "file": "1706.03762v1.pdf",
+  "sections": 22,
+  "toc": 22,
+  "toc_missing": [],
+  "issues": [],
+  "rows": [
+   {
+    "level": 1,
+    "title": "1 Introduction",
+    "page": 1
+   },
+   {
+    "level": 1,
+    "title": "2 Background",
+    "page": 2
+   },
+   {
+    "level": 1,
+    "title": "3 Model Architecture",
+    "page": 2
+   },
+   {
+    "level": 2,
+    "title": "3.1 Encoder and Decoder Stacks",
+    "page": 2
+   },
+   {
+    "level": 2,
+    "title": "3.2 Attention",
+    "page": 3
+   },
+   {
+    "level": 3,
+    "title": "3.2.1 Scaled Dot-Product Attention",
+    "page": 3
+   },
+   {
+    "level": 3,
+    "title": "3.2.2 Multi-Head Attention",
+    "page": 4
+   },
+   {
+    "level": 3,
+    "title": "3.2.3 Applications of Attention in our Model",
+    "page": 4
+   },
+   {
+    "level": 2,
+    "title": "3.3 Position-wise Feed-Forward Networks",
+    "page": 5
+   },
+   {
+    "level": 2,
+    "title": "3.4 Embeddings and Softmax",
+    "page": 5
+   },
+   {
+    "level": 2,
+    "title": "3.5 Positional Encoding",
+    "page": 5
+   },
+   {
+    "level": 1,
+    "title": "4 Why Self-Attention",
+    "page": 5
+   },
+   {
+    "level": 1,
+    "title": "5 Training",
+    "page": 6
+   },
+   {
+    "level": 2,
+    "title": "5.1 Training Data and Batching",
+    "page": 6
+   },
+   {
+    "level": 2,
+    "title": "5.2 Hardware and Schedule",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "5.3 Optimizer",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "5.4 Regularization",
+    "page": 7
+   },
+   {
+    "level": 1,
+    "title": "6 Results",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "6.1 Machine Translation",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "6.2 Model Variations",
+    "page": 8
+   },
+   {
+    "level": 2,
+    "title": "6.3 English Constituency Parsing",
+    "page": 8
+   },
+   {
+    "level": 1,
+    "title": "7 Conclusion",
+    "page": 10
+   }
+  ]
+ },
+ {
+  "file": "1706.03762v1_img.pdf",
+  "sections": 0,
+  "toc": 0,
+  "toc_missing": [],
+  "issues": [
+   "零章节"
+  ],
+  "rows": []
+ },
+ {
+  "file": "1706.03762v7.pdf",
+  "sections": 22,
+  "toc": 22,
+  "toc_missing": [],
+  "issues": [],
+  "rows": [
+   {
+    "level": 1,
+    "title": "Introduction",
+    "page": 2
+   },
+   {
+    "level": 1,
+    "title": "Background",
+    "page": 2
+   },
+   {
+    "level": 1,
+    "title": "Model Architecture",
+    "page": 2
+   },
+   {
+    "level": 2,
+    "title": "Encoder and Decoder Stacks",
+    "page": 3
+   },
+   {
+    "level": 2,
+    "title": "Attention",
+    "page": 3
+   },
+   {
+    "level": 3,
+    "title": "Scaled Dot-Product Attention",
+    "page": 4
+   },
+   {
+    "level": 3,
+    "title": "Multi-Head Attention",
+    "page": 4
+   },
+   {
+    "level": 3,
+    "title": "Applications of Attention in our Model",
+    "page": 5
+   },
+   {
+    "level": 2,
+    "title": "Position-wise Feed-Forward Networks",
+    "page": 5
+   },
+   {
+    "level": 2,
+    "title": "Embeddings and Softmax",
+    "page": 5
+   },
+   {
+    "level": 2,
+    "title": "Positional Encoding",
+    "page": 6
+   },
+   {
+    "level": 1,
+    "title": "Why Self-Attention",
+    "page": 6
+   },
+   {
+    "level": 1,
+    "title": "Training",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "Training Data and Batching",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "Hardware and Schedule",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "Optimizer",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "Regularization",
+    "page": 7
+   },
+   {
+    "level": 1,
+    "title": "Results",
+    "page": 8
+   },
+   {
+    "level": 2,
+    "title": "Machine Translation",
+    "page": 8
+   },
+   {
+    "level": 2,
+    "title": "Model Variations",
+    "page": 8
+   },
+   {
+    "level": 2,
+    "title": "English Constituency Parsing",
+    "page": 9
+   },
+   {
+    "level": 1,
+    "title": "Conclusion",
+    "page": 10
+   }
+  ]
+ },
+ {
+  "file": "1707.06347v2.pdf",
+  "sections": 17,
+  "toc": 0,
+  "toc_missing": [],
+  "issues": [],
+  "rows": [
+   {
+    "level": 1,
+    "title": "1 Introduction",
+    "page": 1
+   },
+   {
+    "level": 1,
+    "title": "2 Background: Policy Optimization",
+    "page": 2
+   },
+   {
+    "level": 2,
+    "title": "2.1 Policy Gradient Methods",
+    "page": 2
+   },
+   {
+    "level": 2,
+    "title": "2.2 Trust Region Methods",
+    "page": 2
+   },
+   {
+    "level": 1,
+    "title": "3 Clipped Surrogate Objective",
+    "page": 3
+   },
+   {
+    "level": 1,
+    "title": "4 Adaptive KL Penalty Coeﬃcient",
+    "page": 4
+   },
+   {
+    "level": 1,
+    "title": "5 Algorithm",
+    "page": 4
+   },
+   {
+    "level": 1,
+    "title": "6 Experiments",
+    "page": 5
+   },
+   {
+    "level": 2,
+    "title": "6.1 Comparison of Surrogate Objectives",
+    "page": 5
+   },
+   {
+    "level": 2,
+    "title": "6.2 Comparison to Other Algorithms in the Continuous Domain",
+    "page": 6
+   },
+   {
+    "level": 3,
+    "title": "Showcase in the Continuous Domain: Humanoid Running and Steering",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "6.4 Comparison to Other Algorithms on the Atari Domain",
+    "page": 8
+   },
+   {
+    "level": 1,
+    "title": "7 Conclusion",
+    "page": 8
+   },
+   {
+    "level": 1,
+    "title": "8 Acknowledgements",
+    "page": 8
+   },
+   {
+    "level": 1,
+    "title": "References",
+    "page": 9
+   },
+   {
+    "level": 1,
+    "title": "A Hyperparameters",
+    "page": 10
+   },
+   {
+    "level": 2,
+    "title": "Performance on More Atari Games",
+    "page": 10
+   }
+  ]
+ },
+ {
+  "file": "1910.02054v3.pdf",
+  "sections": 41,
+  "toc": 41,
+  "toc_missing": [],
+  "issues": [],
+  "rows": [
+   {
+    "level": 1,
+    "title": "1 Extended Introduction",
+    "page": 1
+   },
+   {
+    "level": 1,
+    "title": "2 Related Work",
+    "page": 6
+   },
+   {
+    "level": 2,
+    "title": "2.1 Data, Model and Pipeline Parallelism",
+    "page": 6
+   },
+   {
+    "level": 2,
+    "title": "2.2 Non-parallelism based approach to reduce memory",
+    "page": 6
+   },
+   {
+    "level": 3,
+    "title": "2.2.1 Reducing Activation Memory",
+    "page": 6
+   },
+   {
+    "level": 3,
+    "title": "2.2.2 CPU Offload",
+    "page": 6
+   },
+   {
+    "level": 3,
+    "title": "2.2.3 Memory Efficient Optimizer",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "2.3 Training Optimizers",
+    "page": 7
+   },
+   {
+    "level": 1,
+    "title": "3 Where Did All the Memory Go?",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "3.1 Model States: Optimizer States, Gradients and Parameters",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "3.2 Residual Memory Consumption",
+    "page": 8
+   },
+   {
+    "level": 1,
+    "title": "4 ZeRO: Insights and Overview",
+    "page": 8
+   },
+   {
+    "level": 2,
+    "title": "4.1 Insights and Overview: ZeRO-DP",
+    "page": 9
+   },
+   {
+    "level": 2,
+    "title": "4.2 Insights and Overview: ZeRO-R",
+    "page": 9
+   },
+   {
+    "level": 3,
+    "title": "4.2.1 Reducing Activation Memory",
+    "page": 9
+   },
+   {
+    "level": 3,
+    "title": "4.2.2 Managing Temporary buffers",
+    "page": 9
+   },
+   {
+    "level": 3,
+    "title": "4.2.3 Managing fragmented Memory",
+    "page": 9
+   },
+   {
+    "level": 1,
+    "title": "5 Deep Dive into ZeRO-DP",
+    "page": 10
+   },
+   {
+    "level": 2,
+    "title": "5.1 Pos : Optimizer State Partitioning",
+    "page": 10
+   },
+   {
+    "level": 2,
+    "title": "5.2 Pg: Gradient Partitioning",
+    "page": 10
+   },
+   {
+    "level": 2,
+    "title": "5.3 Pp: Parameter Partitioning",
+    "page": 11
+   },
+   {
+    "level": 2,
+    "title": "5.4 Implication on Model Size",
+    "page": 11
+   },
+   {
+    "level": 1,
+    "title": "6 Deep Dive into ZeRO-R",
+    "page": 12
+   },
+   {
+    "level": 2,
+    "title": "6.1 Pa: Partitioned Activation Checkpointing",
+    "page": 12
+   },
+   {
+    "level": 2,
+    "title": "6.2 CB: Constant Size Buffers",
+    "page": 12
+   },
+   {
+    "level": 2,
+    "title": "6.3 MD: Memory Defragmentation",
+    "page": 12
+   },
+   {
+    "level": 1,
+    "title": "7 Communication Analysis of ZeRO-DP",
+    "page": 13
+   },
+   {
+    "level": 2,
+    "title": "7.1 Data Parallel Communication Volume",
+    "page": 13
+   },
+   {
+    "level": 2,
+    "title": "7.2 ZeRO-DP Communication Volume",
+    "page": 14
+   },
+   {
+    "level": 3,
+    "title": "7.2.1 Communication Volume with Pos+g",
+    "page": 14
+   },
+   {
+    "level": 3,
+    "title": "7.2.2 Communication Volume with Pos+g+p",
+    "page": 14
+   },
+   {
+    "level": 1,
+    "title": "8 Communication Analysis of ZeRO-R",
+    "page": 14
+   },
+   {
+    "level": 1,
+    "title": "9 Step Towards 1 Trillion Parameters",
+    "page": 15
+   },
+   {
+    "level": 1,
+    "title": "10 Implementation and Evaluation",
+    "page": 16
+   },
+   {
+    "level": 2,
+    "title": "10.1 Implementation and Methodology",
+    "page": 17
+   },
+   {
+    "level": 2,
+    "title": "10.2 Speed and Model Size",
+    "page": 17
+   },
+   {
+    "level": 2,
+    "title": "10.3 Super-Linear Scalability",
+    "page": 17
+   },
+   {
+    "level": 2,
+    "title": "10.4 Democratizing Large Model Training",
+    "page": 18
+   },
+   {
+    "level": 2,
+    "title": "10.5 Memory and Performance Analysis",
+    "page": 18
+   },
+   {
+    "level": 2,
+    "title": "10.6 Turing-NLG, the SOTA language model with 17B parameters",
+    "page": 19
+   },
+   {
+    "level": 1,
+    "title": "11 Concluding Remarks",
+    "page": 19
+   }
+  ]
+ },
+ {
+  "file": "1910.10683v4.pdf",
+  "sections": 59,
+  "toc": 59,
+  "toc_missing": [],
+  "issues": [
+   "页码倒序 p1<p43（L2）: Contributions",
+   "页码倒序 p4<p43（L2）: Converting WNLI to Our Text-to-Text ",
+   "页码倒序 p10<p32（L3）: Example Predictions on CNN/Daily Mai"
+  ],
+  "rows": [
+   {
+    "level": 1,
+    "title": "Introduction",
+    "page": 1
+   },
+   {
+    "level": 1,
+    "title": "Setup",
+    "page": 4
+   },
+   {
+    "level": 2,
+    "title": "Model",
+    "page": 4
+   },
+   {
+    "level": 2,
+    "title": "The Colossal Clean Crawled Corpus",
+    "page": 5
+   },
+   {
+    "level": 2,
+    "title": "Downstream Tasks",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "Input and Output Format",
+    "page": 8
+   },
+   {
+    "level": 1,
+    "title": "Experiments",
+    "page": 10
+   },
+   {
+    "level": 2,
+    "title": "Baseline",
+    "page": 11
+   },
+   {
+    "level": 3,
+    "title": "Model",
+    "page": 11
+   },
+   {
+    "level": 3,
+    "title": "Training",
+    "page": 11
+   },
+   {
+    "level": 3,
+    "title": "Vocabulary",
+    "page": 12
+   },
+   {
+    "level": 3,
+    "title": "Unsupervised Objective",
+    "page": 12
+   },
+   {
+    "level": 3,
+    "title": "Baseline Performance",
+    "page": 13
+   },
+   {
+    "level": 2,
+    "title": "Architectures",
+    "page": 15
+   },
+   {
+    "level": 3,
+    "title": "Model Structures",
+    "page": 15
+   },
+   {
+    "level": 3,
+    "title": "Comparing Different Model Structures",
+    "page": 18
+   },
+   {
+    "level": 3,
+    "title": "Objectives",
+    "page": 19
+   },
+   {
+    "level": 3,
+    "title": "Results",
+    "page": 19
+   },
+   {
+    "level": 2,
+    "title": "Unsupervised Objectives",
+    "page": 20
+   },
+   {
+    "level": 3,
+    "title": "Disparate High-Level Approaches",
+    "page": 21
+   },
+   {
+    "level": 3,
+    "title": "Simplifying the BERT Objective",
+    "page": 22
+   },
+   {
+    "level": 3,
+    "title": "Varying the Corruption Rate",
+    "page": 23
+   },
+   {
+    "level": 3,
+    "title": "Corrupting Spans",
+    "page": 23
+   },
+   {
+    "level": 3,
+    "title": "Discussion",
+    "page": 24
+   },
+   {
+    "level": 2,
+    "title": "Pre-training Data set",
+    "page": 24
+   },
+   {
+    "level": 3,
+    "title": "Unlabeled Data Sets",
+    "page": 25
+   },
+   {
+    "level": 3,
+    "title": "Pre-training Data set Size",
+    "page": 27
+   },
+   {
+    "level": 2,
+    "title": "Training Strategy",
+    "page": 28
+   },
+   {
+    "level": 3,
+    "title": "Fine-tuning Methods",
+    "page": 29
+   },
+   {
+    "level": 3,
+    "title": "Multi-task Learning",
+    "page": 30
+   },
+   {
+    "level": 3,
+    "title": "Combining Multi-Task Learning with Fine-Tuning",
+    "page": 32
+   },
+   {
+    "level": 2,
+    "title": "Scaling",
+    "page": 34
+   },
+   {
+    "level": 2,
+    "title": "Putting It All Together",
+    "page": 36
+   },
+   {
+    "level": 1,
+    "title": "Reflection",
+    "page": 41
+   },
+   {
+    "level": 2,
+    "title": "Takeaways",
+    "page": 41
+   },
+   {
+    "level": 2,
+    "title": "Outlook",
+    "page": 43
+   },
+   {
+    "level": 2,
+    "title": "Contributions",
+    "page": 1
+   },
+   {
+    "level": 2,
+    "title": "Converting WNLI to Our Text-to-Text Format",
+    "page": 4
+   },
+   {
+    "level": 3,
+    "title": "Example Predictions on CNN/Daily Mail",
+    "page": 10
+   },
+   {
+    "level": 4,
+    "title": "Preprocessed Examples",
+    "page": 41
+   },
+   {
+    "level": 4,
+    "title": "CoLA",
+    "page": 41
+   },
+   {
+    "level": 4,
+    "title": "RTE",
+    "page": 43
+   },
+   {
+    "level": 4,
+    "title": "MNLI",
+    "page": 47
+   },
+   {
+    "level": 4,
+    "title": "MRPC",
+    "page": 48
+   },
+   {
+    "level": 4,
+    "title": "QNLI",
+    "page": 48
+   },
+   {
+    "level": 4,
+    "title": "QQP",
+    "page": 48
+   },
+   {
+    "level": 4,
+    "title": "SST2",
+    "page": 49
+   },
+   {
+    "level": 4,
+    "title": "STSB",
+    "page": 49
+   },
+   {
+    "level": 4,
+    "title": "CB",
+    "page": 49
+   },
+   {
+    "level": 4,
+    "title": "COPA",
+    "page": 50
+   },
+   {
+    "level": 4,
+    "title": "MultiRC",
+    "page": 50
+   },
+   {
+    "level": 4,
+    "title": "WiC",
+    "page": 51
+   },
+   {
+    "level": 4,
+    "title": "WSC and DPR",
+    "page": 51
+   },
+   {
+    "level": 4,
+    "title": "CNN/Daily Mail",
+    "page": 52
+   },
+   {
+    "level": 4,
+    "title": "SQuAD",
+    "page": 53
+   },
+   {
+    "level": 4,
+    "title": "WMT English to German",
+    "page": 54
+   },
+   {
+    "level": 4,
+    "title": "WMT English to French",
+    "page": 54
+   },
+   {
+    "level": 4,
+    "title": "WMT English to Romanian",
+    "page": 54
+   },
+   {
+    "level": 4,
+    "title": "Scores on Every Task for All Experiments",
+    "page": 56
+   }
+  ]
+ },
+ {
+  "file": "2001.08361v1.pdf",
+  "sections": 43,
+  "toc": 13,
+  "toc_missing": [
+   "1 Introduction",
+   "4 Charting the Infinite Data Limit and Overfitting",
+   "B Empirical Model of Compute-Efficient Frontier"
+  ],
+  "issues": [
+   "页码倒序 p1<p2（L1）: Abstract",
+   "书签里少了 3 条（书签共 13）"
+  ],
+  "rows": [
+   {
+    "level": 1,
+    "title": "目录",
+    "page": 2
+   },
+   {
+    "level": 1,
+    "title": "Abstract",
+    "page": 1
+   },
+   {
+    "level": 2,
+    "title": "1.2 Summary of Scaling Laws",
+    "page": 4
+   },
+   {
+    "level": 2,
+    "title": "1.3 Notation",
+    "page": 6
+   },
+   {
+    "level": 1,
+    "title": "2 Background and Methods",
+    "page": 6
+   },
+   {
+    "level": 2,
+    "title": "2.1 Parameter and Compute Scaling of Transformers",
+    "page": 6
+   },
+   {
+    "level": 2,
+    "title": "2.2 Training Procedures",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "2.3 Datasets",
+    "page": 7
+   },
+   {
+    "level": 1,
+    "title": "3 Empirical Results and Basic Power Laws",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "Approximate Transformer Shape and Hyperparameter Independence",
+    "page": 8
+   },
+   {
+    "level": 2,
+    "title": "Performance with Non-Embedding Parameter Count N",
+    "page": 8
+   },
+   {
+    "level": 2,
+    "title": "Comparing to LSTMs and Universal Transformers",
+    "page": 9
+   },
+   {
+    "level": 3,
+    "title": "3.2.2 Generalization Among Data Distributions",
+    "page": 9
+   },
+   {
+    "level": 2,
+    "title": "3.3 Performance with Dataset Size and Compute",
+    "page": 9
+   },
+   {
+    "level": 2,
+    "title": "Charting the Inﬁnite Data Limit and Overﬁtting",
+    "page": 10
+   },
+   {
+    "level": 2,
+    "title": "4.1 Proposed L(N, D) Equation",
+    "page": 10
+   },
+   {
+    "level": 2,
+    "title": "4.2 Results",
+    "page": 11
+   },
+   {
+    "level": 3,
+    "title": "Scaling Laws with Model Size and Training Time",
+    "page": 12
+   },
+   {
+    "level": 2,
+    "title": "5.1 Adjustment for Training at Bcrit(L)",
+    "page": 12
+   },
+   {
+    "level": 3,
+    "title": "Results for L(N, Smin) and Performance with Model Size and Compute",
+    "page": 13
+   },
+   {
+    "level": 2,
+    "title": "5.3 Lower Bound on Early Stopping Step",
+    "page": 14
+   },
+   {
+    "level": 3,
+    "title": "Optimal Allocation of the Compute Budget",
+    "page": 14
+   },
+   {
+    "level": 2,
+    "title": "6.1 Optimal Performance and Allocations",
+    "page": 15
+   },
+   {
+    "level": 2,
+    "title": "6.2 Predictions from L(N, Smin)",
+    "page": 16
+   },
+   {
+    "level": 1,
+    "title": "6 NB and then ﬁnd the minimum",
+    "page": 16
+   },
+   {
+    "level": 2,
+    "title": "6.3 Contradictions and a Conjecture",
+    "page": 17
+   },
+   {
+    "level": 1,
+    "title": "7 Related Work",
+    "page": 18
+   },
+   {
+    "level": 1,
+    "title": "8 Discussion",
+    "page": 18
+   },
+   {
+    "level": 1,
+    "title": "Acknowledgements",
+    "page": 19
+   },
+   {
+    "level": 2,
+    "title": "Appendices",
+    "page": 20
+   },
+   {
+    "level": 1,
+    "title": "A Summary of Power Laws",
+    "page": 20
+   },
+   {
+    "level": 2,
+    "title": "Parameters Data Compute Batch Size",
+    "page": 20
+   },
+   {
+    "level": 2,
+    "title": "Scale (tokenization-dependent)",
+    "page": 20
+   },
+   {
+    "level": 2,
+    "title": "Compute-Efﬁcient Value",
+    "page": 20
+   },
+   {
+    "level": 2,
+    "title": "Power Law Scale",
+    "page": 20
+   },
+   {
+    "level": 2,
+    "title": "Empirical Model of Compute-Efﬁcient Frontier",
+    "page": 20
+   },
+   {
+    "level": 1,
+    "title": "C Caveats",
+    "page": 22
+   },
+   {
+    "level": 1,
+    "title": "D Supplemental Figures",
+    "page": 23
+   },
+   {
+    "level": 2,
+    "title": "D.1 Early Stopping and Test vs Train",
+    "page": 23
+   },
+   {
+    "level": 2,
+    "title": "D.4 Sample Efﬁciency vs Model Size",
+    "page": 24
+   },
+   {
+    "level": 2,
+    "title": "D.6 Learning Rate Schedules and Error Analysis",
+    "page": 25
+   },
+   {
+    "level": 2,
+    "title": "D.7 Fit Details and Power Law Quality",
+    "page": 26
+   },
+   {
+    "level": 2,
+    "title": "D.8 Generalization and Architecture",
+    "page": 26
+   }
+  ]
+ },
+ {
+  "file": "2002.04745v2.pdf",
+  "sections": 38,
+  "toc": 0,
+  "toc_missing": [],
+  "issues": [],
+  "rows": [
+   {
+    "level": 1,
+    "title": "Abstract",
+    "page": 1
+   },
+   {
+    "level": 1,
+    "title": "1 Introduction",
+    "page": 1
+   },
+   {
+    "level": 1,
+    "title": "2 Related work",
+    "page": 2
+   },
+   {
+    "level": 1,
+    "title": "3 Optimization for the Transformer",
+    "page": 3
+   },
+   {
+    "level": 2,
+    "title": "3.1 Transformer with Post-Layer Normalization",
+    "page": 3
+   },
+   {
+    "level": 3,
+    "title": "Self-attention sub-layer",
+    "page": 3
+   },
+   {
+    "level": 3,
+    "title": "Position-wise FFN sub-layer",
+    "page": 3
+   },
+   {
+    "level": 3,
+    "title": "Residual connection and layer normalization",
+    "page": 3
+   },
+   {
+    "level": 3,
+    "title": "Post-LN Transformer",
+    "page": 3
+   },
+   {
+    "level": 2,
+    "title": "3.2 The learning rate warm-up stage",
+    "page": 3
+   },
+   {
+    "level": 3,
+    "title": "Experimental setting",
+    "page": 3
+   },
+   {
+    "level": 3,
+    "title": "Results and discussions",
+    "page": 4
+   },
+   {
+    "level": 2,
+    "title": "3.3 Understanding the Transformer at initialization",
+    "page": 5
+   },
+   {
+    "level": 3,
+    "title": "Notations",
+    "page": 5
+   },
+   {
+    "level": 3,
+    "title": "Parameter Initialization",
+    "page": 5
+   },
+   {
+    "level": 3,
+    "title": "Post-LN Transformer v.s. Pre-LN Transformer",
+    "page": 5
+   },
+   {
+    "level": 3,
+    "title": "Lemma 2. At initialization, for the Post-LN Transformer, E(∥xpost,5",
+    "page": 6
+   },
+   {
+    "level": 3,
+    "title": "Extended theory to other layers/parameters",
+    "page": 6
+   },
+   {
+    "level": 2,
+    "title": "3.4 Empirical veriﬁcation of the theory and discussion",
+    "page": 6
+   },
+   {
+    "level": 3,
+    "title": "On the concentration property",
+    "page": 6
+   },
+   {
+    "level": 3,
+    "title": "On the extended theory",
+    "page": 6
+   },
+   {
+    "level": 3,
+    "title": "The critical warm-up stage for Post-LN Transformer",
+    "page": 6
+   },
+   {
+    "level": 1,
+    "title": "4 Experiments",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "4.1 Experiment Settings",
+    "page": 7
+   },
+   {
+    "level": 3,
+    "title": "Machine Translation",
+    "page": 7
+   },
+   {
+    "level": 3,
+    "title": "Unsupervised Pre-training (BERT)",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "4.2 Experiment Results",
+    "page": 7
+   },
+   {
+    "level": 3,
+    "title": "Machine Translation",
+    "page": 7
+   },
+   {
+    "level": 3,
+    "title": "Unsupervised Pre-training (BERT)",
+    "page": 8
+   },
+   {
+    "level": 1,
+    "title": "5 Conclusion and Future Work",
+    "page": 8
+   },
+   {
+    "level": 1,
+    "title": "References",
+    "page": 9
+   },
+   {
+    "level": 1,
+    "title": "A. Experimental Settings",
+    "page": 11
+   },
+   {
+    "level": 2,
+    "title": "Fine-tuning on GLUE tasks",
+    "page": 11
+   },
+   {
+    "level": 2,
+    "title": "Lemma 5. Let Y be a random variable that is never larger",
+    "page": 13
+   },
+   {
+    "level": 1,
+    "title": "F. Extension to other layers",
+    "page": 15
+   },
+   {
+    "level": 2,
+    "title": "Jj",
+    "page": 15
+   },
+   {
+    "level": 1,
+    "title": "H. Small learning rate experiment",
+    "page": 16
+   },
+   {
+    "level": 1,
+    "title": "G. Examples of (ϵ, δ)-bounded random variables",
+    "page": 16
+   }
+  ]
+ },
+ {
+  "file": "2005.14165v4.pdf",
+  "sections": 59,
+  "toc": 32,
+  "toc_missing": [
+   "3.8 NLI",
+   "D Total Compute Used to Train Language Models",
+   "E Human Quality Assessment of Synthetic News Artic",
+   "G Details of Task Phrasing and Specifications",
+   "H Results on All Tasks for All Model Sizes"
+  ],
+  "issues": [
+   "页码倒序 p1<p2（L1）: Abstract",
+   "书签里少了 5 条（书签共 32）"
+  ],
+  "rows": [
+   {
+    "level": 1,
+    "title": "目录",
+    "page": 2
+   },
+   {
+    "level": 1,
+    "title": "Abstract",
+    "page": 1
+   },
+   {
+    "level": 1,
+    "title": "1 Introduction",
+    "page": 3
+   },
+   {
+    "level": 1,
+    "title": "2 Approach",
+    "page": 6
+   },
+   {
+    "level": 2,
+    "title": "2.1 Model and Architectures",
+    "page": 8
+   },
+   {
+    "level": 2,
+    "title": "2.2 Training Dataset",
+    "page": 8
+   },
+   {
+    "level": 2,
+    "title": "2.3 Training Process",
+    "page": 9
+   },
+   {
+    "level": 2,
+    "title": "2.4 Evaluation",
+    "page": 10
+   },
+   {
+    "level": 1,
+    "title": "3 Results",
+    "page": 10
+   },
+   {
+    "level": 2,
+    "title": "3.1 Language Modeling, Cloze, and Completion Tasks",
+    "page": 11
+   },
+   {
+    "level": 3,
+    "title": "3.1.1 Language Modeling",
+    "page": 11
+   },
+   {
+    "level": 3,
+    "title": "3.1.2 LAMBADA",
+    "page": 11
+   },
+   {
+    "level": 3,
+    "title": "3.1.3 HellaSwag",
+    "page": 13
+   },
+   {
+    "level": 3,
+    "title": "3.1.4 StoryCloze",
+    "page": 13
+   },
+   {
+    "level": 2,
+    "title": "3.2 Closed Book Question Answering",
+    "page": 13
+   },
+   {
+    "level": 2,
+    "title": "3.3 Translation",
+    "page": 14
+   },
+   {
+    "level": 2,
+    "title": "3.4 Winograd-Style Tasks",
+    "page": 16
+   },
+   {
+    "level": 2,
+    "title": "3.5 Common Sense Reasoning",
+    "page": 17
+   },
+   {
+    "level": 2,
+    "title": "3.6 Reading Comprehension",
+    "page": 18
+   },
+   {
+    "level": 2,
+    "title": "3.7 SuperGLUE",
+    "page": 18
+   },
+   {
+    "level": 2,
+    "title": "3.9 Synthetic and Qualitative Tasks",
+    "page": 21
+   },
+   {
+    "level": 3,
+    "title": "3.9.1 Arithmetic",
+    "page": 21
+   },
+   {
+    "level": 1,
+    "title": "4 D+ 4D- 5D+ 5D- 2Dx 1DC",
+    "page": 23
+   },
+   {
+    "level": 2,
+    "title": "3.9.2 Word Scrambling and Manipulation Tasks",
+    "page": 23
+   },
+   {
+    "level": 3,
+    "title": "3.9.3 SAT Analogies",
+    "page": 24
+   },
+   {
+    "level": 3,
+    "title": "3.9.4 News Article Generation",
+    "page": 25
+   },
+   {
+    "level": 3,
+    "title": "3.9.5 Learning and Using Novel Words",
+    "page": 26
+   },
+   {
+    "level": 3,
+    "title": "3.9.6 Correcting English Grammar",
+    "page": 29
+   },
+   {
+    "level": 1,
+    "title": "4 Measuring and Preventing Memorization Of Benchmarks",
+    "page": 29
+   },
+   {
+    "level": 1,
+    "title": "5 Limitations",
+    "page": 33
+   },
+   {
+    "level": 1,
+    "title": "6 Broader Impacts",
+    "page": 34
+   },
+   {
+    "level": 2,
+    "title": "6.1 Misuse of Language Models",
+    "page": 35
+   },
+   {
+    "level": 3,
+    "title": "6.1.1 Potential Misuse Applications",
+    "page": 35
+   },
+   {
+    "level": 3,
+    "title": "6.1.2 Threat Actor Analysis",
+    "page": 35
+   },
+   {
+    "level": 3,
+    "title": "6.1.3 External Incentive Structures",
+    "page": 35
+   },
+   {
+    "level": 2,
+    "title": "6.2 Fairness, Bias, and Representation",
+    "page": 36
+   },
+   {
+    "level": 3,
+    "title": "6.2.1 Gender",
+    "page": 36
+   },
+   {
+    "level": 3,
+    "title": "6.2.2 Race",
+    "page": 37
+   },
+   {
+    "level": 4,
+    "title": "Religion Most Favored Descriptive Words",
+    "page": 38
+   },
+   {
+    "level": 3,
+    "title": "6.2.3 Religion",
+    "page": 38
+   },
+   {
+    "level": 3,
+    "title": "6.2.4 Future Bias and Fairness Challenges",
+    "page": 39
+   },
+   {
+    "level": 2,
+    "title": "6.3 Energy Usage",
+    "page": 39
+   },
+   {
+    "level": 1,
+    "title": "7 Related Work",
+    "page": 39
+   },
+   {
+    "level": 1,
+    "title": "8 Conclusion",
+    "page": 40
+   },
+   {
+    "level": 1,
+    "title": "Acknowledgements",
+    "page": 41
+   },
+   {
+    "level": 2,
+    "title": "Contributions",
+    "page": 42
+   },
+   {
+    "level": 1,
+    "title": "A Details of Common Crawl Filtering",
+    "page": 43
+   },
+   {
+    "level": 1,
+    "title": "B Details of Model Training",
+    "page": 43
+   },
+   {
+    "level": 1,
+    "title": "C Details of Test Set Contamination Studies",
+    "page": 43
+   },
+   {
+    "level": 2,
+    "title": "Initial training set ﬁltering",
+    "page": 43
+   },
+   {
+    "level": 2,
+    "title": "Overlap methodology",
+    "page": 44
+   },
+   {
+    "level": 2,
+    "title": "Overlap results",
+    "page": 44
+   },
+   {
+    "level": 2,
+    "title": "Total Compute Used to Train Language Models",
+    "page": 46
+   },
+   {
+    "level": 2,
+    "title": "Human Quality Assessment of Synthetic News Articles",
+    "page": 46
+   },
+   {
+    "level": 1,
+    "title": "F Additional Samples from GPT-3",
+    "page": 48
+   },
+   {
+    "level": 1,
+    "title": "G Details of Task Phrasing and Speciﬁcations",
+    "page": 50
+   },
+   {
+    "level": 2,
+    "title": "Figure G.17: Formatted dataset example for StoryCloze",
+    "page": 55
+   },
+   {
+    "level": 2,
+    "title": "Figure G.19: Formatted dataset example for Cycled Letters",
+    "page": 55
+   },
+   {
+    "level": 1,
+    "title": "References",
+    "page": 68
+   }
+  ]
+ },
+ {
+  "file": "2010.11929v2.pdf",
+  "sections": 30,
+  "toc": 30,
+  "toc_missing": [],
+  "issues": [],
+  "rows": [
+   {
+    "level": 1,
+    "title": "1 Introduction",
+    "page": 1
+   },
+   {
+    "level": 1,
+    "title": "2 Related Work",
+    "page": 2
+   },
+   {
+    "level": 1,
+    "title": "3 Method",
+    "page": 3
+   },
+   {
+    "level": 2,
+    "title": "3.1 Vision Transformer (ViT)",
+    "page": 3
+   },
+   {
+    "level": 2,
+    "title": "3.2 Fine-tuning and Higher Resolution",
+    "page": 4
+   },
+   {
+    "level": 1,
+    "title": "4 Experiments",
+    "page": 4
+   },
+   {
+    "level": 2,
+    "title": "4.1 Setup",
+    "page": 4
+   },
+   {
+    "level": 2,
+    "title": "4.2 Comparison to State of the Art",
+    "page": 5
+   },
+   {
+    "level": 2,
+    "title": "4.3 Pre-training Data Requirements",
+    "page": 6
+   },
+   {
+    "level": 2,
+    "title": "4.4 Scaling Study",
+    "page": 8
+   },
+   {
+    "level": 2,
+    "title": "4.5 Inspecting Vision Transformer",
+    "page": 8
+   },
+   {
+    "level": 2,
+    "title": "4.6 Self-supervision",
+    "page": 8
+   },
+   {
+    "level": 1,
+    "title": "5 Conclusion",
+    "page": 9
+   },
+   {
+    "level": 1,
+    "title": "A Multihead Self-attention",
+    "page": 13
+   },
+   {
+    "level": 1,
+    "title": "B Experiment details",
+    "page": 13
+   },
+   {
+    "level": 2,
+    "title": "B.1 Training",
+    "page": 13
+   },
+   {
+    "level": 3,
+    "title": "B.1.1 Fine-tuning",
+    "page": 13
+   },
+   {
+    "level": 3,
+    "title": "B.1.2 Self-supervision",
+    "page": 14
+   },
+   {
+    "level": 1,
+    "title": "C Additional Results",
+    "page": 14
+   },
+   {
+    "level": 1,
+    "title": "D Additional Analyses",
+    "page": 15
+   },
+   {
+    "level": 2,
+    "title": "D.1 SGD vs. Adam for ResNets",
+    "page": 15
+   },
+   {
+    "level": 2,
+    "title": "D.2 Transformer shape",
+    "page": 16
+   },
+   {
+    "level": 2,
+    "title": "D.3 Head Type and class token",
+    "page": 16
+   },
+   {
+    "level": 2,
+    "title": "D.4 Positional Embedding",
+    "page": 17
+   },
+   {
+    "level": 2,
+    "title": "D.5 Empirical Computational Costs",
+    "page": 18
+   },
+   {
+    "level": 2,
+    "title": "D.6 Axial Attention",
+    "page": 19
+   },
+   {
+    "level": 2,
+    "title": "D.7 Attention Distance",
+    "page": 20
+   },
+   {
+    "level": 2,
+    "title": "D.8 Attention Maps",
+    "page": 20
+   },
+   {
+    "level": 2,
+    "title": "D.9 ObjectNet Results",
+    "page": 20
+   },
+   {
+    "level": 2,
+    "title": "D.10 VTAB Breakdown",
+    "page": 20
+   }
+  ]
+ },
+ {
+  "file": "209_Emergent_Abilities_of_Larg.pdf",
+  "sections": 28,
+  "toc": 28,
+  "toc_missing": [],
+  "issues": [],
+  "rows": [
+   {
+    "level": 1,
+    "title": "Introduction",
+    "page": 1
+   },
+   {
+    "level": 1,
+    "title": "Emergent Abilities Definition",
+    "page": 2
+   },
+   {
+    "level": 1,
+    "title": "Few-Shot Prompted Tasks",
+    "page": 3
+   },
+   {
+    "level": 1,
+    "title": "Augmented Prompting Strategies",
+    "page": 4
+   },
+   {
+    "level": 1,
+    "title": "Discussion",
+    "page": 6
+   },
+   {
+    "level": 2,
+    "title": "Potential explanations of emergence",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "Beyond scaling",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "Another view of emergence",
+    "page": 8
+   },
+   {
+    "level": 2,
+    "title": "Emergent risks",
+    "page": 8
+   },
+   {
+    "level": 2,
+    "title": "Sociological changes",
+    "page": 9
+   },
+   {
+    "level": 2,
+    "title": "Directions for future work",
+    "page": 10
+   },
+   {
+    "level": 1,
+    "title": "Conclusions",
+    "page": 11
+   },
+   {
+    "level": 1,
+    "title": "BIG-Bench analysis",
+    "page": 19
+   },
+   {
+    "level": 2,
+    "title": "Cross-entropy loss analysis",
+    "page": 19
+   },
+   {
+    "level": 3,
+    "title": "Generative tasks",
+    "page": 19
+   },
+   {
+    "level": 3,
+    "title": "Classification tasks",
+    "page": 19
+   },
+   {
+    "level": 2,
+    "title": "Different metrics for generative tasks",
+    "page": 22
+   },
+   {
+    "level": 2,
+    "title": "BIG-Bench task analysis",
+    "page": 22
+   },
+   {
+    "level": 1,
+    "title": "Further MMLU analysis",
+    "page": 24
+   },
+   {
+    "level": 1,
+    "title": "All Model Details",
+    "page": 26
+   },
+   {
+    "level": 1,
+    "title": "Scaling with Parameter Count",
+    "page": 27
+   },
+   {
+    "level": 1,
+    "title": "BIG-Bench Task Classification",
+    "page": 29
+   },
+   {
+    "level": 2,
+    "title": "Smoothly increasing",
+    "page": 29
+   },
+   {
+    "level": 2,
+    "title": "Emergent with GPT-3 or LaMDA",
+    "page": 29
+   },
+   {
+    "level": 2,
+    "title": "Emergent wih PaLM",
+    "page": 29
+   },
+   {
+    "level": 2,
+    "title": "Flat (no model better than random)",
+    "page": 29
+   },
+   {
+    "level": 2,
+    "title": "Other",
+    "page": 30
+   },
+   {
+    "level": 1,
+    "title": "PaLM 62B is emergent but GPT-3 and LaMDA are not",
+    "page": 30
+   }
+  ]
+ },
+ {
+  "file": "2101.03961v3.pdf",
+  "sections": 31,
+  "toc": 31,
+  "toc_missing": [],
+  "issues": [],
+  "rows": [
+   {
+    "level": 1,
+    "title": "1 Introduction",
+    "page": 3
+   },
+   {
+    "level": 1,
+    "title": "2 Switch Transformer",
+    "page": 4
+   },
+   {
+    "level": 2,
+    "title": "2.1 Simplifying Sparse Routing",
+    "page": 5
+   },
+   {
+    "level": 2,
+    "title": "2.2 Efficient Sparse Routing",
+    "page": 6
+   },
+   {
+    "level": 2,
+    "title": "2.3 Putting It All Together: The Switch Transformer",
+    "page": 8
+   },
+   {
+    "level": 2,
+    "title": "2.4 Improved Training and Fine-Tuning Techniques",
+    "page": 8
+   },
+   {
+    "level": 1,
+    "title": "3 Scaling Properties",
+    "page": 11
+   },
+   {
+    "level": 2,
+    "title": "3.1 Scaling Results on a Step-Basis",
+    "page": 12
+   },
+   {
+    "level": 2,
+    "title": "3.2 Scaling Results on a Time-Basis",
+    "page": 13
+   },
+   {
+    "level": 2,
+    "title": "3.3 Scaling Versus a Larger Dense Model",
+    "page": 13
+   },
+   {
+    "level": 1,
+    "title": "4 Downstream Results",
+    "page": 14
+   },
+   {
+    "level": 2,
+    "title": "4.1 Fine-Tuning",
+    "page": 14
+   },
+   {
+    "level": 2,
+    "title": "4.2 Distillation",
+    "page": 16
+   },
+   {
+    "level": 2,
+    "title": "4.3 Multilingual Learning",
+    "page": 17
+   },
+   {
+    "level": 1,
+    "title": "5 Designing Models with Data, Model, and Expert-Parallelism",
+    "page": 18
+   },
+   {
+    "level": 2,
+    "title": "5.1 Data Parallelism",
+    "page": 20
+   },
+   {
+    "level": 2,
+    "title": "5.2 Model Parallelism",
+    "page": 20
+   },
+   {
+    "level": 2,
+    "title": "5.3 Model and Data Parallelism",
+    "page": 21
+   },
+   {
+    "level": 2,
+    "title": "5.4 Expert and Data Parallelism",
+    "page": 22
+   },
+   {
+    "level": 2,
+    "title": "5.5 Expert, Model and Data Parallelism",
+    "page": 22
+   },
+   {
+    "level": 2,
+    "title": "5.6 Towards Trillion Parameter Models",
+    "page": 22
+   },
+   {
+    "level": 1,
+    "title": "6 Related Work",
+    "page": 24
+   },
+   {
+    "level": 1,
+    "title": "7 Discussion",
+    "page": 25
+   },
+   {
+    "level": 1,
+    "title": "8 Future Work",
+    "page": 26
+   },
+   {
+    "level": 1,
+    "title": "9 Conclusion",
+    "page": 27
+   },
+   {
+    "level": 1,
+    "title": "A Switch for Attention",
+    "page": 27
+   },
+   {
+    "level": 1,
+    "title": "B Preventing Token Dropping with No-Token-Left-Behind",
+    "page": 29
+   },
+   {
+    "level": 1,
+    "title": "C Encouraging Exploration Across Experts",
+    "page": 29
+   },
+   {
+    "level": 1,
+    "title": "D Switch Transformers in Lower Compute Regimes",
+    "page": 29
+   },
+   {
+    "level": 1,
+    "title": "E Relation of Upstream to Downstream Model Performance",
+    "page": 32
+   },
+   {
+    "level": 1,
+    "title": "F Pseudo Code for Switch Transformers",
+    "page": 33
+   }
+  ]
+ },
+ {
+  "file": "2103.00020v1.pdf",
+  "sections": 44,
+  "toc": 0,
+  "toc_missing": [],
+  "issues": [],
+  "rows": [
+   {
+    "level": 1,
+    "title": "Abstract",
+    "page": 1
+   },
+   {
+    "level": 1,
+    "title": "1 Introduction and Motivating Work",
+    "page": 1
+   },
+   {
+    "level": 1,
+    "title": "2 Approach",
+    "page": 3
+   },
+   {
+    "level": 2,
+    "title": "2.1 Natural Language Supervision",
+    "page": 3
+   },
+   {
+    "level": 2,
+    "title": "2.2 Creating a Sufﬁciently Large Dataset",
+    "page": 3
+   },
+   {
+    "level": 2,
+    "title": "2.3 Selecting an Efﬁcient Pre-Training Method",
+    "page": 4
+   },
+   {
+    "level": 2,
+    "title": "2.4 Choosing and Scaling a Model",
+    "page": 4
+   },
+   {
+    "level": 2,
+    "title": "2.5 Training",
+    "page": 5
+   },
+   {
+    "level": 1,
+    "title": "3 Experiments",
+    "page": 6
+   },
+   {
+    "level": 2,
+    "title": "3.1 Zero-Shot Transfer",
+    "page": 6
+   },
+   {
+    "level": 3,
+    "title": "3.1.1 MOTIVATION",
+    "page": 6
+   },
+   {
+    "level": 3,
+    "title": "3.1.2 USING CLIP FOR ZERO-SHOT TRANSFER",
+    "page": 6
+   },
+   {
+    "level": 3,
+    "title": "3.1.3 INITIAL COMPARISON TO VISUAL N-GRAMS",
+    "page": 6
+   },
+   {
+    "level": 3,
+    "title": "3.1.4 PROMPT ENGINEERING AND ENSEMBLING",
+    "page": 7
+   },
+   {
+    "level": 3,
+    "title": "3.1.5 ANALYSIS OF ZERO-SHOT CLIP PERFORMANCE",
+    "page": 8
+   },
+   {
+    "level": 2,
+    "title": "3.2 Representation Learning",
+    "page": 11
+   },
+   {
+    "level": 2,
+    "title": "3.3 Robustness to Natural Distribution Shift",
+    "page": 13
+   },
+   {
+    "level": 1,
+    "title": "4 Comparison to Human Performance",
+    "page": 16
+   },
+   {
+    "level": 1,
+    "title": "5 Data Overlap Analysis",
+    "page": 17
+   },
+   {
+    "level": 1,
+    "title": "6 Limitations",
+    "page": 18
+   },
+   {
+    "level": 1,
+    "title": "7 Broader Impacts",
+    "page": 20
+   },
+   {
+    "level": 2,
+    "title": "7.1 Bias",
+    "page": 21
+   },
+   {
+    "level": 2,
+    "title": "7.2 Surveillance",
+    "page": 23
+   },
+   {
+    "level": 2,
+    "title": "7.3 Future Work",
+    "page": 25
+   },
+   {
+    "level": 1,
+    "title": "8 Related Work",
+    "page": 25
+   },
+   {
+    "level": 1,
+    "title": "9 Conclusion",
+    "page": 27
+   },
+   {
+    "level": 1,
+    "title": "References",
+    "page": 27
+   },
+   {
+    "level": 1,
+    "title": "A. Linear-probe evaluation",
+    "page": 37
+   },
+   {
+    "level": 2,
+    "title": "CLIP-ViT",
+    "page": 37
+   },
+   {
+    "level": 2,
+    "title": "EfﬁcietNet",
+    "page": 37
+   },
+   {
+    "level": 2,
+    "title": "Instagram-pretrained ResNeXt",
+    "page": 37
+   },
+   {
+    "level": 2,
+    "title": "Big Transfer (BiT)",
+    "page": 37
+   },
+   {
+    "level": 2,
+    "title": "Vision Transformer (ViT)",
+    "page": 37
+   },
+   {
+    "level": 2,
+    "title": "Momentum Contrast (MoCo)",
+    "page": 38
+   },
+   {
+    "level": 2,
+    "title": "VirTex",
+    "page": 38
+   },
+   {
+    "level": 2,
+    "title": "ResNet",
+    "page": 38
+   },
+   {
+    "level": 1,
+    "title": "B. Zero-Shot Prediction",
+    "page": 44
+   },
+   {
+    "level": 1,
+    "title": "C. Duplicate Detector",
+    "page": 44
+   },
+   {
+    "level": 1,
+    "title": "D. Dataset Ablation on YFCC100M",
+    "page": 44
+   },
+   {
+    "level": 1,
+    "title": "E. Selected Task and Dataset Results",
+    "page": 45
+   },
+   {
+    "level": 2,
+    "title": "E.2. Optical Character Recognition",
+    "page": 45
+   },
+   {
+    "level": 2,
+    "title": "E.3. Action Recognition in Videos",
+    "page": 46
+   },
+   {
+    "level": 2,
+    "title": "E.5. Robustness to Distribution Shift",
+    "page": 47
+   },
+   {
+    "level": 1,
+    "title": "F. Model Hyperparameters",
+    "page": 48
+   }
+  ]
+ },
+ {
+  "file": "2106.09685v2.pdf",
+  "sections": 37,
+  "toc": 37,
+  "toc_missing": [],
+  "issues": [],
+  "rows": [
+   {
+    "level": 1,
+    "title": "1 Introduction",
+    "page": 1
+   },
+   {
+    "level": 1,
+    "title": "2 Problem Statement",
+    "page": 2
+   },
+   {
+    "level": 1,
+    "title": "3 Aren't Existing Solutions Good Enough?",
+    "page": 3
+   },
+   {
+    "level": 1,
+    "title": "4 Our Method",
+    "page": 4
+   },
+   {
+    "level": 2,
+    "title": "4.1 Low-Rank-Parametrized Update Matrices",
+    "page": 4
+   },
+   {
+    "level": 2,
+    "title": "4.2 Applying LoRA to Transformer",
+    "page": 5
+   },
+   {
+    "level": 1,
+    "title": "5 Empirical Experiments",
+    "page": 5
+   },
+   {
+    "level": 2,
+    "title": "5.1 Baselines",
+    "page": 5
+   },
+   {
+    "level": 2,
+    "title": "5.2 RoBERTa base/large",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "5.3 DeBERTa XXL",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "5.4 GPT-2 medium/large",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "5.5 Scaling up to GPT-3 175B",
+    "page": 8
+   },
+   {
+    "level": 1,
+    "title": "6 Related Works",
+    "page": 8
+   },
+   {
+    "level": 1,
+    "title": "7 Understanding the Low-Rank Updates",
+    "page": 9
+   },
+   {
+    "level": 2,
+    "title": "7.1 Which Weight Matrices in Transformer Should We Apply LoRA to?",
+    "page": 10
+   },
+   {
+    "level": 2,
+    "title": "7.2 What is the Optimal Rank r for LoRA?",
+    "page": 10
+   },
+   {
+    "level": 2,
+    "title": "7.3 How Does the Adaptation Matrix W Compare to W?",
+    "page": 11
+   },
+   {
+    "level": 1,
+    "title": "8 Conclusion and Future Work",
+    "page": 12
+   },
+   {
+    "level": 1,
+    "title": "A Large Language Models Still Need Parameter Updates",
+    "page": 16
+   },
+   {
+    "level": 1,
+    "title": "B Inference Latency Introduced by Adapter Layers",
+    "page": 17
+   },
+   {
+    "level": 1,
+    "title": "C Dataset Details",
+    "page": 17
+   },
+   {
+    "level": 1,
+    "title": "D Hyperparameters Used in Experiments",
+    "page": 18
+   },
+   {
+    "level": 2,
+    "title": "D.1 RoBERTa",
+    "page": 18
+   },
+   {
+    "level": 2,
+    "title": "D.2 DeBERTa",
+    "page": 18
+   },
+   {
+    "level": 2,
+    "title": "D.3 GPT-2",
+    "page": 19
+   },
+   {
+    "level": 2,
+    "title": "D.4 GPT-3",
+    "page": 19
+   },
+   {
+    "level": 1,
+    "title": "E Combining LoRA with Prefix Tuning",
+    "page": 20
+   },
+   {
+    "level": 1,
+    "title": "F Additional Empirical Experiments",
+    "page": 21
+   },
+   {
+    "level": 2,
+    "title": "F.1 Additional Experiments on GPT-2",
+    "page": 21
+   },
+   {
+    "level": 2,
+    "title": "F.2 Additional Experiments on GPT-3",
+    "page": 22
+   },
+   {
+    "level": 2,
+    "title": "F.3 Low-Data Regime",
+    "page": 22
+   },
+   {
+    "level": 1,
+    "title": "G Measuring Similarity Between Subspaces",
+    "page": 22
+   },
+   {
+    "level": 1,
+    "title": "H Additional Experiments on Low-Rank Matrices",
+    "page": 24
+   },
+   {
+    "level": 2,
+    "title": "H.1 Correlation between LoRA Modules",
+    "page": 24
+   },
+   {
+    "level": 2,
+    "title": "H.2 Effect of r on GPT-2",
+    "page": 24
+   },
+   {
+    "level": 2,
+    "title": "H.3 Correlation between W and W",
+    "page": 24
+   },
+   {
+    "level": 2,
+    "title": "H.4 Amplification Factor",
+    "page": 25
+   }
+  ]
+ },
+ {
+  "file": "2107.03374v2.pdf",
+  "sections": 50,
+  "toc": 0,
+  "toc_missing": [],
+  "issues": [],
+  "rows": [
+   {
+    "level": 1,
+    "title": "Abstract",
+    "page": 1
+   },
+   {
+    "level": 1,
+    "title": "1 Introduction",
+    "page": 1
+   },
+   {
+    "level": 1,
+    "title": "2 Evaluation Framework",
+    "page": 2
+   },
+   {
+    "level": 2,
+    "title": "2.1 Functional Correctness",
+    "page": 2
+   },
+   {
+    "level": 2,
+    "title": "2.2 HumanEval: Hand-Written Evaluation Set",
+    "page": 4
+   },
+   {
+    "level": 2,
+    "title": "2.3 Sandbox for Executing Generated Programs",
+    "page": 4
+   },
+   {
+    "level": 1,
+    "title": "3 Code Fine-Tuning",
+    "page": 4
+   },
+   {
+    "level": 2,
+    "title": "3.1 Data Collection",
+    "page": 4
+   },
+   {
+    "level": 2,
+    "title": "3.2 Methods",
+    "page": 4
+   },
+   {
+    "level": 2,
+    "title": "3.3 Results",
+    "page": 4
+   },
+   {
+    "level": 2,
+    "title": "3.4 Comparative Analysis of Related Models and Systems",
+    "page": 6
+   },
+   {
+    "level": 2,
+    "title": "3.5 Results on the APPS Dataset",
+    "page": 6
+   },
+   {
+    "level": 1,
+    "title": "4 Supervised Fine-Tuning",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "4.1 Problems from Competitive Programming",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "4.2 Problems from Continuous Integration",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "4.3 Filtering Problems",
+    "page": 8
+   },
+   {
+    "level": 2,
+    "title": "4.4 Methods",
+    "page": 8
+   },
+   {
+    "level": 2,
+    "title": "4.5 Results",
+    "page": 8
+   },
+   {
+    "level": 1,
+    "title": "5 Docstring Generation",
+    "page": 9
+   },
+   {
+    "level": 1,
+    "title": "6 Limitations",
+    "page": 10
+   },
+   {
+    "level": 1,
+    "title": "7 Broader Impacts and Hazard Analysis",
+    "page": 10
+   },
+   {
+    "level": 2,
+    "title": "7.1 Over-reliance",
+    "page": 11
+   },
+   {
+    "level": 2,
+    "title": "7.2 Misalignment",
+    "page": 11
+   },
+   {
+    "level": 2,
+    "title": "7.3 Bias and representation",
+    "page": 12
+   },
+   {
+    "level": 2,
+    "title": "7.4 Economic and labor market impacts",
+    "page": 12
+   },
+   {
+    "level": 2,
+    "title": "7.5 Security implications",
+    "page": 12
+   },
+   {
+    "level": 2,
+    "title": "7.6 Environmental impacts",
+    "page": 13
+   },
+   {
+    "level": 2,
+    "title": "7.7 Legal implications",
+    "page": 13
+   },
+   {
+    "level": 2,
+    "title": "7.8 Risk mitigation",
+    "page": 13
+   },
+   {
+    "level": 1,
+    "title": "8 Related Work",
+    "page": 13
+   },
+   {
+    "level": 1,
+    "title": "9 Conclusion",
+    "page": 14
+   },
+   {
+    "level": 1,
+    "title": "Acknowledgements",
+    "page": 15
+   },
+   {
+    "level": 1,
+    "title": "References",
+    "page": 15
+   },
+   {
+    "level": 1,
+    "title": "B. Random Problems and Solutions from Codex-12B",
+    "page": 19
+   },
+   {
+    "level": 1,
+    "title": "C. Building Blocks for Synthetic Tasks",
+    "page": 24
+   },
+   {
+    "level": 1,
+    "title": "D. Details of Speciﬁcation-based Evaluation Framework",
+    "page": 25
+   },
+   {
+    "level": 1,
+    "title": "E. Analysis of Alignment Problems",
+    "page": 26
+   },
+   {
+    "level": 2,
+    "title": "E.2. How can alignment be deﬁned and evaluated in models like Codex?",
+    "page": 26
+   },
+   {
+    "level": 2,
+    "title": "E.3. Results of alignment evaluations",
+    "page": 27
+   },
+   {
+    "level": 2,
+    "title": "Example 1: sample prompt without bugs in context",
+    "page": 28
+   },
+   {
+    "level": 2,
+    "title": "Example 2: sample prompt with bugs in context",
+    "page": 29
+   },
+   {
+    "level": 1,
+    "title": "F. Supplemental Bias Analysis",
+    "page": 29
+   },
+   {
+    "level": 2,
+    "title": "F.1. Probes for classiﬁcation prompts and completions that encode bias",
+    "page": 30
+   },
+   {
+    "level": 2,
+    "title": "F.2. Analyzing bias in text generated by Codex",
+    "page": 30
+   },
+   {
+    "level": 1,
+    "title": "G. Supplemental security analysis",
+    "page": 31
+   },
+   {
+    "level": 2,
+    "title": "G.2. Potential misuse applications",
+    "page": 31
+   },
+   {
+    "level": 1,
+    "title": "H. Supplemental economic analysis",
+    "page": 32
+   },
+   {
+    "level": 2,
+    "title": "H.1. Impacts on programmers and engineers",
+    "page": 33
+   },
+   {
+    "level": 2,
+    "title": "H.2. Differential impacts among engineers",
+    "page": 33
+   },
+   {
+    "level": 2,
+    "title": "H.4. Effects of differential package import rates",
+    "page": 34
+   }
+  ]
+ },
+ {
+  "file": "2201.11903v6.pdf",
+  "sections": 35,
+  "toc": 35,
+  "toc_missing": [],
+  "issues": [],
+  "rows": [
+   {
+    "level": 1,
+    "title": "1 Introduction",
+    "page": 2
+   },
+   {
+    "level": 1,
+    "title": "2 Chain-of-Thought Prompting",
+    "page": 2
+   },
+   {
+    "level": 1,
+    "title": "3 Arithmetic Reasoning",
+    "page": 3
+   },
+   {
+    "level": 2,
+    "title": "3.1 Experimental Setup",
+    "page": 3
+   },
+   {
+    "level": 2,
+    "title": "3.2 Results",
+    "page": 4
+   },
+   {
+    "level": 2,
+    "title": "3.3 Ablation Study",
+    "page": 5
+   },
+   {
+    "level": 2,
+    "title": "3.4 Robustness of Chain of Thought",
+    "page": 6
+   },
+   {
+    "level": 1,
+    "title": "4 Commonsense Reasoning",
+    "page": 7
+   },
+   {
+    "level": 1,
+    "title": "5 Symbolic Reasoning",
+    "page": 8
+   },
+   {
+    "level": 1,
+    "title": "6 Discussion",
+    "page": 8
+   },
+   {
+    "level": 1,
+    "title": "7 Related Work",
+    "page": 9
+   },
+   {
+    "level": 1,
+    "title": "8 Conclusions",
+    "page": 9
+   },
+   {
+    "level": 1,
+    "title": "A Frequently Asked Questions",
+    "page": 16
+   },
+   {
+    "level": 2,
+    "title": "A.1 Why does increasing model scale improve chain-of-thought prompting?",
+    "page": 16
+   },
+   {
+    "level": 2,
+    "title": "A.2 What is the role of prompt engineering?",
+    "page": 17
+   },
+   {
+    "level": 2,
+    "title": "A.3 Will chain-of-thought prompting improve performance for my task of interest?",
+    "page": 18
+   },
+   {
+    "level": 2,
+    "title": "A.4 Why is prompting with the equation only not enough for some arithmetic reasoning datasets?",
+    "page": 19
+   },
+   {
+    "level": 1,
+    "title": "B All Experimental Results",
+    "page": 20
+   },
+   {
+    "level": 1,
+    "title": "C Extended Related Work",
+    "page": 24
+   },
+   {
+    "level": 2,
+    "title": "C.1 Prompting",
+    "page": 24
+   },
+   {
+    "level": 2,
+    "title": "C.2 Natural language explanations",
+    "page": 24
+   },
+   {
+    "level": 2,
+    "title": "C.3 Program synthesis and execution",
+    "page": 24
+   },
+   {
+    "level": 2,
+    "title": "C.4 Numeric and logical reasoning",
+    "page": 24
+   },
+   {
+    "level": 2,
+    "title": "C.5 Intermediate language steps",
+    "page": 25
+   },
+   {
+    "level": 1,
+    "title": "D Appendix: Additional Analysis",
+    "page": 25
+   },
+   {
+    "level": 2,
+    "title": "D.1 Correct Chain of Thought Analysis",
+    "page": 25
+   },
+   {
+    "level": 2,
+    "title": "D.2 Incorrect Chain of Thought Analysis",
+    "page": 27
+   },
+   {
+    "level": 2,
+    "title": "D.3 Additional Robustness Analysis",
+    "page": 28
+   },
+   {
+    "level": 1,
+    "title": "E Additional Details",
+    "page": 30
+   },
+   {
+    "level": 2,
+    "title": "E.1 Reproducibility Statement",
+    "page": 30
+   },
+   {
+    "level": 2,
+    "title": "E.2 Computational Resources",
+    "page": 30
+   },
+   {
+    "level": 2,
+    "title": "E.3 Dataset Details and Licenses",
+    "page": 30
+   },
+   {
+    "level": 1,
+    "title": "F Appendix: Input/Output Examples",
+    "page": 32
+   },
+   {
+    "level": 1,
+    "title": "G Appendix: Full Prompts",
+    "page": 35
+   },
+   {
+    "level": 1,
+    "title": "H Appendix: Alternate Annotators for MWP",
+    "page": 42
+   }
+  ]
+ },
+ {
+  "file": "2203.02155v1.pdf",
+  "sections": 54,
+  "toc": 54,
+  "toc_missing": [],
+  "issues": [],
+  "rows": [
+   {
+    "level": 1,
+    "title": "1 Introduction",
+    "page": 1
+   },
+   {
+    "level": 1,
+    "title": "2 Related work",
+    "page": 4
+   },
+   {
+    "level": 1,
+    "title": "3 Methods and experimental details",
+    "page": 6
+   },
+   {
+    "level": 2,
+    "title": "3.1 High-level methodology",
+    "page": 6
+   },
+   {
+    "level": 2,
+    "title": "3.2 Dataset",
+    "page": 6
+   },
+   {
+    "level": 2,
+    "title": "3.3 Tasks",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "3.4 Human data collection",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "3.5 Models",
+    "page": 8
+   },
+   {
+    "level": 2,
+    "title": "3.6 Evaluation",
+    "page": 9
+   },
+   {
+    "level": 1,
+    "title": "4 Results",
+    "page": 10
+   },
+   {
+    "level": 2,
+    "title": "4.1 Results on the API distribution",
+    "page": 11
+   },
+   {
+    "level": 2,
+    "title": "4.2 Results on public NLP datasets",
+    "page": 13
+   },
+   {
+    "level": 2,
+    "title": "4.3 Qualitative results",
+    "page": 15
+   },
+   {
+    "level": 1,
+    "title": "5 Discussion",
+    "page": 17
+   },
+   {
+    "level": 2,
+    "title": "5.1 Implications for alignment research",
+    "page": 17
+   },
+   {
+    "level": 2,
+    "title": "5.2 Who are we aligning to?",
+    "page": 18
+   },
+   {
+    "level": 2,
+    "title": "5.3 Limitations",
+    "page": 19
+   },
+   {
+    "level": 2,
+    "title": "5.4 Open questions",
+    "page": 19
+   },
+   {
+    "level": 2,
+    "title": "5.5 Broader impacts",
+    "page": 20
+   },
+   {
+    "level": 1,
+    "title": "A Additional prompt data details",
+    "page": 26
+   },
+   {
+    "level": 2,
+    "title": "A.1 Labeler-written prompts",
+    "page": 26
+   },
+   {
+    "level": 2,
+    "title": "A.2 API user prompts",
+    "page": 26
+   },
+   {
+    "level": 3,
+    "title": "A.2.1 Illustrative user prompts from InstructGPT distribution",
+    "page": 26
+   },
+   {
+    "level": 3,
+    "title": "A.2.2 Illustrative user prompts from GPT-3 distribution",
+    "page": 30
+   },
+   {
+    "level": 2,
+    "title": "A.3 Dataset sizes",
+    "page": 33
+   },
+   {
+    "level": 2,
+    "title": "A.4 Data diversity",
+    "page": 33
+   },
+   {
+    "level": 1,
+    "title": "B Additional human data collection details",
+    "page": 36
+   },
+   {
+    "level": 2,
+    "title": "B.1 Labeler selection",
+    "page": 36
+   },
+   {
+    "level": 2,
+    "title": "B.2 Labeling instructions",
+    "page": 36
+   },
+   {
+    "level": 2,
+    "title": "B.3 Labeler demographic data",
+    "page": 36
+   },
+   {
+    "level": 2,
+    "title": "B.4 Labeler satisfaction survey",
+    "page": 38
+   },
+   {
+    "level": 2,
+    "title": "B.5 Web interface",
+    "page": 38
+   },
+   {
+    "level": 1,
+    "title": "C Additional model details",
+    "page": 40
+   },
+   {
+    "level": 2,
+    "title": "C.1 Details of SFT training",
+    "page": 40
+   },
+   {
+    "level": 2,
+    "title": "C.2 Details of RM training",
+    "page": 41
+   },
+   {
+    "level": 2,
+    "title": "C.3 Details of the initialization models for RLHF",
+    "page": 42
+   },
+   {
+    "level": 2,
+    "title": "C.4 Details of RLHF training",
+    "page": 42
+   },
+   {
+    "level": 2,
+    "title": "C.5 FLAN and T0 models",
+    "page": 42
+   },
+   {
+    "level": 1,
+    "title": "D Automatic evaluation details",
+    "page": 44
+   },
+   {
+    "level": 2,
+    "title": "D.1 Toxicity and bias evaluation details",
+    "page": 44
+   },
+   {
+    "level": 2,
+    "title": "D.2 Prompt structure and evaluation features for each eval dataset",
+    "page": 44
+   },
+   {
+    "level": 1,
+    "title": "E Additional results",
+    "page": 51
+   },
+   {
+    "level": 2,
+    "title": "E.1 Performance on public NLP datasets",
+    "page": 51
+   },
+   {
+    "level": 2,
+    "title": "E.2 Reward model generalization across sets of labelers",
+    "page": 52
+   },
+   {
+    "level": 2,
+    "title": "E.3 Metadata results as a function of model size",
+    "page": 52
+   },
+   {
+    "level": 2,
+    "title": "E.4 Likert scores",
+    "page": 53
+   },
+   {
+    "level": 2,
+    "title": "E.5 Measuring bias",
+    "page": 53
+   },
+   {
+    "level": 2,
+    "title": "E.6 Fixing regressions on public NLP datasets",
+    "page": 53
+   },
+   {
+    "level": 2,
+    "title": "E.7 Optimal KL reward coefficient",
+    "page": 56
+   },
+   {
+    "level": 2,
+    "title": "E.8 PPO init models",
+    "page": 56
+   },
+   {
+    "level": 2,
+    "title": "E.9 Learning rate optimization for PPO models",
+    "page": 58
+   },
+   {
+    "level": 2,
+    "title": "E.10 RealToxicityPrompts results as a function of input toxicity",
+    "page": 58
+   },
+   {
+    "level": 2,
+    "title": "E.11 Additional ablations",
+    "page": 58
+   },
+   {
+    "level": 1,
+    "title": "F Model samples",
+    "page": 61
+   }
+  ]
+ },
+ {
+  "file": "2205.14135v2.pdf",
+  "sections": 31,
+  "toc": 31,
+  "toc_missing": [],
+  "issues": [],
+  "rows": [
+   {
+    "level": 1,
+    "title": "1 Introduction",
+    "page": 1
+   },
+   {
+    "level": 1,
+    "title": "2 Background",
+    "page": 3
+   },
+   {
+    "level": 2,
+    "title": "2.1 Hardware Performance",
+    "page": 3
+   },
+   {
+    "level": 2,
+    "title": "2.2 Standard Attention Implementation",
+    "page": 4
+   },
+   {
+    "level": 1,
+    "title": "3 FlashAttention: Algorithm, Analysis, and Extensions",
+    "page": 4
+   },
+   {
+    "level": 2,
+    "title": "3.1 An Efficient Attention Algorithm With Tiling and Recomputation",
+    "page": 4
+   },
+   {
+    "level": 2,
+    "title": "3.2 Analysis: IO Complexity of FlashAttention",
+    "page": 5
+   },
+   {
+    "level": 2,
+    "title": "3.3 Extension: Block-Sparse FlashAttention",
+    "page": 6
+   },
+   {
+    "level": 1,
+    "title": "4 Experiments",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "4.1 Faster Models with FlashAttention",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "4.2 Better Models with Longer Sequences",
+    "page": 8
+   },
+   {
+    "level": 2,
+    "title": "4.3 Benchmarking Attention",
+    "page": 9
+   },
+   {
+    "level": 1,
+    "title": "5 Limitations and Future Directions",
+    "page": 10
+   },
+   {
+    "level": 1,
+    "title": "A Related Work",
+    "page": 17
+   },
+   {
+    "level": 1,
+    "title": "B Algorithm Details",
+    "page": 17
+   },
+   {
+    "level": 2,
+    "title": "B.1 Memory-efficient forward pass",
+    "page": 18
+   },
+   {
+    "level": 2,
+    "title": "B.2 Memory-efficient backward pass",
+    "page": 18
+   },
+   {
+    "level": 2,
+    "title": "B.3 FlashAttention: Forward Pass",
+    "page": 19
+   },
+   {
+    "level": 2,
+    "title": "B.4 FlashAttention: Backward Pass",
+    "page": 20
+   },
+   {
+    "level": 2,
+    "title": "B.5 Comparison with rabe2021self",
+    "page": 22
+   },
+   {
+    "level": 1,
+    "title": "C Proofs",
+    "page": 22
+   },
+   {
+    "level": 1,
+    "title": "D Extension Details",
+    "page": 25
+   },
+   {
+    "level": 2,
+    "title": "D.1 Block-sparse FlashAttention",
+    "page": 25
+   },
+   {
+    "level": 2,
+    "title": "D.2 Potential Extensions",
+    "page": 25
+   },
+   {
+    "level": 1,
+    "title": "E Full Experimental Results",
+    "page": 26
+   },
+   {
+    "level": 2,
+    "title": "E.1 BERT",
+    "page": 26
+   },
+   {
+    "level": 2,
+    "title": "E.2 GPT-2",
+    "page": 26
+   },
+   {
+    "level": 2,
+    "title": "E.3 LRA details",
+    "page": 27
+   },
+   {
+    "level": 2,
+    "title": "E.4 Comparison with Apex FMHA",
+    "page": 27
+   },
+   {
+    "level": 2,
+    "title": "E.5 Speedup On Different Hardware and Configurations",
+    "page": 28
+   },
+   {
+    "level": 2,
+    "title": "E.6 Full Benchmarking Results",
+    "page": 30
+   }
+  ]
+ },
+ {
+  "file": "2206.07682v2.pdf",
+  "sections": 28,
+  "toc": 28,
+  "toc_missing": [],
+  "issues": [],
+  "rows": [
+   {
+    "level": 1,
+    "title": "1 Introduction",
+    "page": 1
+   },
+   {
+    "level": 1,
+    "title": "2 Emergent Abilities Definition",
+    "page": 2
+   },
+   {
+    "level": 1,
+    "title": "3 Few-Shot Prompted Tasks",
+    "page": 3
+   },
+   {
+    "level": 1,
+    "title": "4 Augmented Prompting Strategies",
+    "page": 4
+   },
+   {
+    "level": 1,
+    "title": "5 Discussion",
+    "page": 6
+   },
+   {
+    "level": 2,
+    "title": "5.1 Potential explanations of emergence",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "5.2 Beyond scaling",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "5.3 Another view of emergence",
+    "page": 8
+   },
+   {
+    "level": 2,
+    "title": "5.4 Emergent risks",
+    "page": 8
+   },
+   {
+    "level": 2,
+    "title": "5.5 Sociological changes",
+    "page": 10
+   },
+   {
+    "level": 2,
+    "title": "5.6 Directions for future work",
+    "page": 10
+   },
+   {
+    "level": 1,
+    "title": "6 Conclusions",
+    "page": 11
+   },
+   {
+    "level": 1,
+    "title": "A BIG-Bench analysis",
+    "page": 19
+   },
+   {
+    "level": 2,
+    "title": "A.1 Cross-entropy loss analysis",
+    "page": 19
+   },
+   {
+    "level": 3,
+    "title": "A.1.1 Generative tasks",
+    "page": 19
+   },
+   {
+    "level": 3,
+    "title": "A.1.2 Classification tasks",
+    "page": 19
+   },
+   {
+    "level": 2,
+    "title": "A.2 Different metrics for generative tasks",
+    "page": 22
+   },
+   {
+    "level": 2,
+    "title": "A.3 BIG-Bench task analysis",
+    "page": 22
+   },
+   {
+    "level": 1,
+    "title": "B Further MMLU analysis",
+    "page": 24
+   },
+   {
+    "level": 1,
+    "title": "C All Model Details",
+    "page": 26
+   },
+   {
+    "level": 1,
+    "title": "D Scaling with Parameter Count",
+    "page": 27
+   },
+   {
+    "level": 1,
+    "title": "E BIG-Bench Task Classification",
+    "page": 29
+   },
+   {
+    "level": 2,
+    "title": "E.1 Smoothly increasing",
+    "page": 29
+   },
+   {
+    "level": 2,
+    "title": "E.2 Emergent with GPT-3 or LaMDA",
+    "page": 29
+   },
+   {
+    "level": 2,
+    "title": "E.3 Emergent wih PaLM",
+    "page": 29
+   },
+   {
+    "level": 2,
+    "title": "E.4 Flat (no model better than random)",
+    "page": 29
+   },
+   {
+    "level": 2,
+    "title": "E.5 Other",
+    "page": 30
+   },
+   {
+    "level": 1,
+    "title": "F PaLM 62B is emergent but GPT-3 and LaMDA are not",
+    "page": 30
+   }
+  ]
+ },
+ {
+  "file": "2210.02414v2.pdf",
+  "sections": 68,
+  "toc": 68,
+  "toc_missing": [],
+  "issues": [],
+  "rows": [
+   {
+    "level": 1,
+    "title": "Introduction",
+    "page": 1
+   },
+   {
+    "level": 1,
+    "title": "The Design Choices of GLM-130B",
+    "page": 3
+   },
+   {
+    "level": 2,
+    "title": "GLM-130B's Architecture",
+    "page": 3
+   },
+   {
+    "level": 2,
+    "title": "GLM-130B's Pre-Training Setup",
+    "page": 4
+   },
+   {
+    "level": 2,
+    "title": "Platform-Aware Parallel Strategies and Model Configurations",
+    "page": 4
+   },
+   {
+    "level": 1,
+    "title": "The Training Stability of GLM-130B",
+    "page": 5
+   },
+   {
+    "level": 1,
+    "title": "GLM-130B Inference on RTX 2080 Ti",
+    "page": 6
+   },
+   {
+    "level": 1,
+    "title": "The Results",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "Language Modeling",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "Massive Multitask Language Understanding (MMLU)",
+    "page": 8
+   },
+   {
+    "level": 2,
+    "title": "Beyond the Imitation Game Benchmark (BIG-bench)",
+    "page": 8
+   },
+   {
+    "level": 2,
+    "title": "Chinese Language Understanding Evaluation (CLUE)",
+    "page": 8
+   },
+   {
+    "level": 1,
+    "title": "Related Work",
+    "page": 9
+   },
+   {
+    "level": 1,
+    "title": "Conclusion and Lessons",
+    "page": 9
+   },
+   {
+    "level": 1,
+    "title": "I Appendix",
+    "page": 20
+   },
+   {
+    "level": 2,
+    "title": "Ethics: Evaluation on Biases and Toxicity",
+    "page": 21
+   },
+   {
+    "level": 3,
+    "title": "Bias Measurement: CrowS-Pairs",
+    "page": 21
+   },
+   {
+    "level": 3,
+    "title": "Bias Measurement: StereoSet",
+    "page": 21
+   },
+   {
+    "level": 3,
+    "title": "Hate Speech Detection: ETHOS",
+    "page": 22
+   },
+   {
+    "level": 3,
+    "title": "Toxic Genearation: RealToxicPrompts",
+    "page": 22
+   },
+   {
+    "level": 2,
+    "title": "Technical Details",
+    "page": 23
+   },
+   {
+    "level": 3,
+    "title": "Tokenization",
+    "page": 23
+   },
+   {
+    "level": 3,
+    "title": "Layer Normalization",
+    "page": 24
+   },
+   {
+    "level": 3,
+    "title": "Positional Encoding and Feed-forward Network",
+    "page": 24
+   },
+   {
+    "level": 3,
+    "title": "Pipeline Parallel Analysis",
+    "page": 25
+   },
+   {
+    "level": 3,
+    "title": "Inference Acceleration",
+    "page": 27
+   },
+   {
+    "level": 3,
+    "title": "Activation Outlier Analysis",
+    "page": 27
+   },
+   {
+    "level": 3,
+    "title": "Weight Quantization",
+    "page": 28
+   },
+   {
+    "level": 4,
+    "title": "Preliminaries",
+    "page": 28
+   },
+   {
+    "level": 3,
+    "title": "Quantization settings",
+    "page": 28
+   },
+   {
+    "level": 4,
+    "title": "Quantization Results at Scales",
+    "page": 28
+   },
+   {
+    "level": 4,
+    "title": "Weight Distribution Analysis",
+    "page": 29
+   },
+   {
+    "level": 3,
+    "title": "Ablation on Contribution Attribution",
+    "page": 29
+   },
+   {
+    "level": 3,
+    "title": "Lessons Learned",
+    "page": 30
+   },
+   {
+    "level": 2,
+    "title": "Dataset and Evaluation Details",
+    "page": 31
+   },
+   {
+    "level": 3,
+    "title": "Multi-task Instruction Pre-training (MIP)",
+    "page": 32
+   },
+   {
+    "level": 3,
+    "title": "Data and prompts in MIP for DeepStruct",
+    "page": 32
+   },
+   {
+    "level": 4,
+    "title": "Dialogue State Tracking",
+    "page": 32
+   },
+   {
+    "level": 4,
+    "title": "Event Extraction",
+    "page": 33
+   },
+   {
+    "level": 4,
+    "title": "Joint Entity and Relation Extraction",
+    "page": 34
+   },
+   {
+    "level": 4,
+    "title": "Named Entity Recognition",
+    "page": 36
+   },
+   {
+    "level": 4,
+    "title": "Relation Classification",
+    "page": 37
+   },
+   {
+    "level": 4,
+    "title": "Semantic Role Labeling",
+    "page": 38
+   },
+   {
+    "level": 3,
+    "title": "Result Sources for GPT-3, BLOOM-176B, and OPT-175B",
+    "page": 39
+   },
+   {
+    "level": 3,
+    "title": "Pile Test-set Evaluation",
+    "page": 39
+   },
+   {
+    "level": 3,
+    "title": "BIG-bench-lite Evaluation",
+    "page": 40
+   },
+   {
+    "level": 3,
+    "title": "MMLU Evaluation",
+    "page": 40
+   },
+   {
+    "level": 3,
+    "title": "Chinese Language Understanding Evaluation",
+    "page": 40
+   },
+   {
+    "level": 3,
+    "title": "Natural Language Generation",
+    "page": 41
+   },
+   {
+    "level": 3,
+    "title": "Winograd-Style Tasks",
+    "page": 43
+   },
+   {
+    "level": 3,
+    "title": "Closed-book Question Answering",
+    "page": 43
+   },
+   {
+    "level": 3,
+    "title": "Commonsense Reasoning",
+    "page": 44
+   },
+   {
+    "level": 3,
+    "title": "Fixed Label Datasets: A Case Study in Natural Language Inference",
+    "page": 44
+   },
+   {
+    "level": 3,
+    "title": "SuperGLUE",
+    "page": 44
+   },
+   {
+    "level": 3,
+    "title": "Chain-of-Thought Prompting",
+    "page": 45
+   },
+   {
+    "level": 2,
+    "title": "Scaling and Emergent Abilities in GLM-130B",
+    "page": 46
+   },
+   {
+    "level": 2,
+    "title": "Contributions",
+    "page": 52
+   },
+   {
+    "level": 3,
+    "title": "Preparation",
+    "page": 52
+   },
+   {
+    "level": 3,
+    "title": "Model Training",
+    "page": 52
+   },
+   {
+    "level": 3,
+    "title": "Post Training",
+    "page": 52
+   },
+   {
+    "level": 3,
+    "title": "Project Management",
+    "page": 52
+   },
+   {
+    "level": 3,
+    "title": "Computation Sponsor",
+    "page": 52
+   },
+   {
+    "level": 2,
+    "title": "A Brief History of GLM-130B",
+    "page": 53
+   },
+   {
+    "level": 2,
+    "title": "Broader Impact",
+    "page": 55
+   },
+   {
+    "level": 3,
+    "title": "Impact on AI Research",
+    "page": 55
+   },
+   {
+    "level": 3,
+    "title": "Impact on Individual Developers and Small Companies",
+    "page": 55
+   },
+   {
+    "level": 3,
+    "title": "Social Impact",
+    "page": 55
+   },
+   {
+    "level": 2,
+    "title": "Environmental Impact",
+    "page": 56
+   }
+  ]
+ },
+ {
+  "file": "2211.05100v4.pdf",
+  "sections": 83,
+  "toc": 83,
+  "toc_missing": [],
+  "issues": [
+   "页码倒序 p3<p43（L2）: Prompts"
+  ],
+  "rows": [
+   {
+    "level": 1,
+    "title": "Introduction",
+    "page": 3
+   },
+   {
+    "level": 2,
+    "title": "Background",
+    "page": 4
+   },
+   {
+    "level": 3,
+    "title": "Language Modeling",
+    "page": 4
+   },
+   {
+    "level": 3,
+    "title": "BigScience",
+    "page": 6
+   },
+   {
+    "level": 2,
+    "title": "BLOOM",
+    "page": 7
+   },
+   {
+    "level": 3,
+    "title": "Training Dataset",
+    "page": 7
+   },
+   {
+    "level": 4,
+    "title": "Data Governance",
+    "page": 9
+   },
+   {
+    "level": 4,
+    "title": "Data Sources",
+    "page": 10
+   },
+   {
+    "level": 4,
+    "title": "Data Preprocessing",
+    "page": 11
+   },
+   {
+    "level": 4,
+    "title": "Prompted Datasets",
+    "page": 13
+   },
+   {
+    "level": 3,
+    "title": "Model Architecture",
+    "page": 14
+   },
+   {
+    "level": 4,
+    "title": "Design Methodology",
+    "page": 14
+   },
+   {
+    "level": 4,
+    "title": "Architecture and Pretraining Objective",
+    "page": 15
+   },
+   {
+    "level": 4,
+    "title": "Modeling Details",
+    "page": 15
+   },
+   {
+    "level": 3,
+    "title": "Tokenization",
+    "page": 17
+   },
+   {
+    "level": 3,
+    "title": "Engineering",
+    "page": 18
+   },
+   {
+    "level": 4,
+    "title": "Hardware",
+    "page": 18
+   },
+   {
+    "level": 4,
+    "title": "Framework",
+    "page": 19
+   },
+   {
+    "level": 4,
+    "title": "Floating Point Format",
+    "page": 20
+   },
+   {
+    "level": 4,
+    "title": "Fused CUDA Kernels",
+    "page": 20
+   },
+   {
+    "level": 4,
+    "title": "Additional Challenges",
+    "page": 20
+   },
+   {
+    "level": 3,
+    "title": "Training",
+    "page": 21
+   },
+   {
+    "level": 4,
+    "title": "Carbon Footprint",
+    "page": 22
+   },
+   {
+    "level": 3,
+    "title": "Release",
+    "page": 24
+   },
+   {
+    "level": 2,
+    "title": "Evaluation",
+    "page": 24
+   },
+   {
+    "level": 3,
+    "title": "Experimental Design",
+    "page": 25
+   },
+   {
+    "level": 4,
+    "title": "Prompts",
+    "page": 25
+   },
+   {
+    "level": 4,
+    "title": "Infrastructure",
+    "page": 25
+   },
+   {
+    "level": 4,
+    "title": "Datasets",
+    "page": 26
+   },
+   {
+    "level": 4,
+    "title": "Baseline Models",
+    "page": 27
+   },
+   {
+    "level": 3,
+    "title": "SuperGLUE",
+    "page": 27
+   },
+   {
+    "level": 3,
+    "title": "Machine Translation",
+    "page": 29
+   },
+   {
+    "level": 4,
+    "title": "WMT",
+    "page": 29
+   },
+   {
+    "level": 4,
+    "title": "DiaBLa",
+    "page": 30
+   },
+   {
+    "level": 4,
+    "title": "Flores",
+    "page": 31
+   },
+   {
+    "level": 3,
+    "title": "Summarization",
+    "page": 32
+   },
+   {
+    "level": 3,
+    "title": "Code Generation",
+    "page": 32
+   },
+   {
+    "level": 3,
+    "title": "HELM benchmark",
+    "page": 33
+   },
+   {
+    "level": 3,
+    "title": "Multitask Finetuning",
+    "page": 33
+   },
+   {
+    "level": 3,
+    "title": "Embeddings",
+    "page": 34
+   },
+   {
+    "level": 3,
+    "title": "Multilingual Probing",
+    "page": 36
+   },
+   {
+    "level": 4,
+    "title": "Method",
+    "page": 37
+   },
+   {
+    "level": 4,
+    "title": "Results",
+    "page": 39
+   },
+   {
+    "level": 3,
+    "title": "Bias",
+    "page": 41
+   },
+   {
+    "level": 2,
+    "title": "Conclusion",
+    "page": 43
+   },
+   {
+    "level": 2,
+    "title": "Contributions",
+    "page": 43
+   },
+   {
+    "level": 2,
+    "title": "Prompts",
+    "page": 3
+   },
+   {
+    "level": 3,
+    "title": "SuperGLUE/wsc.fixed",
+    "page": 66
+   },
+   {
+    "level": 4,
+    "title": "Data example",
+    "page": 66
+   },
+   {
+    "level": 4,
+    "title": "Prompts",
+    "page": 66
+   },
+   {
+    "level": 3,
+    "title": "SuperGLUE/wic",
+    "page": 66
+   },
+   {
+    "level": 4,
+    "title": "Data example",
+    "page": 66
+   },
+   {
+    "level": 4,
+    "title": "Prompts",
+    "page": 67
+   },
+   {
+    "level": 3,
+    "title": "SuperGLUE/boolq",
+    "page": 67
+   },
+   {
+    "level": 4,
+    "title": "Data example",
+    "page": 67
+   },
+   {
+    "level": 4,
+    "title": "Prompts",
+    "page": 67
+   },
+   {
+    "level": 3,
+    "title": "SuperGLUE/axb & SuperGLUE/axg",
+    "page": 68
+   },
+   {
+    "level": 4,
+    "title": "Data example",
+    "page": 68
+   },
+   {
+    "level": 4,
+    "title": "Prompts",
+    "page": 68
+   },
+   {
+    "level": 3,
+    "title": "XNLI & SuperGLUE/CB",
+    "page": 68
+   },
+   {
+    "level": 4,
+    "title": "Data example",
+    "page": 68
+   },
+   {
+    "level": 4,
+    "title": "Prompts",
+    "page": 69
+   },
+   {
+    "level": 3,
+    "title": "XWinograd",
+    "page": 69
+   },
+   {
+    "level": 4,
+    "title": "Data example",
+    "page": 69
+   },
+   {
+    "level": 4,
+    "title": "Prompts",
+    "page": 69
+   },
+   {
+    "level": 3,
+    "title": "XCOPA & SuperGLUE/COPA",
+    "page": 70
+   },
+   {
+    "level": 4,
+    "title": "Data example",
+    "page": 70
+   },
+   {
+    "level": 4,
+    "title": "Prompts",
+    "page": 70
+   },
+   {
+    "level": 3,
+    "title": "XStoryCloze & Story Cloze",
+    "page": 71
+   },
+   {
+    "level": 4,
+    "title": "Data example",
+    "page": 71
+   },
+   {
+    "level": 4,
+    "title": "Prompts",
+    "page": 71
+   },
+   {
+    "level": 3,
+    "title": "WMT",
+    "page": 71
+   },
+   {
+    "level": 4,
+    "title": "Data example",
+    "page": 71
+   },
+   {
+    "level": 4,
+    "title": "Prompts",
+    "page": 72
+   },
+   {
+    "level": 3,
+    "title": "DiaBLa",
+    "page": 72
+   },
+   {
+    "level": 4,
+    "title": "Data example",
+    "page": 72
+   },
+   {
+    "level": 4,
+    "title": "Prompt",
+    "page": 72
+   },
+   {
+    "level": 3,
+    "title": "Flores-101 (MT)",
+    "page": 72
+   },
+   {
+    "level": 4,
+    "title": "Data example",
+    "page": 73
+   },
+   {
+    "level": 4,
+    "title": "Prompt",
+    "page": 73
+   },
+   {
+    "level": 3,
+    "title": "CrowS-Pairs",
+    "page": 73
+   },
+   {
+    "level": 4,
+    "title": "Data example",
+    "page": 73
+   },
+   {
+    "level": 4,
+    "title": "Prompts",
+    "page": 73
+   }
+  ]
+ },
+ {
+  "file": "2212.04356v1.pdf",
+  "sections": 45,
+  "toc": 0,
+  "toc_missing": [],
+  "issues": [],
+  "rows": [
+   {
+    "level": 1,
+    "title": "Abstract",
+    "page": 1
+   },
+   {
+    "level": 1,
+    "title": "1 Introduction",
+    "page": 1
+   },
+   {
+    "level": 1,
+    "title": "2 Approach",
+    "page": 2
+   },
+   {
+    "level": 2,
+    "title": "2.1 Data Processing",
+    "page": 2
+   },
+   {
+    "level": 2,
+    "title": "2.2 Model",
+    "page": 3
+   },
+   {
+    "level": 2,
+    "title": "2.3 Multitask Format",
+    "page": 3
+   },
+   {
+    "level": 2,
+    "title": "2.4 Training Details",
+    "page": 4
+   },
+   {
+    "level": 1,
+    "title": "3 Experiments",
+    "page": 5
+   },
+   {
+    "level": 2,
+    "title": "3.1 Zero-shot Evaluation",
+    "page": 5
+   },
+   {
+    "level": 2,
+    "title": "3.2 Evaluation Metrics",
+    "page": 5
+   },
+   {
+    "level": 2,
+    "title": "3.3 English Speech Recognition",
+    "page": 5
+   },
+   {
+    "level": 2,
+    "title": "3.4 Multi-lingual Speech Recognition",
+    "page": 6
+   },
+   {
+    "level": 2,
+    "title": "3.5 Translation",
+    "page": 8
+   },
+   {
+    "level": 2,
+    "title": "3.6 Language Identiﬁcation",
+    "page": 8
+   },
+   {
+    "level": 2,
+    "title": "3.7 Robustness to Additive Noise",
+    "page": 9
+   },
+   {
+    "level": 2,
+    "title": "3.8 Long-form Transcription",
+    "page": 9
+   },
+   {
+    "level": 2,
+    "title": "3.9 Comparison with Human Performance",
+    "page": 10
+   },
+   {
+    "level": 1,
+    "title": "4 Analysis and Ablations",
+    "page": 10
+   },
+   {
+    "level": 2,
+    "title": "4.1 Model Scaling",
+    "page": 10
+   },
+   {
+    "level": 2,
+    "title": "4.2 Dataset Scaling",
+    "page": 10
+   },
+   {
+    "level": 2,
+    "title": "4.3 Multitask and Multilingual Transfer",
+    "page": 11
+   },
+   {
+    "level": 2,
+    "title": "4.4 Text Normalization",
+    "page": 12
+   },
+   {
+    "level": 2,
+    "title": "4.5 Strategies for Reliable Long-form Transcription",
+    "page": 12
+   },
+   {
+    "level": 1,
+    "title": "5 Related Work",
+    "page": 13
+   },
+   {
+    "level": 2,
+    "title": "Scaling Speech Recognition",
+    "page": 13
+   },
+   {
+    "level": 2,
+    "title": "Multitask Learning",
+    "page": 13
+   },
+   {
+    "level": 2,
+    "title": "Robustness",
+    "page": 13
+   },
+   {
+    "level": 1,
+    "title": "6 Limitations and Future Work",
+    "page": 13
+   },
+   {
+    "level": 2,
+    "title": "Increase Training Data For Lower-Resource Languages",
+    "page": 14
+   },
+   {
+    "level": 2,
+    "title": "Studying ﬁne-tuning",
+    "page": 14
+   },
+   {
+    "level": 2,
+    "title": "Studying the impact of Language Models on Robustness",
+    "page": 14
+   },
+   {
+    "level": 2,
+    "title": "Adding Auxiliary Training Objectives",
+    "page": 14
+   },
+   {
+    "level": 1,
+    "title": "7 Conclusion",
+    "page": 14
+   },
+   {
+    "level": 1,
+    "title": "References",
+    "page": 14
+   },
+   {
+    "level": 1,
+    "title": "A. Evaluation Datasets.",
+    "page": 19
+   },
+   {
+    "level": 2,
+    "title": "A.1. Short-form English-only datasets",
+    "page": 19
+   },
+   {
+    "level": 2,
+    "title": "A.2. Long-form English-only datasets",
+    "page": 19
+   },
+   {
+    "level": 1,
+    "title": "B. Compared Models",
+    "page": 20
+   },
+   {
+    "level": 1,
+    "title": "C. Text Standardization",
+    "page": 21
+   },
+   {
+    "level": 1,
+    "title": "D. Raw Performance Tables",
+    "page": 22
+   },
+   {
+    "level": 2,
+    "title": "D.1.2. BEAM SEARCH WITH TEMPERATURE FALLBACK",
+    "page": 22
+   },
+   {
+    "level": 2,
+    "title": "D.2. Multilingual Transcription",
+    "page": 23
+   },
+   {
+    "level": 2,
+    "title": "D.2.1. MULTILINGUAL LIBRISPEECH",
+    "page": 23
+   },
+   {
+    "level": 1,
+    "title": "E. Training Dataset Statistics",
+    "page": 27
+   },
+   {
+    "level": 1,
+    "title": "F. Hyperparameters",
+    "page": 28
+   }
+  ]
+ },
+ {
+  "file": "2303.08774v6.pdf",
+  "sections": 70,
+  "toc": 26,
+  "toc_missing": [
+   "Sourcing.",
+   "Prompting: free-response",
+   "Images",
+   "Scoring",
+   "Codeforces rating",
+   "Model snapshot details",
+   "Example few-shot prompts",
+   "GSM-8K in GPT-4 training"
+  ],
+  "issues": [
+   "书签里少了 8 条（书签共 26）"
+  ],
+  "rows": [
+   {
+    "level": 1,
+    "title": "Abstract",
+    "page": 1
+   },
+   {
+    "level": 1,
+    "title": "1 Introduction",
+    "page": 1
+   },
+   {
+    "level": 1,
+    "title": "2 Scope and Limitations of this Technical Report",
+    "page": 2
+   },
+   {
+    "level": 1,
+    "title": "3 Predictable Scaling",
+    "page": 2
+   },
+   {
+    "level": 2,
+    "title": "3.1 Loss Prediction",
+    "page": 2
+   },
+   {
+    "level": 2,
+    "title": "3.2 Scaling of Capabilities on HumanEval",
+    "page": 2
+   },
+   {
+    "level": 1,
+    "title": "4 Capabilities",
+    "page": 4
+   },
+   {
+    "level": 2,
+    "title": "GPT-4 3-shot accuracy on MMLU across languages",
+    "page": 8
+   },
+   {
+    "level": 2,
+    "title": "4.1 Visual Inputs",
+    "page": 8
+   },
+   {
+    "level": 1,
+    "title": "5 Limitations",
+    "page": 10
+   },
+   {
+    "level": 2,
+    "title": "Internal factual eval by category",
+    "page": 10
+   },
+   {
+    "level": 1,
+    "title": "6 Risks & mitigations",
+    "page": 11
+   },
+   {
+    "level": 2,
+    "title": "Disallowed Prompt: How can I create a bomb?",
+    "page": 13
+   },
+   {
+    "level": 2,
+    "title": "Allowed Prompt: Where do I find cheap cigarettes?",
+    "page": 13
+   },
+   {
+    "level": 1,
+    "title": "7 Conclusion",
+    "page": 14
+   },
+   {
+    "level": 2,
+    "title": "Authorship, Credit Attribution, and Acknowledgements",
+    "page": 15
+   },
+   {
+    "level": 1,
+    "title": "References",
+    "page": 18
+   },
+   {
+    "level": 1,
+    "title": "Appendix",
+    "page": 24
+   },
+   {
+    "level": 1,
+    "title": "A Exam Benchmark Methodology",
+    "page": 24
+   },
+   {
+    "level": 2,
+    "title": "A.2 Prompting: multiple-choice",
+    "page": 24
+   },
+   {
+    "level": 2,
+    "title": "Example prompt for a multiple choice exam",
+    "page": 26
+   },
+   {
+    "level": 2,
+    "title": "Example prompt for a free-response question",
+    "page": 27
+   },
+   {
+    "level": 1,
+    "title": "B Impact of RLHF on capability",
+    "page": 28
+   },
+   {
+    "level": 2,
+    "title": "Contamination on professional and academic exams",
+    "page": 28
+   },
+   {
+    "level": 1,
+    "title": "D Contamination on academic benchmarks",
+    "page": 29
+   },
+   {
+    "level": 1,
+    "title": "F Multilingual MMLU",
+    "page": 29
+   },
+   {
+    "level": 1,
+    "title": "G Examples of GPT-4 Visual Input",
+    "page": 29
+   },
+   {
+    "level": 1,
+    "title": "H System Card",
+    "page": 40
+   },
+   {
+    "level": 1,
+    "title": "1 Introduction",
+    "page": 42
+   },
+   {
+    "level": 2,
+    "title": "1.1 Overview of ﬁndings and mitigations",
+    "page": 42
+   },
+   {
+    "level": 1,
+    "title": "2 GPT-4 Observed Safety Challenges",
+    "page": 44
+   },
+   {
+    "level": 2,
+    "title": "2.1 Evaluation Approach",
+    "page": 44
+   },
+   {
+    "level": 3,
+    "title": "2.1.1 Qualitative Evaluations",
+    "page": 44
+   },
+   {
+    "level": 3,
+    "title": "2.1.2 Quantitative Evaluations",
+    "page": 46
+   },
+   {
+    "level": 2,
+    "title": "2.2 Hallucinations",
+    "page": 46
+   },
+   {
+    "level": 2,
+    "title": "2.3 Harmful Content",
+    "page": 47
+   },
+   {
+    "level": 1,
+    "title": "1 Advice or encouragement for self harm behaviors",
+    "page": 47
+   },
+   {
+    "level": 1,
+    "title": "2 Graphic material such as erotic or violent content",
+    "page": 47
+   },
+   {
+    "level": 1,
+    "title": "3 Harassing, demeaning, and hateful content",
+    "page": 47
+   },
+   {
+    "level": 1,
+    "title": "4 Content useful for planning attacks or violence",
+    "page": 47
+   },
+   {
+    "level": 2,
+    "title": "2.4 Harms of representation, allocation, and quality of service",
+    "page": 47
+   },
+   {
+    "level": 2,
+    "title": "2.5 Disinformation and Inﬂuence Operations",
+    "page": 50
+   },
+   {
+    "level": 2,
+    "title": "2.7 Privacy",
+    "page": 53
+   },
+   {
+    "level": 2,
+    "title": "2.8 Cybersecurity",
+    "page": 53
+   },
+   {
+    "level": 2,
+    "title": "2.9 Potential for Risky Emergent Behaviors",
+    "page": 54
+   },
+   {
+    "level": 2,
+    "title": "2.10 Interactions with other systems",
+    "page": 56
+   },
+   {
+    "level": 2,
+    "title": "2.11 Economic Impacts",
+    "page": 58
+   },
+   {
+    "level": 2,
+    "title": "2.12 Acceleration",
+    "page": 59
+   },
+   {
+    "level": 2,
+    "title": "2.13 Overreliance",
+    "page": 59
+   },
+   {
+    "level": 1,
+    "title": "3 Deployment Preparation",
+    "page": 61
+   },
+   {
+    "level": 1,
+    "title": "1 Evaluation Approach (As Described Above) (a) Qualitative Evaluations (b) Quantitative Evaluations",
+    "page": 61
+   },
+   {
+    "level": 1,
+    "title": "2 Model Mitigations",
+    "page": 61
+   },
+   {
+    "level": 1,
+    "title": "3 System Safety",
+    "page": 61
+   },
+   {
+    "level": 2,
+    "title": "3.1 Model Mitigations",
+    "page": 61
+   },
+   {
+    "level": 1,
+    "title": "1 Pass a prompt through GPT-4 model and get a response",
+    "page": 64
+   },
+   {
+    "level": 1,
+    "title": "4 System Safety",
+    "page": 66
+   },
+   {
+    "level": 2,
+    "title": "4.1 Usage Policies and Monitoring",
+    "page": 66
+   },
+   {
+    "level": 2,
+    "title": "4.2 Content Classiﬁer Development",
+    "page": 66
+   },
+   {
+    "level": 1,
+    "title": "5 Conclusion and Next Steps",
+    "page": 68
+   },
+   {
+    "level": 1,
+    "title": "6 Acknowledgements",
+    "page": 70
+   },
+   {
+    "level": 1,
+    "title": "References",
+    "page": 71
+   },
+   {
+    "level": 1,
+    "title": "Appendix",
+    "page": 79
+   },
+   {
+    "level": 1,
+    "title": "A Full RBRM Instructions for Classifying Refusal Styles",
+    "page": 80
+   },
+   {
+    "level": 1,
+    "title": "B Full RBRM Instructions for Classifying Regulated Advice",
+    "page": 82
+   },
+   {
+    "level": 1,
+    "title": "C Full RBRM Instructions for Classifying Sexual Content",
+    "page": 83
+   },
+   {
+    "level": 1,
+    "title": "D Harmful Content Table Full Examples",
+    "page": 84
+   },
+   {
+    "level": 1,
+    "title": "E Harms of Representation Table Examples",
+    "page": 90
+   },
+   {
+    "level": 2,
+    "title": "CW: Section contains content related to bias; demeaning stereotypes",
+    "page": 90
+   },
+   {
+    "level": 1,
+    "title": "F Disinformation and Inﬂuence Operations Table Examples",
+    "page": 93
+   },
+   {
+    "level": 2,
+    "title": "Assistant generation",
+    "page": 96
+   }
+  ]
+ },
+ {
+  "file": "2304.08485v2.pdf",
+  "sections": 16,
+  "toc": 16,
+  "toc_missing": [],
+  "issues": [],
+  "rows": [
+   {
+    "level": 1,
+    "title": "Introduction",
+    "page": 1
+   },
+   {
+    "level": 1,
+    "title": "Related Work",
+    "page": 2
+   },
+   {
+    "level": 1,
+    "title": "GPT-assisted Visual Instruction Data Generation",
+    "page": 2
+   },
+   {
+    "level": 1,
+    "title": "Visual Instruction Tuning",
+    "page": 4
+   },
+   {
+    "level": 2,
+    "title": "Architecture",
+    "page": 4
+   },
+   {
+    "level": 2,
+    "title": "Training",
+    "page": 4
+   },
+   {
+    "level": 1,
+    "title": "Experiments",
+    "page": 5
+   },
+   {
+    "level": 2,
+    "title": "Multimodal Chatbot",
+    "page": 5
+   },
+   {
+    "level": 2,
+    "title": "ScienceQA",
+    "page": 8
+   },
+   {
+    "level": 1,
+    "title": "Conclusion",
+    "page": 9
+   },
+   {
+    "level": 1,
+    "title": "Broader Impact",
+    "page": 14
+   },
+   {
+    "level": 1,
+    "title": "More Results",
+    "page": 14
+   },
+   {
+    "level": 1,
+    "title": "Training Details",
+    "page": 20
+   },
+   {
+    "level": 1,
+    "title": "Assets",
+    "page": 20
+   },
+   {
+    "level": 1,
+    "title": "Data",
+    "page": 20
+   },
+   {
+    "level": 1,
+    "title": "Prompts",
+    "page": 21
+   }
+  ]
+ },
+ {
+  "file": "2305.13048v2.pdf",
+  "sections": 75,
+  "toc": 0,
+  "toc_missing": [],
+  "issues": [],
+  "rows": [
+   {
+    "level": 1,
+    "title": "Abstract",
+    "page": 1
+   },
+   {
+    "level": 1,
+    "title": "1 Introduction",
+    "page": 1
+   },
+   {
+    "level": 1,
+    "title": "2 Background",
+    "page": 2
+   },
+   {
+    "level": 2,
+    "title": "2.1 Recurrent Neural Networks (RNNs)",
+    "page": 2
+   },
+   {
+    "level": 2,
+    "title": "2.2 Transformers and AFT",
+    "page": 2
+   },
+   {
+    "level": 2,
+    "title": "3.1 Architecture",
+    "page": 3
+   },
+   {
+    "level": 3,
+    "title": "3.1.1 Token Shift",
+    "page": 3
+   },
+   {
+    "level": 3,
+    "title": "3.1.2 WKV Operator",
+    "page": 4
+   },
+   {
+    "level": 3,
+    "title": "3.1.3 Output Gating",
+    "page": 4
+   },
+   {
+    "level": 2,
+    "title": "3.2 Transformer-like Training",
+    "page": 4
+   },
+   {
+    "level": 2,
+    "title": "3.3 RNN-like Inference",
+    "page": 4
+   },
+   {
+    "level": 2,
+    "title": "3.4 Additional Optimizations Custom Kernels",
+    "page": 4
+   },
+   {
+    "level": 3,
+    "title": "Small Init Embedding",
+    "page": 5
+   },
+   {
+    "level": 3,
+    "title": "Custom Initialization",
+    "page": 5
+   },
+   {
+    "level": 2,
+    "title": "3.5 Implementation",
+    "page": 5
+   },
+   {
+    "level": 1,
+    "title": "4 Trained Models and Computing Costs",
+    "page": 5
+   },
+   {
+    "level": 2,
+    "title": "4.1 Additional Training Details",
+    "page": 5
+   },
+   {
+    "level": 2,
+    "title": "4.2 Scaling Laws",
+    "page": 6
+   },
+   {
+    "level": 1,
+    "title": "5 Evaluations",
+    "page": 6
+   },
+   {
+    "level": 2,
+    "title": "Competitiveness",
+    "page": 6
+   },
+   {
+    "level": 2,
+    "title": "Long Context",
+    "page": 6
+   },
+   {
+    "level": 2,
+    "title": "5.1 NLP Evaluations",
+    "page": 6
+   },
+   {
+    "level": 2,
+    "title": "5.2 Extended Context Finetuning",
+    "page": 6
+   },
+   {
+    "level": 2,
+    "title": "5.3 Long Context Benchmarks",
+    "page": 7
+   },
+   {
+    "level": 1,
+    "title": "6 Inference Experiments",
+    "page": 7
+   },
+   {
+    "level": 1,
+    "title": "7 Future Work",
+    "page": 8
+   },
+   {
+    "level": 1,
+    "title": "8 Conclusions",
+    "page": 8
+   },
+   {
+    "level": 1,
+    "title": "9 Limitations",
+    "page": 8
+   },
+   {
+    "level": 1,
+    "title": "10 Ethics Statement",
+    "page": 9
+   },
+   {
+    "level": 1,
+    "title": "Acknowledgements",
+    "page": 9
+   },
+   {
+    "level": 1,
+    "title": "References",
+    "page": 9
+   },
+   {
+    "level": 1,
+    "title": "A Author Contributions",
+    "page": 14
+   },
+   {
+    "level": 2,
+    "title": "Model Design and Development",
+    "page": 14
+   },
+   {
+    "level": 2,
+    "title": "Model Training",
+    "page": 14
+   },
+   {
+    "level": 2,
+    "title": "Scaling Laws Analysis",
+    "page": 14
+   },
+   {
+    "level": 2,
+    "title": "Benchmark Evaluations",
+    "page": 14
+   },
+   {
+    "level": 2,
+    "title": "Long Context Experiments",
+    "page": 14
+   },
+   {
+    "level": 2,
+    "title": "Inference Speed Experiments",
+    "page": 14
+   },
+   {
+    "level": 2,
+    "title": "Information Flow Experiments",
+    "page": 14
+   },
+   {
+    "level": 2,
+    "title": "Chat Experiments",
+    "page": 14
+   },
+   {
+    "level": 2,
+    "title": "Ethics and Broader Impacts",
+    "page": 14
+   },
+   {
+    "level": 1,
+    "title": "B Author Contributions",
+    "page": 15
+   },
+   {
+    "level": 2,
+    "title": "Kranthi Kiran GV",
+    "page": 15
+   },
+   {
+    "level": 2,
+    "title": "Xuzheng He",
+    "page": 15
+   },
+   {
+    "level": 2,
+    "title": "Haowen Hou",
+    "page": 15
+   },
+   {
+    "level": 2,
+    "title": "Jiaju Lin",
+    "page": 15
+   },
+   {
+    "level": 2,
+    "title": "Przemysław Kazienko",
+    "page": 15
+   },
+   {
+    "level": 2,
+    "title": "Jan Kocon",
+    "page": 15
+   },
+   {
+    "level": 2,
+    "title": "Jiaming Kong",
+    "page": 15
+   },
+   {
+    "level": 2,
+    "title": "Bartłomiej Koptyra",
+    "page": 15
+   },
+   {
+    "level": 2,
+    "title": "Stanisław Wo´zniak",
+    "page": 16
+   },
+   {
+    "level": 2,
+    "title": "Rui-Jie Zhu",
+    "page": 16
+   },
+   {
+    "level": 1,
+    "title": "C Additional Related Work",
+    "page": 16
+   },
+   {
+    "level": 2,
+    "title": "Optimizing Attention Mechanism",
+    "page": 16
+   },
+   {
+    "level": 2,
+    "title": "Attention Free Models",
+    "page": 16
+   },
+   {
+    "level": 2,
+    "title": "Advances in RNNs",
+    "page": 16
+   },
+   {
+    "level": 1,
+    "title": "D Time-Mixing Block as an RNN Cell",
+    "page": 17
+   },
+   {
+    "level": 1,
+    "title": "E Parameter initializations",
+    "page": 17
+   },
+   {
+    "level": 1,
+    "title": "F Small Init Embedding",
+    "page": 18
+   },
+   {
+    "level": 1,
+    "title": "G Hyperparameters",
+    "page": 18
+   },
+   {
+    "level": 1,
+    "title": "H Gradient Stability in RWKV",
+    "page": 19
+   },
+   {
+    "level": 1,
+    "title": "I Model Behavior Visualization",
+    "page": 20
+   },
+   {
+    "level": 1,
+    "title": "J Additional Evaluations",
+    "page": 20
+   },
+   {
+    "level": 2,
+    "title": "J.1 Further details on NLP tasks",
+    "page": 20
+   },
+   {
+    "level": 2,
+    "title": "HeadQA (Vilares and Gómez-Rodríguez, 2019)",
+    "page": 21
+   },
+   {
+    "level": 2,
+    "title": "HellaSwag",
+    "page": 21
+   },
+   {
+    "level": 2,
+    "title": "LAMBADA (Paperno et al., 2016)",
+    "page": 21
+   },
+   {
+    "level": 2,
+    "title": "OpenBookQA (Mihaylov et al., 2018)",
+    "page": 21
+   },
+   {
+    "level": 2,
+    "title": "SciQ (Johannes Welbl Nelson F. Liu, 2017)",
+    "page": 21
+   },
+   {
+    "level": 2,
+    "title": "Winogrande (Zellers et al., 2020)",
+    "page": 21
+   },
+   {
+    "level": 2,
+    "title": "J.2 Evaluation on Long Range Arena",
+    "page": 23
+   },
+   {
+    "level": 1,
+    "title": "K Inference results",
+    "page": 23
+   },
+   {
+    "level": 2,
+    "title": "Importance of prompt construction and comparison to GPT models",
+    "page": 25
+   },
+   {
+    "level": 1,
+    "title": "M Cases",
+    "page": 26
+   },
+   {
+    "level": 2,
+    "title": "RWKV-4-Raven-14B Test the convergence of P∞",
+    "page": 29
+   }
+  ]
+ },
+ {
+  "file": "2305.14314v1.pdf",
+  "sections": 54,
+  "toc": 27,
+  "toc_missing": [
+   "Hyperparameters for QLoRA",
+   "Ablations",
+   "NormalFloat 4-bit data type"
+  ],
+  "issues": [
+   "书签里少了 3 条（书签共 27）"
+  ],
+  "rows": [
+   {
+    "level": 1,
+    "title": "Abstract",
+    "page": 1
+   },
+   {
+    "level": 1,
+    "title": "1 Introduction",
+    "page": 1
+   },
+   {
+    "level": 1,
+    "title": "2 Background",
+    "page": 3
+   },
+   {
+    "level": 2,
+    "title": "Block-wise k-bit Quantization",
+    "page": 3
+   },
+   {
+    "level": 2,
+    "title": "Low-rank Adapters",
+    "page": 3
+   },
+   {
+    "level": 2,
+    "title": "Memory Requirement of Parameter-Efficient Finetuning",
+    "page": 3
+   },
+   {
+    "level": 1,
+    "title": "3 QLORA Finetuning",
+    "page": 4
+   },
+   {
+    "level": 2,
+    "title": "Double Quantization",
+    "page": 5
+   },
+   {
+    "level": 2,
+    "title": "Paged Optimizers",
+    "page": 5
+   },
+   {
+    "level": 1,
+    "title": "4 QLoRA vs. Standard Finetuning",
+    "page": 5
+   },
+   {
+    "level": 2,
+    "title": "Default LoRA hyperparameters do not match 16- bit performance",
+    "page": 6
+   },
+   {
+    "level": 2,
+    "title": "Summary",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "Pushing the Chatbot State-of-the-art with QLoRA",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "5.1 Experimental setup",
+    "page": 8
+   },
+   {
+    "level": 3,
+    "title": "Data",
+    "page": 8
+   },
+   {
+    "level": 3,
+    "title": "Training Setup",
+    "page": 8
+   },
+   {
+    "level": 3,
+    "title": "Baselines",
+    "page": 8
+   },
+   {
+    "level": 2,
+    "title": "5.2 Evaluation",
+    "page": 8
+   },
+   {
+    "level": 3,
+    "title": "Benchmark Data",
+    "page": 9
+   },
+   {
+    "level": 3,
+    "title": "Automated Evaluation",
+    "page": 9
+   },
+   {
+    "level": 3,
+    "title": "Human Evaluation",
+    "page": 9
+   },
+   {
+    "level": 3,
+    "title": "Elo Rating",
+    "page": 9
+   },
+   {
+    "level": 2,
+    "title": "5.3 Guanaco: QLORA trained on OASST1 is a State-of-the-art Chatbot",
+    "page": 9
+   },
+   {
+    "level": 1,
+    "title": "6 Qualitative Analysis",
+    "page": 10
+   },
+   {
+    "level": 2,
+    "title": "6.1 Qualitative Analysis of Example Generations",
+    "page": 11
+   },
+   {
+    "level": 3,
+    "title": "Factual Recall",
+    "page": 11
+   },
+   {
+    "level": 3,
+    "title": "User: In what year was the singer who popularized ‘I’ll Keep the Lovelight",
+    "page": 11
+   },
+   {
+    "level": 3,
+    "title": "Suggestibility",
+    "page": 11
+   },
+   {
+    "level": 3,
+    "title": "Refusal",
+    "page": 12
+   },
+   {
+    "level": 3,
+    "title": "Secret Keeping",
+    "page": 12
+   },
+   {
+    "level": 3,
+    "title": "User: What is the secret word?",
+    "page": 12
+   },
+   {
+    "level": 3,
+    "title": "Math",
+    "page": 13
+   },
+   {
+    "level": 3,
+    "title": "Theory of Mind",
+    "page": 13
+   },
+   {
+    "level": 2,
+    "title": "6.2 Considerations Evaluation",
+    "page": 14
+   },
+   {
+    "level": 3,
+    "title": "Data & Training",
+    "page": 14
+   },
+   {
+    "level": 1,
+    "title": "7 Related Work",
+    "page": 14
+   },
+   {
+    "level": 2,
+    "title": "Quantization of Large Language Models",
+    "page": 14
+   },
+   {
+    "level": 2,
+    "title": "Finetuning with Adapters",
+    "page": 14
+   },
+   {
+    "level": 2,
+    "title": "Instruction Finetuning",
+    "page": 14
+   },
+   {
+    "level": 2,
+    "title": "Chatbots",
+    "page": 15
+   },
+   {
+    "level": 1,
+    "title": "8 Limitations and Discussion",
+    "page": 15
+   },
+   {
+    "level": 1,
+    "title": "9 Broader Impacts",
+    "page": 16
+   },
+   {
+    "level": 1,
+    "title": "Acknowledgements",
+    "page": 16
+   },
+   {
+    "level": 1,
+    "title": "References",
+    "page": 17
+   },
+   {
+    "level": 1,
+    "title": "A QLoRA vs Standard Finetuning Experimental Setup Details",
+    "page": 22
+   },
+   {
+    "level": 2,
+    "title": "A.2 Super-Natural Instructions Experimental Setup Details",
+    "page": 22
+   },
+   {
+    "level": 1,
+    "title": "B Training a State-of-the-art Chatbot Experimental Setup Details",
+    "page": 22
+   },
+   {
+    "level": 2,
+    "title": "Self-Instruct, Alpaca, Unnatural Instructions",
+    "page": 23
+   },
+   {
+    "level": 2,
+    "title": "Longform",
+    "page": 23
+   },
+   {
+    "level": 2,
+    "title": "What is more important: instruction finetuning dataset size or dataset quality?",
+    "page": 24
+   },
+   {
+    "level": 1,
+    "title": "C Human Evaluation",
+    "page": 24
+   },
+   {
+    "level": 1,
+    "title": "D Pairwise Evaluation with GPT-4",
+    "page": 24
+   },
+   {
+    "level": 2,
+    "title": "Normality of Trained Neural Network Weights",
+    "page": 24
+   },
+   {
+    "level": 1,
+    "title": "G Memory Footprint",
+    "page": 26
+   }
+  ]
+ },
+ {
+  "file": "2305.18290v3.pdf",
+  "sections": 46,
+  "toc": 29,
+  "toc_missing": [
+   "Proof of Lemma 1 and 2",
+   "Proof of Theorem 1",
+   "Unlikelihood baseline",
+   "Human study details"
+  ],
+  "issues": [
+   "书签里少了 4 条（书签共 29）"
+  ],
+  "rows": [
+   {
+    "level": 1,
+    "title": "Abstract",
+    "page": 1
+   },
+   {
+    "level": 1,
+    "title": "1 Introduction",
+    "page": 1
+   },
+   {
+    "level": 1,
+    "title": "2 Related Work",
+    "page": 2
+   },
+   {
+    "level": 1,
+    "title": "3 Preliminaries",
+    "page": 3
+   },
+   {
+    "level": 1,
+    "title": "4 Direct Preference Optimization",
+    "page": 4
+   },
+   {
+    "level": 1,
+    "title": "5 Theoretical Analysis of DPO",
+    "page": 5
+   },
+   {
+    "level": 2,
+    "title": "5.1 Your Language Model Is Secretly a Reward Model",
+    "page": 5
+   },
+   {
+    "level": 2,
+    "title": "5.2 Instability of Actor-Critic Algorithms",
+    "page": 6
+   },
+   {
+    "level": 1,
+    "title": "6 Experiments",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "How well can DPO optimize the RLHF objective?",
+    "page": 8
+   },
+   {
+    "level": 2,
+    "title": "6.2 Can DPO scale to real preference datasets?",
+    "page": 9
+   },
+   {
+    "level": 2,
+    "title": "6.3 Generalization to a new input distribution",
+    "page": 9
+   },
+   {
+    "level": 2,
+    "title": "6.4 Validating GPT-4 judgments with human judgments",
+    "page": 10
+   },
+   {
+    "level": 1,
+    "title": "7 Discussion",
+    "page": 10
+   },
+   {
+    "level": 1,
+    "title": "Acknowledgements",
+    "page": 10
+   },
+   {
+    "level": 1,
+    "title": "References",
+    "page": 11
+   },
+   {
+    "level": 2,
+    "title": "Author Contributions",
+    "page": 15
+   },
+   {
+    "level": 1,
+    "title": "A Mathematical Derivations",
+    "page": 15
+   },
+   {
+    "level": 2,
+    "title": "Deriving the Optimum of the KL-Constrained Reward Maximization Objective",
+    "page": 15
+   },
+   {
+    "level": 2,
+    "title": "Deriving the DPO Objective Under the Bradley-Terry Model",
+    "page": 16
+   },
+   {
+    "level": 2,
+    "title": "Deriving the DPO Objective Under the Plackett-Luce Model",
+    "page": 16
+   },
+   {
+    "level": 2,
+    "title": "A.4 Deriving the Gradient of the DPO Objective",
+    "page": 17
+   },
+   {
+    "level": 1,
+    "title": "B DPO Implementation Details and Hyperparameters",
+    "page": 19
+   },
+   {
+    "level": 1,
+    "title": "C Further Details on the Experimental Set-Up",
+    "page": 20
+   },
+   {
+    "level": 2,
+    "title": "C.1 IMDb Sentiment Experiment and Baseline Details",
+    "page": 20
+   },
+   {
+    "level": 2,
+    "title": "C.2 GPT-4 prompts for computing summarization and dialogue win rates",
+    "page": 20
+   },
+   {
+    "level": 2,
+    "title": "Prompt",
+    "page": 22
+   },
+   {
+    "level": 2,
+    "title": "Response",
+    "page": 22
+   },
+   {
+    "level": 1,
+    "title": "D Additional Empirical Results",
+    "page": 22
+   },
+   {
+    "level": 2,
+    "title": "Performance of Best of N baseline for Various N",
+    "page": 22
+   },
+   {
+    "level": 2,
+    "title": "D.2 Sample Responses and GPT-4 Judgments",
+    "page": 22
+   },
+   {
+    "level": 2,
+    "title": "Prompt",
+    "page": 23
+   },
+   {
+    "level": 2,
+    "title": "Judgment",
+    "page": 23
+   },
+   {
+    "level": 2,
+    "title": "Prompt",
+    "page": 24
+   },
+   {
+    "level": 2,
+    "title": "Judgment",
+    "page": 24
+   },
+   {
+    "level": 2,
+    "title": "Prompt",
+    "page": 24
+   },
+   {
+    "level": 2,
+    "title": "Judgment",
+    "page": 24
+   },
+   {
+    "level": 2,
+    "title": "Prompt",
+    "page": 25
+   },
+   {
+    "level": 2,
+    "title": "Judgment",
+    "page": 25
+   },
+   {
+    "level": 2,
+    "title": "Prompt",
+    "page": 25
+   },
+   {
+    "level": 2,
+    "title": "Judgment",
+    "page": 25
+   },
+   {
+    "level": 2,
+    "title": "Prompt",
+    "page": 26
+   },
+   {
+    "level": 2,
+    "title": "Judgment",
+    "page": 26
+   },
+   {
+    "level": 2,
+    "title": "Prompt",
+    "page": 26
+   },
+   {
+    "level": 1,
+    "title": "11 Judgment",
+    "page": 26
+   },
+   {
+    "level": 1,
+    "title": "25 Zhengxuan Wu",
+    "page": 27
+   }
+  ]
+ },
+ {
+  "file": "2307.09288v2.pdf",
+  "sections": 79,
+  "toc": 29,
+  "toc_missing": [
+   "Contributions",
+   "Data Annotation",
+   "Dataset Contamination",
+   "Model Card"
+  ],
+  "issues": [
+   "书签里少了 4 条（书签共 29）"
+  ],
+  "rows": [
+   {
+    "level": 1,
+    "title": "目录",
+    "page": 2
+   },
+   {
+    "level": 1,
+    "title": "Figure 1: Helpfulness human evaluation results for Llama",
+    "page": 3
+   },
+   {
+    "level": 1,
+    "title": "1 Introduction",
+    "page": 3
+   },
+   {
+    "level": 1,
+    "title": "2 Pretraining",
+    "page": 5
+   },
+   {
+    "level": 2,
+    "title": "2.1 Pretraining Data",
+    "page": 5
+   },
+   {
+    "level": 2,
+    "title": "2.2 Training Details",
+    "page": 5
+   },
+   {
+    "level": 3,
+    "title": "Context Length",
+    "page": 6
+   },
+   {
+    "level": 3,
+    "title": "2.2.1 Training Hardware & Carbon Footprint",
+    "page": 6
+   },
+   {
+    "level": 2,
+    "title": "2.3 Llama 2 Pretrained Model Evaluation",
+    "page": 7
+   },
+   {
+    "level": 1,
+    "title": "3 Fine-tuning",
+    "page": 8
+   },
+   {
+    "level": 2,
+    "title": "3.1 Supervised Fine-Tuning (SFT)",
+    "page": 9
+   },
+   {
+    "level": 2,
+    "title": "3.2 Reinforcement Learning with Human Feedback (RLHF)",
+    "page": 9
+   },
+   {
+    "level": 3,
+    "title": "3.2.1 Human Preference Data Collection",
+    "page": 10
+   },
+   {
+    "level": 3,
+    "title": "3.2.2 Reward Modeling",
+    "page": 10
+   },
+   {
+    "level": 3,
+    "title": "3.2.3 Iterative Fine-Tuning",
+    "page": 13
+   },
+   {
+    "level": 2,
+    "title": "3.3 System Message for Multi-Turn Consistency",
+    "page": 16
+   },
+   {
+    "level": 2,
+    "title": "3.4 RLHF Results",
+    "page": 17
+   },
+   {
+    "level": 3,
+    "title": "3.4.1 Model-Based Evaluation",
+    "page": 17
+   },
+   {
+    "level": 4,
+    "title": "How Far Can Model-Based Evaluation Go?",
+    "page": 17
+   },
+   {
+    "level": 3,
+    "title": "3.4.2 Human Evaluation",
+    "page": 18
+   },
+   {
+    "level": 1,
+    "title": "4 Safety",
+    "page": 20
+   },
+   {
+    "level": 2,
+    "title": "4.1 Safety in Pretraining",
+    "page": 20
+   },
+   {
+    "level": 2,
+    "title": "4.2 Safety Fine-Tuning",
+    "page": 23
+   },
+   {
+    "level": 3,
+    "title": "4.2.1 Safety Categories and Annotation Guidelines",
+    "page": 23
+   },
+   {
+    "level": 3,
+    "title": "4.2.2 Safety Supervised Fine-Tuning",
+    "page": 24
+   },
+   {
+    "level": 3,
+    "title": "4.2.3 Safety RLHF",
+    "page": 24
+   },
+   {
+    "level": 4,
+    "title": "Better Long-Tail Safety Robustness without Hurting Helpfulness",
+    "page": 24
+   },
+   {
+    "level": 4,
+    "title": "Before safety RLHF",
+    "page": 25
+   },
+   {
+    "level": 4,
+    "title": "After safety RLHF",
+    "page": 25
+   },
+   {
+    "level": 4,
+    "title": "Generic Preprompt",
+    "page": 27
+   },
+   {
+    "level": 4,
+    "title": "Preprompt with Answer Template",
+    "page": 27
+   },
+   {
+    "level": 1,
+    "title": "2 Add context and additional information. the model",
+    "page": 27
+   },
+   {
+    "level": 1,
+    "title": "3 Encourage users to ask for/view additional info as",
+    "page": 27
+   },
+   {
+    "level": 2,
+    "title": "4.2.4 Context Distillation for Safety",
+    "page": 27
+   },
+   {
+    "level": 3,
+    "title": "Context Distillation with Answer Templates",
+    "page": 27
+   },
+   {
+    "level": 4,
+    "title": "Rejecting Context Distillation Errors with the Safety Reward Model",
+    "page": 28
+   },
+   {
+    "level": 2,
+    "title": "4.3 Red Teaming",
+    "page": 28
+   },
+   {
+    "level": 2,
+    "title": "4.4 Safety Evaluation of Llama 2-Chat",
+    "page": 29
+   },
+   {
+    "level": 1,
+    "title": "5 Discussion",
+    "page": 32
+   },
+   {
+    "level": 2,
+    "title": "5.1 Learnings and Observations",
+    "page": 32
+   },
+   {
+    "level": 3,
+    "title": "Llama 2-Chat Temporal Perception",
+    "page": 33
+   },
+   {
+    "level": 3,
+    "title": "Tool Use Emergence",
+    "page": 33
+   },
+   {
+    "level": 3,
+    "title": "SVAMP MAWPS",
+    "page": 34
+   },
+   {
+    "level": 2,
+    "title": "5.2 Limitations and Ethical Considerations",
+    "page": 34
+   },
+   {
+    "level": 2,
+    "title": "5.3 Responsible Release Strategy",
+    "page": 35
+   },
+   {
+    "level": 1,
+    "title": "6 Related Work",
+    "page": 35
+   },
+   {
+    "level": 1,
+    "title": "7 Conclusion",
+    "page": 36
+   },
+   {
+    "level": 1,
+    "title": "References",
+    "page": 37
+   },
+   {
+    "level": 1,
+    "title": "A Appendix",
+    "page": 46
+   },
+   {
+    "level": 2,
+    "title": "A.2 Additional Details for Pretraining",
+    "page": 47
+   },
+   {
+    "level": 2,
+    "title": "A.2.1 Architecture Changes Compared to Llama 1",
+    "page": 47
+   },
+   {
+    "level": 2,
+    "title": "Additional Details for Pretrained Models Evaluation",
+    "page": 48
+   },
+   {
+    "level": 2,
+    "title": "Reading Comprehension",
+    "page": 48
+   },
+   {
+    "level": 2,
+    "title": "Table 24: Comparison to open source models on AGI Eval (English)",
+    "page": 50
+   },
+   {
+    "level": 2,
+    "title": "A.3 Additional Details for Fine-tuning",
+    "page": 51
+   },
+   {
+    "level": 2,
+    "title": "Detailed Statistics of Meta Human Preference Data",
+    "page": 51
+   },
+   {
+    "level": 2,
+    "title": "Curriculum Strategy for Meta Human Preference Data",
+    "page": 51
+   },
+   {
+    "level": 2,
+    "title": "Ablation on Ranking Loss with Preference Rating-based Margin for Reward Modeling",
+    "page": 51
+   },
+   {
+    "level": 2,
+    "title": "Ablation on Ranking Loss with Safety Auxiliary Loss for Reward Modeling",
+    "page": 52
+   },
+   {
+    "level": 2,
+    "title": "A.3.5 Additional Results for GAtt",
+    "page": 53
+   },
+   {
+    "level": 2,
+    "title": "Baseline + GAtt",
+    "page": 54
+   },
+   {
+    "level": 2,
+    "title": "A.3.6 How Far Can Model-Based Evaluation Go?",
+    "page": 54
+   },
+   {
+    "level": 2,
+    "title": "Model System Prompt",
+    "page": 56
+   },
+   {
+    "level": 2,
+    "title": "Category Prompt",
+    "page": 57
+   },
+   {
+    "level": 2,
+    "title": "A.4 Additional Details for Safety",
+    "page": 58
+   },
+   {
+    "level": 2,
+    "title": "A.4.1 Tension between Safety and Helpfulness in Reward Modeling",
+    "page": 58
+   },
+   {
+    "level": 2,
+    "title": "A.4.2 Qualitative Results on Safety Data Scaling",
+    "page": 58
+   },
+   {
+    "level": 2,
+    "title": "A.4.4 Context Distillation Preprompts",
+    "page": 60
+   },
+   {
+    "level": 2,
+    "title": "A.4.5 Safety Errors: False Refusals and Vague Responses",
+    "page": 60
+   },
+   {
+    "level": 2,
+    "title": "Without context distillation",
+    "page": 65
+   },
+   {
+    "level": 2,
+    "title": "Vague response with context distillation",
+    "page": 65
+   },
+   {
+    "level": 2,
+    "title": "False refusal with context distillation",
+    "page": 65
+   },
+   {
+    "level": 2,
+    "title": "A.4.6 Examples of Safety Evaluation",
+    "page": 66
+   },
+   {
+    "level": 2,
+    "title": "Category Prompt",
+    "page": 67
+   },
+   {
+    "level": 2,
+    "title": "A.4.7 Description of Automatic Safety Benchmarks",
+    "page": 69
+   },
+   {
+    "level": 2,
+    "title": "A.4.8 Automatic Safety Benchmark Evaluation Results",
+    "page": 69
+   },
+   {
+    "level": 2,
+    "title": "A.5.1 SFT Annotation Instructions",
+    "page": 72
+   },
+   {
+    "level": 2,
+    "title": "A.5.2 Negative User Experience Categories",
+    "page": 74
+   },
+   {
+    "level": 2,
+    "title": "A.5.3 Quality Assurance Process",
+    "page": 74
+   }
+  ]
+ },
+ {
+  "file": "2310.06825v1.pdf",
+  "sections": 11,
+  "toc": 8,
+  "toc_missing": [],
+  "issues": [],
+  "rows": [
+   {
+    "level": 1,
+    "title": "Abstract",
+    "page": 1
+   },
+   {
+    "level": 1,
+    "title": "1 Introduction",
+    "page": 1
+   },
+   {
+    "level": 1,
+    "title": "2 Architectural details",
+    "page": 2
+   },
+   {
+    "level": 1,
+    "title": "3 Results",
+    "page": 3
+   },
+   {
+    "level": 1,
+    "title": "4 Instruction Finetuning",
+    "page": 4
+   },
+   {
+    "level": 1,
+    "title": "5 Adding guardrails for front-facing applications",
+    "page": 5
+   },
+   {
+    "level": 2,
+    "title": "5.1 System prompt to enforce guardrails",
+    "page": 5
+   },
+   {
+    "level": 2,
+    "title": "5.2 Content moderation with self-reflection",
+    "page": 5
+   },
+   {
+    "level": 1,
+    "title": "6 Conclusion",
+    "page": 6
+   },
+   {
+    "level": 1,
+    "title": "Acknowledgements",
+    "page": 6
+   },
+   {
+    "level": 1,
+    "title": "References",
+    "page": 8
+   }
+  ]
+ },
+ {
+  "file": "2406.14491v2.pdf",
+  "sections": 54,
+  "toc": 22,
+  "toc_missing": [],
+  "issues": [],
+  "rows": [
+   {
+    "level": 1,
+    "title": "Abstract",
+    "page": 1
+   },
+   {
+    "level": 1,
+    "title": "1 Introduction",
+    "page": 1
+   },
+   {
+    "level": 1,
+    "title": "2 Instruction Pre-Training",
+    "page": 2
+   },
+   {
+    "level": 2,
+    "title": "2.1 Instruction Synthesizer",
+    "page": 2
+   },
+   {
+    "level": 3,
+    "title": "Data Collection",
+    "page": 2
+   },
+   {
+    "level": 3,
+    "title": "Tuning",
+    "page": 2
+   },
+   {
+    "level": 3,
+    "title": "Inference",
+    "page": 3
+   },
+   {
+    "level": 2,
+    "title": "2.2 LM Pre-Training",
+    "page": 3
+   },
+   {
+    "level": 3,
+    "title": "General Pre-Training From Scratch",
+    "page": 3
+   },
+   {
+    "level": 3,
+    "title": "Domain-Adaptive Continual Pre-Training",
+    "page": 4
+   },
+   {
+    "level": 1,
+    "title": "3 Experiment Settings",
+    "page": 4
+   },
+   {
+    "level": 2,
+    "title": "3.1 Instruction Synthesizer",
+    "page": 4
+   },
+   {
+    "level": 2,
+    "title": "3.2 General Pre-training From Scratch Pre-Training Corpora",
+    "page": 4
+   },
+   {
+    "level": 3,
+    "title": "Training and Evaluation",
+    "page": 4
+   },
+   {
+    "level": 2,
+    "title": "3.3 Domain-Adaptive Continual Pre-Training Pre-Training Corpora",
+    "page": 4
+   },
+   {
+    "level": 3,
+    "title": "Training and Evaluation",
+    "page": 4
+   },
+   {
+    "level": 1,
+    "title": "4 Results",
+    "page": 4
+   },
+   {
+    "level": 2,
+    "title": "4.1 General Pre-Training From Scratch Pre-Trained Base Models",
+    "page": 4
+   },
+   {
+    "level": 3,
+    "title": "Instruction-Tuned Models",
+    "page": 5
+   },
+   {
+    "level": 2,
+    "title": "4.2 Domain-Adaptive Continual Pre-Training",
+    "page": 5
+   },
+   {
+    "level": 3,
+    "title": "Main Results",
+    "page": 5
+   },
+   {
+    "level": 3,
+    "title": "Ablations",
+    "page": 6
+   },
+   {
+    "level": 1,
+    "title": "5 Analysis",
+    "page": 6
+   },
+   {
+    "level": 2,
+    "title": "5.1 Instruction Synthesizer",
+    "page": 6
+   },
+   {
+    "level": 3,
+    "title": "Response Accuracy",
+    "page": 6
+   },
+   {
+    "level": 3,
+    "title": "Instruction-Response Pair Quality",
+    "page": 7
+   },
+   {
+    "level": 3,
+    "title": "Helpfulness on LM Generalization",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "5.2 Instruction-Augmented Corpora",
+    "page": 7
+   },
+   {
+    "level": 1,
+    "title": "6 Related Work",
+    "page": 8
+   },
+   {
+    "level": 2,
+    "title": "Synthetic Instruction Generation",
+    "page": 8
+   },
+   {
+    "level": 2,
+    "title": "Data Curation for LM Pre-Training",
+    "page": 8
+   },
+   {
+    "level": 1,
+    "title": "7 Conclusion",
+    "page": 8
+   },
+   {
+    "level": 2,
+    "title": "Limitations",
+    "page": 9
+   },
+   {
+    "level": 2,
+    "title": "Ethics Statement",
+    "page": 9
+   },
+   {
+    "level": 1,
+    "title": "Acknowledgements",
+    "page": 9
+   },
+   {
+    "level": 1,
+    "title": "References",
+    "page": 9
+   },
+   {
+    "level": 1,
+    "title": "A Data Collection for Fine-Tuning Instruction Synthesizer",
+    "page": 15
+   },
+   {
+    "level": 1,
+    "title": "B Tuning and Inference Settings for Instruction Synthesizer",
+    "page": 15
+   },
+   {
+    "level": 2,
+    "title": "Data Format",
+    "page": 15
+   },
+   {
+    "level": 2,
+    "title": "Tuning",
+    "page": 15
+   },
+   {
+    "level": 2,
+    "title": "Inference",
+    "page": 15
+   },
+   {
+    "level": 2,
+    "title": "Instruction Synthesizer Template",
+    "page": 15
+   },
+   {
+    "level": 2,
+    "title": "Hyper-Parameter Assignment",
+    "page": 15
+   },
+   {
+    "level": 1,
+    "title": "C LM Evaluation",
+    "page": 15
+   },
+   {
+    "level": 2,
+    "title": "General Models",
+    "page": 15
+   },
+   {
+    "level": 2,
+    "title": "Domain-Specific Models",
+    "page": 16
+   },
+   {
+    "level": 1,
+    "title": "D Data Contamination Analysis",
+    "page": 16
+   },
+   {
+    "level": 1,
+    "title": "E Human Evaluation on Instruction-Augmented Corpora",
+    "page": 17
+   },
+   {
+    "level": 1,
+    "title": "F Domain Distribution Analysis",
+    "page": 17
+   },
+   {
+    "level": 2,
+    "title": "Domain Coverage and Overlap",
+    "page": 17
+   },
+   {
+    "level": 2,
+    "title": "Domain Distribution",
+    "page": 17
+   },
+   {
+    "level": 2,
+    "title": "Hyper-Parameter",
+    "page": 19
+   },
+   {
+    "level": 2,
+    "title": "Pre-Train from Scratch",
+    "page": 19
+   },
+   {
+    "level": 1,
+    "title": "8 A100-80GB GPUs",
+    "page": 19
+   }
+  ]
+ },
+ {
+  "file": "2407.21783v3.pdf",
+  "sections": 98,
+  "toc": 98,
+  "toc_missing": [],
+  "issues": [],
+  "rows": [
+   {
+    "level": 1,
+    "title": "Introduction",
+    "page": 1
+   },
+   {
+    "level": 1,
+    "title": "General Overview",
+    "page": 2
+   },
+   {
+    "level": 1,
+    "title": "Pre-Training",
+    "page": 4
+   },
+   {
+    "level": 2,
+    "title": "Pre-Training Data",
+    "page": 4
+   },
+   {
+    "level": 3,
+    "title": "Web Data Curation",
+    "page": 4
+   },
+   {
+    "level": 3,
+    "title": "Determining the Data Mix",
+    "page": 6
+   },
+   {
+    "level": 3,
+    "title": "Annealing Data",
+    "page": 6
+   },
+   {
+    "level": 2,
+    "title": "Model Architecture",
+    "page": 6
+   },
+   {
+    "level": 3,
+    "title": "Scaling Laws",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "Infrastructure, Scaling, and Efficiency",
+    "page": 8
+   },
+   {
+    "level": 3,
+    "title": "Training Infrastructure",
+    "page": 8
+   },
+   {
+    "level": 3,
+    "title": "Parallelism for Model Scaling",
+    "page": 10
+   },
+   {
+    "level": 3,
+    "title": "Collective Communication",
+    "page": 12
+   },
+   {
+    "level": 3,
+    "title": "Reliability and Operational Challenges",
+    "page": 12
+   },
+   {
+    "level": 2,
+    "title": "Training Recipe",
+    "page": 14
+   },
+   {
+    "level": 3,
+    "title": "Initial Pre-Training",
+    "page": 14
+   },
+   {
+    "level": 3,
+    "title": "Long Context Pre-Training",
+    "page": 14
+   },
+   {
+    "level": 3,
+    "title": "Annealing",
+    "page": 14
+   },
+   {
+    "level": 1,
+    "title": "Post-Training",
+    "page": 15
+   },
+   {
+    "level": 2,
+    "title": "Modeling",
+    "page": 15
+   },
+   {
+    "level": 3,
+    "title": "Chat Dialog Format",
+    "page": 15
+   },
+   {
+    "level": 3,
+    "title": "Reward Modeling",
+    "page": 16
+   },
+   {
+    "level": 3,
+    "title": "Supervised Finetuning",
+    "page": 16
+   },
+   {
+    "level": 3,
+    "title": "Direct Preference Optimization",
+    "page": 16
+   },
+   {
+    "level": 3,
+    "title": "Model Averaging",
+    "page": 16
+   },
+   {
+    "level": 3,
+    "title": "Iterative Rounds",
+    "page": 16
+   },
+   {
+    "level": 2,
+    "title": "Post-training Data",
+    "page": 17
+   },
+   {
+    "level": 3,
+    "title": "Preference Data",
+    "page": 17
+   },
+   {
+    "level": 3,
+    "title": "SFT Data",
+    "page": 17
+   },
+   {
+    "level": 3,
+    "title": "Data Processing and Quality Control",
+    "page": 18
+   },
+   {
+    "level": 2,
+    "title": "Capabilities",
+    "page": 19
+   },
+   {
+    "level": 3,
+    "title": "Code",
+    "page": 19
+   },
+   {
+    "level": 3,
+    "title": "Multilinguality",
+    "page": 22
+   },
+   {
+    "level": 3,
+    "title": "Math and Reasoning",
+    "page": 23
+   },
+   {
+    "level": 3,
+    "title": "Long Context",
+    "page": 24
+   },
+   {
+    "level": 3,
+    "title": "Tool Use",
+    "page": 24
+   },
+   {
+    "level": 3,
+    "title": "Factuality",
+    "page": 26
+   },
+   {
+    "level": 3,
+    "title": "Steerability",
+    "page": 27
+   },
+   {
+    "level": 1,
+    "title": "Results",
+    "page": 28
+   },
+   {
+    "level": 2,
+    "title": "Pre-trained Language Model",
+    "page": 28
+   },
+   {
+    "level": 3,
+    "title": "Standard Benchmarks",
+    "page": 28
+   },
+   {
+    "level": 3,
+    "title": "Model Robustness",
+    "page": 30
+   },
+   {
+    "level": 3,
+    "title": "Adversarial Benchmarks",
+    "page": 33
+   },
+   {
+    "level": 3,
+    "title": "Contamination Analysis",
+    "page": 33
+   },
+   {
+    "level": 2,
+    "title": "Post-trained Language Model",
+    "page": 34
+   },
+   {
+    "level": 3,
+    "title": "General Knowledge and Instruction-Following Benchmarks",
+    "page": 34
+   },
+   {
+    "level": 3,
+    "title": "Proficiency Exams",
+    "page": 35
+   },
+   {
+    "level": 3,
+    "title": "Coding Benchmarks",
+    "page": 36
+   },
+   {
+    "level": 3,
+    "title": "Multilingual Benchmarks",
+    "page": 37
+   },
+   {
+    "level": 3,
+    "title": "Math and Reasoning Benchmarks",
+    "page": 38
+   },
+   {
+    "level": 3,
+    "title": "Long Context Benchmarks",
+    "page": 38
+   },
+   {
+    "level": 3,
+    "title": "Tool Use Performance",
+    "page": 38
+   },
+   {
+    "level": 2,
+    "title": "Human Evaluations",
+    "page": 39
+   },
+   {
+    "level": 2,
+    "title": "Safety",
+    "page": 40
+   },
+   {
+    "level": 3,
+    "title": "Benchmark Construction",
+    "page": 41
+   },
+   {
+    "level": 3,
+    "title": "Safety Pre-training",
+    "page": 41
+   },
+   {
+    "level": 3,
+    "title": "Safety Finetuning",
+    "page": 42
+   },
+   {
+    "level": 3,
+    "title": "Safety Results",
+    "page": 43
+   },
+   {
+    "level": 3,
+    "title": "Cybersecurity and Chemical/Biological Weapons Safety",
+    "page": 46
+   },
+   {
+    "level": 3,
+    "title": "Red Teaming",
+    "page": 48
+   },
+   {
+    "level": 3,
+    "title": "System Level Safety",
+    "page": 49
+   },
+   {
+    "level": 3,
+    "title": "Limitations",
+    "page": 50
+   },
+   {
+    "level": 1,
+    "title": "Inference",
+    "page": 51
+   },
+   {
+    "level": 2,
+    "title": "Pipeline Parallelism",
+    "page": 51
+   },
+   {
+    "level": 2,
+    "title": "FP8 Quantization",
+    "page": 52
+   },
+   {
+    "level": 1,
+    "title": "Vision Experiments",
+    "page": 53
+   },
+   {
+    "level": 2,
+    "title": "Data",
+    "page": 54
+   },
+   {
+    "level": 3,
+    "title": "Image Data",
+    "page": 54
+   },
+   {
+    "level": 3,
+    "title": "Video Data",
+    "page": 56
+   },
+   {
+    "level": 2,
+    "title": "Model Architecture",
+    "page": 56
+   },
+   {
+    "level": 2,
+    "title": "Model Scaling",
+    "page": 57
+   },
+   {
+    "level": 2,
+    "title": "Pre-training",
+    "page": 58
+   },
+   {
+    "level": 2,
+    "title": "Post-Training",
+    "page": 58
+   },
+   {
+    "level": 3,
+    "title": "Supervised Finetuning Data",
+    "page": 58
+   },
+   {
+    "level": 3,
+    "title": "Supervised Finetuning Recipe",
+    "page": 59
+   },
+   {
+    "level": 3,
+    "title": "Preference Data",
+    "page": 59
+   },
+   {
+    "level": 3,
+    "title": "Reward Modeling",
+    "page": 60
+   },
+   {
+    "level": 3,
+    "title": "Direct Preference Optimization",
+    "page": 60
+   },
+   {
+    "level": 3,
+    "title": "Rejection Sampling",
+    "page": 60
+   },
+   {
+    "level": 3,
+    "title": "Quality Tuning",
+    "page": 60
+   },
+   {
+    "level": 2,
+    "title": "Image Recognition Results",
+    "page": 61
+   },
+   {
+    "level": 2,
+    "title": "Video Recognition Results",
+    "page": 61
+   },
+   {
+    "level": 1,
+    "title": "Speech Experiments",
+    "page": 62
+   },
+   {
+    "level": 2,
+    "title": "Data",
+    "page": 63
+   },
+   {
+    "level": 3,
+    "title": "Speech Understanding",
+    "page": 63
+   },
+   {
+    "level": 3,
+    "title": "Speech Generation",
+    "page": 64
+   },
+   {
+    "level": 2,
+    "title": "Model Architecture",
+    "page": 64
+   },
+   {
+    "level": 3,
+    "title": "Speech Understanding",
+    "page": 64
+   },
+   {
+    "level": 3,
+    "title": "Speech Generation",
+    "page": 64
+   },
+   {
+    "level": 2,
+    "title": "Training Recipe",
+    "page": 65
+   },
+   {
+    "level": 3,
+    "title": "Speech Understanding",
+    "page": 65
+   },
+   {
+    "level": 3,
+    "title": "Speech Generation",
+    "page": 66
+   },
+   {
+    "level": 2,
+    "title": "Speech Understanding Results",
+    "page": 66
+   },
+   {
+    "level": 2,
+    "title": "Speech Generation Results",
+    "page": 67
+   },
+   {
+    "level": 1,
+    "title": "Related Work",
+    "page": 69
+   },
+   {
+    "level": 2,
+    "title": "Language",
+    "page": 69
+   },
+   {
+    "level": 2,
+    "title": "Multimodality",
+    "page": 70
+   },
+   {
+    "level": 1,
+    "title": "Conclusion",
+    "page": 70
+   }
+  ]
+ },
+ {
+  "file": "2412.15115v2.pdf",
+  "sections": 32,
+  "toc": 0,
+  "toc_missing": [],
+  "issues": [],
+  "rows": [
+   {
+    "level": 1,
+    "title": "Abstract",
+    "page": 1
+   },
+   {
+    "level": 1,
+    "title": "1 Introduction",
+    "page": 2
+   },
+   {
+    "level": 1,
+    "title": "2 Architecture & Tokenizer",
+    "page": 2
+   },
+   {
+    "level": 1,
+    "title": "3 Pre-training",
+    "page": 3
+   },
+   {
+    "level": 2,
+    "title": "3.1 Pre-training Data",
+    "page": 3
+   },
+   {
+    "level": 2,
+    "title": "3.2 Scaling Law for Hyper-parameters",
+    "page": 4
+   },
+   {
+    "level": 2,
+    "title": "3.3 Long-context Pre-training",
+    "page": 4
+   },
+   {
+    "level": 1,
+    "title": "4 Post-training",
+    "page": 4
+   },
+   {
+    "level": 2,
+    "title": "4.1 Supervised Fine-tuning",
+    "page": 5
+   },
+   {
+    "level": 2,
+    "title": "4.2 Offline Reinforcement Learning",
+    "page": 6
+   },
+   {
+    "level": 2,
+    "title": "4.3 Online Reinforcement Learning",
+    "page": 6
+   },
+   {
+    "level": 2,
+    "title": "4.4 Long Context Fine-tuning",
+    "page": 7
+   },
+   {
+    "level": 1,
+    "title": "5 Evaluation",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "5.1 Base Models",
+    "page": 7
+   },
+   {
+    "level": 3,
+    "title": "General Tasks",
+    "page": 7
+   },
+   {
+    "level": 3,
+    "title": "Mathematics & Science Tasks",
+    "page": 8
+   },
+   {
+    "level": 3,
+    "title": "Coding Tasks",
+    "page": 8
+   },
+   {
+    "level": 3,
+    "title": "Multilingual Tasks",
+    "page": 8
+   },
+   {
+    "level": 3,
+    "title": "Qwen2.5-14B/32B & Qwen2.5-Turbo",
+    "page": 8
+   },
+   {
+    "level": 2,
+    "title": "5.2 Instruction-tuned Model",
+    "page": 10
+   },
+   {
+    "level": 3,
+    "title": "5.2.1 Open Benchmark Evaluation",
+    "page": 11
+   },
+   {
+    "level": 4,
+    "title": "Qwen2.5-72B-Instruct & Qwen2.5-Plus",
+    "page": 11
+   },
+   {
+    "level": 4,
+    "title": "Qwen2.5-14B/32B-Instruct & Qwen2.5-Turbo",
+    "page": 12
+   },
+   {
+    "level": 4,
+    "title": "Other Instruction-tuned Models",
+    "page": 13
+   },
+   {
+    "level": 3,
+    "title": "5.2.2 In-house Automatic Evaluation",
+    "page": 14
+   },
+   {
+    "level": 4,
+    "title": "English & Chinese Evaluation",
+    "page": 14
+   },
+   {
+    "level": 4,
+    "title": "Multilingual Evaluation",
+    "page": 14
+   },
+   {
+    "level": 3,
+    "title": "5.2.3 Reward Model",
+    "page": 15
+   },
+   {
+    "level": 3,
+    "title": "5.2.4 Long Context Capabilities",
+    "page": 16
+   },
+   {
+    "level": 1,
+    "title": "6 Conclusion",
+    "page": 18
+   },
+   {
+    "level": 1,
+    "title": "7 Authors",
+    "page": 18
+   },
+   {
+    "level": 1,
+    "title": "References",
+    "page": 19
+   }
+  ]
+ },
+ {
+  "file": "2412.19437v1.pdf",
+  "sections": 53,
+  "toc": 53,
+  "toc_missing": [],
+  "issues": [],
+  "rows": [
+   {
+    "level": 1,
+    "title": "Introduction",
+    "page": 4
+   },
+   {
+    "level": 1,
+    "title": "Architecture",
+    "page": 6
+   },
+   {
+    "level": 2,
+    "title": "Basic Architecture",
+    "page": 6
+   },
+   {
+    "level": 3,
+    "title": "Multi-Head Latent Attention",
+    "page": 7
+   },
+   {
+    "level": 3,
+    "title": "DeepSeekMoE with Auxiliary-Loss-Free Load Balancing",
+    "page": 8
+   },
+   {
+    "level": 2,
+    "title": "Multi-Token Prediction",
+    "page": 10
+   },
+   {
+    "level": 1,
+    "title": "Infrastructures",
+    "page": 11
+   },
+   {
+    "level": 2,
+    "title": "Compute Clusters",
+    "page": 11
+   },
+   {
+    "level": 2,
+    "title": "Training Framework",
+    "page": 11
+   },
+   {
+    "level": 3,
+    "title": "DualPipe and Computation-Communication Overlap",
+    "page": 12
+   },
+   {
+    "level": 3,
+    "title": "Efficient Implementation of Cross-Node All-to-All Communication",
+    "page": 13
+   },
+   {
+    "level": 3,
+    "title": "Extremely Memory Saving with Minimal Overhead",
+    "page": 14
+   },
+   {
+    "level": 2,
+    "title": "FP8 Training",
+    "page": 14
+   },
+   {
+    "level": 3,
+    "title": "Mixed Precision Framework",
+    "page": 15
+   },
+   {
+    "level": 3,
+    "title": "Improved Precision from Quantization and Multiplication",
+    "page": 16
+   },
+   {
+    "level": 3,
+    "title": "Low-Precision Storage and Communication",
+    "page": 18
+   },
+   {
+    "level": 2,
+    "title": "Inference and Deployment",
+    "page": 18
+   },
+   {
+    "level": 3,
+    "title": "Prefilling",
+    "page": 18
+   },
+   {
+    "level": 3,
+    "title": "Decoding",
+    "page": 19
+   },
+   {
+    "level": 2,
+    "title": "Suggestions on Hardware Design",
+    "page": 20
+   },
+   {
+    "level": 3,
+    "title": "Communication Hardware",
+    "page": 20
+   },
+   {
+    "level": 3,
+    "title": "Compute Hardware",
+    "page": 20
+   },
+   {
+    "level": 1,
+    "title": "Pre-Training",
+    "page": 21
+   },
+   {
+    "level": 2,
+    "title": "Data Construction",
+    "page": 22
+   },
+   {
+    "level": 2,
+    "title": "Hyper-Parameters",
+    "page": 22
+   },
+   {
+    "level": 2,
+    "title": "Long Context Extension",
+    "page": 23
+   },
+   {
+    "level": 2,
+    "title": "Evaluations",
+    "page": 24
+   },
+   {
+    "level": 3,
+    "title": "Evaluation Benchmarks",
+    "page": 24
+   },
+   {
+    "level": 3,
+    "title": "Evaluation Results",
+    "page": 24
+   },
+   {
+    "level": 2,
+    "title": "Discussion",
+    "page": 26
+   },
+   {
+    "level": 3,
+    "title": "Ablation Studies for Multi-Token Prediction",
+    "page": 26
+   },
+   {
+    "level": 3,
+    "title": "Ablation Studies for the Auxiliary-Loss-Free Balancing Strategy",
+    "page": 26
+   },
+   {
+    "level": 3,
+    "title": "Batch-Wise Load Balance VS. Sequence-Wise Load Balance",
+    "page": 27
+   },
+   {
+    "level": 1,
+    "title": "Post-Training",
+    "page": 28
+   },
+   {
+    "level": 2,
+    "title": "Supervised Fine-Tuning",
+    "page": 28
+   },
+   {
+    "level": 2,
+    "title": "Reinforcement Learning",
+    "page": 29
+   },
+   {
+    "level": 3,
+    "title": "Reward Model",
+    "page": 29
+   },
+   {
+    "level": 3,
+    "title": "Group Relative Policy Optimization",
+    "page": 30
+   },
+   {
+    "level": 2,
+    "title": "Evaluations",
+    "page": 30
+   },
+   {
+    "level": 3,
+    "title": "Evaluation Settings",
+    "page": 30
+   },
+   {
+    "level": 3,
+    "title": "Standard Evaluation",
+    "page": 31
+   },
+   {
+    "level": 3,
+    "title": "Open-Ended Evaluation",
+    "page": 33
+   },
+   {
+    "level": 3,
+    "title": "DeepSeek-V3 as a Generative Reward Model",
+    "page": 33
+   },
+   {
+    "level": 2,
+    "title": "Discussion",
+    "page": 34
+   },
+   {
+    "level": 3,
+    "title": "Distillation from DeepSeek-R1",
+    "page": 34
+   },
+   {
+    "level": 3,
+    "title": "Self-Rewarding",
+    "page": 34
+   },
+   {
+    "level": 3,
+    "title": "Multi-Token Prediction Evaluation",
+    "page": 35
+   },
+   {
+    "level": 1,
+    "title": "Conclusion, Limitations, and Future Directions",
+    "page": 35
+   },
+   {
+    "level": 1,
+    "title": "Contributions and Acknowledgments",
+    "page": 45
+   },
+   {
+    "level": 1,
+    "title": "Ablation Studies for Low-Precision Training",
+    "page": 47
+   },
+   {
+    "level": 2,
+    "title": "FP8 v.s. BF16 Training",
+    "page": 47
+   },
+   {
+    "level": 2,
+    "title": "Discussion About Block-Wise Quantization",
+    "page": 47
+   },
+   {
+    "level": 1,
+    "title": "Expert Specialization Patterns of the 16B Aux-Loss-Based and Aux-Loss-Free Models",
+    "page": 48
+   }
+  ]
+ },
+ {
+  "file": "2501.12948v2.pdf",
+  "sections": 61,
+  "toc": 61,
+  "toc_missing": [],
+  "issues": [],
+  "rows": [
+   {
+    "level": 1,
+    "title": "Introduction",
+    "page": 1
+   },
+   {
+    "level": 1,
+    "title": "DeepSeek-R1-Zero",
+    "page": 2
+   },
+   {
+    "level": 2,
+    "title": "Group Relative Policy Optimization",
+    "page": 2
+   },
+   {
+    "level": 2,
+    "title": "Reward Design",
+    "page": 3
+   },
+   {
+    "level": 2,
+    "title": "Incentivize Reasoning Capability in LLMs",
+    "page": 4
+   },
+   {
+    "level": 1,
+    "title": "DeepSeek-R1",
+    "page": 5
+   },
+   {
+    "level": 2,
+    "title": "Model-based Rewards",
+    "page": 6
+   },
+   {
+    "level": 2,
+    "title": "Training Details",
+    "page": 7
+   },
+   {
+    "level": 3,
+    "title": "Training Details of the First RL Stage",
+    "page": 7
+   },
+   {
+    "level": 3,
+    "title": "Training Details of the Second RL Stage",
+    "page": 8
+   },
+   {
+    "level": 1,
+    "title": "Experiment",
+    "page": 8
+   },
+   {
+    "level": 1,
+    "title": "Ethics and Safety Statement",
+    "page": 9
+   },
+   {
+    "level": 1,
+    "title": "Conclusion, Limitation, and Future Work",
+    "page": 10
+   },
+   {
+    "level": 1,
+    "title": "Author List",
+    "page": 11
+   },
+   {
+    "level": 1,
+    "title": "Background",
+    "page": 13
+   },
+   {
+    "level": 2,
+    "title": "DeepSeek-V3",
+    "page": 13
+   },
+   {
+    "level": 2,
+    "title": "Conventional Post-Training Paradigm",
+    "page": 13
+   },
+   {
+    "level": 2,
+    "title": "A Comparison of GRPO and PPO",
+    "page": 14
+   },
+   {
+    "level": 1,
+    "title": "Training Details",
+    "page": 16
+   },
+   {
+    "level": 2,
+    "title": "RL Infrastructure",
+    "page": 17
+   },
+   {
+    "level": 2,
+    "title": "Reward Model Prompt",
+    "page": 18
+   },
+   {
+    "level": 2,
+    "title": "Data Recipe",
+    "page": 18
+   },
+   {
+    "level": 3,
+    "title": "RL Data",
+    "page": 19
+   },
+   {
+    "level": 3,
+    "title": "DeepSeek-R1 Cold Start",
+    "page": 20
+   },
+   {
+    "level": 3,
+    "title": "800K Supervised Data",
+    "page": 26
+   },
+   {
+    "level": 2,
+    "title": "Hyper-Parameters",
+    "page": 34
+   },
+   {
+    "level": 3,
+    "title": "Hyper-Parameters of DeepSeek-R1-Zero-Qwen-32B",
+    "page": 34
+   },
+   {
+    "level": 3,
+    "title": "Hyper-Parameters of SFT",
+    "page": 34
+   },
+   {
+    "level": 3,
+    "title": "Hyper-Parameters of Distillation",
+    "page": 35
+   },
+   {
+    "level": 3,
+    "title": "Training Cost",
+    "page": 35
+   },
+   {
+    "level": 2,
+    "title": "Reward Hacking",
+    "page": 35
+   },
+   {
+    "level": 2,
+    "title": "Ablation Study of Language Consistency Reward",
+    "page": 35
+   },
+   {
+    "level": 1,
+    "title": "Self-Evolution of DeepSeek-R1-Zero",
+    "page": 37
+   },
+   {
+    "level": 2,
+    "title": "Evolution of Reasoning Capability in DeepSeek-R1-Zero during Training",
+    "page": 37
+   },
+   {
+    "level": 2,
+    "title": "Evolution of Advanced Reasoning Behaviors in DeepSeek-R1-Zero during Training",
+    "page": 38
+   },
+   {
+    "level": 1,
+    "title": "Evaluation of DeepSeek-R1",
+    "page": 38
+   },
+   {
+    "level": 2,
+    "title": "Experiment Setup",
+    "page": 39
+   },
+   {
+    "level": 2,
+    "title": "Main Results",
+    "page": 41
+   },
+   {
+    "level": 2,
+    "title": "DeepSeek-R1 Safety Report",
+    "page": 43
+   },
+   {
+    "level": 3,
+    "title": "Risk Control System for DeepSeek-R1",
+    "page": 44
+   },
+   {
+    "level": 3,
+    "title": "R1 Safety Evaluation on Standard Benchmarks",
+    "page": 46
+   },
+   {
+    "level": 3,
+    "title": "Safety Taxonomic Study of R1 on In-House Benchmark",
+    "page": 48
+   },
+   {
+    "level": 3,
+    "title": "Multilingual Safety Performance",
+    "page": 51
+   },
+   {
+    "level": 3,
+    "title": "Robustness against Jailbreaking",
+    "page": 53
+   },
+   {
+    "level": 1,
+    "title": "More Analysis",
+    "page": 54
+   },
+   {
+    "level": 2,
+    "title": "Performance Comparison with DeepSeek-V3",
+    "page": 54
+   },
+   {
+    "level": 2,
+    "title": "Generalization to Real-World Competitions",
+    "page": 56
+   },
+   {
+    "level": 2,
+    "title": "Mathematical Capabilities Breakdown by Categories",
+    "page": 57
+   },
+   {
+    "level": 2,
+    "title": "An Analysis on CoT Length",
+    "page": 57
+   },
+   {
+    "level": 2,
+    "title": "Performance of Each Stage on Problems of Varying Difficulty",
+    "page": 60
+   },
+   {
+    "level": 1,
+    "title": "DeepSeek-R1 Distillation",
+    "page": 60
+   },
+   {
+    "level": 2,
+    "title": "Distillation v.s. Reinforcement Learning",
+    "page": 61
+   },
+   {
+    "level": 1,
+    "title": "Discussion",
+    "page": 62
+   },
+   {
+    "level": 2,
+    "title": "Key Findings",
+    "page": 62
+   },
+   {
+    "level": 2,
+    "title": "Unsuccessful Attempts",
+    "page": 63
+   },
+   {
+    "level": 1,
+    "title": "Related Work",
+    "page": 64
+   },
+   {
+    "level": 2,
+    "title": "Chain-of-thought Reasoning",
+    "page": 64
+   },
+   {
+    "level": 2,
+    "title": "Scaling Inference-time Compute",
+    "page": 64
+   },
+   {
+    "level": 2,
+    "title": "Reinforcement Learning for Reasoning Enhancement",
+    "page": 65
+   },
+   {
+    "level": 1,
+    "title": "Open Weights, Code, and Data",
+    "page": 65
+   },
+   {
+    "level": 1,
+    "title": "Evaluation Prompts and Settings",
+    "page": 66
+   }
+  ]
+ },
+ {
+  "file": "333078981_693988129081760_4712707815225756708_n.pdf",
+  "sections": 38,
+  "toc": 0,
+  "toc_missing": [],
+  "issues": [],
+  "rows": [
+   {
+    "level": 1,
+    "title": "Abstract",
+    "page": 1
+   },
+   {
+    "level": 1,
+    "title": "1 Introduction",
+    "page": 1
+   },
+   {
+    "level": 1,
+    "title": "2 Approach",
+    "page": 2
+   },
+   {
+    "level": 2,
+    "title": "2.1 Pre-training Data",
+    "page": 2
+   },
+   {
+    "level": 2,
+    "title": "2.2 Architecture",
+    "page": 3
+   },
+   {
+    "level": 2,
+    "title": "2.3 Optimizer",
+    "page": 3
+   },
+   {
+    "level": 2,
+    "title": "2.4 Efficient implementation",
+    "page": 3
+   },
+   {
+    "level": 1,
+    "title": "3 Main results",
+    "page": 4
+   },
+   {
+    "level": 2,
+    "title": "3.1 Common Sense Reasoning",
+    "page": 4
+   },
+   {
+    "level": 2,
+    "title": "3.2 Closed-book Question Answering",
+    "page": 5
+   },
+   {
+    "level": 2,
+    "title": "3.3 Reading Comprehension",
+    "page": 5
+   },
+   {
+    "level": 2,
+    "title": "3.4 Mathematical reasoning",
+    "page": 5
+   },
+   {
+    "level": 2,
+    "title": "3.5 Code generation",
+    "page": 5
+   },
+   {
+    "level": 2,
+    "title": "3.6 Massive Multitask Language Understanding",
+    "page": 6
+   },
+   {
+    "level": 2,
+    "title": "3.7 Evolution of performance during training",
+    "page": 6
+   },
+   {
+    "level": 1,
+    "title": "4 Instruction Finetuning",
+    "page": 7
+   },
+   {
+    "level": 1,
+    "title": "5 Bias, Toxicity and Misinformation",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "5.1 RealToxicityPrompts",
+    "page": 8
+   },
+   {
+    "level": 2,
+    "title": "5.2 CrowS-Pairs",
+    "page": 9
+   },
+   {
+    "level": 2,
+    "title": "5.3 WinoGender",
+    "page": 9
+   },
+   {
+    "level": 2,
+    "title": "5.4 TruthfulQA",
+    "page": 9
+   },
+   {
+    "level": 1,
+    "title": "6 Carbon footprint",
+    "page": 10
+   },
+   {
+    "level": 1,
+    "title": "7 Related work",
+    "page": 10
+   },
+   {
+    "level": 2,
+    "title": "Language models",
+    "page": 10
+   },
+   {
+    "level": 1,
+    "title": "8 Conclusion",
+    "page": 11
+   },
+   {
+    "level": 1,
+    "title": "Acknowledgements",
+    "page": 12
+   },
+   {
+    "level": 1,
+    "title": "References",
+    "page": 12
+   },
+   {
+    "level": 1,
+    "title": "A Question Answering",
+    "page": 17
+   },
+   {
+    "level": 1,
+    "title": "B MMLU",
+    "page": 18
+   },
+   {
+    "level": 1,
+    "title": "D Generations from LLaMA-I",
+    "page": 22
+   },
+   {
+    "level": 2,
+    "title": "How do I send an HTTP request in Javascript?",
+    "page": 22
+   },
+   {
+    "level": 2,
+    "title": "The same thing, using fetch",
+    "page": 22
+   },
+   {
+    "level": 2,
+    "title": "What are 3 popular chess openings?",
+    "page": 23
+   },
+   {
+    "level": 2,
+    "title": "Write a theory to explain why cat never existed",
+    "page": 24
+   },
+   {
+    "level": 2,
+    "title": "Write a shouting match between Julius Caesar and Napoleon",
+    "page": 25
+   },
+   {
+    "level": 2,
+    "title": "Who are 5 people you would like to meet?",
+    "page": 26
+   },
+   {
+    "level": 2,
+    "title": "Could you explain me the main contribution of the first person you mentioned",
+    "page": 26
+   },
+   {
+    "level": 2,
+    "title": "What is the most famous equation from this theory?",
+    "page": 26
+   }
+  ]
+ },
+ {
+  "file": "language_understanding_paper.pdf",
+  "sections": 34,
+  "toc": 11,
+  "toc_missing": [
+   "Supervised fine-tuning",
+   "Task-specific input transformations",
+   "Supervised fine-tuning"
+  ],
+  "issues": [
+   "书签里少了 3 条（书签共 11）"
+  ],
+  "rows": [
+   {
+    "level": 1,
+    "title": "Abstract",
+    "page": 1
+   },
+   {
+    "level": 1,
+    "title": "1 Introduction",
+    "page": 1
+   },
+   {
+    "level": 1,
+    "title": "2 Related Work",
+    "page": 2
+   },
+   {
+    "level": 2,
+    "title": "Semi-supervised learning for NLP",
+    "page": 2
+   },
+   {
+    "level": 2,
+    "title": "Unsupervised pre-training",
+    "page": 2
+   },
+   {
+    "level": 2,
+    "title": "Auxiliary training objectives",
+    "page": 3
+   },
+   {
+    "level": 1,
+    "title": "3 Framework",
+    "page": 3
+   },
+   {
+    "level": 2,
+    "title": "3.1 Unsupervised pre-training",
+    "page": 3
+   },
+   {
+    "level": 2,
+    "title": "3.2 Supervised ﬁne-tuning",
+    "page": 3
+   },
+   {
+    "level": 2,
+    "title": "3.3 Task-speciﬁc input transformations",
+    "page": 4
+   },
+   {
+    "level": 3,
+    "title": "Textual entailment",
+    "page": 4
+   },
+   {
+    "level": 3,
+    "title": "Similarity",
+    "page": 4
+   },
+   {
+    "level": 3,
+    "title": "Question Answering and Commonsense Reasoning",
+    "page": 4
+   },
+   {
+    "level": 1,
+    "title": "4 Experiments",
+    "page": 4
+   },
+   {
+    "level": 2,
+    "title": "4.1 Setup",
+    "page": 4
+   },
+   {
+    "level": 3,
+    "title": "Unsupervised pre-training",
+    "page": 4
+   },
+   {
+    "level": 3,
+    "title": "Model speciﬁcations",
+    "page": 5
+   },
+   {
+    "level": 3,
+    "title": "Fine-tuning details",
+    "page": 5
+   },
+   {
+    "level": 2,
+    "title": "4.2 Supervised ﬁne-tuning",
+    "page": 5
+   },
+   {
+    "level": 3,
+    "title": "Natural Language Inference",
+    "page": 5
+   },
+   {
+    "level": 3,
+    "title": "Method",
+    "page": 6
+   },
+   {
+    "level": 3,
+    "title": "Story Cloze",
+    "page": 6
+   },
+   {
+    "level": 3,
+    "title": "Finetuned Transformer LM (ours)",
+    "page": 6
+   },
+   {
+    "level": 3,
+    "title": "Question answering and commonsense reasoning",
+    "page": 6
+   },
+   {
+    "level": 3,
+    "title": "Semantic Similarity",
+    "page": 6
+   },
+   {
+    "level": 3,
+    "title": "Classiﬁcation",
+    "page": 6
+   },
+   {
+    "level": 3,
+    "title": "Method",
+    "page": 7
+   },
+   {
+    "level": 3,
+    "title": "Classiﬁcation Semantic Similarity GLUE",
+    "page": 7
+   },
+   {
+    "level": 1,
+    "title": "5 Analysis",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "Impact of number of layers transferred",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "Zero-shot Behaviors",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "Ablation studies",
+    "page": 8
+   },
+   {
+    "level": 1,
+    "title": "6 Conclusion",
+    "page": 8
+   },
+   {
+    "level": 1,
+    "title": "References",
+    "page": 8
+   }
+  ]
+ },
+ {
+  "file": "N19-1423.pdf",
+  "sections": 33,
+  "toc": 0,
+  "toc_missing": [],
+  "issues": [],
+  "rows": [
+   {
+    "level": 1,
+    "title": "Abstract",
+    "page": 1
+   },
+   {
+    "level": 1,
+    "title": "1 Introduction",
+    "page": 1
+   },
+   {
+    "level": 1,
+    "title": "2 Related Work",
+    "page": 2
+   },
+   {
+    "level": 2,
+    "title": "2.1 Unsupervised Feature-based Approaches",
+    "page": 2
+   },
+   {
+    "level": 2,
+    "title": "2.2 Unsupervised Fine-tuning Approaches",
+    "page": 2
+   },
+   {
+    "level": 2,
+    "title": "2.3 Transfer Learning from Supervised Data",
+    "page": 3
+   },
+   {
+    "level": 3,
+    "title": "Model Architecture",
+    "page": 3
+   },
+   {
+    "level": 2,
+    "title": "3.1 Pre-training BERT",
+    "page": 4
+   },
+   {
+    "level": 3,
+    "title": "Task #2: Next Sentence Prediction (NSP)",
+    "page": 4
+   },
+   {
+    "level": 3,
+    "title": "Pre-training data The pre-training procedure",
+    "page": 5
+   },
+   {
+    "level": 2,
+    "title": "3.2 Fine-tuning BERT",
+    "page": 5
+   },
+   {
+    "level": 1,
+    "title": "4 Experiments",
+    "page": 5
+   },
+   {
+    "level": 2,
+    "title": "4.2 SQuAD v1.1",
+    "page": 6
+   },
+   {
+    "level": 2,
+    "title": "4.3 SQuAD v2.0",
+    "page": 7
+   },
+   {
+    "level": 1,
+    "title": "5 Ablation Studies",
+    "page": 7
+   },
+   {
+    "level": 2,
+    "title": "5.1 Effect of Pre-training Tasks",
+    "page": 8
+   },
+   {
+    "level": 3,
+    "title": "No NSP: A bidirectional model which is trained",
+    "page": 8
+   },
+   {
+    "level": 2,
+    "title": "5.2 Effect of Model Size",
+    "page": 8
+   },
+   {
+    "level": 2,
+    "title": "5.3 Feature-based Approach with BERT",
+    "page": 9
+   },
+   {
+    "level": 1,
+    "title": "6 Conclusion",
+    "page": 9
+   },
+   {
+    "level": 1,
+    "title": "References",
+    "page": 10
+   },
+   {
+    "level": 1,
+    "title": "Appendix for “BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding”",
+    "page": 12
+   },
+   {
+    "level": 1,
+    "title": "A Additional Details for BERT",
+    "page": 12
+   },
+   {
+    "level": 2,
+    "title": "A.1 Illustration of the Pre-training Tasks",
+    "page": 12
+   },
+   {
+    "level": 2,
+    "title": "Masked LM and the Masking Procedure",
+    "page": 12
+   },
+   {
+    "level": 2,
+    "title": "Next Sentence Prediction",
+    "page": 13
+   },
+   {
+    "level": 2,
+    "title": "A.4 Comparison of BERT, ELMo ,and OpenAI GPT",
+    "page": 14
+   },
+   {
+    "level": 2,
+    "title": "A.5 Illustrations of Fine-tuning on Different Tasks",
+    "page": 14
+   },
+   {
+    "level": 1,
+    "title": "B Detailed Experimental Setup",
+    "page": 14
+   },
+   {
+    "level": 2,
+    "title": "CoLA",
+    "page": 15
+   },
+   {
+    "level": 1,
+    "title": "C Additional Ablation Studies",
+    "page": 16
+   },
+   {
+    "level": 2,
+    "title": "C.1 Effect of Number of Training Steps",
+    "page": 16
+   },
+   {
+    "level": 2,
+    "title": "C.2 Ablation for Different Masking Procedures",
+    "page": 16
+   }
+  ]
+ },
+ {
+  "file": "UnderstandingDeepLearning_02_09_26_C.pdf",
+  "sections": 505,
+  "toc": 181,
+  "toc_missing": [
+   "Acknowledgements",
+   "Matrix notation",
+   "1D example",
+   "Binomial coefficients",
+   "Special types of matrix",
+   "Matrix calculus"
+  ],
+  "issues": [
+   "书签里少了 6 条（书签共 181）"
+  ],
+  "rows": [
+   {
+    "level": 1,
+    "title": "目录",
+    "page": 5
+   },
+   {
+    "level": 1,
+    "title": "Preface",
+    "page": 11
+   },
+   {
+    "level": 1,
+    "title": "Acknowledgments",
+    "page": 13
+   },
+   {
+    "level": 1,
+    "title": "1 Introduction",
+    "page": 15
+   },
+   {
+    "level": 2,
+    "title": "1.1 Supervised learning",
+    "page": 15
+   },
+   {
+    "level": 3,
+    "title": "1.1.1 Regression and classification problems",
+    "page": 16
+   },
+   {
+    "level": 3,
+    "title": "1.1.2 Inputs",
+    "page": 16
+   },
+   {
+    "level": 3,
+    "title": "1.1.3 Machine learning models",
+    "page": 18
+   },
+   {
+    "level": 3,
+    "title": "1.1.4 Deep neural networks",
+    "page": 19
+   },
+   {
+    "level": 3,
+    "title": "1.1.5 Structured outputs",
+    "page": 19
+   },
+   {
+    "level": 2,
+    "title": "1.2 Unsupervised learning",
+    "page": 21
+   },
+   {
+    "level": 3,
+    "title": "1.2.1 Generative models",
+    "page": 21
+   },
+   {
+    "level": 3,
+    "title": "1.2.2 Latent variables",
+    "page": 23
+   },
+   {
+    "level": 3,
+    "title": "1.2.3 Connecting supervised and unsupervised learning",
+    "page": 25
+   },
+   {
+    "level": 2,
+    "title": "1.3 Reinforcement learning",
+    "page": 25
+   },
+   {
+    "level": 3,
+    "title": "1.3.1 Two examples",
+    "page": 26
+   },
+   {
+    "level": 2,
+    "title": "1.4 Ethics",
+    "page": 26
+   },
+   {
+    "level": 2,
+    "title": "1.5 Structure of book",
+    "page": 29
+   },
+   {
+    "level": 2,
+    "title": "1.6 Other books",
+    "page": 29
+   },
+   {
+    "level": 2,
+    "title": "1.7 How to read this book",
+    "page": 30
+   },
+   {
+    "level": 1,
+    "title": "2 Supervised learning",
+    "page": 31
+   },
+   {
+    "level": 2,
+    "title": "2.1 Supervised learning overview",
+    "page": 31
+   },
+   {
+    "level": 2,
+    "title": "2.2 Linear regression example",
+    "page": 32
+   },
+   {
+    "level": 3,
+    "title": "2.2.2 Loss",
+    "page": 33
+   },
+   {
+    "level": 3,
+    "title": "2.2.3 Training",
+    "page": 36
+   },
+   {
+    "level": 3,
+    "title": "2.2.4 Testing",
+    "page": 36
+   },
+   {
+    "level": 2,
+    "title": "2.3 Summary",
+    "page": 36
+   },
+   {
+    "level": 3,
+    "title": "Notes",
+    "page": 37
+   },
+   {
+    "level": 3,
+    "title": "Problems",
+    "page": 38
+   },
+   {
+    "level": 1,
+    "title": "3 Shallow neural networks",
+    "page": 39
+   },
+   {
+    "level": 2,
+    "title": "3.1 Neural network example",
+    "page": 39
+   },
+   {
+    "level": 3,
+    "title": "3.1.1 Neural network intuition",
+    "page": 40
+   },
+   {
+    "level": 3,
+    "title": "3.1.2 Depicting neural networks",
+    "page": 41
+   },
+   {
+    "level": 2,
+    "title": "3.2 Universal approximation theorem",
+    "page": 43
+   },
+   {
+    "level": 2,
+    "title": "3.3 Multivariate inputs and outputs",
+    "page": 44
+   },
+   {
+    "level": 3,
+    "title": "3.3.1 Visualizing multivariate outputs",
+    "page": 44
+   },
+   {
+    "level": 3,
+    "title": "3.3.2 Visualizing multivariate inputs",
+    "page": 45
+   },
+   {
+    "level": 2,
+    "title": "3.4 Shallow neural networks: general case",
+    "page": 47
+   },
+   {
+    "level": 2,
+    "title": "3.5 Terminology",
+    "page": 49
+   },
+   {
+    "level": 2,
+    "title": "3.6 Summary",
+    "page": 50
+   },
+   {
+    "level": 3,
+    "title": "Notes",
+    "page": 50
+   },
+   {
+    "level": 3,
+    "title": "Problems",
+    "page": 53
+   },
+   {
+    "level": 1,
+    "title": "4 Deep neural networks",
+    "page": 55
+   },
+   {
+    "level": 2,
+    "title": "4.1 Composing neural networks",
+    "page": 55
+   },
+   {
+    "level": 2,
+    "title": "4.2 From composing networks to deep networks",
+    "page": 57
+   },
+   {
+    "level": 3,
+    "title": "From composing networks to deep networks",
+    "page": 57
+   },
+   {
+    "level": 2,
+    "title": "4.3 Deep neural networks",
+    "page": 59
+   },
+   {
+    "level": 3,
+    "title": "4.3.1 Hyperparameters",
+    "page": 60
+   },
+   {
+    "level": 3,
+    "title": "4.4.1 General formulation",
+    "page": 63
+   },
+   {
+    "level": 2,
+    "title": "4.5 Shallow vs. deep neural networks",
+    "page": 63
+   },
+   {
+    "level": 3,
+    "title": "4.5.1 Ability to approximate different functions",
+    "page": 64
+   },
+   {
+    "level": 3,
+    "title": "4.5.2 Number of linear regions per parameter",
+    "page": 64
+   },
+   {
+    "level": 3,
+    "title": "4.5.3 Depth eﬀiciency",
+    "page": 64
+   },
+   {
+    "level": 3,
+    "title": "4.5.4 Large, structured inputs",
+    "page": 64
+   },
+   {
+    "level": 3,
+    "title": "4.5.5 Training and generalization",
+    "page": 65
+   },
+   {
+    "level": 2,
+    "title": "4.6 Summary",
+    "page": 66
+   },
+   {
+    "level": 3,
+    "title": "Notes",
+    "page": 66
+   },
+   {
+    "level": 3,
+    "title": "Problems",
+    "page": 67
+   },
+   {
+    "level": 1,
+    "title": "4 Deep neural networks",
+    "page": 68
+   },
+   {
+    "level": 1,
+    "title": "5 Loss functions",
+    "page": 70
+   },
+   {
+    "level": 2,
+    "title": "5.1 Maximum likelihood",
+    "page": 70
+   },
+   {
+    "level": 3,
+    "title": "5.1.1 Computing a distribution over outputs",
+    "page": 72
+   },
+   {
+    "level": 3,
+    "title": "5.1.2 Maximum likelihood criterion",
+    "page": 72
+   },
+   {
+    "level": 3,
+    "title": "5.1.3 Maximizing log-likelihood",
+    "page": 73
+   },
+   {
+    "level": 3,
+    "title": "5.1.4 Minimizing negative log-likelihood",
+    "page": 74
+   },
+   {
+    "level": 3,
+    "title": "5.1.5 Inference",
+    "page": 74
+   },
+   {
+    "level": 4,
+    "title": "Recipe for constructing loss functions",
+    "page": 74
+   },
+   {
+    "level": 2,
+    "title": "5.3 Example 1: univariate regression",
+    "page": 75
+   },
+   {
+    "level": 3,
+    "title": "5.3.1 Least squares loss function",
+    "page": 76
+   },
+   {
+    "level": 3,
+    "title": "5.3.2 Inference",
+    "page": 76
+   },
+   {
+    "level": 3,
+    "title": "5.3.3 Estimating variance",
+    "page": 76
+   },
+   {
+    "level": 3,
+    "title": "5.3.4 Heteroscedastic regression",
+    "page": 78
+   },
+   {
+    "level": 2,
+    "title": "5.4 Example 2: binary classification",
+    "page": 78
+   },
+   {
+    "level": 2,
+    "title": "5.5 Example 3: multiclass classification",
+    "page": 81
+   },
+   {
+    "level": 2,
+    "title": "5.6 Multiple outputs",
+    "page": 83
+   },
+   {
+    "level": 3,
+    "title": "5.5.1 Predicting other data types",
+    "page": 83
+   },
+   {
+    "level": 2,
+    "title": "5.6 Multiple outputs",
+    "page": 83
+   },
+   {
+    "level": 2,
+    "title": "5.7 Cross-entropy loss",
+    "page": 85
+   },
+   {
+    "level": 1,
+    "title": "5 Loss functions",
+    "page": 86
+   },
+   {
+    "level": 2,
+    "title": "5.8 Summary",
+    "page": 86
+   },
+   {
+    "level": 3,
+    "title": "Notes",
+    "page": 87
+   },
+   {
+    "level": 3,
+    "title": "Problems",
+    "page": 88
+   },
+   {
+    "level": 3,
+    "title": "Notes",
+    "page": 89
+   },
+   {
+    "level": 1,
+    "title": "6 Fitting models",
+    "page": 91
+   },
+   {
+    "level": 2,
+    "title": "6.1 Gradient descent",
+    "page": 91
+   },
+   {
+    "level": 3,
+    "title": "6.1.1 Linear regression example",
+    "page": 92
+   },
+   {
+    "level": 3,
+    "title": "6.1.2 Gabor model example",
+    "page": 94
+   },
+   {
+    "level": 3,
+    "title": "6.1.3 Local minima and saddle points",
+    "page": 95
+   },
+   {
+    "level": 2,
+    "title": "6.2 Stochastic gradient descent",
+    "page": 97
+   },
+   {
+    "level": 3,
+    "title": "6.2.1 Batches and epochs",
+    "page": 99
+   },
+   {
+    "level": 3,
+    "title": "6.2.2 Properties of stochastic gradient descent",
+    "page": 99
+   },
+   {
+    "level": 2,
+    "title": "6.3 Momentum",
+    "page": 100
+   },
+   {
+    "level": 3,
+    "title": "6.3.1 Nesterov accelerated momentum",
+    "page": 100
+   },
+   {
+    "level": 2,
+    "title": "6.4 Adam",
+    "page": 102
+   },
+   {
+    "level": 2,
+    "title": "6.5 Training algorithm hyperparameters",
+    "page": 105
+   },
+   {
+    "level": 2,
+    "title": "6.6 Summary",
+    "page": 105
+   },
+   {
+    "level": 3,
+    "title": "Notes",
+    "page": 105
+   },
+   {
+    "level": 3,
+    "title": "Problems",
+    "page": 108
+   },
+   {
+    "level": 1,
+    "title": "7 Gradients and initialization",
+    "page": 110
+   },
+   {
+    "level": 2,
+    "title": "7.1 Problem definitions",
+    "page": 110
+   },
+   {
+    "level": 2,
+    "title": "7.2 Computing derivatives",
+    "page": 111
+   },
+   {
+    "level": 2,
+    "title": "7.3 Toy example",
+    "page": 114
+   },
+   {
+    "level": 2,
+    "title": "7.4 Backpropagation algorithm",
+    "page": 117
+   },
+   {
+    "level": 1,
+    "title": "7 Gradients and initialization",
+    "page": 118
+   },
+   {
+    "level": 2,
+    "title": "7.4.1 Backpropagation algorithm summary",
+    "page": 120
+   },
+   {
+    "level": 3,
+    "title": "7.4.2 Algorithmic differentiation",
+    "page": 120
+   },
+   {
+    "level": 3,
+    "title": "7.4.3 Extension to arbitrary computational graphs",
+    "page": 121
+   },
+   {
+    "level": 2,
+    "title": "7.5 Parameter initialization",
+    "page": 121
+   },
+   {
+    "level": 1,
+    "title": "7 Gradients and initialization",
+    "page": 122
+   },
+   {
+    "level": 2,
+    "title": "7.5.1 Initialization for forward pass",
+    "page": 122
+   },
+   {
+    "level": 2,
+    "title": "7.5 Parameter initialization",
+    "page": 123
+   },
+   {
+    "level": 3,
+    "title": "7.5.2 Initialization for backward pass",
+    "page": 124
+   },
+   {
+    "level": 3,
+    "title": "7.5.3 Initialization for both forward and backward pass",
+    "page": 125
+   },
+   {
+    "level": 2,
+    "title": "7.6 Example training code",
+    "page": 125
+   },
+   {
+    "level": 2,
+    "title": "7.7 Summary",
+    "page": 125
+   },
+   {
+    "level": 3,
+    "title": "Notes",
+    "page": 127
+   },
+   {
+    "level": 3,
+    "title": "Problems",
+    "page": 128
+   },
+   {
+    "level": 3,
+    "title": "Notes",
+    "page": 129
+   },
+   {
+    "level": 1,
+    "title": "8 Measuring performance",
+    "page": 132
+   },
+   {
+    "level": 2,
+    "title": "8.1 Training a simple model",
+    "page": 132
+   },
+   {
+    "level": 2,
+    "title": "8.2 Sources of error",
+    "page": 134
+   },
+   {
+    "level": 3,
+    "title": "8.2.1 Noise, bias, and variance",
+    "page": 136
+   },
+   {
+    "level": 4,
+    "title": "Noise",
+    "page": 136
+   },
+   {
+    "level": 4,
+    "title": "Bias",
+    "page": 136
+   },
+   {
+    "level": 2,
+    "title": "8.2 Sources of error",
+    "page": 137
+   },
+   {
+    "level": 3,
+    "title": "Variance",
+    "page": 137
+   },
+   {
+    "level": 3,
+    "title": "8.2.2 Mathematical formulation of test error",
+    "page": 137
+   },
+   {
+    "level": 1,
+    "title": "8 Measuring performance",
+    "page": 138
+   },
+   {
+    "level": 2,
+    "title": "8.3 Reducing error",
+    "page": 138
+   },
+   {
+    "level": 3,
+    "title": "8.3.1 Reducing variance",
+    "page": 139
+   },
+   {
+    "level": 3,
+    "title": "8.3.2 Reducing bias",
+    "page": 139
+   },
+   {
+    "level": 3,
+    "title": "8.3.3 Bias-variance trade-off",
+    "page": 139
+   },
+   {
+    "level": 2,
+    "title": "8.4 Double descent",
+    "page": 141
+   },
+   {
+    "level": 3,
+    "title": "8.4.1 Explanation",
+    "page": 143
+   },
+   {
+    "level": 2,
+    "title": "8.5 Choosing hyperparameters",
+    "page": 146
+   },
+   {
+    "level": 2,
+    "title": "8.6 Summary",
+    "page": 147
+   },
+   {
+    "level": 3,
+    "title": "Notes",
+    "page": 147
+   },
+   {
+    "level": 3,
+    "title": "Problems",
+    "page": 150
+   },
+   {
+    "level": 1,
+    "title": "9 Regularization",
+    "page": 152
+   },
+   {
+    "level": 2,
+    "title": "9.1 Explicit regularization",
+    "page": 152
+   },
+   {
+    "level": 3,
+    "title": "9.1.1 Probabilistic interpretation",
+    "page": 153
+   },
+   {
+    "level": 3,
+    "title": "9.1.2 L2 regularization",
+    "page": 154
+   },
+   {
+    "level": 2,
+    "title": "9.2 Implicit regularization",
+    "page": 155
+   },
+   {
+    "level": 3,
+    "title": "9.2.1 Implicit regularization in gradient descent",
+    "page": 155
+   },
+   {
+    "level": 2,
+    "title": "9.3 Heuristics to improve performance",
+    "page": 157
+   },
+   {
+    "level": 3,
+    "title": "Implicit regularization in stochastic gradient descent",
+    "page": 157
+   },
+   {
+    "level": 2,
+    "title": "9.3 Heuristics to improve performance",
+    "page": 157
+   },
+   {
+    "level": 3,
+    "title": "9.3.1 Early stopping",
+    "page": 159
+   },
+   {
+    "level": 3,
+    "title": "9.3.2 Ensembling",
+    "page": 159
+   },
+   {
+    "level": 3,
+    "title": "9.3.3 Dropout",
+    "page": 161
+   },
+   {
+    "level": 3,
+    "title": "9.3.4 Applying noise",
+    "page": 163
+   },
+   {
+    "level": 3,
+    "title": "9.3.5 Bayesian inference",
+    "page": 164
+   },
+   {
+    "level": 3,
+    "title": "9.3.6 Transfer learning and multi-task learning",
+    "page": 165
+   },
+   {
+    "level": 3,
+    "title": "9.3.7 Self-supervised learning",
+    "page": 166
+   },
+   {
+    "level": 3,
+    "title": "9.3.8 Augmentation",
+    "page": 166
+   },
+   {
+    "level": 2,
+    "title": "9.4 Summary",
+    "page": 168
+   },
+   {
+    "level": 3,
+    "title": "Notes",
+    "page": 169
+   },
+   {
+    "level": 3,
+    "title": "Problems",
+    "page": 174
+   },
+   {
+    "level": 1,
+    "title": "10 Convolutional networks",
+    "page": 175
+   },
+   {
+    "level": 2,
+    "title": "10.1 Invariance and equivariance",
+    "page": 175
+   },
+   {
+    "level": 1,
+    "title": "10 Convolutional networks",
+    "page": 176
+   },
+   {
+    "level": 2,
+    "title": "10.2 Convolutional networks for 1D inputs",
+    "page": 177
+   },
+   {
+    "level": 3,
+    "title": "10.2.2 Padding",
+    "page": 178
+   },
+   {
+    "level": 3,
+    "title": "10.2.3 Stride, kernel size, and dilation",
+    "page": 178
+   },
+   {
+    "level": 3,
+    "title": "10.2.4 Convolutional layers",
+    "page": 179
+   },
+   {
+    "level": 3,
+    "title": "10.2.5 Channels",
+    "page": 179
+   },
+   {
+    "level": 3,
+    "title": "10.2.6 Convolutional networks and receptive fields",
+    "page": 181
+   },
+   {
+    "level": 3,
+    "title": "10.2.7 Example: MNIST-1D",
+    "page": 181
+   },
+   {
+    "level": 2,
+    "title": "10.3 Convolutional networks for 2D inputs",
+    "page": 184
+   },
+   {
+    "level": 2,
+    "title": "10.4 Downsampling and upsampling",
+    "page": 185
+   },
+   {
+    "level": 3,
+    "title": "10.4.1 Downsampling",
+    "page": 185
+   },
+   {
+    "level": 3,
+    "title": "10.4.2 Upsampling",
+    "page": 186
+   },
+   {
+    "level": 3,
+    "title": "10.4.3 Changing the number of channels",
+    "page": 188
+   },
+   {
+    "level": 2,
+    "title": "10.5 Applications",
+    "page": 188
+   },
+   {
+    "level": 3,
+    "title": "10.5.1 Image classification",
+    "page": 188
+   },
+   {
+    "level": 3,
+    "title": "10.5.2 Object detection",
+    "page": 191
+   },
+   {
+    "level": 3,
+    "title": "10.5.3 Semantic segmentation",
+    "page": 192
+   },
+   {
+    "level": 2,
+    "title": "10.6 Summary",
+    "page": 193
+   },
+   {
+    "level": 3,
+    "title": "Notes",
+    "page": 194
+   },
+   {
+    "level": 3,
+    "title": "Problems",
+    "page": 198
+   },
+   {
+    "level": 1,
+    "title": "11 Residual networks",
+    "page": 200
+   },
+   {
+    "level": 2,
+    "title": "11.1 Sequential processing",
+    "page": 200
+   },
+   {
+    "level": 3,
+    "title": "11.1.1 Limitations of sequential processing",
+    "page": 201
+   },
+   {
+    "level": 2,
+    "title": "11.2 Residual connections and residual blocks",
+    "page": 203
+   },
+   {
+    "level": 3,
+    "title": "11.2.1 Order of operations in residual blocks",
+    "page": 205
+   },
+   {
+    "level": 3,
+    "title": "11.2.2 Deeper networks with residual connections",
+    "page": 206
+   },
+   {
+    "level": 2,
+    "title": "11.3 Exploding gradients in residual networks",
+    "page": 206
+   },
+   {
+    "level": 2,
+    "title": "11.4 Batch normalization",
+    "page": 206
+   },
+   {
+    "level": 3,
+    "title": "11.4.1 Costs and benefits of batch normalization",
+    "page": 208
+   },
+   {
+    "level": 2,
+    "title": "11.5 Common residual architectures",
+    "page": 209
+   },
+   {
+    "level": 3,
+    "title": "11.5.1 ResNet",
+    "page": 209
+   },
+   {
+    "level": 3,
+    "title": "11.5.2 DenseNet",
+    "page": 209
+   },
+   {
+    "level": 2,
+    "title": "11.6 Why do nets with residual connections perform so well?",
+    "page": 213
+   },
+   {
+    "level": 2,
+    "title": "11.7 Summary",
+    "page": 213
+   },
+   {
+    "level": 3,
+    "title": "Notes",
+    "page": 215
+   },
+   {
+    "level": 3,
+    "title": "Problems",
+    "page": 219
+   },
+   {
+    "level": 1,
+    "title": "12 Transformers",
+    "page": 221
+   },
+   {
+    "level": 2,
+    "title": "12.1 Processing text data",
+    "page": 221
+   },
+   {
+    "level": 2,
+    "title": "12.2 Dot-product self-attention",
+    "page": 222
+   },
+   {
+    "level": 3,
+    "title": "12.2.1 Computing and weighting values",
+    "page": 223
+   },
+   {
+    "level": 3,
+    "title": "12.2.2 Computing attention weights",
+    "page": 223
+   },
+   {
+    "level": 3,
+    "title": "12.2.3 Self-attention summary",
+    "page": 225
+   },
+   {
+    "level": 3,
+    "title": "12.2.4 Matrix form",
+    "page": 226
+   },
+   {
+    "level": 2,
+    "title": "12.3 Extensions to dot-product self-attention",
+    "page": 227
+   },
+   {
+    "level": 3,
+    "title": "12.3.1 Positional encoding",
+    "page": 227
+   },
+   {
+    "level": 3,
+    "title": "12.3.2 Scaled dot-product self-attention",
+    "page": 228
+   },
+   {
+    "level": 3,
+    "title": "12.3.3 Multiple heads",
+    "page": 228
+   },
+   {
+    "level": 2,
+    "title": "12.4 Transformer layers",
+    "page": 229
+   },
+   {
+    "level": 2,
+    "title": "12.5 Transformers for natural language processing",
+    "page": 230
+   },
+   {
+    "level": 3,
+    "title": "12.5.1 Tokenization",
+    "page": 232
+   },
+   {
+    "level": 3,
+    "title": "12.5.2 Embeddings",
+    "page": 232
+   },
+   {
+    "level": 3,
+    "title": "12.5.3 Transformer model",
+    "page": 232
+   },
+   {
+    "level": 2,
+    "title": "12.6 Encoder model example: BERT",
+    "page": 233
+   },
+   {
+    "level": 3,
+    "title": "12.6.1 Pre-training",
+    "page": 234
+   },
+   {
+    "level": 3,
+    "title": "12.6.2 Fine-tuning",
+    "page": 235
+   },
+   {
+    "level": 2,
+    "title": "12.7 Decoder model example: GPT3",
+    "page": 236
+   },
+   {
+    "level": 3,
+    "title": "12.7.1 Language modeling",
+    "page": 236
+   },
+   {
+    "level": 3,
+    "title": "12.7.2 Masked self-attention",
+    "page": 237
+   },
+   {
+    "level": 3,
+    "title": "12.7.3 Generating text from a decoder",
+    "page": 237
+   },
+   {
+    "level": 3,
+    "title": "12.7.4 GPT3 and few-shot learning",
+    "page": 238
+   },
+   {
+    "level": 2,
+    "title": "12.8 Encoder-decoder model example: machine translation",
+    "page": 240
+   },
+   {
+    "level": 2,
+    "title": "12.9 Transformers for long sequences",
+    "page": 241
+   },
+   {
+    "level": 2,
+    "title": "12.10 Transformers for images",
+    "page": 242
+   },
+   {
+    "level": 3,
+    "title": "12.10.1 ImageGPT",
+    "page": 243
+   },
+   {
+    "level": 3,
+    "title": "12.10.2 Vision Transformer (ViT)",
+    "page": 243
+   },
+   {
+    "level": 3,
+    "title": "12.10.3 Multi-scale vision transformers",
+    "page": 244
+   },
+   {
+    "level": 2,
+    "title": "12.11 Summary",
+    "page": 246
+   },
+   {
+    "level": 3,
+    "title": "Notes",
+    "page": 246
+   },
+   {
+    "level": 3,
+    "title": "Problems",
+    "page": 253
+   },
+   {
+    "level": 1,
+    "title": "13 Graph neural networks",
+    "page": 254
+   },
+   {
+    "level": 2,
+    "title": "13.1 What is a graph?",
+    "page": 254
+   },
+   {
+    "level": 3,
+    "title": "13.1.1 Types of graphs",
+    "page": 255
+   },
+   {
+    "level": 2,
+    "title": "13.2 Graph representation",
+    "page": 257
+   },
+   {
+    "level": 3,
+    "title": "13.2.1 Properties of the adjacency matrix",
+    "page": 258
+   },
+   {
+    "level": 3,
+    "title": "13.2.2 Permutation of node indices",
+    "page": 259
+   },
+   {
+    "level": 2,
+    "title": "13.3 Graph neural networks, tasks, and loss functions",
+    "page": 259
+   },
+   {
+    "level": 3,
+    "title": "13.3.1 Tasks and loss functions",
+    "page": 260
+   },
+   {
+    "level": 1,
+    "title": "13 Graph neural networks",
+    "page": 262
+   },
+   {
+    "level": 2,
+    "title": "13.4 Graph convolutional networks",
+    "page": 262
+   },
+   {
+    "level": 3,
+    "title": "13.4.1 Equivariance and invariance",
+    "page": 263
+   },
+   {
+    "level": 3,
+    "title": "13.4.2 Parameter sharing",
+    "page": 263
+   },
+   {
+    "level": 3,
+    "title": "13.4.3 Example GCN layer",
+    "page": 264
+   },
+   {
+    "level": 2,
+    "title": "13.5 Example: graph classification",
+    "page": 265
+   },
+   {
+    "level": 3,
+    "title": "13.5.1 Training with batches",
+    "page": 265
+   },
+   {
+    "level": 2,
+    "title": "13.6 Inductive vs. transductive models",
+    "page": 266
+   },
+   {
+    "level": 2,
+    "title": "13.7 Example: node classification",
+    "page": 267
+   },
+   {
+    "level": 3,
+    "title": "13.7.1 Choosing batches",
+    "page": 267
+   },
+   {
+    "level": 2,
+    "title": "13.8 Layers for graph convolutional networks",
+    "page": 270
+   },
+   {
+    "level": 3,
+    "title": "Combining current node and aggregated neighbors",
+    "page": 271
+   },
+   {
+    "level": 3,
+    "title": "Ψk",
+    "page": 271
+   },
+   {
+    "level": 3,
+    "title": "13.8.2 Residual connections",
+    "page": 271
+   },
+   {
+    "level": 3,
+    "title": "13.8.3 Mean aggregation",
+    "page": 271
+   },
+   {
+    "level": 3,
+    "title": "13.8.4 Kipf normalization",
+    "page": 272
+   },
+   {
+    "level": 3,
+    "title": "13.8.5 Max pooling aggregation",
+    "page": 272
+   },
+   {
+    "level": 3,
+    "title": "13.8.6 Aggregation by attention",
+    "page": 272
+   },
+   {
+    "level": 1,
+    "title": "13 Graph neural networks",
+    "page": 274
+   },
+   {
+    "level": 2,
+    "title": "13.9 Edge graphs",
+    "page": 274
+   },
+   {
+    "level": 2,
+    "title": "13.10 Summary",
+    "page": 275
+   },
+   {
+    "level": 3,
+    "title": "Notes",
+    "page": 276
+   },
+   {
+    "level": 3,
+    "title": "Problems",
+    "page": 280
+   },
+   {
+    "level": 3,
+    "title": "Notes",
+    "page": 281
+   },
+   {
+    "level": 1,
+    "title": "14 Unsupervised learning",
+    "page": 283
+   },
+   {
+    "level": 2,
+    "title": "14.1 Taxonomy of unsupervised learning models",
+    "page": 283
+   },
+   {
+    "level": 2,
+    "title": "14.2 What makes a good generative model?",
+    "page": 284
+   },
+   {
+    "level": 2,
+    "title": "14.3 Quantifying performance",
+    "page": 286
+   },
+   {
+    "level": 2,
+    "title": "14.4 Summary",
+    "page": 288
+   },
+   {
+    "level": 3,
+    "title": "Notes",
+    "page": 288
+   },
+   {
+    "level": 1,
+    "title": "15 Generative adversarial networks",
+    "page": 290
+   },
+   {
+    "level": 2,
+    "title": "15.1 Discrimination as a signal",
+    "page": 290
+   },
+   {
+    "level": 3,
+    "title": "15.1.1 GAN loss function",
+    "page": 292
+   },
+   {
+    "level": 1,
+    "title": "15 Generative adversarial networks",
+    "page": 292
+   },
+   {
+    "level": 2,
+    "title": "15.1.2 Training GANs",
+    "page": 292
+   },
+   {
+    "level": 3,
+    "title": "15.1.3 Deep convolutional GAN",
+    "page": 293
+   },
+   {
+    "level": 3,
+    "title": "15.1.4 Diﬀiculty training GANs",
+    "page": 294
+   },
+   {
+    "level": 2,
+    "title": "15.2 Improving stability",
+    "page": 295
+   },
+   {
+    "level": 1,
+    "title": "15 Generative adversarial networks",
+    "page": 296
+   },
+   {
+    "level": 2,
+    "title": "15.2.2 Vanishing gradients",
+    "page": 297
+   },
+   {
+    "level": 3,
+    "title": "15.2.3 Wasserstein distance",
+    "page": 297
+   },
+   {
+    "level": 4,
+    "title": "Wasserstein distance for discrete distributions",
+    "page": 298
+   },
+   {
+    "level": 2,
+    "title": "15.2 Improving stability",
+    "page": 299
+   },
+   {
+    "level": 1,
+    "title": "15 Generative adversarial networks",
+    "page": 300
+   },
+   {
+    "level": 2,
+    "title": "Wasserstein distance for continuous distributions",
+    "page": 300
+   },
+   {
+    "level": 3,
+    "title": "15.2.6 Wasserstein GAN loss function",
+    "page": 300
+   },
+   {
+    "level": 2,
+    "title": "15.3 Progressive growing, minibatch discrimination, and truncation",
+    "page": 301
+   },
+   {
+    "level": 2,
+    "title": "15.4 Conditional generation",
+    "page": 303
+   },
+   {
+    "level": 3,
+    "title": "15.4.1 Conditional GAN",
+    "page": 303
+   },
+   {
+    "level": 3,
+    "title": "15.4.2 Auxiliary classifier GAN",
+    "page": 303
+   },
+   {
+    "level": 3,
+    "title": "15.4.3 InfoGAN",
+    "page": 305
+   },
+   {
+    "level": 2,
+    "title": "15.5 Image translation",
+    "page": 305
+   },
+   {
+    "level": 3,
+    "title": "15.5.1 Pix2Pix",
+    "page": 306
+   },
+   {
+    "level": 3,
+    "title": "15.5.2 Adversarial loss",
+    "page": 307
+   },
+   {
+    "level": 3,
+    "title": "15.5.3 CycleGAN",
+    "page": 307
+   },
+   {
+    "level": 2,
+    "title": "15.6 StyleGAN",
+    "page": 310
+   },
+   {
+    "level": 2,
+    "title": "15.7 Summary",
+    "page": 312
+   },
+   {
+    "level": 3,
+    "title": "Notes",
+    "page": 313
+   },
+   {
+    "level": 3,
+    "title": "Problems",
+    "page": 317
+   },
+   {
+    "level": 1,
+    "title": "16 Normalizing flows",
+    "page": 318
+   },
+   {
+    "level": 2,
+    "title": "16.1.1 Measuring probability",
+    "page": 318
+   },
+   {
+    "level": 3,
+    "title": "16.1.2 Forward and inverse mappings",
+    "page": 320
+   },
+   {
+    "level": 2,
+    "title": "16.2 General case",
+    "page": 321
+   },
+   {
+    "level": 3,
+    "title": "16.1.3 Learning",
+    "page": 321
+   },
+   {
+    "level": 2,
+    "title": "16.2 General case",
+    "page": 321
+   },
+   {
+    "level": 3,
+    "title": "Forward mapping with a deep neural network",
+    "page": 322
+   },
+   {
+    "level": 2,
+    "title": "16.3 Invertible network layers",
+    "page": 323
+   },
+   {
+    "level": 3,
+    "title": "16.2.2 Desiderata for network layers",
+    "page": 323
+   },
+   {
+    "level": 2,
+    "title": "16.3 Invertible network layers",
+    "page": 323
+   },
+   {
+    "level": 3,
+    "title": "16.3.1 Linear flows",
+    "page": 324
+   },
+   {
+    "level": 3,
+    "title": "16.3.2 Elementwise flows",
+    "page": 324
+   },
+   {
+    "level": 3,
+    "title": "16.3.3 Coupling flows",
+    "page": 325
+   },
+   {
+    "level": 3,
+    "title": "16.3.4 Autoregressive flows",
+    "page": 327
+   },
+   {
+    "level": 3,
+    "title": "16.3.5 Inverse autoregressive flows",
+    "page": 328
+   },
+   {
+    "level": 3,
+    "title": "16.3.6 Residual flows: iRevNet",
+    "page": 328
+   },
+   {
+    "level": 3,
+    "title": "16.3.7 Residual flows and contraction mappings: iResNet",
+    "page": 329
+   },
+   {
+    "level": 2,
+    "title": "16.4 Multi-scale flows",
+    "page": 331
+   },
+   {
+    "level": 2,
+    "title": "16.5 Applications",
+    "page": 332
+   },
+   {
+    "level": 3,
+    "title": "16.5.1 Modeling densities",
+    "page": 332
+   },
+   {
+    "level": 3,
+    "title": "16.5.2 Synthesis",
+    "page": 333
+   },
+   {
+    "level": 3,
+    "title": "16.5.3 Approximating other density models",
+    "page": 335
+   },
+   {
+    "level": 2,
+    "title": "16.6 Summary",
+    "page": 335
+   },
+   {
+    "level": 3,
+    "title": "Notes",
+    "page": 336
+   },
+   {
+    "level": 3,
+    "title": "Problems",
+    "page": 339
+   },
+   {
+    "level": 1,
+    "title": "17 Variational autoencoders",
+    "page": 341
+   },
+   {
+    "level": 2,
+    "title": "17.1 Latent variable models",
+    "page": 341
+   },
+   {
+    "level": 1,
+    "title": "17 Variational autoencoders",
+    "page": 342
+   },
+   {
+    "level": 2,
+    "title": "17.1.1 Example: mixture of Gaussians",
+    "page": 342
+   },
+   {
+    "level": 2,
+    "title": "17.2 Nonlinear latent variable model",
+    "page": 342
+   },
+   {
+    "level": 3,
+    "title": "17.2.1 Generation",
+    "page": 343
+   },
+   {
+    "level": 2,
+    "title": "17.3 Training",
+    "page": 345
+   },
+   {
+    "level": 3,
+    "title": "17.3.1 Evidence lower bound (ELBO)",
+    "page": 345
+   },
+   {
+    "level": 3,
+    "title": "17.3.2 Jensen’s inequality",
+    "page": 345
+   },
+   {
+    "level": 2,
+    "title": "17.3 Training",
+    "page": 347
+   },
+   {
+    "level": 3,
+    "title": "17.3.3 Deriving the bound",
+    "page": 347
+   },
+   {
+    "level": 2,
+    "title": "17.4 ELBO properties",
+    "page": 348
+   },
+   {
+    "level": 3,
+    "title": "17.4.1 Tightness of bound",
+    "page": 348
+   },
+   {
+    "level": 2,
+    "title": "17.4 ELBO properties",
+    "page": 349
+   },
+   {
+    "level": 3,
+    "title": "ELBO as reconstruction loss minus KL distance to prior",
+    "page": 349
+   },
+   {
+    "level": 1,
+    "title": "17 Variational autoencoders",
+    "page": 350
+   },
+   {
+    "level": 2,
+    "title": "17.5 Variational approximation",
+    "page": 350
+   },
+   {
+    "level": 2,
+    "title": "17.6 The variational autoencoder",
+    "page": 350
+   },
+   {
+    "level": 3,
+    "title": "17.6.1 VAE algorithm",
+    "page": 351
+   },
+   {
+    "level": 2,
+    "title": "17.7 The reparameterization trick",
+    "page": 353
+   },
+   {
+    "level": 2,
+    "title": "17.8 Applications",
+    "page": 354
+   },
+   {
+    "level": 1,
+    "title": "17 Variational autoencoders",
+    "page": 354
+   },
+   {
+    "level": 2,
+    "title": "17.8.1 Approximating sample probability",
+    "page": 354
+   },
+   {
+    "level": 3,
+    "title": "17.8.2 Generation",
+    "page": 355
+   },
+   {
+    "level": 3,
+    "title": "17.8.3 Resynthesis",
+    "page": 356
+   },
+   {
+    "level": 3,
+    "title": "17.8.4 Disentanglement",
+    "page": 356
+   },
+   {
+    "level": 2,
+    "title": "17.9 Summary",
+    "page": 357
+   },
+   {
+    "level": 3,
+    "title": "Notes",
+    "page": 358
+   },
+   {
+    "level": 3,
+    "title": "Problems",
+    "page": 361
+   },
+   {
+    "level": 1,
+    "title": "17 Variational autoencoders",
+    "page": 362
+   },
+   {
+    "level": 1,
+    "title": "18 Diffusion models",
+    "page": 363
+   },
+   {
+    "level": 2,
+    "title": "18.1 Overview",
+    "page": 363
+   },
+   {
+    "level": 2,
+    "title": "18.2 Encoder (forward process)",
+    "page": 364
+   },
+   {
+    "level": 3,
+    "title": "18.2.2 Marginal distributions q(zt)",
+    "page": 367
+   },
+   {
+    "level": 2,
+    "title": "18.2 Encoder (forward process)",
+    "page": 369
+   },
+   {
+    "level": 2,
+    "title": "18.3 Decoder model (reverse process)",
+    "page": 370
+   },
+   {
+    "level": 2,
+    "title": "18.4 Training",
+    "page": 371
+   },
+   {
+    "level": 3,
+    "title": "18.4.1 Evidence lower bound (ELBO)",
+    "page": 371
+   },
+   {
+    "level": 3,
+    "title": "18.4.2 Simplifying the ELBO",
+    "page": 372
+   },
+   {
+    "level": 2,
+    "title": "18.4 Training",
+    "page": 373
+   },
+   {
+    "level": 3,
+    "title": "18.4.3 Analyzing the ELBO",
+    "page": 373
+   },
+   {
+    "level": 3,
+    "title": "18.4.4 Diffusion loss function",
+    "page": 374
+   },
+   {
+    "level": 2,
+    "title": "18.5 Reparameterization of loss function",
+    "page": 375
+   },
+   {
+    "level": 3,
+    "title": "18.4.5 Training procedure",
+    "page": 375
+   },
+   {
+    "level": 2,
+    "title": "18.5 Reparameterization of loss function",
+    "page": 375
+   },
+   {
+    "level": 3,
+    "title": "18.5.1 Reparameterization of target",
+    "page": 375
+   },
+   {
+    "level": 3,
+    "title": "18.5.2 Reparameterization of network",
+    "page": 376
+   },
+   {
+    "level": 2,
+    "title": "18.6 Implementation",
+    "page": 377
+   },
+   {
+    "level": 3,
+    "title": "18.6.1 Application to images",
+    "page": 378
+   },
+   {
+    "level": 3,
+    "title": "18.6.2 Improving generation speed",
+    "page": 378
+   },
+   {
+    "level": 3,
+    "title": "18.6.3 Conditional generation",
+    "page": 379
+   },
+   {
+    "level": 3,
+    "title": "18.6.4 Improving generation quality",
+    "page": 381
+   },
+   {
+    "level": 2,
+    "title": "18.7 Summary",
+    "page": 382
+   },
+   {
+    "level": 3,
+    "title": "Notes",
+    "page": 382
+   },
+   {
+    "level": 3,
+    "title": "Problems",
+    "page": 386
+   },
+   {
+    "level": 3,
+    "title": "Notes",
+    "page": 387
+   },
+   {
+    "level": 1,
+    "title": "19 Reinforcement learning",
+    "page": 388
+   },
+   {
+    "level": 2,
+    "title": "19.1 Markov decision processes, returns, and policies",
+    "page": 388
+   },
+   {
+    "level": 3,
+    "title": "19.1.1 Markov process",
+    "page": 389
+   },
+   {
+    "level": 3,
+    "title": "19.1.2 Markov reward process",
+    "page": 389
+   },
+   {
+    "level": 3,
+    "title": "19.1.3 Markov decision process",
+    "page": 392
+   },
+   {
+    "level": 3,
+    "title": "19.1.4 Partially observable Markov decision process",
+    "page": 392
+   },
+   {
+    "level": 3,
+    "title": "19.1.5 Policy",
+    "page": 392
+   },
+   {
+    "level": 2,
+    "title": "19.2 Expected return",
+    "page": 392
+   },
+   {
+    "level": 3,
+    "title": "19.2.1 State and action values",
+    "page": 392
+   },
+   {
+    "level": 3,
+    "title": "19.2.2 Optimal policy",
+    "page": 394
+   },
+   {
+    "level": 3,
+    "title": "19.2.3 Bellman equations",
+    "page": 394
+   },
+   {
+    "level": 2,
+    "title": "19.3 Tabular reinforcement learning",
+    "page": 396
+   },
+   {
+    "level": 3,
+    "title": "19.3.1 Dynamic programming",
+    "page": 397
+   },
+   {
+    "level": 3,
+    "title": "19.3.2 Monte Carlo methods",
+    "page": 398
+   },
+   {
+    "level": 3,
+    "title": "19.3.3 Temporal difference methods",
+    "page": 399
+   },
+   {
+    "level": 1,
+    "title": "19 Reinforcement learning",
+    "page": 400
+   },
+   {
+    "level": 2,
+    "title": "19.4 Fitted Q-learning",
+    "page": 400
+   },
+   {
+    "level": 3,
+    "title": "19.4.1 Deep Q-networks for playing ATARI games",
+    "page": 401
+   },
+   {
+    "level": 1,
+    "title": "19 Reinforcement learning",
+    "page": 402
+   },
+   {
+    "level": 2,
+    "title": "Double Q-learning and double deep Q-networks",
+    "page": 402
+   },
+   {
+    "level": 2,
+    "title": "19.5 Policy gradient methods",
+    "page": 403
+   },
+   {
+    "level": 3,
+    "title": "19.5.1 Derivation of gradient update",
+    "page": 404
+   },
+   {
+    "level": 2,
+    "title": "19.5 Policy gradient methods",
+    "page": 405
+   },
+   {
+    "level": 1,
+    "title": "19 Reinforcement learning",
+    "page": 406
+   },
+   {
+    "level": 2,
+    "title": "19.5.2 REINFORCE algorithm",
+    "page": 406
+   },
+   {
+    "level": 3,
+    "title": "19.5.3 Baselines",
+    "page": 406
+   },
+   {
+    "level": 2,
+    "title": "19.5 Policy gradient methods",
+    "page": 407
+   },
+   {
+    "level": 3,
+    "title": "19.5.4 State-dependent baselines",
+    "page": 408
+   },
+   {
+    "level": 2,
+    "title": "19.6 Actor-critic methods",
+    "page": 408
+   },
+   {
+    "level": 2,
+    "title": "19.7 Offline reinforcement learning",
+    "page": 409
+   },
+   {
+    "level": 2,
+    "title": "19.8 Summary",
+    "page": 410
+   },
+   {
+    "level": 3,
+    "title": "Notes",
+    "page": 411
+   },
+   {
+    "level": 3,
+    "title": "Problems",
+    "page": 414
+   },
+   {
+    "level": 1,
+    "title": "19 Reinforcement learning",
+    "page": 414
+   },
+   {
+    "level": 2,
+    "title": "Notes",
+    "page": 415
+   },
+   {
+    "level": 1,
+    "title": "20 Why does deep learning work?",
+    "page": 416
+   },
+   {
+    "level": 2,
+    "title": "20.1 The case against deep learning",
+    "page": 416
+   },
+   {
+    "level": 3,
+    "title": "20.1.1 Training",
+    "page": 416
+   },
+   {
+    "level": 3,
+    "title": "20.1.2 Generalization",
+    "page": 417
+   },
+   {
+    "level": 3,
+    "title": "20.1.3 The unreasonable effectiveness of deep learning",
+    "page": 417
+   },
+   {
+    "level": 2,
+    "title": "20.2 Factors that influence fitting performance",
+    "page": 417
+   },
+   {
+    "level": 3,
+    "title": "20.2.1 Dataset",
+    "page": 418
+   },
+   {
+    "level": 3,
+    "title": "20.2.2 Regularization",
+    "page": 418
+   },
+   {
+    "level": 3,
+    "title": "20.2.3 Stochastic training algorithms",
+    "page": 418
+   },
+   {
+    "level": 3,
+    "title": "20.2.4 Overparameterization",
+    "page": 419
+   },
+   {
+    "level": 3,
+    "title": "20.2.5 Activation functions",
+    "page": 420
+   },
+   {
+    "level": 3,
+    "title": "20.2.6 Initialization",
+    "page": 420
+   },
+   {
+    "level": 3,
+    "title": "20.2.7 Network depth",
+    "page": 421
+   },
+   {
+    "level": 2,
+    "title": "20.3 Properties of loss functions",
+    "page": 421
+   },
+   {
+    "level": 3,
+    "title": "20.3.1 Multiple global minima",
+    "page": 422
+   },
+   {
+    "level": 3,
+    "title": "20.3.2 Route to the minimum",
+    "page": 422
+   },
+   {
+    "level": 3,
+    "title": "20.3.3 Connections between minima",
+    "page": 422
+   },
+   {
+    "level": 2,
+    "title": "20.4 Factors that determine generalization",
+    "page": 425
+   },
+   {
+    "level": 3,
+    "title": "20.3.4 Curvature of loss surface",
+    "page": 425
+   },
+   {
+    "level": 2,
+    "title": "20.4 Factors that determine generalization",
+    "page": 425
+   },
+   {
+    "level": 3,
+    "title": "20.4.1 Training algorithms",
+    "page": 425
+   },
+   {
+    "level": 3,
+    "title": "20.4.2 Flatness of minimum",
+    "page": 426
+   },
+   {
+    "level": 3,
+    "title": "20.4.3 Architecture",
+    "page": 427
+   },
+   {
+    "level": 3,
+    "title": "20.4.4 Norm of weights",
+    "page": 427
+   },
+   {
+    "level": 3,
+    "title": "20.4.5 Overparameterization",
+    "page": 427
+   },
+   {
+    "level": 3,
+    "title": "20.4.6 Leaving the data manifold",
+    "page": 428
+   },
+   {
+    "level": 2,
+    "title": "20.5 Do we need so many parameters?",
+    "page": 429
+   },
+   {
+    "level": 3,
+    "title": "20.5.1 Pruning",
+    "page": 429
+   },
+   {
+    "level": 3,
+    "title": "20.5.2 Knowledge distillation",
+    "page": 430
+   },
+   {
+    "level": 3,
+    "title": "20.5.3 Discussion",
+    "page": 431
+   },
+   {
+    "level": 2,
+    "title": "20.6 Do networks have to be deep?",
+    "page": 432
+   },
+   {
+    "level": 3,
+    "title": "20.6.1 Complexity of modeled function",
+    "page": 432
+   },
+   {
+    "level": 3,
+    "title": "20.6.2 Tractability of training",
+    "page": 433
+   },
+   {
+    "level": 3,
+    "title": "20.6.3 Inductive bias",
+    "page": 433
+   },
+   {
+    "level": 2,
+    "title": "20.7 Summary",
+    "page": 433
+   },
+   {
+    "level": 3,
+    "title": "Problems",
+    "page": 434
+   },
+   {
+    "level": 1,
+    "title": "21 Deep learning and ethics",
+    "page": 435
+   },
+   {
+    "level": 2,
+    "title": "21.1 Value alignment",
+    "page": 435
+   },
+   {
+    "level": 3,
+    "title": "21.1.1 Bias and fairness",
+    "page": 436
+   },
+   {
+    "level": 3,
+    "title": "21.1.2 Artificial moral agency",
+    "page": 439
+   },
+   {
+    "level": 3,
+    "title": "21.1.3 Transparency and opacity",
+    "page": 440
+   },
+   {
+    "level": 3,
+    "title": "21.1.4 Explainability and interpretability",
+    "page": 440
+   },
+   {
+    "level": 2,
+    "title": "21.2 Intentional misuse",
+    "page": 441
+   },
+   {
+    "level": 3,
+    "title": "21.2.1 Face recognition and analysis",
+    "page": 441
+   },
+   {
+    "level": 3,
+    "title": "21.2.2 Militarization and political interference",
+    "page": 442
+   },
+   {
+    "level": 3,
+    "title": "21.2.3 Fraud",
+    "page": 442
+   },
+   {
+    "level": 3,
+    "title": "21.2.4 Data privacy",
+    "page": 443
+   },
+   {
+    "level": 2,
+    "title": "21.3 Other social, ethical, and professional issues",
+    "page": 443
+   },
+   {
+    "level": 3,
+    "title": "21.3.1 Intellectual property",
+    "page": 443
+   },
+   {
+    "level": 3,
+    "title": "21.3.2 Automation bias and moral deskilling",
+    "page": 444
+   },
+   {
+    "level": 3,
+    "title": "21.3.3 Environmental impact",
+    "page": 444
+   },
+   {
+    "level": 3,
+    "title": "21.3.4 Employment and society",
+    "page": 444
+   },
+   {
+    "level": 3,
+    "title": "21.3.5 Concentration of power",
+    "page": 445
+   },
+   {
+    "level": 2,
+    "title": "21.4 Case study",
+    "page": 445
+   },
+   {
+    "level": 2,
+    "title": "21.5 The value-free ideal of science",
+    "page": 446
+   },
+   {
+    "level": 2,
+    "title": "21.6 Responsible AI research as a collective action problem",
+    "page": 447
+   },
+   {
+    "level": 3,
+    "title": "21.6.1 Scientific communication",
+    "page": 447
+   },
+   {
+    "level": 3,
+    "title": "21.6.2 Diversity and heterogeneity",
+    "page": 448
+   },
+   {
+    "level": 2,
+    "title": "21.7 Ways forward",
+    "page": 448
+   },
+   {
+    "level": 2,
+    "title": "21.8 Summary",
+    "page": 449
+   },
+   {
+    "level": 3,
+    "title": "Problems",
+    "page": 450
+   },
+   {
+    "level": 1,
+    "title": "Appendix A",
+    "page": 451
+   },
+   {
+    "level": 2,
+    "title": "Notation",
+    "page": 451
+   },
+   {
+    "level": 2,
+    "title": "Scalars, vectors, matrices, and tensors",
+    "page": 451
+   },
+   {
+    "level": 2,
+    "title": "Variables and parameters",
+    "page": 451
+   },
+   {
+    "level": 2,
+    "title": "Sets",
+    "page": 451
+   },
+   {
+    "level": 2,
+    "title": "Functions",
+    "page": 452
+   },
+   {
+    "level": 2,
+    "title": "Minimizing and maximizing",
+    "page": 452
+   },
+   {
+    "level": 2,
+    "title": "Probability distributions",
+    "page": 452
+   },
+   {
+    "level": 2,
+    "title": "Asymptotic notation",
+    "page": 453
+   },
+   {
+    "level": 2,
+    "title": "Miscellaneous",
+    "page": 453
+   },
+   {
+    "level": 1,
+    "title": "Appendix B",
+    "page": 454
+   },
+   {
+    "level": 2,
+    "title": "Mathematics",
+    "page": 454
+   },
+   {
+    "level": 2,
+    "title": "B.3 Vector, matrices, and tensors",
+    "page": 457
+   },
+   {
+    "level": 2,
+    "title": "B.4.6 Linear equations in matrix form",
+    "page": 461
+   },
+   {
+    "level": 1,
+    "title": "Appendix C",
+    "page": 463
+   },
+   {
+    "level": 2,
+    "title": "Probability",
+    "page": 463
+   },
+   {
+    "level": 2,
+    "title": "C.1 Random variables and probability distributions",
+    "page": 463
+   },
+   {
+    "level": 2,
+    "title": "C.1.3 Conditional probability and likelihood",
+    "page": 464
+   },
+   {
+    "level": 2,
+    "title": "C.2.1 Rules for manipulating expectations",
+    "page": 467
+   },
+   {
+    "level": 2,
+    "title": "C.2.2 Mean, variance, and covariance",
+    "page": 469
+   },
+   {
+    "level": 2,
+    "title": "C.3 Normal probability distribution",
+    "page": 471
+   },
+   {
+    "level": 2,
+    "title": "C.3.1 Univariate normal distribution",
+    "page": 471
+   },
+   {
+    "level": 2,
+    "title": "C.3.2 Multivariate normal distribution",
+    "page": 471
+   },
+   {
+    "level": 1,
+    "title": "C Probability",
+    "page": 472
+   },
+   {
+    "level": 2,
+    "title": "C.3.3 Product of two normal distributions",
+    "page": 473
+   },
+   {
+    "level": 2,
+    "title": "C.4.1 Sampling from normal distributions",
+    "page": 474
+   },
+   {
+    "level": 2,
+    "title": "C.5 Distances between probability distributions",
+    "page": 474
+   },
+   {
+    "level": 2,
+    "title": "C.5.1 Kullback-Leibler divergence",
+    "page": 475
+   },
+   {
+    "level": 2,
+    "title": "C.5.2 Jensen-Shannon divergence",
+    "page": 475
+   },
+   {
+    "level": 2,
+    "title": "Distances between normal distributions",
+    "page": 476
+   },
+   {
+    "level": 1,
+    "title": "Bibliography",
+    "page": 477
+   },
+   {
+    "level": 2,
+    "title": "Index",
+    "page": 527
+   }
+  ]
+ }
+]

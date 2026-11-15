@@ -24,7 +24,7 @@ log = get_logger(__name__)
 # 解析器版本：章节树的判定规则一变，库里已有的 sections 就过期了。
 # 云端 data 目录是持久化的（换代码不换数据），所以启动时要靠这个版本号
 # 判断"要不要把老文档的章节树按新规则重算一遍"。改动分类/合并逻辑必须同步 +1。
-PARSE_VERSION = "2026.11.15.7"
+PARSE_VERSION = "2026.11.15.8"
 
 # ---------------- 正则 ----------------
 RE_NUM_HEADING = re.compile(r"^(\d{1,2}(?:\.\d{1,2}){0,3})\.?\s+\S")
@@ -234,6 +234,9 @@ def _join_lines(buf: list[Line]) -> str:
     return "".join(out)
 
 
+_RE_PAGE_THEN_NUM = re.compile(r"^\s*\d{1,4}\s+(?=\d{1,2}(?:\.\d{1,2}){1,3}\s)")
+
+
 def _norm_num_text(txt: str) -> str:
     """把章节编号归一成 "3.1 标题"：`3. 1　标题` → `3.1 标题`。
 
@@ -241,6 +244,12 @@ def _norm_num_text(txt: str) -> str:
     既进不了 `RE_NUM_HEADING`，层级也算不出来（`count(".")` 之前就被空格打断）。
     归一只动开头那段编号，正文原样返回。
     """
+    # 页码粘在章节号前面（书里常见：页眉的 "58" 和 "5.1.1" 排在同一行被合并）：
+    # "58 5.1.1 Computing a distribution over outputs" → "5.1.1 …"。
+    # 只在前导数字后面紧跟"带点的小节号"时才剥，避免把 "3 Results" 当成页码。
+    m_page = _RE_PAGE_THEN_NUM.match(txt)
+    if m_page:
+        txt = txt[m_page.end():].lstrip()
     m = RE_NUM_SPACED.match(txt)
     if not m:
         return txt
@@ -364,6 +373,53 @@ def _line_is_num_heading(ln: Line, body_font: str, left: float | None = None) ->
     return ln.font != body_font or ln.bold or len(txt) <= 24
 
 
+# 书签里偶尔会出现这些"不是章节"的条目
+_TOC_SKIP = {"contents", "table of contents", "目录", "目 录", "cover", "outline",
+             "index", "索引", "blank page", "empty page"}
+
+
+def _sections_from_outline(toc, parsed_count: int, page_count: int) -> list[dict] | None:
+    """把 PDF 自带书签转成章节树；不够好就返回 None，让解析结果顶上。
+
+    为什么优先用书签：它是**作者自己标的目录**——层级、标题、页码都是确定的，
+    解析器只能从字号/字体/版式里猜。实测 39 篇里 27 篇有书签，且全部干净
+    （无空标题、无越界页码、层级 1–5）；像 Llama 3 这种正文满是加粗引导词的，
+    书签 98 条 vs 解析 40 条，差了一个量级。
+
+    什么时候不用：书签明显比解析结果粗（少于解析条数的 3/4）。UDL 那本教科书
+    书签只有 181 条（章 + 主要小节），而解析能到 506 条（含 1.1.1 这种三级），
+    用书签等于把好好的层级丢掉。
+    """
+    if len(toc) < 5:
+        return None
+    if parsed_count and len(toc) < parsed_count * 0.75:
+        return None
+
+    out: list[dict] = []
+    for lvl, title, page in toc:
+        t = str(title or "").strip()
+        if not t or t.lower() in _TOC_SKIP:
+            continue
+        if len(t) > 150:
+            continue
+        try:
+            pg = int(page)
+        except (TypeError, ValueError):
+            pg = 1
+        pg = max(1, min(pg, max(page_count, 1)))
+        level = max(1, min(int(lvl or 1), 4))
+        if out and out[-1]["title"] == t and out[-1]["level"] == level:
+            continue                     # 相邻重复（少数 PDF 会把同一标题标两次）
+        out.append({"level": level, "title": t[:300], "page": pg,
+                    "order": len(out), "bbox": [], "anchor": ""})
+    if len(out) < 5:
+        return None
+    # 首个必须是 L1：个别 PDF 直接从 L2 开始标
+    if out[0]["level"] > 1:
+        out[0]["level"] = 1
+    return out
+
+
 def _is_toc_page(lines: list[Line]) -> bool:
     """整页是不是"书的目录"。
 
@@ -382,12 +438,20 @@ def _is_toc_page(lines: list[Line]) -> bool:
     leaders = sum(1 for ln in lines if RE_TOC_LEADER.search(ln.text))
     if leaders >= 4:
         return True
-    num_lines = sum(1 for ln in lines if RE_TOC_PAGENO.match(ln.text.strip()))
-    longest = max(len(ln.text.strip()) for ln in lines)
-    # 没有点线的目录（右对齐页码）：一页几乎全是"编号/页码"这种短行，没有一个长句。
-    # 阈值必须卡紧：带公式的正文页会产出大量 "1"、"43" 这种行（公式编号），
-    # 实测第 57 页就有 10 行纯数字，但它有 89 字的正文行——不能算目录。
-    return num_lines >= 10 and longest <= 45
+    # 页首就写着 Contents / 目录：最直接的证据
+    head = [ln.text.strip().lower() for ln in lines[:2]]
+    if any(h in ("contents", "table of contents", "目 录", "目录") for h in head):
+        return True
+    stripped = [ln.text.strip() for ln in lines]
+    num_lines = sum(1 for t in stripped if RE_TOC_PAGENO.match(t))
+    longest = max(len(t) for t in stripped)
+    # 没有点线的目录（编号/标题/页码竖排成三列）：纯页码行要**占全页相当比例**，
+    # 且整页没有长段落。三条都不能省，都是踩出来的：
+    # - 不限比例：公式附录页（410 行里 13 个孤立的 "1"、"2"）会被当目录，整页丢掉；
+    # - 不限长段落：图 24 那种坐标轴页满是 "101"、"2.3"，同样被误删；
+    # - 不限行数：几百行的公式页几乎是凑纯数字的重灾区。
+    return (num_lines >= 8 and len(stripped) <= 120 and num_lines >= len(stripped) * 0.25
+            and longest <= 60 and not any(len(t) >= 80 for t in stripped))
 
 
 _RE_CHAPTER_NUM = re.compile(r"^(?:Chapter|CHAPTER|第)\s*(\d{1,3}|[一二三四五六七八九十]{1,3})\s*(?:章)?$")
@@ -1444,9 +1508,14 @@ def _merge_number_prefix(blocks: list[Block]) -> list[Block]:
             and nxt.kind == "heading"
             and nxt.page == b.page
             and nxt.col == b.col
+            # 标题自己已经带编号时不要再粘：书里页眉的页码 "58" 和标题 "5.1.1 …"
+            # 分处两块，粘上去就成了章节树里的 "58 5.1.1 …"，还会被算成一级标题
+            and not RE_NUM_HEADING.match(nxt.text.strip())
+            # 必须是紧挨着的上下两块，隔着半页的孤立数字不是它的编号
+            and abs(b.bbox[3] - nxt.bbox[1]) <= 8
         ):
             num = b.text.strip()
-            nxt.text = f"{num} {nxt.text.strip()}"
+            nxt.text = _norm_num_text(f"{num} {nxt.text.strip()}")
             # 编号是层级的权威来源：3.2.1 → level 3，不能被加粗规则判出的 2 覆盖
             nxt.level = min(num.count(".") + 1, 4)
             b.text = ""  # 标记为已消费
@@ -1692,6 +1761,12 @@ def _parse_pdf_impl(path: str, max_pages: int | None = None) -> ParsedDoc:
     """解析整篇 PDF。max_pages 用于长书抽样或快速预览。"""
     doc = pymupdf.open(path)
     parsed = ParsedDoc(page_count=doc.page_count)
+    # PDF 自带的书签目录 = 作者声明的章节结构，比任何启发式都准。
+    # 取一次很便宜，留着给最后决定"用书签还是用解析结果"。
+    try:
+        embedded_toc = doc.get_toc(simple=True) or []
+    except Exception:  # noqa: BLE001 坏书签不能挡住解析
+        embedded_toc = []
     total_chars = 0
     empty_pages = 0
     page1_lines: list[Line] = []
@@ -1786,11 +1861,28 @@ def _parse_pdf_impl(path: str, max_pages: int | None = None) -> ParsedDoc:
                     "anchor": b.anchor,
                 }
             )
+    # 书签优先：arXiv 这类 PDF 的书签是作者自己标的，层级/页码都准；
+    # 解析器再努力也只能"猜"出它。只有书签明显更粗（例如只标了章、没标节）时
+    # 才继续用解析结果——否则会把本来解析出来的小节丢掉（UDL 书 506 → 181 就是这种情况）。
+    # 解析路径下补一层保险：层级一次只能深一级。父级标题漏检时（"5.1" 没认出来，
+    # 直接出现 "5.1.2"）树里会出现 L1→L3 的跳跃，缩进看上去就错位了。
+    prev_lv = 0
+    for sec in parsed.sections:
+        if sec["level"] > prev_lv + 1:
+            sec["level"] = prev_lv + 1
+        prev_lv = sec["level"]
+
+    from_toc = _sections_from_outline(embedded_toc, len(parsed.sections), parsed.page_count)
+    if from_toc:
+        log.info("章节树用 PDF 书签：%d 条（解析器得出 %d 条）", len(from_toc), len(parsed.sections))
+        parsed.sections = from_toc
+        toc_pages = []          # 有书签就不需要"目录"占位节点
+
     # 目录页被整页丢弃后，树里留一个"目录"节点：读者仍然能一键跳到目录，
     # 但不会再出现"目录里的每一章都变成一个章节"。
     if toc_pages:
         parsed.sections.insert(0, {
-            "level": 1, "title": "目录", "page": toc_pages[0], "order": -1,
+            "level": 1, "title": "目录", "page": min(toc_pages), "order": -1,
             "bbox": [], "anchor": "",
         })
 
