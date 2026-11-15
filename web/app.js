@@ -1087,7 +1087,7 @@ const app = createApp({
       this.zoomBy(dir);
     },
 
-    goPage(p) {
+    goPage(p, opts) {
       if (p < 1 || p > this.pageCount) return;
       this.page = p;
       this.imgFailed = !!this.failedPages[p];
@@ -1095,7 +1095,8 @@ const app = createApp({
       this.sel.visible = false;
       this.citePop.visible = false;
       this.loadTextLayer();
-      this.$nextTick(() => this.scrollToPage(p));
+      // noScroll：调用方自己决定滚到哪（章节跳转要把高亮居中，不能先滚到页顶）
+      if (!(opts && opts.noScroll)) this.$nextTick(() => this.scrollToPage(p));
     },
 
     /* ---------------- 章节树跳转：跳过去 + 高亮 1 秒 ---------------- */
@@ -1110,11 +1111,14 @@ const app = createApp({
      */
     async goSection(s) {
       if (!s) return;
-      this.goPage(s.page);
+      // 先别用"页顶对齐"这种方式滚：章节标题常在页面的中下部，页顶对齐后
+      // 它正好掉到视口下面（放大页码时更明显），读者只看到高亮框一闪就没有了。
+      // 这里先只换页，等拿到高亮词，再把高亮滚到视口中间。
+      this.goPage(s.page, { noScroll: true });
       const page = this.page;
       const docId = this.activeDoc && this.activeDoc.id;
       const started = Date.now();
-      // 等这一页的文本层到位：goPage 里是异步请求，,最多等 1.5s 就放弃高亮
+      // 等这一页的文本层到位：goPage 里是异步请求，最多等 1.5s 就放弃高亮
       while (Date.now() - started < 1500) {
         if (this.tl.page === page && this.tl.loaded) break;
         await new Promise((r) => setTimeout(r, 60));
@@ -1130,17 +1134,58 @@ const app = createApp({
       const hit = words.length ? this.matchSectionWords(words, s.title) : [];
       if (hit.length) {
         hit.forEach((w) => { w.secflash = true; });
+        this.centerOnFlash(ms);
         this._secFlashTimer = setTimeout(() => {
           hit.forEach((w) => { w.secflash = false; });
         }, ms);
         return;
       }
       // 没有文字层：整页描边闪一下，至少让读者知道"跳到这一页了"
+      this.scrollToPage(page);
       this.secFlashPage = 0;
       this.$nextTick(() => {
         this.secFlashPage = page;
         this._secFlashTimer = setTimeout(() => { this.secFlashPage = 0; }, ms);
       });
+    },
+
+    /**
+     * 把刚点亮的高亮滚到视口中间。
+     *
+     * 为什么不是"滚到那一页顶部"：章节标题在页面里的纵坐标是随机的，页顶对齐后
+     * 高亮经常落在视口下缘之外——放大到 150% 时几乎必然被挡住，用户以为没跳过去。
+     * 这里按高亮框的实际屏幕位置反算滚动量，让它的中心落在视口 45% 高度处
+     * （略偏上，符合阅读习惯，也留出上方上下文）。
+     * 高亮组比视口还高时（整节标题被拆成多行）以上边缘为准，避免滚过内容。
+     */
+    async centerOnFlash(holdMs = 1000) {
+      const stage = this.$refs.pageStage;
+      if (!stage) return;
+      await this.$nextTick();
+      const boxes = Array.from(stage.querySelectorAll(".tw.secflash"));
+      if (!boxes.length) return;
+      const sr = stage.getBoundingClientRect();
+      const rects = boxes.map((b) => b.getBoundingClientRect());
+      const top = Math.min(...rects.map((r) => r.top));
+      const bottom = Math.max(...rects.map((r) => r.bottom));
+      const h = bottom - top;
+      const viewH = stage.clientHeight;
+      // 程序化滚动会沿途触发 scroll，把"当前页"算成中间经过的页，先上锁
+      this._scrollLock = Date.now() + 700;
+      let target;
+      if (h > viewH * 0.7) {
+        target = stage.scrollTop + (top - sr.top) - viewH * 0.12;
+      } else {
+        const center = (top + bottom) / 2;
+        target = stage.scrollTop + (center - sr.top) - viewH * 0.45;
+      }
+      // 别把当前页的页顶滚出视口上方：那样"当前页"会被算成上一页，页码乱跳。
+      // 标题正好在页面顶端时，这条会把滚动量拉回"页顶对齐"，属预期行为。
+      const frame = stage.querySelector(".page-frame.is-cur");
+      if (frame) target = Math.max(target, frame.offsetTop - 8);
+      stage.scrollTo({ top: Math.max(0, target), behavior: "smooth" });
+      // 滚动期间锁住"当前页"计算，免得高亮刚亮起来就被切页清掉
+      this._scrollLock = Date.now() + holdMs + 200;
     },
 
     /// 在页面词层里找出"标题那一行"，返回该行的词数组。
