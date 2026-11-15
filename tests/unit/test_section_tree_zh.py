@@ -117,3 +117,40 @@ def test_data_rows_are_not_headings():
     assert not _looks_like_data_row("3.1 Transformer with Post-Layer Normalization")
     assert not _looks_like_data_row("4.1 GPT-4 (1.7T params)")
     assert not _looks_like_data_row("5.4 与现有方法的性能对比")
+
+
+# ---------- 6. 附录里的有序列表不是章节 ----------
+def test_ordered_list_inside_appendix_is_not_heading():
+    """Whisper 的 C 节正文是 1./2./3. 的规范化清单，形态与 "3 Results" 一模一样。"""
+    from app.parse.structure import _enforce_numbering
+
+    def blk(text, lvl=1):
+        b = Block(9, 0, 0, text, (65, 200, 400, 214), size=10.9, bold=False)
+        b.kind, b.level = "heading", lvl
+        return b
+
+    blocks = [
+        blk("C. Text Standardization"),
+        blk("1. Remove any phrases between bracketing brackets"),
+        blk("3 Remove any of the following words: hmm, mm, mmm"),
+        blk("7 Remove periods (.) not followed by numbers"),
+        blk("D. Raw Performance Tables"),
+    ]
+    out = _enforce_numbering(blocks)
+    assert out[0].kind == "heading" and out[0].text.startswith("C.")
+    assert all(b.kind == "text" for b in out[1:4]), [b.text for b in out]
+    assert out[4].kind == "heading" and out[4].text.startswith("D.")
+
+
+def test_body_numbered_headings_survive():
+    """数字编号的正文标题不能被上面那条规则误伤。"""
+    from app.parse.structure import _enforce_numbering
+
+    def blk(text, lvl=1):
+        b = Block(3, 0, 0, text, (65, 200, 400, 214), size=12.0, bold=True)
+        b.kind, b.level = "heading", lvl
+        return b
+
+    blocks = [blk("1 Introduction"), blk("2 Approach"), blk("3 Experiments")]
+    out = _enforce_numbering(blocks)
+    assert all(b.kind == "heading" for b in out)

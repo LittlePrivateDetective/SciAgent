@@ -24,7 +24,7 @@ log = get_logger(__name__)
 # 解析器版本：章节树的判定规则一变，库里已有的 sections 就过期了。
 # 云端 data 目录是持久化的（换代码不换数据），所以启动时要靠这个版本号
 # 判断"要不要把老文档的章节树按新规则重算一遍"。改动分类/合并逻辑必须同步 +1。
-PARSE_VERSION = "2026.11.15.5"
+PARSE_VERSION = "2026.11.15.6"
 
 # ---------------- 正则 ----------------
 RE_NUM_HEADING = re.compile(r"^(\d{1,2}(?:\.\d{1,2}){0,3})\.?\s+\S")
@@ -441,6 +441,55 @@ def _merge_chapter_number(blocks: list[Block]) -> list[Block]:
     return out
 
 
+_RE_ALPHA_HEAD = re.compile(r"^([A-Z])\.(\d{1,3}\.)*\s+\S")
+# "J. Schulman, …" / "A. Vaswani et al. 2017" —— 参考文献条目，不是附录标题
+_RE_CITATION_HEAD = re.compile(r"^[A-Z]\.\s*[A-Z][a-z]+[,.]|(?:19|20)\d{2}")
+
+
+def _looks_like_citation_head(txt: str) -> bool:
+    """字母开头的块是不是"作者姓名缩写"式的参考文献条目。"""
+    return bool(_RE_CITATION_HEAD.search(txt))
+
+
+def _enforce_numbering(blocks: list[Block]) -> list[Block]:
+    """一级编号必须"像章节"，不像的降级成正文。
+
+    典型误判（Whisper 论文 C 节）：正文里的有序列表 `1. Remove any phrases…`、
+    `3 Remove any of the following words: hmm, mm…` 与 "3 Results" 形态完全一样。
+
+    只查**一级编号**，两条判据：
+    1. 进入附录（A/B/C… 字母编号）之后，再冒出来的数字编号一律不是章节
+       （列表项就在附录里复活成"3 Remove…"）；
+    2. 一级数字必须比上一个大——`1. …` 出现在第 5 节后面只可能是列表项。
+    小节（2.1/2.2）不做连续性校验：论文跳号、附录重排都太常见，
+    强行校验会把真标题大批误杀（实测 39 篇丢掉 650 条）。
+    """
+    out: list[Block] = []
+    mode = ""          # "num" / "letter"
+    for b in blocks:
+        if b.kind != "heading":
+            out.append(b)
+            continue
+        t = b.text.strip()
+        am = _RE_ALPHA_HEAD.match(t)
+        if am and not _RE_LEAD_NUM.match(t) and not _looks_like_citation_head(t):
+            mode = "letter"
+            out.append(b)
+            continue
+        m = _RE_LEAD_NUM.match(t)
+        if not m:
+            out.append(b)
+            continue
+        parts = [int(x) for x in m.group(1).split(".")]
+        if len(parts) == 1 and mode == "letter":
+            # 已经进入附录（字母编号），再冒出来的一级数字编号只可能是正文列表项。
+            # 这里**不做**"编号必须递增"的校验：目录页残留、附录重排都会让编号倒退，
+            # 强行校验会连带把"7 Related Work"这类真章节一起杀掉（39 篇实测丢 100+ 条）。
+            b.kind, b.level = "text", 0
+        out.append(b)
+    return out
+
+
 def _dedupe_adjacent_headings(blocks: list[Block]) -> list[Block]:
     """相邻且同名的标题只留第一条。
 
@@ -685,7 +734,10 @@ def _is_heading(block: Block, body: float, left: float | None = None,
         rest = txt[len(m.group(1)) :].lstrip(" .\u3000\t")
         looks_like_title = (_starts_like_title(rest) and not re.match(r"^\d", rest)
                             and _plausible_heading_tail(rest))
-        if looks_like_title and at_left and siblings < 2 and not txt.endswith((".", "。", "，", ",")) \
+        # 目录条目：编号标题 + 行尾裸页码（"3 Empirical Results and Basic Power Laws 7"）
+        trailing_page = bool(re.search(r"\s\d{1,3}$", txt))
+        if looks_like_title and at_left and siblings < 2 and not trailing_page \
+                and not txt.endswith((".", "。", "，", ",")) \
                 and block.size >= body * 0.98:
             return True, min(depth, 4)
 
@@ -693,6 +745,16 @@ def _is_heading(block: Block, body: float, left: float | None = None,
     # 也会以 Appendix 开头，不加这条就会在正文中间凭空多出一节。
     if RE_APPENDIX.match(txt) and len(txt) < 100 and (block.bold or block.size >= body * 1.05):
         return True, 1
+
+    # 字母编号的附录标题：`A. Evaluation Datasets.`（Whisper 就带句点）、
+    # `B Compared Models`。数字编号的标题要求"不以句号收尾"，但字母编号是期刊/论文的
+    # 附录惯例，句点是标题本身的一部分——不单独放行的话，附录 A 会整节消失，
+    # 只剩 A.1/A.2 挂在 References 下面。
+    am = _RE_ALPHA_HEAD.match(txt)
+    if am and len(txt) < 100 and not _looks_like_citation_head(txt):
+        has_sub = bool(re.match(r"^[A-Z](?:\.\d{1,3})+\.?\s", txt))
+        if has_sub or block.bold or block.size >= body * 1.05:
+            return True, 2 if has_sub else 1
 
     # 加粗 + 短句 + 不带句号 → 二级标题。
     # Attention 这类论文的 "3.1 Encoder and Decoder Stacks" 字号与正文几乎一致，
@@ -910,6 +972,7 @@ def classify(blocks: list[Block], body: float) -> list[Block]:
     blocks = _normalize_headings(_demote_table_rows(blocks))
     blocks = _join_wrapped_heading(blocks)
     blocks = _dedupe_adjacent_headings(blocks)
+    blocks = _enforce_numbering(blocks)
     return _merge_chapter_number(blocks)
 
 

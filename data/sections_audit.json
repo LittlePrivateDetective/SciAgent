@@ -2273,9 +2273,9 @@
  {
   "file": "2002.04745v2.pdf",
   "title": "On Layer Normalization in the Transformer Architecture",
-  "headings": 41,
+  "headings": 40,
   "refs": 853,
-  "blocks": 1424,
+  "blocks": 1425,
   "issues": [],
   "rows": [
    {
@@ -2514,14 +2514,6 @@
     "level": 2,
     "text": "Lemma 5. Let Y be a random variable that is never larger",
     "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "2 2 Using Lemma 5, we have",
-    "num": [
-     2
-    ],
     "size": 10.0
    },
    {
@@ -4266,7 +4258,7 @@
  {
   "file": "2107.03374v2.pdf",
   "title": "Evaluating Large Language Models Trained on Code",
-  "headings": 51,
+  "headings": 50,
   "refs": 499,
   "blocks": 749,
   "issues": [],
@@ -4578,14 +4570,6 @@
     "level": 2,
     "text": "E.2. How can alignment be deﬁned and evaluated in models like Codex?",
     "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "1 We consider a model capable of some task X if it has",
-    "num": [
-     1
-    ],
     "size": 10.0
    },
    {
@@ -6721,8 +6705,8 @@
  {
   "file": "2212.04356v1.pdf",
   "title": "Robust Speech Recognition via Large-Scale Weak Supervision",
-  "headings": 46,
-  "refs": 785,
+  "headings": 45,
+  "refs": 782,
   "blocks": 1311,
   "issues": [],
   "rows": [
@@ -6999,6 +6983,12 @@
     "size": 12.0
    },
    {
+    "level": 1,
+    "text": "A. Evaluation Datasets.",
+    "num": [],
+    "size": 12.0
+   },
+   {
     "level": 2,
     "text": "A.1. Short-form English-only datasets",
     "num": [],
@@ -7024,45 +7014,25 @@
    },
    {
     "level": 1,
-    "text": "3 Remove any of the following words: hmm, mm, mhm, mmm, uh, um",
-    "num": [
-     3
-    ],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "4 Remove whitespace characters that comes before an apostrophe ’",
-    "num": [
-     4
-    ],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "6 Remove commas (,) between digits",
-    "num": [
-     6
-    ],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "7 Remove periods (.) not followed by numbers",
-    "num": [
-     7
-    ],
-    "size": 10.0
-   },
-   {
-    "level": 1,
     "text": "D. Raw Performance Tables",
     "num": [],
     "size": 12.0
    },
    {
     "level": 2,
+    "text": "D.1.2. BEAM SEARCH WITH TEMPERATURE FALLBACK",
+    "num": [],
+    "size": 10.0
+   },
+   {
+    "level": 2,
     "text": "D.2. Multilingual Transcription",
+    "num": [],
+    "size": 10.0
+   },
+   {
+    "level": 2,
+    "text": "D.2.1. MULTILINGUAL LIBRISPEECH",
     "num": [],
     "size": 10.0
    },
@@ -7084,7 +7054,7 @@
   "file": "2303.08774v6.pdf",
   "title": "GPT-4 Technical Report",
   "headings": 70,
-  "refs": 373,
+  "refs": 367,
   "blocks": 3095,
   "issues": [],
   "rows": [
@@ -8978,9 +8948,9 @@
  {
   "file": "2307.09288v2.pdf",
   "title": "Llama 2: Open Foundation and Fine-Tuned Chat Models",
-  "headings": 79,
+  "headings": 78,
   "refs": 117,
-  "blocks": 2037,
+  "blocks": 2036,
   "issues": [],
   "rows": [
    {
@@ -9488,12 +9458,6 @@
    {
     "level": 2,
     "text": "A.4.5 Safety Errors: False Refusals and Vague Responses",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 2,
-    "text": "Without context distillation",
     "num": [],
     "size": 10.0
    },
@@ -12516,9 +12480,9 @@
  {
   "file": "UnderstandingDeepLearning_02_09_26_C.pdf",
   "title": "Understanding Deep Learning",
-  "headings": 582,
+  "headings": 505,
   "refs": 470,
-  "blocks": 9902,
+  "blocks": 9825,
   "issues": [],
   "rows": [
    {
@@ -12727,15 +12691,6 @@
     "size": 12.0
    },
    {
-    "level": 2,
-    "text": "2.2 Linear regression example",
-    "num": [
-     2,
-     2
-    ],
-    "size": 10.0
-   },
-   {
     "level": 3,
     "text": "2.2.2 Loss",
     "num": [
@@ -12869,15 +12824,6 @@
      4
     ],
     "size": 10.0
-   },
-   {
-    "level": 2,
-    "text": "3.4 Shallow neural networks: general case",
-    "num": [
-     3,
-     4
-    ],
-    "size": 12.0
    },
    {
     "level": 2,
@@ -13137,15 +13083,6 @@
     "size": 10.0
    },
    {
-    "level": 2,
-    "text": "5.3 Example 1: univariate regression",
-    "num": [
-     5,
-     3
-    ],
-    "size": 12.0
-   },
-   {
     "level": 1,
     "text": "62 5.3.1 Least squares loss function",
     "num": [
@@ -13237,15 +13174,6 @@
      7
     ],
     "size": 10.0
-   },
-   {
-    "level": 2,
-    "text": "5.7 Cross-entropy loss",
-    "num": [
-     5,
-     7
-    ],
-    "size": 12.0
    },
    {
     "level": 1,
@@ -13444,15 +13372,6 @@
    },
    {
     "level": 2,
-    "text": "7.2 Computing derivatives",
-    "num": [
-     7,
-     2
-    ],
-    "size": 12.0
-   },
-   {
-    "level": 2,
     "text": "7.3 Toy example",
     "num": [
      7,
@@ -13592,12 +13511,6 @@
     "text": "Problems",
     "num": [],
     "size": 12.0
-   },
-   {
-    "level": 3,
-    "text": "Notes",
-    "num": [],
-    "size": 10.0
    },
    {
     "level": 3,
@@ -13951,12 +13864,6 @@
    },
    {
     "level": 3,
-    "text": "Notes",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 3,
     "text": "Problems",
     "num": [],
     "size": 12.0
@@ -14200,24 +14107,6 @@
     "size": 10.0
    },
    {
-    "level": 2,
-    "text": "11.2 Residual connections and residual blocks",
-    "num": [
-     11,
-     2
-    ],
-    "size": 12.0
-   },
-   {
-    "level": 2,
-    "text": "11.2 Residual connections and residual blocks",
-    "num": [
-     11,
-     2
-    ],
-    "size": 10.0
-   },
-   {
     "level": 3,
     "text": "11.2.1 Order of operations in residual blocks",
     "num": [
@@ -14254,15 +14143,6 @@
      4
     ],
     "size": 12.0
-   },
-   {
-    "level": 2,
-    "text": "11.4 Batch normalization",
-    "num": [
-     11,
-     4
-    ],
-    "size": 10.0
    },
    {
     "level": 3,
@@ -14446,15 +14326,6 @@
      4
     ],
     "size": 10.0
-   },
-   {
-    "level": 2,
-    "text": "12.4 Transformer layers",
-    "num": [
-     12,
-     4
-    ],
-    "size": 12.0
    },
    {
     "level": 2,
@@ -14647,12 +14518,6 @@
    },
    {
     "level": 3,
-    "text": "Notes",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 3,
     "text": "Problems",
     "num": [],
     "size": 12.0
@@ -14834,15 +14699,6 @@
      8
     ],
     "size": 12.0
-   },
-   {
-    "level": 2,
-    "text": "13.8 Layers for graph convolutional networks",
-    "num": [
-     13,
-     8
-    ],
-    "size": 10.0
    },
    {
     "level": 3,
@@ -15254,12 +15110,6 @@
    },
    {
     "level": 3,
-    "text": "Notes",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 3,
     "text": "Problems",
     "num": [],
     "size": 12.0
@@ -15435,15 +15285,6 @@
    },
    {
     "level": 2,
-    "text": "16.4 Multi-scale flows",
-    "num": [
-     16,
-     4
-    ],
-    "size": 12.0
-   },
-   {
-    "level": 2,
     "text": "16.5 Applications",
     "num": [
      16,
@@ -15545,15 +15386,6 @@
      2
     ],
     "size": 12.0
-   },
-   {
-    "level": 2,
-    "text": "17.2 Nonlinear latent variable model",
-    "num": [
-     17,
-     2
-    ],
-    "size": 10.0
    },
    {
     "level": 3,
@@ -15672,15 +15504,6 @@
      6
     ],
     "size": 12.0
-   },
-   {
-    "level": 2,
-    "text": "17.6 The variational autoencoder",
-    "num": [
-     17,
-     6
-    ],
-    "size": 10.0
    },
    {
     "level": 3,
@@ -15814,15 +15637,6 @@
     "size": 12.0
    },
    {
-    "level": 2,
-    "text": "18.2 Encoder (forward process)",
-    "num": [
-     18,
-     2
-    ],
-    "size": 10.0
-   },
-   {
     "level": 3,
     "text": "18.2.2 Marginal distributions q(zt)",
     "num": [
@@ -15858,15 +15672,6 @@
      4
     ],
     "size": 10.0
-   },
-   {
-    "level": 2,
-    "text": "18.4 Training",
-    "num": [
-     18,
-     4
-    ],
-    "size": 12.0
    },
    {
     "level": 3,
@@ -15973,15 +15778,6 @@
      6
     ],
     "size": 10.0
-   },
-   {
-    "level": 2,
-    "text": "18.6 Implementation",
-    "num": [
-     18,
-     6
-    ],
-    "size": 12.0
    },
    {
     "level": 3,
@@ -16244,15 +16040,6 @@
      5
     ],
     "size": 10.0
-   },
-   {
-    "level": 2,
-    "text": "19.5 Policy gradient methods",
-    "num": [
-     19,
-     5
-    ],
-    "size": 12.0
    },
    {
     "level": 3,
@@ -17083,12 +16870,6 @@
    },
    {
     "level": 2,
-    "text": "C.3 Normal probability distribution",
-    "num": [],
-    "size": 12.0
-   },
-   {
-    "level": 2,
     "text": "C.3.1 Univariate normal distribution",
     "num": [],
     "size": 10.9
@@ -17125,12 +16906,6 @@
    },
    {
     "level": 2,
-    "text": "C.5 Distances between probability distributions",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 2,
     "text": "C.5.1 Kullback-Leibler divergence",
     "num": [],
     "size": 10.9
@@ -17154,334 +16929,10 @@
     "size": 20.7
    },
    {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 1,
-    "text": "Bibliography",
-    "num": [],
-    "size": 10.0
-   },
-   {
     "level": 2,
     "text": "Index",
     "num": [],
     "size": 20.7
-   },
-   {
-    "level": 2,
-    "text": "Index",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 2,
-    "text": "Index",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 2,
-    "text": "Index",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 2,
-    "text": "Index",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 2,
-    "text": "Index",
-    "num": [],
-    "size": 10.0
-   },
-   {
-    "level": 2,
-    "text": "Index",
-    "num": [],
-    "size": 10.0
    }
   ]
  }
