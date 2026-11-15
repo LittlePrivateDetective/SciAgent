@@ -150,14 +150,20 @@ def _detect_two_column(lines: list[Line], width: float) -> bool:
 
 
 def _col_of(bbox, width: float, two_col: bool) -> int:
+    """按 bbox **中心**判栏，不能按右边缘。
+
+    BERT 这类双栏 PDF 里，章节编号 "4" 只占 6pt 宽（x 307–313），而正文栏从 307 开始：
+    用右边缘 +3.5% 容差去比，它会被判成左栏，和同一行的标题 "Experiments"（右栏）
+    分到两个栏，编号因此被丢掉，章节树里只剩 "Experiments"。
+    """
     if not two_col:
         return 0
     mid = width / 2
     tol = width * 0.035
     x0, _, x1, _ = bbox
     if x0 < mid - tol and x1 > mid + tol:
-        return -1
-    return 0 if x1 <= mid + tol else 1
+        return -1                      # 跨栏（标题、整宽图表）
+    return 0 if (x0 + x1) / 2 < mid else 1
 
 
 # ---------------- 区块合并 ----------------
@@ -242,6 +248,19 @@ def _merge_lines(lines: list[Line], width: float, two_col: bool) -> list[Block]:
         # 上一行已收尾（句号/冒号）且新行像新段落 → 断开
         sentence_end = prev.text.rstrip().endswith((".", "。", "?", "！", ":", "："))
         new_para = sentence_end and gap > line_h * 0.35
+        # 标题行 + 紧随其后的正文段落：字号常常一样（ACL 模板里 10.9pt 的加粗小标题
+        # 与 10.9pt 正文只差一个 bold），旧判据会把它并进正文，标题就此消失
+        # （"3.2 Fine-tuning BERT" 就是这样丢的）。加一条：上一行像标题、这一行又更长
+        # 且不加粗，就断开。
+        heading_like = (prev.bold and len(prev.text.strip()) <= 80
+                        and not prev.text.rstrip().endswith((".", "。", "，", ",", ";", "：", ":")))
+        # 加粗行之后一旦不加粗就断开：ACL 模板的小标题与正文同为 10.9pt，
+        # 只差一个 bold，不断开的话"3.2 Fine-tuning BERT"会被并进正文而消失。
+        # 作者名同样是加粗短行，但它们在"题目—摘要"区间里，已由版面规则排除。
+        if heading_like and not ln.bold:
+            flush()
+            buf.append(ln)
+            continue
         if same_col and same_size and adjacent and not new_para:
             buf.append(ln)
         else:
@@ -318,6 +337,15 @@ def _is_heading(block: Block, body: float) -> tuple[bool, int]:
         return False, 0
     # 至少要有两个实字（汉字或字母数字）："S( )" 这种只剩一个 S
     if sum(1 for c in txt if c.isalnum() or _is_cjk(c)) < 2:
+        return False, 0
+    # 单个词、全大写、≤8 字符：BERT 附录里的表格列名（MNLI / QQP / RTE / WNLI）
+    # 就是这种形态，加粗且字号偏大，字号规则必中。真正的章节标题不会是这种裸缩写。
+    bare = txt.strip(" .:：")
+    if " " not in bare and len(bare) <= 8 and bare.isupper() and bare.lower() not in (
+            "abstract", "references", "appendix", "contents"):
+        return False, 0
+    # 版权/内容警告之类的声明行（GPT-4 技术报告的 "Content Warning: ..."）
+    if re.match(r"^(content |trigger )?warning\b", txt, re.I):
         return False, 0
     # 邮箱行、以冒号收尾的标签行（"Encoder:" / "时间复杂度为："）都不是标题
     if "@" in txt or txt.rstrip().endswith((":", "：")):
@@ -433,20 +461,45 @@ def classify(blocks: list[Block], body: float) -> list[Block]:
     # 字号规则必然把它们判成一级标题——章节树里就会冒出"薄琳 1） 庞亮 2）"。
     # 位置是这里唯一可靠的判据，所以按版面区间排除，而不是靠字数猜。
     page1 = [b for b in blocks if b.page == 1]
-    title_blk = max(page1, key=lambda b: b.size) if page1 else None
+    # 题目 = 第 1 页字号最大的块，但要排除 arXiv 水印：Attention 的水印是 20pt，
+    # 比标题（17.2pt）还大，选错之后"题目—摘要"区间整个反了，
+    # 作者区排除失效，九个作者全被当成章节标题。
+    title_pool = [b for b in page1
+                  if not b.text.startswith("arXiv:") and not RE_ARXIV.match(b.text)]
+    title_blk = max(title_pool, key=lambda b: b.size) if title_pool else None
     abs_blk = next((b for b in page1 if _abstract_prefix(b.text)), None)
     author_band: tuple[float, float] | None = None
     if title_blk and abs_blk and abs_blk.bbox[1] > title_blk.bbox[3]:
         author_band = (title_blk.bbox[3] - 2, abs_blk.bbox[1] - 1)
+    # 第 1 页一个长段落都没有 → 整页是封面 + 作者列表（BLOOM 就长这样：
+    # 标题下面是"BigScience Workshop / Dataset / Tokenization"这种贡献分组，
+    # 加粗、字号大、没有摘要块可以界定区间）。这种页面不产出任何章节。
+    # 只有"确实存在一个大字号的题目"时，才把第 1 页当封面处理。
+    # 否则（例如只有参考文献标题的页面、或者一段没有段落的样例）会连正常标题一起吞掉。
+    title_like = bool(title_blk and title_blk.size >= body * 1.25)
+    cover_page = title_like and not any(len(b.text.strip()) >= 300 for b in page1)
 
     for b in blocks:
         txt = b.text.strip()
+
+        if cover_page and b.page == 1:
+            continue
+        # 第 1 页只认"编号章节"和"摘要"：其余都是封面信息（标题、作者、
+        # "BigScience Workshop / Dataset / Tokenization" 这类贡献分组标签）。
+        # 它们加粗、字号大，形态上与章节标题无法区分，只能靠版面位置否掉。
+        if title_like and b.page == 1 and not _RE_LEAD_NUM.match(txt) and not re.match(
+                r"^(abstract|摘\s*要)\b", txt, re.I):
+            continue
 
         # 论文题目本身不是章节：章节树应当从"1 引言"开始。
         # title_blk 只覆盖"最大的那一块"；英文标题常被拆成两行两块，
         # 所以按"第 1 页、摘要上方、字号接近题目"整片排除。
         # 只有"题目 + 摘要"都在时才敢认定为题目区：单测里那段只有参考文献的
         # 页面没有摘要，此时"最大块"就是参考文献标题，不能被当成题目跳过。
+        # 题目块本身永远不是章节：题目字号通常明显大于正文（BLOOM 没有摘要块，
+        # 原来的"题目—摘要区间"规则兜不住，只能直接按字号认定题目）。
+        if title_like and b is title_blk:
+            continue
         if author_band and (b is title_blk or (
                 b.page == 1 and b.bbox[1] < abs_blk.bbox[1]
                 and b.size >= title_blk.size * 0.8)):
@@ -489,6 +542,86 @@ def classify(blocks: list[Block], body: float) -> list[Block]:
         if _looks_formula(b):
             b.kind = "formula"
             continue
+    return _normalize_headings(_demote_table_rows(blocks))
+
+
+_RE_LEAD_NUM = re.compile(r"^(\d{1,2}(?:\.\d{1,2}){0,3})\.?\s+\S")
+
+
+def _normalize_headings(blocks: list[Block]) -> list[Block]:
+    """章节树规范化：层级对齐编号、丢掉"像句子"的伪标题。
+
+    单个 PDF 的正则修不完这类问题——39 篇里每篇的排版都有自己的怪癖：
+    BERT 的编号单独占一行、GPT 的附录标题带引号、DeepSeek 的表格列名被加粗。
+    与其为每篇打补丁，不如在分类之后统一做一遍"树该长什么样"的规整：
+
+    1. 有编号的标题，层级 = 编号段数（"3.5.2" → L3）；
+    2. 无编号的标题，层级 = 上一个编号标题的层级 + 1（附录里的 A/B/C 同级）；
+    3. 丢掉"像句子"的伪标题：超过 110 字符、或含句号、或词数 ≥ 14；
+    4. 第一层必须是 L1（"Abstract" 被排成 L2 时提回 L1）。
+    """
+    prev_level = 0
+    prev_num_depth = 0
+    for b in blocks:
+        if b.kind != "heading":
+            continue
+        txt = b.text.strip()
+        m = _RE_LEAD_NUM.match(txt)
+        if m:
+            depth = min(m.group(1).count(".") + 1, 4)
+            b.level = depth
+            prev_num_depth = depth
+        elif re.match(r"^[A-Z]\.?\s+\S", txt) or re.match(r"^(Appendix|References|Acknowledg)", txt, re.I):
+            b.level = 1
+            prev_num_depth = 0
+        else:
+            b.level = min(prev_num_depth + 1, 4) if prev_num_depth else max(1, min(b.level, 2))
+        # 像句子的不要
+        words = len(txt.split())
+        if len(txt) > 110 or "。" in txt or words >= 14:
+            b.kind, b.level = "text", 0
+            continue
+        if b.level == 1:
+            prev_num_depth = 0
+        prev_level = b.level
+    # 首个标题不该是 L2/L3（前面没有父级）
+    for b in blocks:
+        if b.kind == "heading":
+            if b.level > 1:
+                b.level = 1
+            break
+    return blocks
+
+
+def _demote_table_rows(blocks: list[Block]) -> list[Block]:
+    """同一行并排出现 ≥3 个短标题块 → 这是被拆开的表格行（BERT 附录的 MNLI/QQP/…）。
+
+    判据只看版式：同一页、基线相差 <3pt、彼此不重叠、文本都不超过 24 字符。
+    真实章节标题不会一行并排三个。
+    """
+    # 注意这里取的是**所有**短块，而不是只看已判成标题的：
+    # "MNLI / QQP / RTE" 先被"全大写"规则否掉，剩下的 "CoLA"（混合大小写）
+    # 就会孤立成标题。按整行一起看，才能把它们一起降级。
+    heads = [b for b in blocks if len(b.text.strip()) <= 24]
+    by_page: dict[int, list[Block]] = {}
+    for b in heads:
+        by_page.setdefault(b.page, []).append(b)
+    for group in by_page.values():
+        group.sort(key=lambda b: b.bbox[0])
+        cluster: list[Block] = []
+        for b in group:
+            if cluster and abs(b.bbox[1] - cluster[-1].bbox[1]) < 3 and b.bbox[0] > cluster[-1].bbox[2] - 1:
+                cluster.append(b)
+            else:
+                if len(cluster) >= 3:
+                    for c in cluster:
+                        if c.kind == "heading":
+                            c.kind, c.level = "text", 0
+                cluster = [b]
+        if len(cluster) >= 3:
+            for c in cluster:
+                if c.kind == "heading":
+                    c.kind, c.level = "text", 0
     return blocks
 
 
