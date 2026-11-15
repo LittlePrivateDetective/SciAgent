@@ -43,7 +43,9 @@ body {
   color: var(--el-text-color-regular); cursor: pointer;
   transition: background-color .15s ease, border-color .15s ease, color .15s ease;
 }
-.ms-btn:hover { border-color: var(--el-color-primary-light-5); color: var(--el-color-primary); }
+.ms-btn:hover:not(:disabled) { border-color: var(--el-color-primary-light-5); color: var(--el-color-primary); }
+/* 本地不可用：虚线 + 置灰。和"能点但没选中"区分开，也和 loading 禁点区分开 */
+.ms-btn:disabled { opacity: .45; cursor: not-allowed; border-style: dashed; }
 .ms-btn.on {
   background: var(--el-color-primary); border-color: var(--el-color-primary); color: #fff;
 }

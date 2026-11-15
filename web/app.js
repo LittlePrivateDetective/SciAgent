@@ -387,6 +387,16 @@ const app = createApp({
     // 本地模型是否真的可用：开关 + Ollama 端口可达 + 模型名在本机，三条件后端合判。
     // 公网实例答案是 false，这里就不渲染切换按钮——不给点了必错的选项。
     localReady() { return !!(this.info.local && this.info.local.available); },
+    // 本地不可用时按钮改成灰色常显，靠这条说明"为什么点不了"。
+    // 原来三条件不满足就整块不渲染，用户第一反应是"功能被删了"——已经遇到三次。
+    localHint() {
+      const l = this.info.local;
+      if (!l) return "还在读取本地模型状态";
+      if (!l.enabled) return "后台未启用本地模型：把 deploy/.env 的 OLLAMA_ENABLED 改成 1 再重启服务";
+      if (!l.reachable) return "连不上 Ollama（" + l.url + "）。双击 Ollama 桌面应用启动后刷新本页";
+      if (!(l.models || []).length) return "Ollama 里没有模型：确认 OLLAMA_MODELS 指向 D:////ollama-models";
+      return l.reason || "本地模型暂不可用";
+    },
     uploading() { return this.upQueue > 0; },
     // 当前生效的模型名：按钮旁边那一行小字。切到本地就显示自训模型名，
     // 让"这一问到底谁答的"在界面上有字面证据，而不是只靠耗时猜。
@@ -539,6 +549,12 @@ const app = createApp({
       // 后台把全局路由钉成 local 时，界面默认就该显示本地——否则徽标写着云端、
       // 实际跑的是本地，用户看不出这一问到底谁答的。
       if (r && r.llm && r.llm.route === "local") this.askRoute = "local";
+      // 本地掉线（Ollama 被杀、模型被删）时把"这一问"拉回云端：
+      // 否则按钮灰着、路由还指着 local，下一次提问直接报连接错误。
+      if (this.askRoute === "local" && this.info.local && !this.info.local.available) {
+        this.askRoute = "cloud";
+        ElementPlus.ElMessage.warning("本地模型已断开，本次提问已切回云端");
+      }
     },
     /* ---------------- 整篇中译英（官方 1.6.4） ---------------- */
 

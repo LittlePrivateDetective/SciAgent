@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SciAgent · 科研智能体</title>
   <link rel="stylesheet" href="/static/vendor/element-plus.css" />
-  <link rel="stylesheet" href="/static/style.css?v=45" />
+  <link rel="stylesheet" href="/static/style.css?v=46" />
   <link rel="stylesheet" href="/static/vendor/katex.min.css" />
   <script src="/static/vendor/katex.min.js"></script>
   <script src="/static/vendor/katex-auto-render.min.js"></script>
@@ -35,11 +35,16 @@
            只有本机探测到可用本地模型时才出现——公网实例没有 Ollama，
            这里保持只读徽标，不给出点了必错的选项。
            切换只作用于**这一次提问**，不改后台全局路由。 -->
-      <div v-if="localReady && !(info.llm && info.llm.mock)" class="model-switch"
-           title="切换本次提问使用的模型（不影响后台全局设置，下一问即生效）">
+      <!-- 本地不可用时也把这个切换器留着，只把「本地 3B」置灰：
+           直接整块隐藏会让人以为功能被删了（已发生三次），置灰+悬停原因才说得清。 -->
+      <div v-if="!(info.llm && info.llm.mock)" class="model-switch"
+           :title="localReady ? '切换本次提问使用的模型（不影响后台全局设置，下一问即生效）' : localHint">
         <button type="button" class="ms-btn" :class="{ on: askRoute === 'cloud' }"
                 @click="setAskRoute('cloud')">云端</button>
-        <button type="button" class="ms-btn" :class="{ on: askRoute === 'local', local: askRoute === 'local' }"
+        <button type="button" class="ms-btn"
+                :class="{ on: askRoute === 'local', local: askRoute === 'local' }"
+                :disabled="!localReady"
+                :title="localReady ? '走本机 3B 推理（Ollama）' : localHint"
                 @click="setAskRoute('local')">本地 3B</button>
         <span class="ms-name">{{ activeModelName }}</span>
       </div>
@@ -1008,6 +1013,6 @@
   </nav>
 </div>
 
-<script src="/static/app.js?v=45"></script>
+<script src="/static/app.js?v=46"></script>
 </body>
 </html>
