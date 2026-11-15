@@ -21,8 +21,17 @@ from app.core.logger import get_logger
 
 log = get_logger(__name__)
 
+# 解析器版本：章节树的判定规则一变，库里已有的 sections 就过期了。
+# 云端 data 目录是持久化的（换代码不换数据），所以启动时要靠这个版本号
+# 判断"要不要把老文档的章节树按新规则重算一遍"。改动分类/合并逻辑必须同步 +1。
+PARSE_VERSION = "2026.11.15"
+
 # ---------------- 正则 ----------------
 RE_NUM_HEADING = re.compile(r"^(\d{1,2}(?:\.\d{1,2}){0,3})\.?\s+\S")
+# 中文期刊（计算机学报/自动化学报）把编号排成 "3. 1"、"3. 2. 1"——点号后面还带空格，
+# 上面的正则咬不住，整篇的小节标题就全丢了（只剩 6 个一级标题）。这里单独认一次，
+# 交给 _norm_num_text 归一成 "3.1"。
+RE_NUM_SPACED = re.compile(r"^\s*(\d{1,2}(?:\s*[.．]\s*\d{1,2}){0,3})\s*[.．]?\s*")
 RE_APPENDIX = re.compile(r"^(Appendix|APPENDIX)\s*[A-Z0-9]?", re.I)
 RE_FIGURE = re.compile(r"^(Figure|Fig\.)\s*\d+", re.I)
 # 表题的三种写法：`Table 1: …`（ACL/CVPR 常用）、`Table 1 | …`（DeepSeek 系）、
@@ -38,9 +47,13 @@ RE_REF_HEAD = re.compile(
     re.I,
 )
 # 条目编号样式：数字 [12] / "12. " / 作者键 [SLA+18] / [RNSS18]
-RE_REF_ITEM = re.compile(r"^\s*\[(\d{1,3})\]|^\s*(\d{1,3})\.\s+[A-Z]|^\s*\[[A-Z][A-Za-z0-9+.\-]{1,14}\]")
+# 中文全角方括号（［12］）必须一起认：计算机学报全篇用全角，
+# 只认半角的话整片参考文献会一条都抽不出来（实测 41 条 → 0 条）。
+RE_REF_ITEM = re.compile(r"^\s*[\[［](\d{1,3})[\]］]|^\s*(\d{1,3})\.\s+[A-Z]|^\s*[\[［][A-Z][A-Za-z0-9+.\-]{1,14}[\]］]")
 # 单独成块的引用标签（[SLA+18] 这种），需要粘回下一条正文
-RE_REF_LABEL = re.compile(r"^\s*\[[A-Za-z][A-Za-z0-9+.\-]{0,14}\]\s*$")
+RE_REF_LABEL = re.compile(r"^\s*[\[［][A-Za-z][A-Za-z0-9+.\-]{0,14}[\]］]\s*$")
+# 参考文献区的"起点"：以 [n] / ［n］ 开头的条目行
+RE_REF_START = re.compile(r"^\s*[\[［](\d{1,3})[\]］]")
 RE_ARXIV = re.compile(r"arXiv:\s*(\d{4}\.\d{4,5})(v\d+)?", re.I)
 RE_DOI = re.compile(r"10\.\d{4,9}/[-._;()/:A-Za-z0-9]+")
 RE_EMAIL = re.compile(r"[\w.+-]+@[\w-]+\.[\w.]+")
@@ -189,6 +202,114 @@ def _join_lines(buf: list[Line]) -> str:
     return "".join(out)
 
 
+def _norm_num_text(txt: str) -> str:
+    """把章节编号归一成 "3.1 标题"：`3. 1　标题` → `3.1 标题`。
+
+    计算机学报的编号在每个点号后都插一个空格（"3. 2. 1　阶段1:增强数据生成"），
+    既进不了 `RE_NUM_HEADING`，层级也算不出来（`count(".")` 之前就被空格打断）。
+    归一只动开头那段编号，正文原样返回。
+    """
+    m = RE_NUM_SPACED.match(txt)
+    if not m:
+        return txt
+    num = re.sub(r"\s*[.．]\s*", ".", m.group(1))
+    rest = txt[m.end():].lstrip("\u3000 \t")
+    return f"{num} {rest}".rstrip() if rest else num
+
+
+def _left_edges(lines: list[Line], width: float, two_col: bool) -> dict[int, float]:
+    """每一栏的左边距（用长行估：长行一定是段落，不会是缩进的列表项/表格格）。
+
+    章节标题永远贴着栏的左边界排；表格单元格、"90 M speakers" 这类数字碎片
+    散落在栏中间。用"是否从栏左起"就能把两者分开——不需要认识表结构，
+    也不用为每篇 PDF 调阈值。
+    """
+    edges: dict[int, Counter] = {}
+    for ln in lines:
+        if len(ln.text.strip()) < 15:
+            continue
+        col = _col_of(ln.bbox, width, two_col)
+        if col < 0:
+            continue
+        edges.setdefault(col, Counter())[round(ln.bbox[0])] += len(ln.text)
+    # 取"出现最多的左边界"，不能取最小值：脚注、页边注、水印的 x 更靠左，
+    # 一旦被当成栏左，所有标题都会被判成"没贴左"而消失。
+    return {c: float(cnt.most_common(1)[0][0]) for c, cnt in edges.items()}
+
+
+def _body_font(lines: list[Line]) -> str:
+    """正文字体 = 按字符数加权出现最多的字体名。
+
+    中文期刊的版面语言是"字体即层级"：正文用宋体（FZSSK）、小节标题用黑体（FZHTK），
+    两者**字号完全相同**（都是 10.3pt）、都不加粗。所以"同字号就合并"这条规则
+    必然把 "3. 1　新闻推荐模型域增量学习问题描述" 并进下面那段正文，
+    标题连独立区块都不是，字号/加粗/编号三套判据全部失效。
+    """
+    counter: Counter[str] = Counter()
+    # 只统计"像正文段落"的长行：表格里的数字行会让 NEU-BZ（数字字体）冲到第一，
+    # 把"正文字体"误判成数字字体，后面所有"字体是否与正文不同"的判断就全歪了。
+    for ln in lines:
+        if len(ln.text.strip()) >= 15:
+            counter[ln.font] += len(ln.text)
+    if not counter:
+        for ln in lines:
+            counter[ln.font] += len(ln.text)
+    return counter.most_common(1)[0][0] if counter else ""
+
+
+def _plausible_heading_tail(rest: str) -> bool:
+    """编号后面的那段文字像不像标题短语。
+
+    `_starts_like_title` 只要求首字是大写字母，于是表格单元格 "0.5 M"、"83 GB"、
+    "1.0 T" 全都被认成二级标题——它们是**数量 + 单位**，不是标题。
+    真正的英文标题要么带小写字母（"Experiments"），要么是多词短语
+    （"LOW-RANK-PARAMETRIZED UPDATE MATRICES"）；单个大写字母/单位缩写一律否掉。
+    """
+    t = rest.strip(" .\u3000:：")
+    if not t:
+        return False
+    # 中文标题两个字就够（"1 引言"、"2 结论"），英文短语要三个字符以上
+    if re.search(r"[\u4e00-\u9fff]", t):
+        return len(t) >= 2
+    if len(t) < 3:
+        return False
+    words = [w for w in re.split(r"[\s\-]+", t) if w]
+    # 首词是单个大写字母 = 单位/量纲（"B Model (GB)"、"M speakers"、"T Model"、"M tokens"）。
+    # 冠词 "A"、"I" 例外："A Survey of …" 是正常标题。
+    if words and len(words[0]) == 1 and words[0].isupper() and words[0] not in ("A", "I"):
+        return False
+    if re.search(r"[a-z]", t):
+        return True
+    # 全大写单字标题也是有的（ViT 的 "1 INTRODUCTION"、"5.1 BASELINES"），
+    # 只要够长就放行；"83 GB"、"0.5 M" 这类数量+单位的短尾巴仍然被挡住。
+    return len(words) >= 2 or (t.isupper() and len(t) >= 6)
+
+
+def _line_is_num_heading(ln: Line, body_font: str, left: float | None = None) -> bool:
+    """这一**行**是不是"编号 + 标题"——用于在合并前把它切成独立区块。"""
+    txt = _norm_num_text(ln.text.strip())
+    if not txt or len(txt) > 60:
+        return False
+    m = RE_NUM_HEADING.match(txt)
+    if not m:
+        return False
+    rest = txt[len(m.group(1)):]
+    if re.match(r"^\d", rest) or not _starts_like_title(rest):
+        return False
+    if not _plausible_heading_tail(rest):
+        return False
+    # 标题必须从栏左起排。表格单元格（"7.5 B Model (GB)"、"90 M speakers"）从栏中间开始。
+    if left is not None and ln.bbox[0] > left + 1.2 * max(ln.size, 1.0):
+        return False
+    # 标题不以句号收尾。"…提高了6. 1 个百分点." 这种正文行会因为"编号 + 汉字"被骗进来，
+    # 尾部句号是最省事的否定证据。
+    if txt.endswith((".", "。")) or txt[-1] in "，、,;：:":
+        return False
+    # 必须有一条"这是标题"的旁证，否则正文行 "3 个模型" 也会被切成独立块
+    # （中文正文偶尔会以"数字 + 空格"起句）。字体不同 / 加粗 / 短句，三条任一。
+    return ln.font != body_font or ln.bold or len(txt) <= 24
+
+
 def _merge_lines(lines: list[Line], width: float, two_col: bool) -> list[Block]:
     """同栏、同字号、垂直相邻的行合并为一个区块。
 
@@ -198,6 +319,8 @@ def _merge_lines(lines: list[Line], width: float, two_col: bool) -> list[Block]:
     ordered = sorted(lines, key=lambda ln: (ln.bbox[1], ln.bbox[0]))
     blocks: list[Block] = []
     buf: list[Line] = []
+    body_font = _body_font(lines)
+    edges = _left_edges(lines, width, two_col)
 
     def flush() -> None:
         if not buf:
@@ -224,7 +347,11 @@ def _merge_lines(lines: list[Line], width: float, two_col: bool) -> list[Block]:
     for ln in lines:
         # 参考文献条目是天然硬边界：形如 [12] / 12. 开头的行必须新起一块，
         # 否则整段参考文献会被粘成一大块，条目数严重偏少。
-        if RE_REF_ITEM.match(ln.text):
+        # 编号标题同理，而且**两个方向都要断**：中文期刊实测既有"标题后面紧跟正文"，
+        # 也有"标题被粘到上一段末尾"（"...增量训练学习. 4. 1　知识融合"），
+        # 只处理其中一个方向，另一半小节就永远进不了章节树。
+        if RE_REF_ITEM.match(ln.text) or _line_is_num_heading(
+                ln, body_font, edges.get(_col_of(ln.bbox, width, two_col))):
             flush()
             buf.append(ln)
             continue
@@ -254,6 +381,23 @@ def _merge_lines(lines: list[Line], width: float, two_col: bool) -> list[Block]:
         # 且不加粗，就断开。
         heading_like = (prev.bold and len(prev.text.strip()) <= 80
                         and not prev.text.rstrip().endswith((".", "。", "，", ",", ";", "：", ":")))
+        # "编号 + 与正文不同的字体"= 中文期刊的小节标题（黑体 vs 宋体），
+        # 它与正文同字号、不加粗，只有字体这一条线索。命中就把它切成独立区块，
+        # 且不把后面的正文吸进来——否则 "3. 1　新闻推荐…" 永远进不了章节树。
+        # 例外：同字体的极短后续行是标题自己的折行（"1 引" + "言"），必须留着合并，
+        # 否则一级标题会被截成"1 引"。
+        if _line_is_num_heading(prev, body_font, edges.get(_col_of(prev.bbox, width, two_col))) \
+                and not _line_is_num_heading(ln, body_font, edges.get(_col_of(ln.bbox, width, two_col))):
+            tail = ln.text.strip()
+            # "1 引" + "言"：标题被字间距拆成两截，两截都不是正文字体。
+            # 不能比字体名（"1 " 是数字字体 NEU-HZ，"言" 是黑体 FZHTK），
+            # 只能比"是不是正文字体"。
+            wrapped_head = (ln.font != body_font and len(tail) <= 12
+                            and not tail.endswith(("。", ".", "，", ",", "；", ";", "：", ":")))
+            if not wrapped_head:
+                flush()
+                buf.append(ln)
+                continue
         # 加粗行之后一旦不加粗就断开：ACL 模板的小标题与正文同为 10.9pt，
         # 只差一个 bold，不断开的话"3.2 Fine-tuning BERT"会被并进正文而消失。
         # 作者名同样是加粗短行，但它们在"题目—摘要"区间里，已由版面规则排除。
@@ -316,8 +460,11 @@ def _starts_like_title(s: str) -> bool:
     return ch.isupper() or ("\u4e00" <= ch <= "\u9fff")
 
 
-def _is_heading(block: Block, body: float) -> tuple[bool, int]:
-    txt = block.text.strip()
+def _is_heading(block: Block, body: float, left: float | None = None,
+                siblings: int = 0) -> tuple[bool, int]:
+    # 先归一编号（"3. 1　标题" → "3.1 标题"）：后面所有正则与层级计数都依赖它。
+    # 判定成立时把归一结果写回 block.text，章节树里就不会出现"3. 1"这种断点。
+    txt = _norm_num_text(block.text.strip())
     if not txt or len(txt) > 220:
         return False, 0
     # arXiv 水印 / 页眉 / 纯数字行一律不是标题
@@ -374,12 +521,17 @@ def _is_heading(block: Block, body: float) -> tuple[bool, int]:
         return True, 1
 
     m = RE_NUM_HEADING.match(txt)
+    # 标题独占一行、贴着栏左起排：与它共享基线还有别的文字块 → 表格行；
+    # 从栏中间起排 → 也是表格单元格（"7.5 B Model (GB)"、"90 M speakers"）。
+    at_left = left is None or block.bbox[0] <= left + 1.2 * max(block.size, 1.0)
     if m and len(txt) < 120:
         depth = m.group(1).count(".") + 1
         # 编号 + 字号偏大 或 加粗 → 判标题；且编号后的文字必须像短语（首字母大写、不含小数点续写）
-        rest = txt[len(m.group(1)) :]
-        looks_like_title = _starts_like_title(rest) and not re.match(r"^\d", rest)
-        if looks_like_title and block.size >= body * 0.98:
+        rest = txt[len(m.group(1)) :].lstrip(" .\u3000\t")
+        looks_like_title = (_starts_like_title(rest) and not re.match(r"^\d", rest)
+                            and _plausible_heading_tail(rest))
+        if looks_like_title and at_left and siblings < 2 and not txt.endswith((".", "。", "，", ",")) \
+                and block.size >= body * 0.98:
             return True, min(depth, 4)
 
     if RE_APPENDIX.match(txt) and len(txt) < 100:
@@ -388,20 +540,34 @@ def _is_heading(block: Block, body: float) -> tuple[bool, int]:
     # 加粗 + 短句 + 不带句号 → 二级标题。
     # Attention 这类论文的 "3.1 Encoder and Decoder Stacks" 字号与正文几乎一致，
     # 唯一可靠的信号是加粗，只能靠 bold 兜住。
-    if block.bold and block.size >= body * 0.95 and len(txt) < 90 and not txt.endswith("."):
+    # 但表格里的表头/首列也全是加粗，所以上面那两条版面判据（贴栏左 + 独占一行）
+    # 同样要过，否则 "4 -bit NormalFloat Quantization"（表格首列）会变成一级标题。
+    if block.bold and block.size >= body * 0.95 and len(txt) < 90 and not txt.endswith(".") \
+            and at_left and siblings < 2:
         if m:
-            return True, min(m.group(1).count(".") + 1, 4)
+            rest = txt[len(m.group(1)) :].lstrip(" .\u3000\t")
+            if _starts_like_title(rest) and _plausible_heading_tail(rest):
+                return True, min(m.group(1).count(".") + 1, 4)
         if _starts_like_title(txt):
             return True, 2
+
+    # 以数字开头、尾巴却是"数量 + 单位"（"90 M speakers"、"8 A100-80GB GPUs"）：
+    # 后面几套只靠字号/白名单的规则也会放行它们，这里做一次统一否决。
+    if m:
+        tail = txt[len(m.group(1)) :].lstrip(" .\u3000\t")
+        if not _plausible_heading_tail(tail):
+            return False, 0
 
     # 白名单关键词 + 短句 + 字号不小
     if low in L1_WORDS and block.size >= body * 1.02:
         return True, 1
 
     # 纯字号驱动（大标题无编号，例如论文题目、章节大字）
-    if block.size >= body * 1.35 and len(txt) < 80 and not txt.endswith("."):
+    if block.size >= body * 1.35 and len(txt) < 80 and not txt.endswith(".") \
+            and at_left and siblings < 2:
         return True, 1
-    if block.size >= body * 1.12 and len(txt) < 60 and _starts_like_title(txt) and not txt.endswith("."):
+    if block.size >= body * 1.12 and len(txt) < 60 and _starts_like_title(txt) \
+            and not txt.endswith(".") and at_left and siblings < 2:
         return True, 2
     return False, 0
 
@@ -457,6 +623,7 @@ def _looks_formula(block: Block) -> bool:
 
 def classify(blocks: list[Block], body: float) -> list[Block]:
     in_refs = False
+    ref_head_found = False
     # 第 1 页"题目之下、摘要之上"是作者与单位区。中文期刊把姓名排成大字号，
     # 字号规则必然把它们判成一级标题——章节树里就会冒出"薄琳 1） 庞亮 2）"。
     # 位置是这里唯一可靠的判据，所以按版面区间排除，而不是靠字数猜。
@@ -479,6 +646,33 @@ def classify(blocks: list[Block], body: float) -> list[Block]:
     title_like = bool(title_blk and title_blk.size >= body * 1.25)
     cover_page = title_like and not any(len(b.text.strip()) >= 300 for b in page1)
 
+    # 每页每栏的左边距（取众数，不取最小值：脚注/水印比正文更靠左）：
+    # 编号标题必须贴着栏左排，否则就是表格单元格里的数字碎片
+    left_edges: dict[tuple[int, int], float] = {}
+    edge_cnt: dict[tuple[int, int], Counter] = {}
+    for b in blocks:
+        if len(b.text.strip()) < 15 or b.col < 0:
+            continue
+        edge_cnt.setdefault((b.page, b.col), Counter())[round(b.bbox[0])] += len(b.text)
+    for key, cnt in edge_cnt.items():
+        left_edges[key] = float(cnt.most_common(1)[0][0])
+
+    # 每块"同一基线上并排着几个别的块"：表格行的直接证据
+    by_page: dict[int, list[Block]] = {}
+    for b in blocks:
+        by_page.setdefault(b.page, []).append(b)
+    siblings: dict[int, int] = {}
+    for b in blocks:
+        n = 0
+        for o in by_page.get(b.page, ()):  # noqa: PLC0206 页内块数量级为百，可接受
+            if o is b or o.col != b.col:
+                continue
+            ov = min(b.bbox[3], o.bbox[3]) - max(b.bbox[1], o.bbox[1])
+            h = min(b.bbox[3] - b.bbox[1], o.bbox[3] - o.bbox[1])
+            if h > 0 and ov / h > 0.5 and (o.bbox[0] > b.bbox[2] - 1 or o.bbox[2] < b.bbox[0] + 1):
+                n += 1
+        siblings[id(b)] = n
+
     for b in blocks:
         txt = b.text.strip()
 
@@ -487,9 +681,12 @@ def classify(blocks: list[Block], body: float) -> list[Block]:
         # 第 1 页只认"编号章节"和"摘要"：其余都是封面信息（标题、作者、
         # "BigScience Workshop / Dataset / Tokenization" 这类贡献分组标签）。
         # 它们加粗、字号大，形态上与章节标题无法区分，只能靠版面位置否掉。
+        # 但"封面区"到摘要为止：单栏论文的第 1 页往往连正文一起排，
+        # "Introduction" 就在摘要下面，整页否掉会把这节的标题直接抹掉。
         if title_like and b.page == 1 and not _RE_LEAD_NUM.match(txt) and not re.match(
                 r"^(abstract|摘\s*要)\b", txt, re.I):
-            continue
+            if abs_blk is None or b.bbox[1] < abs_blk.bbox[1]:
+                continue
 
         # 论文题目本身不是章节：章节树应当从"1 引言"开始。
         # title_blk 只覆盖"最大的那一块"；英文标题常被拆成两行两块，
@@ -504,16 +701,21 @@ def classify(blocks: list[Block], body: float) -> list[Block]:
                 b.page == 1 and b.bbox[1] < abs_blk.bbox[1]
                 and b.size >= title_blk.size * 0.8)):
             continue
-        if author_band and b.page == 1 and author_band[0] <= b.bbox[1] <= author_band[1]:
+        # 作者区排除按版面区间做，但带编号的块绝不是作者名：
+        # 单栏论文的 "1 Introduction" 常常正好落在这条区间里被误杀（LayerNorm 实测）。
+        if author_band and b.page == 1 and author_band[0] <= b.bbox[1] <= author_band[1] \
+                and not _RE_LEAD_NUM.match(txt):
             continue
 
         if RE_REF_HEAD.match(txt):
             in_refs = True
+            ref_head_found = True
             b.kind, b.level = "heading", 1
             continue
 
-        ok, lvl = _is_heading(b, body)
+        ok, lvl = _is_heading(b, body, left_edges.get((b.page, b.col)), siblings.get(id(b), 0))
         if ok:
+            b.text = _norm_num_text(b.text.strip())
             b.kind, b.level = "heading", lvl
             # 只认明确的参考区结束标题；跨栏续行可能因加粗/字号被误判为
             # 普通 heading，不能因此把后半篇参考文献全部截断。
@@ -542,7 +744,100 @@ def classify(blocks: list[Block], body: float) -> list[Block]:
         if _looks_formula(b):
             b.kind = "formula"
             continue
-    return _normalize_headings(_demote_table_rows(blocks))
+    # 没有任何 "References/参考文献" 标题时，退回"连续 ［n］ 条目区"识别。
+    # 必须先判标题：绝大多数英文论文走上面的正规路径，不能被这条猜测规则干扰。
+    if not ref_head_found:
+        blocks = _infer_reference_section(blocks, body)
+    blocks = _normalize_headings(_demote_table_rows(blocks))
+    return _join_wrapped_heading(blocks)
+
+
+# 这些短标题本身就是完整章节名，绝不能被当成上一行标题的折行尾巴
+_SHORT_HEAD_OK = ("参考文献", "附录", "致谢", "摘要", "作者简介", "结束语", "引言")
+
+
+def _join_wrapped_heading(blocks: list[Block]) -> list[Block]:
+    """把"被栏/页折断的标题尾巴"粘回标题本体。
+
+    中文期刊的大标题常常排到一栏的末尾就断行，剩下的两三个字落到下一栏开头
+    （实测："5 基于代理模型的渐进式深度集成架" + "构搜索"）。区块合并是**按页**做的，
+    跨页/跨栏的两半永远合不到一起，只能在整篇分类完之后按阅读顺序补一次。
+    判据放得很紧：上一标题带编号且够长、尾巴是 ≤4 个纯汉字、不是"参考文献"这类完整标题。
+    """
+    out = list(blocks)
+    for i in range(1, len(out)):
+        prev, cur = out[i - 1], out[i]
+        if prev.kind != "heading" or cur.kind != "heading":
+            continue
+        tail = cur.text.strip()
+        if not tail or len(tail) > 4 or tail in _SHORT_HEAD_OK:
+            continue
+        if not all(_is_cjk(c) for c in tail):
+            continue
+        if cur.page not in (prev.page, prev.page + 1):
+            continue
+        if not _RE_LEAD_NUM.match(prev.text.strip()) or len(prev.text.strip()) < 8:
+            continue
+        prev.text = prev.text.rstrip() + tail
+        cur.text = ""          # 标记为已消费，由下面的过滤丢掉
+    return [b for b in out if b.text.strip()]
+
+
+_RE_BIO_STOP = re.compile(r"^(作者简介|收稿日期|责任编辑|附录|附\s*录|Abstract in English)", re.I)
+
+
+def _infer_reference_section(blocks: list[Block], body: float) -> list[Block]:
+    """识别"没有标题的参考文献区"，并在树里补一个「参考文献」节点。
+
+    计算机学报这类中文期刊**不印"参考文献"四个字**（或只印在页脚/图片里），
+    文献区直接从 ［1］ 开始、整片字号比正文小 2–3pt。旧逻辑靠标题正则进场，
+    这里进不去 → 全篇 refs=0、章节树里也没有参考文献这一节，
+    连带"引文匹配/引用关系图"整条链都空着。
+
+    判据只看版面：连续 ≥4 个以 ［n］/ [n] 开头、字号明显小于正文的块。
+    真实正文里不会连续出现这种行（正文引用写的是"文献［22-29］"，
+    方括号不在行首）。
+    """
+    out: list[Block] = [b for b in blocks]
+    inserted = False
+    i = 0
+    while i < len(out):
+        b = out[i]
+        t = b.text.strip()
+        if not (b.kind == "text" and RE_REF_START.match(t) and b.size <= body * 0.92):
+            i += 1
+            continue
+        run: list[Block] = []
+        starters = 0
+        j = i
+        while j < len(out):
+            nb = out[j]
+            nt = nb.text.strip()
+            if nb.kind == "heading" or nb.size > body * 0.95 or _RE_BIO_STOP.match(nt):
+                break
+            if RE_REF_START.match(nt):
+                starters += 1
+            run.append(nb)
+            j += 1
+        if starters < 4:
+            i += 1
+            continue
+        x0, y0, x1, _ = b.bbox
+        head = Block(
+            page=b.page, order=b.order, col=b.col, text="参考文献",
+            bbox=(x0, y0 - 14, x1, y0 - 1), kind="heading", level=1,
+            size=round(b.size * 1.35, 1), bold=True,
+        )
+        for nb in run:
+            nb.kind = "reference"
+        # 一篇文献只有一个参考文献区：区间被正文块打断成两段时，第二段只标类型、
+        # 不再造第二个标题（否则章节树里会出现两个「参考文献」）。
+        if not inserted:
+            out.insert(i, head)
+            inserted = True
+            log.debug("识别到无标题参考文献区：%d 条（第 %d 页）", starters, b.page)
+        i += len(run) + 1
+    return out
 
 
 _RE_LEAD_NUM = re.compile(r"^(\d{1,2}(?:\.\d{1,2}){0,3})\.?\s+\S")
@@ -590,7 +885,71 @@ def _normalize_headings(blocks: list[Block]) -> list[Block]:
             if b.level > 1:
                 b.level = 1
             break
+    _demote_name_runs(blocks)
     return blocks
+
+
+# 标题里常见的词。人名判定用它做反证：只要命中一个，就说明这串词是章节名不是人名。
+_TITLE_WORDS = {
+    "of", "the", "and", "for", "with", "in", "on", "to", "a", "an", "from", "our",
+    "using", "based", "via", "towards", "under", "over", "between", "beyond",
+    "method", "methods", "model", "models", "approach", "analysis", "results",
+    "experiment", "experiments", "learning", "work", "related", "introduction",
+    "conclusion", "background", "discussion", "evaluation", "data", "system",
+    "framework", "training", "overview", "appendix", "references", "abstract",
+    "setup", "details", "design", "implementation", "performance", "comparison",
+    "summary", "future", "limitations", "motivation", "preliminaries", "dataset",
+    "datasets", "architecture", "ablation", "scaling", "optimization", "inference",
+    "prompt", "prompts", "study", "studies", "review", "survey", "notes", "main",
+    "results", "discussion", "related", "methodology", "empirical", "practice",
+}
+
+
+def _looks_person_name(txt: str) -> bool:
+    """"Gordon Chi"、"Virginia Adams" 这种 2–4 个首字母大写的英文词。"""
+    words = [w for w in re.split(r"[\s]+", txt.strip()) if w]
+    if not (2 <= len(words) <= 4):
+        return False
+    if len(txt) > 32:
+        return False
+    for w in words:
+        if w.lower() in _TITLE_WORDS:
+            return False
+        if not re.fullmatch(r"[A-Z][a-z'\-]{1,15}|[A-Z]\.", w):
+            return False
+    return True
+
+
+def _demote_name_runs(blocks: list[Block]) -> None:
+    """连续 ≥4 个"编号 + 人名"的标题 → 这是附录里的作者/贡献者名单，不是章节。
+
+    实测 Phi-3 的附录把 60 多位贡献者排成 "1. Gordon Chi / 2. Virginia Adams / …"，
+    编号正则一视同仁，章节树里就整片都是人名。单个 "1 Gordon Chi" 无从判断，
+    但**一串**就非常明确：真正的章节标题不会连着四个人名。
+    只按连续段判、并要求每个词都不是标题常用词，避免误伤
+    "Introduction / Related Work / Method" 这类正常的两词标题。
+    """
+    run: list[Block] = []
+
+    def flush() -> None:
+        if len(run) >= 4:
+            for b in run:
+                b.kind, b.level = "text", 0
+        run.clear()
+
+    for b in blocks:
+        if b.kind != "heading":
+            continue
+        # 去掉编号要看 group 边界，不能用正则 sub：`\s+\S` 会把 "1 Gordon" 的 G 一起吃掉，
+        # 剩下 "ordon Chi"，人名判据直接失效。
+        ntxt = _norm_num_text(b.text.strip())
+        m = RE_NUM_HEADING.match(ntxt)
+        name = (ntxt[len(m.group(1)):] if m else ntxt).strip(" .:：")
+        if _looks_person_name(name):
+            run.append(b)
+        else:
+            flush()
+    flush()
 
 
 def _demote_table_rows(blocks: list[Block]) -> list[Block]:
@@ -1015,7 +1374,9 @@ def _extract_references(blocks: list[Block]) -> list[dict]:
     for b in blocks:
         if b.kind != "reference":
             continue
-        txt = b.text.strip()
+        # 全角方括号统一成半角：［12］ 与 [12] 在数据库里应当是同一个东西，
+        # 否则前端按编号去重、和后文引用 [12] 对不上。
+        txt = b.text.strip().replace("［", "[").replace("］", "]")
         if not txt or re.fullmatch(r"[\d\s.\-–—]+", txt):
             continue
         # 中文期刊末尾的作者介绍不属于参考文献，不能粘进最后一条。

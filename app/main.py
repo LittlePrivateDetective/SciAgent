@@ -101,6 +101,27 @@ async def _startup() -> None:
     except Exception:  # noqa: BLE001 追踪起不来同样不能挡住服务
         log.warning("论文追踪循环启动失败", exc_info=True)
 
+    # 章节结构自愈：解析器升级后，把库里按旧规则生成的章节树重建一遍。
+    # 云端的 data 目录是持久化的（部署只换代码不换库），不做这一步，
+    # 用户看到的章节树永远停在旧版本——中文期刊那批就是"黄震华 / 林 / 威 / 1 引 / 言"。
+    # 放后台线程：重解析 39 篇要几十秒，不能让 /health 跟着一起等。
+    try:
+        import threading
+
+        def _heal() -> None:
+            from app.db.session import SessionLocal
+            from app.pipeline.reparse import heal_structures
+
+            with SessionLocal() as db:
+                try:
+                    heal_structures(db)
+                except Exception:  # noqa: BLE001 自愈失败只记日志，不影响服务
+                    log.warning("章节结构自愈失败", exc_info=True)
+
+        threading.Thread(target=_heal, daemon=True, name="structure-heal").start()
+    except Exception:  # noqa: BLE001
+        log.warning("章节结构自愈未启动", exc_info=True)
+
 
 @app.on_event("shutdown")
 async def _shutdown() -> None:

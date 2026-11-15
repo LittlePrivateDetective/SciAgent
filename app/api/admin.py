@@ -525,3 +525,18 @@ def diag_db_repair(force_seed: bool = Query(False), _=Depends(auth.require_admin
     except Exception as exc:  # noqa: BLE001
         return {"ok": False, "error": f"{type(exc).__name__}: {exc}",
                 "trace": traceback.format_exc()[-1500:]}
+
+
+@router.post("/reparse-structure")
+def reparse_structure(force: bool = Query(False), _=Depends(auth.require_admin),
+                      db: Session = Depends(get_db)):
+    """重建章节树（不重切块、不重算向量）。
+
+    用途：解析器升级后，让**已经入库**的文档立刻用上新规则。云端数据目录是持久化的，
+    重新部署只会换代码、不会换库里的 sections——线上章节树仍会显示旧结果
+    （中文期刊那批就是"黄震华 / 林 / 威 / 1 引 / 言"）。启动时会按版本号自动跑一次，
+    这里是手动补跑入口：force=true 整库重建，默认只修"看起来就是坏的"那些。
+    """
+    from app.pipeline.reparse import heal_structures
+
+    return heal_structures(db, force=force)
