@@ -230,7 +230,7 @@ body {
  * 连续滚动下宽度固定（不再跟着图片 fit-content），高度由 aspect-ratio 撑开：
  * 图片没下载完占位就对，滚动条不会因为懒加载一路乱跳。 */
 .page-frame {
-  position: relative; width: 100%; max-width: 900px;
+  position: relative; width: 100%; max-width: none;
   margin: 0 auto;             /* 不超宽时居中；超宽时由 align-items:flex-start 保底，左端可滚 */
   box-shadow: 0 1px 6px rgba(0, 0, 0, .12); background: #fff; line-height: 0;
   flex: none;
@@ -355,6 +355,9 @@ body {
 }
 .think-btn:hover:not(:disabled) { background: #f2f4f8; color: var(--text); }
 .think-btn:disabled { opacity: .55; cursor: not-allowed; }
+/* 本地模型下深思不可用：虚线边框，和"正在生成所以临时禁点"（实线、很快恢复）
+   区分开——否则用户会以为再等等就能点。 */
+.think-btn.locked { border-style: dashed; }
 .think-btn .think-dot {
   width: 6px; height: 6px; border-radius: 50%; background: #c3c9d4;
   transition: background .15s, box-shadow .15s;

@@ -271,13 +271,9 @@ const app = createApp({
       activeDoc: null,
       page: 1,
       pageCount: 1,
-      // 连续滚动的页面尺寸：fit=一页约一屏（能同时看到两页拼接处），width=铺满宽度。
-      // 默认给 width：面板宽 800 左右时，fit 按屏高算出来只有 530 宽，
-      // 正文小到看不清——这是用户实际反馈"pdf 太小"的原因。想两页同屏再切 fit。
-      pageZoom: (() => {
-        try { return localStorage.getItem("sciagent.pageZoom") === "fit" ? "fit" : "width"; }
-        catch (e) { return "width"; }
-      })(),
+      // 连续滚动的页面尺寸固定为"铺满宽度"。
+      // 以前还有一个 fit=一页约一屏的档位，但它按屏高算宽度：面板宽 800 左右时
+      // 只有 530 宽，正文小到看不清，读者还得再点一次切回来，索性去掉这个档位。
       // 在此基础上再乘一个缩放比例（%）。只改 CSS 宽度不改布局结构，
       // 放大后由阅读区横向滚动承接，文字层靠同一个 scale 自动跟随。
       zoom: 100,
@@ -995,10 +991,9 @@ const app = createApp({
       return `/api/documents/${this.activeDoc.id}/page/${p}.png?dpi=${dpi}&v=${this.imgNonce}`;
     },
 
-    /// 占位框按该页真实宽高比撑开。
-    /// fit：一页高度 ≈ 一个视口，滚到页缝时上下两页都能露出来（"两页拼在一起"）；
-    /// width：铺满可用宽度，字更大，但一页比视口高，需要多滚几下。
-    /// 两种都保留，因为读图和读字的需求是相反的；再乘上 zoom 才是最终宽度。
+    /// 占位框按该页真实宽高比撑开，宽度 = 阅读区可用宽度（铺满）。
+    /// 只有"铺满宽度"一种档位：一页一屏那个档位按屏高反算宽度，正文会小到看不清。
+    /// 再乘上 zoom 才是最终宽度。
     ///
     /// 宽度必须用像素算，不能交一个百分数给 CSS：
     /// 100% 会被容器的 maxWidth 钳住，而放大到 110% 时又不钳了，
@@ -1010,8 +1005,9 @@ const app = createApp({
       const h = (meta && meta.height) || 792;
       const ratio = w / h;
       const avail = Math.max(240, (this.stageW || 900) - 24);   // 减掉 .page-stage 左右 padding
-      const fitW = Math.min(avail, 900, (window.innerHeight - 118) * ratio);
-      const base = this.pageZoom === "width" ? Math.min(avail, 900) : fitW;
+      // 不再设 900 上限：宽屏/宽面板下读者要的就是"铺满"，上限会让页图两侧留白。
+      // 真嫌大字，用工具条的缩放（50%–300%）压回去。
+      const base = avail;
       const z = this.zoom / 100;
       return {
         aspectRatio: `${w} / ${h}`,
@@ -1244,13 +1240,6 @@ const app = createApp({
         return sel.length ? sel : l.words;
       }
       return [];
-    },
-
-    /// 切换页面尺寸后页高全变了，原来的滚动位置会指向别的页；切完回到当前页顶部。
-    toggleZoom() {
-      this.pageZoom = this.pageZoom === "fit" ? "width" : "fit";
-      try { localStorage.setItem("sciagent.pageZoom", this.pageZoom); } catch (e) { /* 隐私模式 */ }
-      this.$nextTick(() => this.scrollToPage(this.page, false));
     },
 
     scrollToPage(p, smooth = true) {
@@ -2031,8 +2020,10 @@ const app = createApp({
         const r = await fetch("/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json", ...this.routeHeader(askedRoute) },
+          // 本地 3B 没有思维链，深思开关对它无意义：这里先不讲下去，
+          // 后端也会把 deep 收敛成 false，两边一致才不会把缓存键劈成两份。
           body: JSON.stringify({ question: q, doc_ids: docIds, mode: "qa",
-                                 thinking: this.thinkDeep }),
+                                 thinking: this.thinkDeep && askedRoute !== "local" }),
         }).then((x) => x.json());
 
         this.messages.push({
@@ -2052,6 +2043,11 @@ const app = createApp({
     },
 
     toggleThink() {
+      if (this.askRoute === "local") {
+        ElementPlus.ElMessage.warning(
+          "本地 3B 没有思维链，深思对它不生效；切回云端再开深思");
+        return;
+      }
       this.thinkDeep = !this.thinkDeep;
       ElementPlus.ElMessage({
         message: this.thinkDeep
@@ -2065,8 +2061,11 @@ const app = createApp({
     // 带上"本地"二字同样是有意的：切到本地后的回答要能自证是本地跑的，否则截图里
     // 云端和本地长得一模一样，加分项等于没做。
     modeLabel(seconds, meta) {
-      const deep = meta && typeof meta.thinking === "boolean" ? meta.thinking : this.thinkDeep;
       const local = meta && meta.route === "local" ? " · 本地" : "";
+      // 本地没有深思：即使开关还停在"深思"，标签也只写"快速"，否则截图会自相矛盾
+      const deep = local
+        ? false
+        : (meta && typeof meta.thinking === "boolean" ? meta.thinking : this.thinkDeep);
       return `${deep ? "深思" : "快速"}${local} · ${seconds}s`;
     },
 
@@ -2086,7 +2085,8 @@ const app = createApp({
           return;
         }
         ElementPlus.ElMessage.info(
-          `本次提问走本地 ${this.info.local.model}：3B 出字约 6 字/秒，长答案要等 30 秒左右`);
+          `本次提问走本地 ${this.info.local.model}：3B 出字约 6 字/秒，长答案要等 30 秒左右`
+          + (this.thinkDeep ? "；本地没有思维链，深思已临时关闭" : ""));
       }
       this.askRoute = route;
     },
@@ -2131,7 +2131,7 @@ const app = createApp({
           method: "POST",
           headers: { "Content-Type": "application/json", ...this.routeHeader(askedRoute) },
           body: JSON.stringify({ question: q, doc_ids: this.docIdsFor(), mode: "qa",
-                                 thinking: this.thinkDeep,
+                                 thinking: this.thinkDeep && askedRoute !== "local",
                                  // 回归测试会设 window.__SCIAGENT_NO_CACHE=1：
                                  // 缓存命中的 token 事件是"回放"，测不出真实的流式链路
                                  no_cache: !!window.__SCIAGENT_NO_CACHE }),

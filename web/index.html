@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SciAgent · 科研智能体</title>
   <link rel="stylesheet" href="/static/vendor/element-plus.css" />
-  <link rel="stylesheet" href="/static/style.css?v=42" />
+  <link rel="stylesheet" href="/static/style.css?v=44" />
   <link rel="stylesheet" href="/static/vendor/katex.min.css" />
   <script src="/static/vendor/katex.min.js"></script>
   <script src="/static/vendor/katex-auto-render.min.js"></script>
@@ -150,10 +150,8 @@
               <span class="pager">{{ page }} / {{ pageCount }}</span>
               <el-button size="small" text :disabled="page>=pageCount" @click="goPage(page+1)">下一页</el-button>
             </span>
-            <el-button size="small" text @click="toggleZoom"
-                       :title="pageZoom === 'fit' ? '当前一页一屏，点此铺满宽度' : '当前铺满宽度，点此一页一屏'">
-              {{ pageZoom === "fit" ? "一页一屏" : "铺满宽度" }}
-            </el-button>
+            <!-- 页面宽度固定"铺满"："一页一屏"档位已去掉（按屏高反算宽度会把正文压得太小），
+                 要调字号用右边的缩放，不再有第二个切换按钮。 -->
             <!-- 缩放：- / 百分比 / + 。百分比本身可点，恢复 100%。
                  工具条已经很挤，所以不做下拉，只保留最常用的这三个动作。 -->
             <span class="zoom-group">
@@ -652,12 +650,17 @@
       </div>
 
       <div class="ask-bar">
-        <button class="think-btn" :class="{ on: thinkDeep }" :disabled="loading"
-                :title="thinkDeep
-                  ? '深思：模型先推理再作答，慢 2–3 秒，概念辨析题更准'
-                  : '快速：直接作答，最快，适合查数值 / 列举 / 结构化抽取'"
+        <!-- 本地 3B 没有思维链：切到本地时这个按钮必须锁掉，否则用户会以为
+             点一下"深思"就换了模型，实际后端两条分支跑的是同一个模型和同一段提示词。 -->
+        <button class="think-btn" :class="{ on: thinkDeep && askRoute !== 'local', locked: askRoute === 'local' }"
+                :disabled="loading || askRoute === 'local'"
+                :title="askRoute === 'local'
+                  ? '本地 3B 不支持深思：它没有思维链，深思/快速跑的是同一个模型、同一段提示词'
+                  : (thinkDeep
+                     ? '深思：模型先推理再作答，慢 2–3 秒，概念辨析题更准'
+                     : '快速：直接作答，最快，适合查数值 / 列举 / 结构化抽取')"
                 @click="toggleThink()">
-          <span class="think-dot"></span>{{ thinkDeep ? "深思" : "快速" }}
+          <span class="think-dot"></span>{{ (thinkDeep && askRoute !== "local") ? "深思" : "快速" }}
         </button>
         <el-input v-model="question" placeholder="问点什么…（Enter 发送）" @keyup.enter="ask()" :disabled="loading"></el-input>
         <el-button type="primary" :loading="loading" @click="ask()">发送</el-button>
@@ -995,6 +998,6 @@
   </nav>
 </div>
 
-<script src="/static/app.js?v=42"></script>
+<script src="/static/app.js?v=44"></script>
 </body>
 </html>

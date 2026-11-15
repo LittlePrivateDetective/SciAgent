@@ -70,3 +70,12 @@ tests/corpus/*.pdf
 # 真实论文样本（版权归原作者，不入库）
 data/samples_zh_real/
 data/cache/
+
+# 评测/实验中间产物：脚本可重算，体积大（ab_local_vec.npy 单文件 55MB），不进仓库
+data/*.npy
+data/bench_*.json
+data/ab_embed.json
+data/sections_diff.txt
+*.bak-*
+# llama.cpp 源码树（146MB，量化工具，复现时按文档重新拉取）
+ml/llama.cpp-master/
