@@ -69,3 +69,4 @@ tests/corpus/*.pdf
 
 # 真实论文样本（版权归原作者，不入库）
 data/samples_zh_real/
+data/cache/
