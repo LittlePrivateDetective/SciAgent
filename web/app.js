@@ -1113,6 +1113,7 @@ const app = createApp({
       const norm = (t) => String(t || "").replace(/\s+/g, "").toLowerCase();
       const target = norm(title);
       if (!target) return [];
+      const PH = this.tl.H || 792;
       const lines = [];
       for (const w of words) {
         // 同一个视觉行：y 相差小于 3pt。竖排/水印词（h 很大）不参与匹配。
@@ -1124,27 +1125,43 @@ const app = createApp({
       for (const l of lines) {
         l.words.sort((a, b) => a.x - b.x);
         l.text = norm(l.words.map((w) => w.t).join(""));
+        // 字号取该行词高中的中位数，用来在多个候选里挑"最像标题"的那个
+        const hs = l.words.map((w) => w.h).sort((a, b) => a - b);
+        l.size = hs[Math.floor(hs.length / 2)] || 0;
+        // 页眉/页脚：书里每页顶部都印着"当前小节名 + 页码"，和小节标题**完全同名**。
+        // 不排除的话，点 1.2 会高亮到页眉那一条，正文里的真标题反而没亮（实测踩到）。
+        // 阈值放到 13%：这本书的页眉在 y≈108pt，比 9%（71pt）还低一点。
+        l.band = l.y < PH * 0.13 || l.y > PH * 0.94;
       }
       // 先整行匹配；书名/期刊名里标题常带页码或连字符，再退一步用前 8 个字符
       const keys = [target];
       if (target.length > 8) keys.push(target.slice(0, 8));
       for (const k of keys) {
         if (k.length < 2) continue;
+        const cands = [];
         for (const l of lines) {
           const at = l.text.indexOf(k);
           if (at < 0) continue;
-          // 只点亮标题那几个词：中文期刊常把"正文 + 小节标题"排在同一行，
-          // 整行涂色会连半句正文一起染黄，看起来像误选。
-          let acc = 0;
-          const sel = [];
-          for (const w of l.words) {
-            const t = norm(w.t);
-            const start = acc;
-            acc += t.length;
-            if (acc > at && start < at + k.length) sel.push(w);
-          }
-          return sel.length ? sel : l.words;
+          cands.push({ line: l, at, exact: l.text === target });
         }
+        if (!cands.length) continue;
+        // 排序：先排除页眉页脚 → 字号大的优先（标题总比正文大）→ 整行精确命中优先
+        cands.sort((a, b) => (a.line.band - b.line.band)
+          || (b.line.size - a.line.size)
+          || ((b.exact ? 1 : 0) - (a.exact ? 1 : 0)));
+        const best = cands[0];
+        const l = best.line;
+        // 只点亮标题那几个词：中文期刊常把"正文 + 小节标题"排在同一行，
+        // 整行涂色会连半句正文一起染黄，看起来像误选。
+        let acc = 0;
+        const sel = [];
+        for (const w of l.words) {
+          const t = norm(w.t);
+          const start = acc;
+          acc += t.length;
+          if (acc > best.at && start < best.at + k.length) sel.push(w);
+        }
+        return sel.length ? sel : l.words;
       }
       return [];
     },
