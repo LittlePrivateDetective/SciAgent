@@ -70,6 +70,47 @@ const EXT = { mermaid: "mmd", dot: "gv", tikz: "tex", matplotlib: "py", latex: "
 let _topoChart = null;
 let _chartChart = null;   // 数据图表预览（自己画，不用 mermaid）
 
+/* ---------- 重型库按需加载 ----------
+   mermaid 3.18 MB + echarts 0.98 MB，只在"流程图/图表/写作"面板用到。
+   首屏引进来 = 用户点开链接要白等几秒。改成第一次真要用时才注入 <script>，
+   同一个库只会加载一次（Promise 缓存）。 */
+const _vendorLoading = {};
+function loadVendor(name, src) {
+  if (_vendorLoading[name]) return _vendorLoading[name];
+  _vendorLoading[name] = new Promise((resolve) => {
+    const el = document.createElement("script");
+    el.src = src;
+    el.async = true;
+    el.onload = () => resolve(true);
+    el.onerror = () => {
+      console.warn("按需加载失败：", src);
+      delete _vendorLoading[name];   // 允许下次重试（比如临时断网）
+      resolve(false);
+    };
+    document.head.appendChild(el);
+  });
+  return _vendorLoading[name];
+}
+
+async function ensureEcharts() {
+  if (window.echarts) return true;
+  return loadVendor("echarts", "/static/vendor/echarts.min.js");
+}
+
+async function ensureMermaid() {
+  if (window.mermaid) return true;
+  const ok = await loadVendor("mermaid", "/static/vendor/mermaid.min.js");
+  if (ok && window.mermaid) {
+    window.mermaid.initialize({
+      startOnLoad: false,
+      theme: "neutral",
+      securityLevel: "loose",
+      flowchart: { htmlLabels: true, useMaxWidth: true, curve: "basis" },
+    });
+  }
+  return ok;
+}
+
 /* ---------- 极简 Markdown 渲染（够用即止：表格 / 粗体 / 行内代码 / 换行） ---------- */
 function escHtml(s) {
   return String(s == null ? "" : s)
@@ -409,14 +450,8 @@ const app = createApp({
 
     // Mermaid 用 startOnLoad:false —— 让它在切换 tab / 点生成时按需渲染，
     // 否则页面一进来就去扫全站 DOM，白白多一次布局。
-    if (window.mermaid) {
-      window.mermaid.initialize({
-        startOnLoad: false,
-        theme: "neutral",
-        securityLevel: "loose",
-        flowchart: { htmlLabels: true, useMaxWidth: true, curve: "basis" },
-      });
-    }
+    // Mermaid 现在按需加载（见 ensureMermaid），这里不再初始化；
+    // 初始化动作跟着首次加载一起做，避免进来就扫全站 DOM。
     // 悬停翻译是"高频花钱"的功能，偏好必须跨会话记住：
     // 否则每次刷新都回到关闭，用户每次都要重新打开
     try {
@@ -2291,7 +2326,11 @@ const app = createApp({
     renderTopoChart(retry = 0) {
       const t = this.wv.topology;
       const el = this.$refs.topoChart;
-      if (!t || !el || !window.echarts) return;
+      if (!t || !el) return;
+      if (!window.echarts) {
+        ensureEcharts().then((ok) => { if (ok) this.renderTopoChart(retry); });
+        return;
+      }
 
       // 先给容器一个高度，再确认它有真实宽度。面板刚切过来/刚生成时
       // clientWidth 可能还是 0，此时 echarts.init 出来的 canvas 只有几十像素，
@@ -2458,7 +2497,11 @@ const app = createApp({
     renderChartChart(retry = 0) {
       const c = this.wv.chart;
       const el = this.$refs.chartChart;
-      if (!c || !el || !window.echarts) return;
+      if (!c || !el) return;
+      if (!window.echarts) {
+        ensureEcharts().then((ok) => { if (ok) this.renderChartChart(retry); });
+        return;
+      }
       if (c.kind === "table") return;   // 表格由模板渲染，不进 ECharts
       el.style.height = c.kind === "radar" ? "360px" : "320px";
       // 与架构图同因：面板刚切过来 clientWidth 还是 0，零尺寸画布会把图压成一小团
@@ -2555,7 +2598,8 @@ const app = createApp({
         if (target === "topo") this.wv.svg = svg;
         else this.wv.chartSvg = svg;
       };
-      if (!window.mermaid || !code) return put("");
+      if (!code) return put("");
+      if (!(await ensureMermaid()) || !window.mermaid) return put("");
       try {
         // render 的 id 必须唯一：复用同一个 id 时 mermaid 会拿到上一次的残留节点
         const id = "mmd" + Math.random().toString(36).slice(2, 9);
@@ -2893,7 +2937,11 @@ const app = createApp({
 
     renderGraph() {
       const el = this.$refs.graphEl;
-      if (!el || !window.echarts) return;
+      if (!el) return;
+      if (!window.echarts) {
+        ensureEcharts().then((ok) => { if (ok) this.renderGraph(); });
+        return;
+      }
       if (!_chart) _chart = window.echarts.init(el, null, { renderer: "canvas" });
       _chart.resize();
 

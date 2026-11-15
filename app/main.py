@@ -9,6 +9,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.datastructures import MutableHeaders
+from starlette.middleware.gzip import GZipMiddleware
 
 from app.api.admin import router as admin_router
 from app.api.routes import router
@@ -28,6 +30,47 @@ app = FastAPI(
     version="1.1.0",
 )
 
+
+class SelectiveGZipMiddleware(GZipMiddleware):
+    """GZip，但放过流式接口。
+
+    Starlette 自带的 GZip 会把响应体整体压完再发，SSE（/api/chat/stream）
+    走这条路等于"等答案全部生成完才吐第一个 token"——比不压缩还糟。
+    """
+
+    async def __call__(self, scope, receive, send):  # noqa: ANN001
+        if scope.get("type") == "http" and scope.get("path", "").startswith("/api/chat"):
+            await self.app(scope, receive, send)
+            return
+        await super().__call__(scope, receive, send)
+
+
+class StaticCacheMiddleware:
+    """给 /static 加缓存头：带 ?v= 的资源可以永久缓存，其余一小时。
+
+    没有这条时浏览器每次刷新都要回源确认一遍（304 也要一个往返），
+    首屏 10 个资源就是 10 个 RTT。带版本号的地址内容不会变，可以直接 immutable。
+    """
+
+    def __init__(self, app):  # noqa: ANN001
+        self.app = app
+
+    async def __call__(self, scope, receive, send):  # noqa: ANN001
+        if scope.get("type") != "http" or not scope.get("path", "").startswith("/static/"):
+            await self.app(scope, receive, send)
+            return
+        versioned = "v=" in (scope.get("query_string") or b"").decode("latin-1")
+
+        async def send_wrapper(message):  # noqa: ANN001
+            if message["type"] == "http.response.start":
+                headers = MutableHeaders(scope=message)
+                headers["Cache-Control"] = (
+                    "public, max-age=31536000, immutable" if versioned else "public, max-age=3600"
+                )
+            await send(message)
+
+        await self.app(scope, receive, send_wrapper)
+
 # 访问防护放在 CORS 之后注册 = 位于外层：先挡掉超频与无令牌请求，
 # 不让它们进到业务层（更不会花掉一次模型调用）。
 app.add_middleware(GuardMiddleware)
@@ -39,6 +82,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# 压缩：首屏要拉 6 MB 的 vendor JS（mermaid 一个人就 3.18 MB），不压缩时
+# 公网首开要好几秒、手机上更久。gzip 之后同一批资源约 1.4 MB。
+# 流式问答（SSE）必须绕开：压缩会攒包，token 一个都吐不出来。
+app.add_middleware(SelectiveGZipMiddleware, minimum_size=1024)
+app.add_middleware(StaticCacheMiddleware)
 
 # 请求级模型路由（X-LLM-Route）最后注册 = 最外层：上下文覆盖要在进入业务层之前
 # 就位，并且要活到流式响应的最后一个 token 发完才撤销。

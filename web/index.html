@@ -5,16 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SciAgent · 科研智能体</title>
   <link rel="stylesheet" href="/static/vendor/element-plus.css" />
-  <link rel="stylesheet" href="/static/style.css?v=40" />
+  <link rel="stylesheet" href="/static/style.css?v=41" />
   <link rel="stylesheet" href="/static/vendor/katex.min.css" />
   <script src="/static/vendor/katex.min.js"></script>
   <script src="/static/vendor/katex-auto-render.min.js"></script>
   <script src="/static/vendor/vue.global.prod.js"></script>
   <script src="/static/vendor/element-plus.full.min.js"></script>
   <script src="/static/vendor/element-plus-zh-cn.min.js"></script>
-  <script src="/static/vendor/echarts.min.js"></script>
-  <!-- 架构图/图表的即时预览：Mermaid 在浏览器里直接渲染，DOT/TikZ/Python 只给代码 -->
-  <script src="/static/vendor/mermaid.min.js"></script>
+  <!-- echarts（图表/架构图）与 mermaid（流程图）按需加载：
+       两个库合计 4.2 MB，而它们只在"写作/图表"面板用到。首屏直接引进来，
+       评委点开链接要空等好几秒才看到文献列表——这才是"卡"的主因。
+       加载器在 app.js 的 ensureEcharts() / ensureMermaid()，用到时才注入。 -->
 </head>
 <body>
 <div id="app" v-cloak>
@@ -994,6 +995,6 @@
   </nav>
 </div>
 
-<script src="/static/app.js?v=40"></script>
+<script src="/static/app.js?v=41"></script>
 </body>
 </html>

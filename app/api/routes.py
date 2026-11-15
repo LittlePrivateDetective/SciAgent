@@ -387,12 +387,41 @@ def get_page_image(doc_id: str, page: int, dpi: int = Query(130, ge=72, le=220),
     if not doc or src is None:
         log.warning("页图：源文件找不到 doc=%s file_path=%r", doc_id, getattr(doc, "file_path", None))
         raise HTTPException(404, "文档或源文件不存在")
+    # 页图落盘缓存：一次渲染约 0.6–0.7s（要 open 整本 PDF 再渲），
+    # 541 页的书滚动时并发几个请求就能把单核沙箱排队排满，表现就是"越翻越卡"。
+    # 同一页同一 dpi 只会渲染一次，之后直接读文件（<10ms）。
+    cache = _page_cache_path(doc_id, page, dpi)
+    png = None
+    if cache is not None and cache.exists():
+        try:
+            png = cache.read_bytes()
+        except OSError:
+            png = None
+    if png is None:
+        try:
+            png = render_page_png(str(src), page, dpi=dpi)
+        except Exception as exc:  # noqa: BLE001
+            log.warning("页图渲染失败 doc=%s page=%s src=%s: %s", doc_id, page, src, exc)
+            raise HTTPException(400, f"渲染失败：{exc}") from exc
+        if cache is not None:
+            try:
+                cache.parent.mkdir(parents=True, exist_ok=True)
+                tmp = cache.with_suffix(".tmp")
+                tmp.write_bytes(png)
+                tmp.replace(cache)          # 原子替换：并发写同一页时不会读到半个文件
+            except OSError as exc:  # noqa: BLE001 缓存失败不能影响出图
+                log.debug("页图缓存写入失败 %s：%s", cache, exc)
+    return Response(content=png, media_type="image/png",
+                    headers={"Cache-Control": "public, max-age=86400"})
+
+
+def _page_cache_path(doc_id: str, page: int, dpi: int):
+    """页图缓存路径；目录不可写时返回 None（退化为每次现渲）。"""
     try:
-        png = render_page_png(str(src), page, dpi=dpi)
-    except Exception as exc:  # noqa: BLE001
-        log.warning("页图渲染失败 doc=%s page=%s src=%s: %s", doc_id, page, src, exc)
-        raise HTTPException(400, f"渲染失败：{exc}") from exc
-    return Response(content=png, media_type="image/png", headers={"Cache-Control": "max-age=3600"})
+        root = settings.data_path / "cache" / "pages"
+        return root / f"{doc_id}_{page}_{dpi}.png"
+    except Exception:  # noqa: BLE001
+        return None
 
 
 @router.get("/documents/{doc_id}/pages")
