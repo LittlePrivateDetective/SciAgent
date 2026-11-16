@@ -31,6 +31,9 @@ class SciState(TypedDict, total=False):
     plan_reasoning: str
     confidence: str
     missing: str
+    # 答案由确定性规则/数据库元数据直接得出（作者名单、矩阵参数计算）。
+    # 审稿节点必须跳过：它只能看见证据片段，改这个方向的答案一定是改错。
+    deterministic: bool
     review: dict
     reflection: dict
     error: str

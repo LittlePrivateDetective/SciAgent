@@ -24,7 +24,8 @@ from app.agents.prompts import (
 from app.core.config import settings
 from app.core.llm import LLMError, gateway
 from app.core.logger import get_logger
-from app.db.models import Lesson
+from app.agents.factcheck import author_answer, check_author_claim
+from app.db.models import Document, Lesson
 from app.db.session import SessionLocal
 from app.rag import budget
 from app.rag.anchors import attach_anchors, citation_table, verify
@@ -309,6 +310,35 @@ def _evidence_block(evidence: list[dict], max_chars_each: int = 1600, query: str
 evidence_block = _evidence_block
 
 
+def _author_meta(state: dict) -> dict | None:
+    """取本次问答"唯一主文档"的作者名单与 PDF 路径；多篇时返回 None。
+
+    多篇对比里「第 6 作者」指代不明，拿去确定性作答只会答得更理直气壮地错。
+    只有确定是单篇时才启用。
+    """
+    ids = [str(i) for i in (state.get("doc_ids") or []) if i]
+    if not ids:
+        ids = [str(e.get("doc_id")) for e in (state.get("evidence") or []) if e.get("doc_id")]
+    uniq = list(dict.fromkeys(ids))
+    if len(uniq) != 1:
+        return None
+    try:
+        with SessionLocal() as db:
+            doc = db.get(Document, uniq[0])
+            if doc is None:
+                return None
+            try:
+                authors = json.loads(doc.authors or "[]")
+            except Exception:  # noqa: BLE001 老数据可能是逗号分隔的裸字符串
+                authors = [a.strip() for a in (doc.authors or "").split(",") if a.strip()]
+            if not isinstance(authors, list):
+                authors = []
+            return {"authors": [str(a) for a in authors if a], "pdf": doc.file_path or ""}
+    except Exception:  # noqa: BLE001 查不到名单不该影响正常作答
+        log.debug("读取作者名单失败", exc_info=True)
+        return None
+
+
 def node_answer(state: dict) -> dict:
     t0 = time.time()
     evidence = state.get("evidence") or []
@@ -318,9 +348,27 @@ def node_answer(state: dict) -> dict:
         state["answer"] = calculated
         state["confidence"] = "high"
         state["missing"] = ""
+        state["deterministic"] = True
         _step(state, "writer", "deterministic_calculation", chars=len(calculated),
               latency_ms=int((time.time() - t0) * 1000))
         return state
+    # 作者枚举：答案在 documents.authors 里，既不需要模型也不需要证据。
+    # 首页作者区在切块时会被切断（Attention 的第 6 位整条掉在块缝里），
+    # 让模型对着残缺证据数序号，数错是必然的。
+    meta = _author_meta(state)
+    if meta:
+        fact = author_answer(state.get("goal", ""), meta["authors"], meta["pdf"])
+        if fact:
+            state["answer"] = fact
+            state["confidence"] = "high"
+            state["missing"] = ""
+            # 标成确定性答案：审稿节点会拿 LLM 改写"可改进"的回答，
+            # 而这类答案的依据是元数据而不是证据，让审稿人去挑刺只会
+            # 把正确答案改回模型自己的猜测（实测正是这样丢掉第 6 作者的）。
+            state["deterministic"] = True
+            _step(state, "writer", "deterministic_author", chars=len(fact),
+                  authors=len(meta["authors"]), latency_ms=int((time.time() - t0) * 1000))
+            return state
     if not evidence:
         state["answer"] = "文献库中没有检索到与该问题相关的内容。请确认已上传相关 PDF，或换一种问法。"
         state["citations"] = []
@@ -416,11 +464,38 @@ def node_answer(state: dict) -> dict:
 def node_verify(state: dict) -> dict:
     t0 = time.time()
     evidence = state.get("evidence") or []
-    result = verify(state.get("answer", ""), evidence, state.get("goal", ""))
+    deterministic = bool(state.get("deterministic"))
+    if deterministic:
+        # 确定性答案不参与"引用/数字溯源"：答案里的数字（第 6 位、共 8 位作者）
+        # 来自 documents 元数据，本来就不该出现在检索片段里，硬算只会判成
+        # "数字未溯源"，rate 归零，然后触发一次毫无意义的重答。
+        result = {
+            "total": 0, "valid": 0, "invalid": 0, "rate": 1.0,
+            "invalid_anchors": [], "invalid_refs": [], "bad_numbers": [],
+            "cleaned": state.get("answer", ""), "has_citation": False,
+            "deterministic": True,
+            "note": "答案由元数据/确定性规则给出，不做引用与数字溯源",
+        }
+    else:
+        result = verify(state.get("answer", ""), evidence, state.get("goal", ""))
+
+    # 第四重：作者枚举核对。
+    # 三重校验只管"引用/锚点/数字"，而「第 6 作者是谁」这类纯事实答案既没有 [n]
+    # 也没有数字，total=0，于是完全跳过校验——2026-11-14 评审抓到的正是这里：
+    # 答案把第 5 位写成第 6 位，verify 却给了 1.0。
+    meta = _author_meta(state)
+    if meta:
+        author_check = check_author_claim(
+            state.get("goal", ""), state.get("answer", ""), meta["authors"]
+        )
+        if author_check.get("applicable"):
+            result["author_check"] = author_check
+
     state["verify"] = result
 
-    # 引用/数字溯源通过率过低 → 换检索式重来一次（动态重规划）
-    if result["total"] and result["rate"] < 0.75 and state.get("retries", 0) < 1:
+    bad_author = (result.get("author_check") or {}).get("ok") is False
+    # 引用/数字溯源通过率过低，或作者答错 → 换检索式重来一次（动态重规划）
+    if (bad_author or (result["total"] and result["rate"] < 0.75)) and state.get("retries", 0) < 1:
         state["retries"] = state.get("retries", 0) + 1
         state["need_replan"] = True
     else:
@@ -429,6 +504,7 @@ def node_verify(state: dict) -> dict:
     _step(
         state, "reviewer", "anchor_verify",
         total=result["total"], valid=result["valid"], rate=result["rate"],
+        author_ok=(result.get("author_check") or {}).get("ok"),
         latency_ms=int((time.time() - t0) * 1000),
     )
     return state
@@ -446,6 +522,11 @@ def node_review(state: dict) -> dict:
         r"模型未返回|系统错误|作答失败|任务执行失败|未能生成有效回答", answer
     ):
         _step(state, "reviewer", "skip", note="upstream_answer_invalid")
+        return state
+    # 确定性答案（作者名单、参数计算结果）不送审：它的依据是数据库里的元数据，
+    # 审稿人只能看见检索到的证据片段，看不到那份名单，改起来一定是往错的方向改。
+    if state.get("deterministic"):
+        _step(state, "reviewer", "skip", note="deterministic_answer")
         return state
     # 审稿是一次额外的全量 LLM 调用（约 1.5–3 秒），只在不亏的时候做：
     # - 深思模式：用户选了"想稳"，就该有这一遍；
@@ -562,7 +643,9 @@ def finalize(state: dict) -> dict:
     evidence = state.get("evidence") or []
     # 以最终要展示的正文重算一次校验：审稿节点可能改写过答案，
     # 若沿用草稿的指标，页面上会出现"数字与看到的答案对不上"。
-    if evidence:
+    # 确定性答案例外：它没有引用也没有需要溯源的数字，重算只会把
+    # node_verify 里挂上的 author_check 弄丢，并把 rate 算回 0。
+    if evidence and not state.get("deterministic"):
         state["verify"] = verify(body, evidence, state.get("goal", ""))
     table = citation_table(evidence)
     state["answer_rendered"] = body + table
