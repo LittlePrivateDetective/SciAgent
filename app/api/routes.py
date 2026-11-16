@@ -1059,6 +1059,16 @@ def chat(body: ChatIn, db: Session = Depends(get_db)):
             }
         body.doc_ids = None
     q = body.question.strip()
+    # 点名了标题就收窄范围：与非流式 node_retrieve 里的锁定保持一致，
+    # 否则缓存键按「全库」算，同一问题换个范围会命中另一条错答案。
+    if not body.doc_ids:
+        st: dict = {"goal": q, "doc_ids": []}
+        try:
+            agent_nodes._lock_doc_by_title(st)
+        except Exception:  # noqa: BLE001
+            st = {}
+        if st.get("doc_ids"):
+            body.doc_ids = list(st["doc_ids"])
     lib_n = db.scalar(select(func.count()).select_from(Document)) or 0
     deep = want_thinking(body.thinking) and gateway.route() != "local"
     # 缓存键里必须带 route：本地/云端的模型名可以配成一样（都用 qwen 系列时），
@@ -1422,6 +1432,19 @@ def chat_stream(body: StreamIn, db: Session = Depends(get_db)):
     q = (body.question or "").strip()
     if not q:
         raise HTTPException(400, "问题不能为空")
+    # 问题里点名了某篇论文的标题，就把范围收窄到那一篇。
+    # 不锁的话，范围选「全部文献」问「Attention 的第 6 作者是谁」，会在 39 篇里
+    # 检索并让模型自己数序号——实测把第 6 位答成第 4 位 Jakob Uszkoreit，
+    # 机构还从 Google Research 编成 Amazon。非流式路径在 node_retrieve 里锁了，
+    # 流式这边一直没有，于是同一个问题两条路径给出两个答案。
+    if not body.doc_ids:
+        st: dict = {"goal": q, "doc_ids": []}
+        try:
+            agent_nodes._lock_doc_by_title(st)
+        except Exception:  # noqa: BLE001 锁定失败就按全库走，不该因此 500
+            st = {}
+        if st.get("doc_ids"):
+            body.doc_ids = list(st["doc_ids"])
     # None = 全库（与上面的 /chat 同理：给 None 才能命中分词缓存）
     doc_ids = body.doc_ids or None
     scope_n = len(body.doc_ids) if body.doc_ids else (
