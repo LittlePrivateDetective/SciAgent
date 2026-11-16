@@ -327,6 +327,9 @@ const app = createApp({
       offlineMode: false,
       offlineSwitching: false,
       offlineInfo: {},
+      // 是否渲染那个开关。云端演示实例（EXPOSE_OFFLINE_SWITCH=0）为 false，
+      // 界面就是纯云端形态；本机实例为 true，用来演示断网后的本地推理。
+      offlineExpose: true,
       messages: [],
       // 消息自增 id：模板的 :key 用它而不是下标。删中间一条时，下标会让
       // 后面的节点复用前一条的 DOM（气泡里是 v-html），出现"删了 A 却显示 B"。
@@ -553,6 +556,7 @@ const app = createApp({
       this.info = r;
       this.offlineMode = r.mode === "offline";
       this.offlineInfo = r.offline || {};
+      this.offlineExpose = r.expose_offline !== false;
       // 离线模式下生成必然走本机，把这一问的路由也钉过去，避免按钮显示"云端"却跑本地
       if (this.offlineMode) this.askRoute = "local";
       // 后台把全局路由钉成 local 时，界面默认就该显示本地——否则徽标写着云端、

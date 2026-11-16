@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SciAgent · 科研智能体</title>
   <link rel="stylesheet" href="/static/vendor/element-plus.css" />
-  <link rel="stylesheet" href="/static/style.css?v=48" />
+  <link rel="stylesheet" href="/static/style.css?v=49" />
   <link rel="stylesheet" href="/static/vendor/katex.min.css" />
   <script src="/static/vendor/katex.min.js"></script>
   <script src="/static/vendor/katex-auto-render.min.js"></script>
@@ -34,7 +34,8 @@
       <!-- 离线模式：比"云端/本地 3B"更重的一层开关——它同时换掉检索用的向量模型、
            向量表、重排和生成。开着时整条链路不发一个网络请求。
            不满足条件时开关置灰，悬停说明缺什么。 -->
-      <label class="offline-switch" :class="{ on: offlineMode, off: !offlineInfo.ready && !offlineMode }"
+      <label class="offline-switch" v-if="offlineExpose"
+             :class="{ on: offlineMode, off: !offlineInfo.ready && !offlineMode }"
              :title="offlineMode
                ? '当前为纯本地模式：检索、重排、生成全部在本机，不发网络请求'
                : (offlineInfo.ready
@@ -1027,6 +1028,6 @@
   </nav>
 </div>
 
-<script src="/static/app.js?v=48"></script>
+<script src="/static/app.js?v=49"></script>
 </body>
 </html>

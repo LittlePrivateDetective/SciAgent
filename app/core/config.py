@@ -67,6 +67,12 @@ class Settings(BaseSettings):
     ollama_base_url: str = "http://127.0.0.1:11434"
     ollama_model: str = "qwen2.5:3b"
     llm_route: str = "auto"
+    # 是否在顶栏暴露「云端 / 离线」切换开关。
+    # 云端演示实例（公网）设 0：那里没有 Ollama、也没有 embedding_local，
+    # 开关永远是灰的，摆在评委面前只会变成"这个功能没做完"的印象。
+    # 本机实例保持 1，用来演示断网后的纯本地推理。
+    # 两种形态跑的是同一份代码，差别只有这一个环境变量。
+    expose_offline_switch: int = 1
     # 是否让云端推理模型"先想再答"。开着答案更稳，但思维链本身要几百 token、
     # 几秒钟；关掉后同一道题 2.3s → 1.4s，答案更短但结论不变（实测见
     # docs/主模型切换测试.md）。默认 1 保持原行为，只有显式设 0 才发这个参数。

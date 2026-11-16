@@ -122,7 +122,13 @@ class ModeIn(BaseModel):
 
 @router.get("/system/mode")
 def get_runtime_mode(db: Session = Depends(get_db)):
-    return {"mode": runtime.get_mode(), "offline": _offline_status(db)}
+    # expose 决定前端要不要渲染那个开关：云端演示实例没有 Ollama 与本地向量，
+    # 摆一个永远灰着的控件，看起来像功能残缺，不如干脆不显示。
+    return {
+        "mode": runtime.get_mode(),
+        "offline": _offline_status(db),
+        "expose": bool(settings.expose_offline_switch),
+    }
 
 
 @router.post("/system/mode")
@@ -133,9 +139,18 @@ def set_runtime_mode(body: ModeIn, db: Session = Depends(get_db)):
     ——比不提供开关更糟。切换后要清两层缓存：
       · 向量库内存缓存（两套向量维度相同、语义不同，残留会悄悄降召回）
       · 查询向量缓存（同一个问题在两种模式下算出的向量不一样）
+
+    `EXPOSE_OFFLINE_SWITCH=0` 的实例直接拒绝切离线：界面已经把入口藏了，
+    还能从接口切过去，等于留了一个没人测过的后门——云端实例没有本地模型，
+    切过去必然全站不可用。
     """
     want = runtime.OFFLINE if body.mode == "offline" else runtime.CLOUD
     if want == runtime.OFFLINE:
+        if not settings.expose_offline_switch:
+            raise HTTPException(
+                status_code=403,
+                detail="这个实例是云端演示版，未启用本地模型；离线演示请在本机实例上进行",
+            )
         st = _offline_status(db)
         if not st["ready"]:
             raise HTTPException(status_code=409, detail="；".join(st["reasons"]))
@@ -146,7 +161,8 @@ def set_runtime_mode(body: ModeIn, db: Session = Depends(get_db)):
     embed_mod.clear_query_cache()
     answer_cache.clear()
     log.info("运行模式已切换：%s", mode)
-    return {"ok": True, "mode": mode, "offline": _offline_status(db)}
+    return {"ok": True, "mode": mode, "offline": _offline_status(db),
+            "expose": bool(settings.expose_offline_switch)}
 
 
 @router.get("/system/info")
@@ -172,6 +188,9 @@ def system_info(db: Session = Depends(get_db)):
         # 运行模式：cloud / offline。前端据此决定"离线模式"开关的状态。
         "mode": runtime.get_mode(),
         "offline": _offline_status(db),
+        # 是否渲染「云端 / 离线」开关：云端演示实例设 EXPOSE_OFFLINE_SWITCH=0，
+        # 那里没有 Ollama 也没有本地向量，开关只会一直灰着——藏起来比解释便宜。
+        "expose_offline": bool(settings.expose_offline_switch),
         "counts": {
             "documents": db.scalar(select(func.count(Document.id))) or 0,
             "chunks": db.scalar(select(func.count(Chunk.id))) or 0,

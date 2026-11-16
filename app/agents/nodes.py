@@ -22,6 +22,7 @@ from app.agents.prompts import (
     render,
 )
 from app.core.config import settings
+from app.core import runtime
 from app.core.llm import LLMError, gateway
 from app.core.logger import get_logger
 from app.agents.factcheck import author_answer, check_author_claim
@@ -75,35 +76,44 @@ def node_plan(state: dict) -> dict:
     # （实测 1.2s + 1.0s）；并行后这一段只花掉较慢的那一次。
     from concurrent.futures import ThreadPoolExecutor
 
-    pool = ThreadPoolExecutor(max_workers=1)
-    fut = pool.submit(_expand_query, state["goal"])
-
-    try:
-        data = gateway.chat_json(
-            [
-                {"role": "system", "content": SYSTEM_CONTRACT.format(role="任务规划器")},
-                {
-                    "role": "user",
-                    "content": render(
-                        PLANNER_PROMPT,
-                        lessons="；".join(lessons) if lessons else "（暂无）",
-                        goal=state["goal"],
-                        mode=mode,
-                        doc_count=doc_count,
-                    ),
-                },
-            ],
-            temperature=0.1,
-            # 规划是一次结构化任务（拆 2–5 步、输出 JSON），思维链在这里只贡献
-            # 延迟不贡献质量：实测同一条指令，开思维链多 2–4 秒，步骤数一模一样。
-            # 深思模式留给"作答"那一步，规划恒定走快速。
-            thinking=False,
-        )
-        steps = data.get("steps") or []
-        reasoning = data.get("reasoning", "")
-    except LLMError as exc:
-        log.warning("规划失败，使用默认计划：%s", exc)
-        steps, reasoning = [], "模型不可用，走确定性流程"
+    offline = runtime.is_offline()
+    if offline:
+        # 离线时不再各叫一次本机 3B 去做"任务规划"和"查询改写"。
+        # 这两步都只是文本加工，3B 做出来并不比规则好，却要占掉整条链路一半的
+        # 时间（实测 28.8s 里约 13s），更糟的是改写出来的查询会把检索带偏：
+        # "Adam 的 beta1 和 beta2" 被改写成一段泛泛的英文，最后检出第 1 页的
+        # RNN 段落，答成"文献中未提及"。直接走兜底计划（单篇检索 + 作答）。
+        fut = None
+        steps, reasoning = [], "离线模式：跳过模型规划与查询改写，走确定性流程"
+    else:
+        pool = ThreadPoolExecutor(max_workers=1)
+        fut = pool.submit(_expand_query, state["goal"])
+        try:
+            data = gateway.chat_json(
+                [
+                    {"role": "system", "content": SYSTEM_CONTRACT.format(role="任务规划器")},
+                    {
+                        "role": "user",
+                        "content": render(
+                            PLANNER_PROMPT,
+                            lessons="；".join(lessons) if lessons else "（暂无）",
+                            goal=state["goal"],
+                            mode=mode,
+                            doc_count=doc_count,
+                        ),
+                    },
+                ],
+                temperature=0.1,
+                # 规划是一次结构化任务（拆 2–5 步、输出 JSON），思维链在这里只贡献
+                # 延迟不贡献质量：实测同一条指令，开思维链多 2–4 秒，步骤数一模一样。
+                # 深思模式留给"作答"那一步，规划恒定走快速。
+                thinking=False,
+            )
+            steps = data.get("steps") or []
+            reasoning = data.get("reasoning", "")
+        except LLMError as exc:
+            log.warning("规划失败，使用默认计划：%s", exc)
+            steps, reasoning = [], "模型不可用，走确定性流程"
 
     # 兜底计划：保证流程永不因为规划失败而中断
     if not isinstance(steps, list) or not steps:
@@ -123,12 +133,16 @@ def node_plan(state: dict) -> dict:
         seen.insert(0, {"type": "retrieve", "query": state["goal"]})
 
     # 收回并行的查询改写结果；失败不阻塞（_expand_query 内部已兜住异常）
-    try:
-        state["expanded_query"] = fut.result(timeout=20)
-    except Exception:  # noqa: BLE001
+    if fut is None:
+        # 离线模式没有发起改写：直接用原问题检索，别把查询再"加工"一遍
         state["expanded_query"] = state["goal"]
-    finally:
-        pool.shutdown(wait=False)
+    else:
+        try:
+            state["expanded_query"] = fut.result(timeout=20)
+        except Exception:  # noqa: BLE001
+            state["expanded_query"] = state["goal"]
+        finally:
+            pool.shutdown(wait=False)
 
     state["plan"] = seen
     state["plan_reasoning"] = reasoning

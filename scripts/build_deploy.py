@@ -57,6 +57,10 @@ OVERRIDES = {
     "DATA_DIR": "./data",
     "LOG_LEVEL": "INFO",
     "PORT": "8000",
+    # 云端包不暴露「云端 / 离线」开关：这个实例没有 Ollama，本地向量也不进包
+    # （deploy 里那份 SQLite 只带 embedding），开关永远是灰的。藏起来，
+    # 界面就是干净的纯云端形态；离线演示在本机实例上做，那边保持默认 1。
+    "EXPOSE_OFFLINE_SWITCH": "0",
 }
 
 
