@@ -103,7 +103,19 @@ class ChromaVectorStore:
             name="sciagent_chunks", metadata={"hnsw:space": "cosine"}
         )
 
-    def search(self, qvec: np.ndarray, doc_ids: list[str] | None = None, top_k: int = 20):
+    def search(self, qvec: np.ndarray, doc_ids: list[str] | None = None, top_k: int = 20,
+               column: str = "embedding"):
+        """`column` 只为对齐 SQLite 后端的签名。
+
+        Chroma 里只写了云端向量（chunks.embedding），没有 `embedding_local`。
+        离线模式下 `get_store()` 会直接分流到 SQLite，正常走不到这里；
+        真传进来 `local` 说明分流被绕过，此时必须显式报错——
+        拿 qwen 的向量去比 bge-m3 的查询向量，算出来的是一堆看似正常的噪声。
+        """
+        if column != "embedding":
+            raise ValueError(
+                f"Chroma 后端不含 {column} 向量，离线模式请走 SQLite 后端（get_store 会分流）"
+            )
         where = {"doc_id": {"$in": doc_ids}} if doc_ids else None
         res = self._col.query(
             query_embeddings=[qvec.tolist()],
@@ -139,11 +151,27 @@ class ChromaVectorStore:
 
 
 _STORE = None
+_STORE_OFFLINE = None
 
 
 def get_store():
-    """按配置选择后端；auto 模式下 Chroma 不可用则静默降级。"""
-    global _STORE
+    """按配置选择后端；auto 模式下 Chroma 不可用则静默降级。
+
+    离线模式一律走 SQLite，与 `VECTOR_BACKEND` 无关：本地向量只写在
+    `chunks.embedding_local` 这一列里，Chroma 那份是云端 qwen 的向量。
+    两套 1024 维向量语义空间不同，混用不会报错，只会悄悄返回一堆相关度
+    看似正常、实际答非所问的结果。
+    """
+    global _STORE, _STORE_OFFLINE
+
+    from app.core import runtime
+
+    if runtime.is_offline():
+        if _STORE_OFFLINE is None:
+            _STORE_OFFLINE = SQLiteVectorStore()
+            log.info("向量后端：SQLite+NumPy（离线模式，读 embedding_local）")
+        return _STORE_OFFLINE
+
     if _STORE is not None:
         return _STORE
 
