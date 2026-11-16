@@ -34,7 +34,10 @@ export default {
     const headers = new Headers(request.headers);
     // Host 必须交给 fetch 自己按目标域名填，手动带过去会被平台拒
     headers.delete("host");
-    headers.set("accept-encoding", "gzip");
+    // 不要手动设 accept-encoding：一旦设了，Workers 就把压缩交给你自己处理，
+    // resp.body 是 gzip 字节流；而下面又删掉了 content-encoding 头，
+    // 浏览器会把压缩字节当明文解析，页面直接乱码。
+    // 交给 Workers 默认策略（自动解压、按需重压）最省事。
 
     let resp;
     try {
