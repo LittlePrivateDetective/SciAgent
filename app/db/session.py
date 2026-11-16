@@ -131,9 +131,34 @@ def ensure_db_healthy() -> dict:
     return {"ok": False, "action": "none", "detail": why}
 
 
+# 老库升级要补的列：{表名: [(列名, 类型 DDL)]}
+# create_all 只建"缺失的表"，**不会**给已存在的表加列。v1.2 给 chunks 加了
+# embedding_local，老库（比如演示机上已经灌了 27667 段的那份）如果只 create_all，
+# 之后任何一次 `select(Chunk)` 都会报 "no such column: chunks.embedding_local"，
+# 检索、问答、阅读器、引用索引会一起 500。所以这里显式补一次，幂等。
+_ADDED_COLUMNS: dict[str, list[tuple[str, str]]] = {
+    "chunks": [("embedding_local", "BLOB")],
+}
+
+
+def _migrate_columns() -> None:
+    for table, cols in _ADDED_COLUMNS.items():
+        try:
+            with engine.begin() as conn:
+                have = {row[1] for row in conn.exec_driver_sql(f"PRAGMA table_info({table})")}
+                for name, ddl in cols:
+                    if name in have:
+                        continue
+                    conn.exec_driver_sql(f"ALTER TABLE {table} ADD COLUMN {name} {ddl}")
+                    log.warning("老库补列：%s.%s %s（已有数据不受影响）", table, name, ddl)
+        except Exception:  # noqa: BLE001 补列失败不该挡住启动，接口会报明确缺列
+            log.exception("补列失败：%s", table)
+
+
 def init_db() -> None:
     ensure_db_healthy()
     Base.metadata.create_all(engine)
+    _migrate_columns()
     log.info("数据库就绪：%s", settings.db_path)
 
 
