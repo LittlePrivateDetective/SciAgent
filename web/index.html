@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SciAgent · 科研智能体</title>
   <link rel="stylesheet" href="/static/vendor/element-plus.css" />
-  <link rel="stylesheet" href="/static/style.css?v=49" />
+  <link rel="stylesheet" href="/static/style.css?v=50" />
   <link rel="stylesheet" href="/static/vendor/katex.min.css" />
   <script src="/static/vendor/katex.min.js"></script>
   <script src="/static/vendor/katex-auto-render.min.js"></script>
@@ -51,8 +51,11 @@
            这里保持只读徽标，不给出点了必错的选项。
            切换只作用于**这一次提问**，不改后台全局路由。 -->
       <!-- 本地不可用时也把这个切换器留着，只把「本地 3B」置灰：
-           直接整块隐藏会让人以为功能被删了（已发生三次），置灰+悬停原因才说得清。 -->
-      <div v-if="!(info.llm && info.llm.mock)" class="model-switch"
+           直接整块隐藏会让人以为功能被删了（已发生三次），置灰+悬停原因才说得清。
+           但这个"置灰常显"只对本机实例（EXPOSE_OFFLINE_SWITCH=1）成立。
+           公网实例必须整块不渲染——线上不存在可用的本地模型，留一个点开就报
+           "连不上 127.0.0.1:11434" 的按钮，等于给评委一个必然踩空的入口。 -->
+      <div v-if="offlineExpose && !(info.llm && info.llm.mock)" class="model-switch"
            :title="localReady ? '切换本次提问使用的模型（不影响后台全局设置，下一问即生效）' : localHint">
         <button type="button" class="ms-btn" :class="{ on: askRoute === 'cloud' }"
                 @click="setAskRoute('cloud')">云端</button>
@@ -1028,6 +1031,6 @@
   </nav>
 </div>
 
-<script src="/static/app.js?v=49"></script>
+<script src="/static/app.js?v=50"></script>
 </body>
 </html>

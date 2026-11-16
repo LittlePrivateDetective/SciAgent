@@ -171,8 +171,17 @@ def system_info(db: Session = Depends(get_db)):
         "ok": True,
         "llm": gateway.describe(),
         # 本地模型能力：前端据此决定模型徽标是"只读标签"还是"可切换的下拉"。
-        # 公网实例没有 Ollama，这里会如实返回 available=false，按钮自然不出现。
-        "local": local_model_status(),
+        # 公网部署（EXPOSE_OFFLINE_SWITCH=0）直接给出"未启用"：云实例上不该出现
+        # 任何本地模型入口，哪怕只是置灰的按钮——评委点了只会看到"连不上
+        # 127.0.0.1:11434"。这里不依赖 Ollama 探活的结果，避免"服务器上恰好
+        # 起了个 Ollama 就把入口暴露出来"这种偶发。
+        "local": (
+            local_model_status()
+            if settings.expose_offline_switch
+            else {"enabled": False, "available": False, "reachable": False,
+                  "model": "", "url": "", "latency_ms": None, "models": [],
+                  "reason": "云端部署未启用本地模型", "error": ""}
+        ),
         "vector_backend": get_store().name,
         "ocr": ocr_available(),
         "embedding": {"provider": settings.emb_provider, "model": settings.emb_model, "dim": settings.emb_dim},
