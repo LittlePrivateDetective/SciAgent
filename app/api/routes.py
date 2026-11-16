@@ -1067,6 +1067,19 @@ def chat(body: ChatIn, db: Session = Depends(get_db)):
     ck = make_key(kind="answer_full", q=q, mode=body.mode, route=gateway.route(),
                   docs=sorted(body.doc_ids or []), model=settings.llm_model,
                   deep=deep, lib=lib_n, k=budget.top_k(q, body.mode))
+
+    # 作者枚举题排在缓存之前：缓存里可能有修复前模型自己数错的答案，先查缓存
+    # 就等于修复永远不生效。与非流式接口保持一致。
+    fact = _author_fact(q, body.doc_ids)
+    if fact:
+        return {
+            "answer": fact, "raw_answer": fact, "evidence": [],
+            "verify": {"total": 0, "valid": 0, "invalid": 0, "rate": 0.0, "cleaned": fact},
+            "citations": [], "confidence": "high", "missing": "", "deterministic": True,
+            "latency_ms": 0,
+            "meta": {"thinking": deep, "model": _route_model(gateway.route()),
+                     "cache": "off", "intent": "author"},
+        }
     ttl = answer_ttl()
     cached = (answer_cache.get(ck)
               if ttl > 0 and not body.no_cache and gateway.route() != "mock" else None)
@@ -1429,6 +1442,26 @@ def chat_stream(body: StreamIn, db: Session = Depends(get_db)):
         reason_buf: list[str] = []
         reason_sent = 0
 
+        # 作者枚举题走元数据，**排在缓存之前**：缓存里可能躺着修复前由模型自己
+        # 数出来的错误答案（实测把第 6 位答成第 4 位 Jakob Uszkoreit）。先查缓存
+        # 的话，修复永远不会生效——界面显示 0.0s「命中缓存」，用户看到的还是错的。
+        fact = _author_fact(q, body.doc_ids)
+        if fact:
+            yield emit("thinking", stage="plan", state="done",
+                       text=f"识别意图：作者枚举 · 检索范围 {scope_n} 篇文献", scope=scope_n)
+            yield emit("thinking", stage="retrieve", state="done",
+                       text="命中作者元数据：按原文首页署名顺序直接给出，不检索正文",
+                       hits=0, docs=1, pages=0, latency_ms=0)
+            for i in range(0, len(fact), 16):
+                yield emit("token", text=fact[i:i + 16])
+                time.sleep(0.008)
+            yield emit("done", answer=fact, raw_answer=fact, evidence=[],
+                       verify={"total": 0, "valid": 0, "invalid": 0,
+                               "rate": 0.0, "cleaned": fact},
+                       meta={"thinking": deep, "model": _route_model(gateway.route()),
+                             "cache": "miss", "intent": "author"})
+            return
+
         # 缓存键带上模型 / 库规模 / 是否深思 / 检索预算：
         # 少带任何一项都会制造"改了参数或传了新文献，答案却还是旧的"。
         ck = make_key(kind="answer", q=q, mode=body.mode, route=gateway.route(),
@@ -1477,23 +1510,6 @@ def chat_stream(body: StreamIn, db: Session = Depends(get_db)):
             yield emit("thinking", stage="plan", state="done",
                        text=f"识别意图：{_intent_of(q, body.mode)} · 检索范围 {scope_n} 篇文献",
                        scope=scope_n)
-
-            # 作者枚举题不检索：名单在 documents.authors 里，让模型对着切块证据数
-            # 序号必然出错（首页作者区常被切在块缝里）。命中就直接推确定性答案。
-            fact = _author_fact(q, body.doc_ids)
-            if fact:
-                yield emit("thinking", stage="retrieve", state="done",
-                           text="命中作者元数据：按原文首页署名顺序直接给出，不检索正文",
-                           hits=0, docs=1, pages=0, latency_ms=0)
-                for i in range(0, len(fact), 16):
-                    yield emit("token", text=fact[i:i + 16])
-                    time.sleep(0.008)
-                yield emit("done", answer=fact, raw_answer=fact, evidence=[],
-                           verify={"total": 0, "valid": 0, "invalid": 0,
-                                   "rate": 0.0, "cleaned": fact},
-                           meta={"thinking": deep, "model": _route_model(gateway.route()),
-                                 "cache": "miss", "intent": "author"})
-                return
 
             yield emit("thinking", stage="retrieve", state="run",
                        text="检索中：BM25 + 稠密向量 + RRF 融合 → 重排")
