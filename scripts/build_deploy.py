@@ -40,7 +40,34 @@ BASE = Path(__file__).resolve().parent
 os.chdir(BASE)                      # data/ 全是相对路径，必须先切到 deploy 根
 sys.path.insert(0, str(BASE))
 
+def _backfill_empty_env(env_path: Path) -> list[str]:
+    """把「存在但为空」的环境变量按 .env 回填。
+
+    托管平台会预置一批空变量（`LLM_API_KEY=` 这种）。pydantic-settings 里环境变量
+    优先级高于 .env，空值同样会盖掉 .env 里的真实 Key —— 线上于是一声不响降级成
+    mock，顶栏显示「模型未配置（模拟）」，回答全是模板文本。这里只回填空值，
+    已有非空值的变量保持不动，平台的真实注入仍然优先。
+    """
+    fixed: list[str] = []
+    if not env_path.exists():
+        return fixed
+    for raw in env_path.read_text(encoding="utf-8").splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, val = line.split("=", 1)
+        key = key.strip()
+        val = val.strip().strip('"').strip("'")
+        if key and not os.environ.get(key):
+            os.environ[key] = val
+            fixed.append(key)
+    return fixed
+
+
 if __name__ == "__main__":
+    repaired = _backfill_empty_env(BASE / ".env")
+    if repaired:
+        print(f"[env] 回填空环境变量 {len(repaired)} 项", flush=True)
     port = int(os.environ.get("PORT", "8000"))
     uvicorn.run("app.main:app", host="0.0.0.0", port=port, log_level="info")
 '''

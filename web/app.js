@@ -3232,8 +3232,14 @@ const app = createApp({
         layout: "force",
         roam: true,
         draggable: true,
-        force: { repulsion: 260, edgeLength: [60, 160], gravity: 0.08 },
+        // 39 篇 213 条边，原来的 repulsion 260 / edgeLength 60–160 会把节点挤成一团，
+        // 中间几个大点直接叠在一起。拉开斥力与边长，并把重力调低，让外圈的边缘节点
+        // 真正散到外围去，结构才看得出来。
+        force: { repulsion: [700, 1400], edgeLength: [130, 300], gravity: 0.035 },
+        scaleLimit: { min: 0.35, max: 3 },
         emphasis: { focus: "adjacency", lineStyle: { width: 2.5 } },
+        // 标签避让：重叠时自动隐藏，比人工挑阈值可靠
+        labelLayout: { hideOverlap: true },
         label: { position: "right", fontSize: 11, formatter: (p) => (p.name || "").slice(0, 30) },
         lineStyle: { color: "#c2c9d4", width: 1, curveness: 0.12, opacity: 0.75 },
         edgeSymbol: ["none", "arrow"],
