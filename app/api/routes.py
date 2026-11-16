@@ -1070,6 +1070,18 @@ def chat(body: ChatIn, db: Session = Depends(get_db)):
         if st.get("doc_ids"):
             body.doc_ids = list(st["doc_ids"])
     lib_n = db.scalar(select(func.count()).select_from(Document)) or 0
+    # 范围与点名的文献冲突时直接说明，不检索、不问模型
+    conflict_msg = _scope_conflict_msg(q, body.doc_ids, db)
+    if conflict_msg:
+        return {
+            "answer": conflict_msg, "raw_answer": conflict_msg, "evidence": [],
+            "verify": {"total": 0, "valid": 0, "invalid": 0, "rate": 0.0,
+                       "cleaned": conflict_msg},
+            "citations": [], "confidence": "low", "missing": "", "deterministic": True,
+            "latency_ms": 0,
+            "meta": {"thinking": False, "model": None, "cache": "off",
+                     "intent": "scope_conflict"},
+        }
     deep = want_thinking(body.thinking) and gateway.route() != "local"
     # 缓存键里必须带 route：本地/云端的模型名可以配成一样（都用 qwen 系列时），
     # 只按 llm_model 做键会让"用本地 3B 问过一次"把云端答案的位置占掉，
@@ -1400,6 +1412,40 @@ class StreamIn(BaseModel):
     no_cache: bool = False
 
 
+def _scope_conflict_msg(question: str, doc_ids, db) -> str | None:
+    """问题点名的文献与当前检索范围不是同一篇时，返回提示文案。
+
+    实测场景：左侧选着《渐进式深度集成架构搜索算法研究》，范围「当前文献」，
+    却问「论文Attention Is All You Need的第6作者是谁」。这时两条路都是错的——
+    用当前文献的作者名单作答是答非所问（答成吴泳），越界去查点名那篇是破坏范围
+    约束（答成 Gomez）。正确做法是把冲突讲清楚，不做推断。
+    """
+    ids = [str(i) for i in (doc_ids or []) if i]
+    if len(ids) != 1:
+        return None
+    st: dict = {"goal": question, "doc_ids": []}
+    try:
+        agent_nodes._lock_doc_by_title(st)
+    except Exception:  # noqa: BLE001
+        return None
+    locked = [str(i) for i in (st.get("doc_ids") or [])]
+    if len(locked) != 1 or locked[0] == ids[0]:
+        return None
+    try:
+        want = (db.get(Document, locked[0]).title or "").strip()
+        have = (db.get(Document, ids[0]).title or "").strip()
+    except Exception:  # noqa: BLE001
+        return None
+    if not want or not have:
+        return None
+    return (
+        f"当前检索范围是《{have}》，而问题里点名的是《{want}》，两者不是同一篇。\n\n"
+        f"在这个范围下作答只能二选一地出错：答当前文献的作者是答非所问，"
+        f"答点名那篇的作者又破坏了「只查当前文献」的约定。所以这里不做推断。\n\n"
+        f"改法二选一：把检索范围切到「全部文献」，或者先在左侧选中《{want}》再问。"
+    )
+
+
 def _author_fact(question: str, doc_ids) -> str | None:
     """作者枚举题的确定性答案；不适用时返回 None。
 
@@ -1447,6 +1493,8 @@ def chat_stream(body: StreamIn, db: Session = Depends(get_db)):
             body.doc_ids = list(st["doc_ids"])
     # None = 全库（与上面的 /chat 同理：给 None 才能命中分词缓存）
     doc_ids = body.doc_ids or None
+    # 范围与问题点名的文献冲突时，先算好提示文案（要用到 db，放在生成器外）
+    conflict_msg = _scope_conflict_msg(q, body.doc_ids, db)
     scope_n = len(body.doc_ids) if body.doc_ids else (
         db.scalar(select(func.count()).select_from(Document)) or 0)
 
@@ -1464,6 +1512,23 @@ def chat_stream(body: StreamIn, db: Session = Depends(get_db)):
         reason_chars = 0
         reason_buf: list[str] = []
         reason_sent = 0
+
+        # 范围与点名的文献不是同一篇：直接说明，不检索也不问模型
+        if conflict_msg:
+            yield emit("thinking", stage="plan", state="done",
+                       text=f"识别意图：范围冲突 · 检索范围 {scope_n} 篇文献", scope=scope_n)
+            yield emit("thinking", stage="retrieve", state="done",
+                       text="问题点名的文献与当前范围不是同一篇，跳过检索并说明原因",
+                       hits=0, docs=1, pages=0, latency_ms=0)
+            for i in range(0, len(conflict_msg), 16):
+                yield emit("token", text=conflict_msg[i:i + 16])
+                time.sleep(0.008)
+            yield emit("done", answer=conflict_msg, raw_answer=conflict_msg, evidence=[],
+                       verify={"total": 0, "valid": 0, "invalid": 0,
+                               "rate": 0.0, "cleaned": conflict_msg},
+                       meta={"thinking": deep, "model": None, "cache": "miss",
+                             "intent": "scope_conflict"})
+            return
 
         # 作者枚举题走元数据，**排在缓存之前**：缓存里可能躺着修复前由模型自己
         # 数出来的错误答案（实测把第 6 位答成第 4 位 Jakob Uszkoreit）。先查缓存
