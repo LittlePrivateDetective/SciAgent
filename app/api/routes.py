@@ -1438,11 +1438,21 @@ def _scope_conflict_msg(question: str, doc_ids, db) -> str | None:
         return None
     if not want or not have:
         return None
+    # 文案要像人说话：先给事实，再给动作，不写"破坏了约定""不做推断"这类
+    # 免责声明式的句子——那是给评审看的，不是给提问的人看的。
+    def short(t: str, n: int = 36) -> str:
+        t = (t or "").strip()
+        if len(t) <= n:
+            return t
+        cut = t[:n]
+        # 英文标题按词边界断开：截成 "Deep Bidir…" 比不截断更难看
+        if " " in cut:
+            cut = cut[: cut.rfind(" ")]
+        return cut + "…"
+
     return (
-        f"当前检索范围是《{have}》，而问题里点名的是《{want}》，两者不是同一篇。\n\n"
-        f"在这个范围下作答只能二选一地出错：答当前文献的作者是答非所问，"
-        f"答点名那篇的作者又破坏了「只查当前文献」的约定。所以这里不做推断。\n\n"
-        f"改法二选一：把检索范围切到「全部文献」，或者先在左侧选中《{want}》再问。"
+        f"你问的《{short(want)}》不在当前范围里 —— 现在只查《{short(have)}》。\n\n"
+        f"切到「全部文献」就能答；也可以先在左侧选中它，再问一次。"
     )
 
 
@@ -1516,9 +1526,9 @@ def chat_stream(body: StreamIn, db: Session = Depends(get_db)):
         # 范围与点名的文献不是同一篇：直接说明，不检索也不问模型
         if conflict_msg:
             yield emit("thinking", stage="plan", state="done",
-                       text=f"识别意图：范围冲突 · 检索范围 {scope_n} 篇文献", scope=scope_n)
+                       text=f"识别意图：所指文献不在当前范围 · 范围 {scope_n} 篇", scope=scope_n)
             yield emit("thinking", stage="retrieve", state="done",
-                       text="问题点名的文献与当前范围不是同一篇，跳过检索并说明原因",
+                       text="这篇不在你选的范围内，先说明，等你切换再答",
                        hits=0, docs=1, pages=0, latency_ms=0)
             for i in range(0, len(conflict_msg), 16):
                 yield emit("token", text=conflict_msg[i:i + 16])
