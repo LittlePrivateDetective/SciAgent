@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SciAgent · 科研智能体</title>
   <link rel="stylesheet" href="/static/vendor/element-plus.css" />
-  <link rel="stylesheet" href="/static/style.css?v=57" />
+  <link rel="stylesheet" href="/static/style.css?v=58" />
   <link rel="stylesheet" href="/static/vendor/katex.min.css" />
   <script src="/static/vendor/katex.min.js"></script>
   <script src="/static/vendor/katex-auto-render.min.js"></script>
@@ -340,6 +340,7 @@
             <i class="dot peripheral"></i>边缘
           </span>
           <el-button size="small" text @click="genSurvey" :loading="survey.loading">生成领域综述</el-button>
+          <el-button size="small" text @click="openFutureWork" :loading="fw.loading">未来工作方向</el-button>
           <span v-if="graphLoading" class="graph-loading">计算中…</span>
         </div>
 
@@ -711,6 +712,31 @@
     </div>
   </el-dialog>
 
+  <!-- 未来工作探索（赛题 1.5.4）：
+       内容全部来自各篇 PDF 的 Future Work / Limitations 原句，逐条标出出处（哪篇、
+       哪年、哪一节、第几页），点标题能跳回原文。后端做了三步处理：
+       研究问题 / 工程待办分离 → 同族 4-gram 去重 → 与库内较新论文的原句对撞，
+       被后续工作触及过的标「可能已被做过」，避免给出早就有人做掉的 idea。 -->
+  <el-dialog v-model="fw.visible" title="未来工作方向（取自各篇 Future Work / Limitations 原句）" width="760px">
+    <div class="fw-note">
+      {{ fw.method }}
+      <span v-if="fw.stats"> · 扫描 {{ fw.stats.candidate_sentences }} 句，去重后 {{ fw.stats.after_dedup }} 句，其中 {{ fw.stats.possibly_addressed }} 条可能已被后续工作触及</span>
+    </div>
+    <div v-if="fw.items.length" class="fw-list">
+      <div v-for="(it,i) in fw.items" :key="i" class="fw-item">
+        <div class="fw-txt">{{ it.text }}</div>
+        <div class="fw-meta">
+          <a class="fw-doc" :title="it.doc_title"
+             @click="openFromGraph({id: it.doc_id, label: it.doc_title, filename: it.doc_title})">{{ it.doc_title }}</a>
+          <span class="fw-src">{{ it.doc_year || '年份未知' }} · {{ it.section || 'Future Work' }} · p{{ it.page }}</span>
+          <span v-if="it.status === 'possibly_addressed'" class="fw-flag">可能已被后续工作触及</span>
+          <span v-else class="fw-flag open">仍开放</span>
+        </div>
+      </div>
+    </div>
+    <div v-else class="empty">文献里没有识别到 Future Work / Limitations 段落</div>
+  </el-dialog>
+
   <!-- 去重确认 -->
   <el-dialog v-model="dup.visible" title="检测到重复文献" width="520px">
     <p class="dup-msg">{{ dup.message }}</p>
@@ -1028,6 +1054,6 @@
   </nav>
 </div>
 
-<script src="/static/app.js?v=57"></script>
+<script src="/static/app.js?v=58"></script>
 </body>
 </html>

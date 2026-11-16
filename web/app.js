@@ -382,6 +382,9 @@ const app = createApp({
       selectedNode: null,
       dup: { visible: false, message: "", items: [], pendingId: "" },
       survey: { visible: false, html: "", papers: [], loading: false },
+      // 未来工作探索（赛题 1.5.4）：后端从各篇 Future Work / Limitations 原句里抽，
+      // 前端只负责列出来并标出处。不缓存结果——库一变（新论文、重解析）就该跟着变。
+      fw: { visible: false, items: [], method: "", stats: null, loading: false },
       // 推荐问题自带前提，点下去必须先满足前提，否则必错：
       //   前三条问的是 Transformer 原文里的作者/GPU/BLEU，只有对着那一篇才答得对；
       //   最后一条是跨文献对比，只有当库里有 BERT 与 Transformer 两篇时才成立。
@@ -3292,6 +3295,31 @@ const app = createApp({
         ElementPlus.ElMessage.error("综述生成失败：" + e);
       } finally {
         this.survey.loading = false;
+      }
+    },
+
+    // 未来工作探索（赛题 1.5.4）。内容由后端从各篇 Future Work / Limitations 原句抽取，
+    // 这里只取一次、原样列出：不写第二次加工，免得"Agent 提出"变成"前端编的"。
+    async openFutureWork() {
+      if (!this.docs.length) {
+        ElementPlus.ElMessage.warning("文献库为空，先导入文献");
+        return;
+      }
+      this.fw.loading = true;
+      try {
+        const r = await fetch("/api/research/future-work?limit=40").then((x) => x.json());
+        if (r.detail) {
+          ElementPlus.ElMessage.error(r.detail);
+          return;
+        }
+        this.fw.items = r.items || [];
+        this.fw.method = r.method || "";
+        this.fw.stats = r.stats || null;
+        this.fw.visible = true;
+      } catch (e) {
+        ElementPlus.ElMessage.error("获取未来工作方向失败：" + e);
+      } finally {
+        this.fw.loading = false;
       }
     },
 
