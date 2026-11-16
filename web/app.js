@@ -387,24 +387,6 @@ const app = createApp({
       //   最后一条是跨文献对比，只有当库里有 BERT 与 Transformer 两篇时才成立。
       // 实测（4 题 × 2 范围 × 2 模式）：固定用「当前文献」点第 4 条，会在无关文献里
       // 检索并编出"承袭关系"；固定用「全部文献」点前三条，会答成"机构未提及"。
-      samples: [
-        {
-          q: "Attention Is All You Need 的第 6 作者是谁，在哪个机构？",
-          scope: "doc",
-          doc: "Attention Is All You Need",
-        },
-        {
-          q: "Transformer 训练 Base 模型用了多少块 GPU，什么型号？",
-          scope: "doc",
-          doc: "Attention Is All You Need",
-        },
-        {
-          q: "Transformer (big) 在 EN-DE 上的 BLEU 是多少？比之前最好结果提升多少？",
-          scope: "doc",
-          doc: "Attention Is All You Need",
-        },
-        { q: "对比 BERT 与 Transformer 编码器在结构上的承袭关系", scope: "all", doc: "" },
-      ],
     };
   },
   computed: {
@@ -2076,24 +2058,6 @@ const app = createApp({
      *   · 带 doc 的（前三条）→ 切到那篇原文再问，库里没有就退回跨库；
      *   · 不带 doc 的（第 4 条）→ 强制跨库，否则一定在无关文献里检索。
      */
-    async askSample(s) {
-      if (this.loading) return;
-      if (s && s.doc) {
-        const target = (this.docs || []).find((d) => (d.title || "").includes(s.doc));
-        if (target) {
-          if (!this.activeDoc || this.activeDoc.id !== target.id) {
-            await this.openDoc(target);
-          }
-          this.scope = "doc";
-        } else {
-          this.scope = "all";
-        }
-      } else {
-        this.scope = (s && s.scope) || "all";
-      }
-      await this.ask(s.q);
-    },
-
     async ask(text) {
       const q = (text || this.question || "").trim();
       if (!q || this.loading) return;
