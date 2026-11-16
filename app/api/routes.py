@@ -60,7 +60,13 @@ from app.rag.bilingual import (
 from app.rag.citation_graph import build_graph as build_citation_graph
 from app.rag.citation_graph import invalidate as invalidate_graph
 from app.parse.structure import render_page_png
-from app.pipeline.ingest import delete_document, ingest, rescan_library, restore_document, save_upload
+from app.pipeline.ingest import (
+    delete_document,
+    ingest,
+    rescan_library,
+    restore_document,
+    save_upload,
+)
 from app.rag.anchors import attach_anchors
 from app.rag.anchors import verify as verify_answer
 from app.rag.hybrid import search_with_rerank
@@ -611,17 +617,43 @@ def translate_page_text(doc_id: str, page: int, db: Session = Depends(get_db)):
     }
 
 
+_REF_HEAD = 48
+
+
+def _norm_ref(s: str) -> str:
+    """参考文献比对用的归一化：字体连字、全角括号、空白。
+
+    解析层给出的条目是**多块拼**出来的一条，reference 块是版面切出来的碎片，
+    两者只有开头这一段必然一致（续行、跨栏拼接都在尾部），所以只拿归一化后的
+    前 48 字符做键。连字（ﬁ/ﬂ）必须展开：同一篇里正文用 fi、条目里用连字符，
+    不展开就永远匹配不上。
+    """
+    s = (s or "").replace("\ufb01", "fi").replace("\ufb02", "fl")
+    s = s.replace("［", "[").replace("］", "]")
+    return re.sub(r"[\s\u00a0]+", " ", s).strip().lower()
+
+
 @router.get("/documents/{doc_id}/references")
 def get_reference_entries(doc_id: str, db: Session = Depends(get_db)):
     """References 区逐条索引：编号 → 页码 + bbox + 原文。
 
     和 /refs 的区别：/refs 返回的是**引用边**（谁引了谁，供图谱用），
     这里返回的是**参考文献列表本身**，供「点正文 [11] 跳到第 11 条」使用。
-    编号直接从条目文本开头的 [n] 解析——这是 LaTeX 排版的事实格式，
-    比依赖 Citation 表的 ref_index 更可靠（后者在匹配失败时会缺号）。
-    """
-    import re as _re
 
+    编号来源分两层，按可靠性排序：
+
+    1. **citations 表**（解析层 `_extract_references` 的产物）。它认 `[12]`、
+       也认 `[SLA+18]` 这类作者缩写键，更关键的是**认完全没有编号的老式
+       arXiv/ACL 排版**——按出现顺序补号，正好对应 LaTeX `\\bibitem` 的序号
+       语义，正文里的 `[11]` 就是列表第 11 条。跨栏、跨页断开的续行也在那一层
+       拼好了，这里直接拿来用。
+    2. reference 块的 `[n]` 前缀。只在第 1 层为空（早期入库、或解析没切出
+       条目）时兜底，行为与旧版完全一致。
+
+    坐标（page/bbox）citations 里没有，必须回 reference 块上找：拿文本开头
+    做键，找到承载这一条的那块，点角标才有高亮框。找不到承载块的条目直接
+    跳过——前端拿不到坐标就没法高亮，返回一个 page=0 的条目只会让它跳到第一页。
+    """
     if not db.get(Document, doc_id):
         raise HTTPException(404, "文档不存在")
     rows = list(
@@ -631,26 +663,63 @@ def get_reference_entries(doc_id: str, db: Session = Depends(get_db)):
             .order_by(Chunk.page, Chunk.idx)
         ).all()
     )
-    pat = _re.compile(r"^\s*\[(\d{1,3})\]")
-    entries: dict[int, dict] = {}
+
+    by_head: dict[str, Chunk] = {}
     for c in rows:
-        m = pat.match(c.text or "")
-        if not m:
-            continue
-        idx = int(m.group(1))
-        # 同号重复时保留首条：正文角标指向的永远是第一次出现的那条
-        if idx in entries:
-            continue
-        entries[idx] = {
+        key = _norm_ref(c.text)[:_REF_HEAD]
+        if key:
+            # 同键取先出现的那块：正文角标指向的永远是第一次出现的位置
+            by_head.setdefault(key, c)
+
+    def locate(text: str) -> Chunk | None:
+        key = _norm_ref(text)[:_REF_HEAD]
+        if not key:
+            return None
+        hit = by_head.get(key)
+        if hit is not None:
+            return hit
+        # 拼接过早/标签前置会让开头差几个字符，退一步比前 40 字符的包含关系。
+        # 只在精确未命中时才扫，正常文档一次都不会进这里。
+        short = key[:40]
+        for k, c in by_head.items():
+            if k.startswith(short) or short.startswith(k[:40]):
+                return c
+        return None
+
+    def pack(idx: int, c: Chunk, text: str | None) -> dict:
+        return {
             "index": idx,
             "page": c.page,
             # bbox 在库里是 "x0,y0,x1,y1" 字符串，必须在这里转成数组再返回：
             # 前端覆盖层按 [x0,y0,x1,y1] 解构，直接给字符串会逐字符解构，
             # 算出一个 1% 宽、0 高的畸形高亮框（实测踩到过）。
-            "bbox": [float(v) for v in str(c.bbox).split(",")],
-            "text": c.text,
+            "bbox": _bbox_list(c.bbox),
+            "text": text or c.text,
             "chunk_id": c.id,
         }
+
+    entries: dict[int, dict] = {}
+    cits = db.scalars(
+        select(Citation).where(Citation.src_doc_id == doc_id).order_by(Citation.ref_index)
+    ).all()
+    for r in cits:
+        idx = int(r.ref_index or 0)
+        if idx <= 0 or idx in entries:
+            continue
+        c = locate(r.raw_text or "")
+        if c is not None:
+            entries[idx] = pack(idx, c, r.raw_text)
+
+    pat = re.compile(r"^\s*\[(\d{1,3})\]")
+    for c in rows:
+        m = pat.match(c.text or "")
+        if not m:
+            continue
+        idx = int(m.group(1))
+        if idx in entries:
+            continue
+        entries[idx] = pack(idx, c, c.text)
+
     return {"total": len(entries), "entries": [entries[k] for k in sorted(entries)]}
 
 
@@ -1132,6 +1201,22 @@ def rescan(background: BackgroundTasks, sync: bool = Query(False, description="t
     return {"ok": True, "message": "已在后台导入 data/pdf，进度见服务日志", "total": len(list(settings.pdf_dir.glob("*.pdf")))}
 
 
+@router.get("/library/rescan/last")
+def rescan_last():
+    """最近一次批量导入的结果。
+
+    `total` 是磁盘上的 PDF 数，`ok` 是真正入库的篇数，两者不相等时必须能解释
+    清楚（判重跳过几篇、哪几篇、跟谁重复），否则界面写"导入 39 篇"而库里只有
+    36 篇，看起来就像丢了论文。
+    """
+    # 局部导入：这个函数只被前端轮询调用一次，走不到热路径；
+    # ingest 是重模块（拉着 pymupdf / OCR），放在函数里能避免和 routes 的
+    # 顶层导入互相等待，也不会因为顶层 import 顺序变化丢掉这个名字。
+    from app.pipeline.ingest import last_rescan_stats
+
+    return last_rescan_stats()
+
+
 # ==================================================================== 回收站 / 审计（P0 数据安全）
 @router.post("/documents/{doc_id}/restore")
 def restore_doc(doc_id: str, actor: str = "ui", db: Session = Depends(get_db)):
@@ -1479,20 +1564,38 @@ def discover_search(q: str = Query(..., min_length=2), max: int = Query(8, ge=1,
     """按标题/关键词在 arXiv 检索候选论文。
 
     纯标题走 `ti:`，多词短语走 `all:"..."`（词组匹配），都不中再退化到 `all:词`。
-    检索失败时如实返回空 + error，不拿本地库冒充 arXiv 结果。
+    检索失败时如实返回 `ok=false` + `degraded` + 原因，不拿本地库冒充 arXiv 结果，
+    也不把"上游 429 了"伪装成"没搜到"——这两种情况用户要做的事完全相反。
     """
     t0 = time.time()
     raw = re.sub(r"[^A-Za-z0-9\s\-]", " ", " ".join((q or "").split()))[:160].strip()
     if not raw:
         raise HTTPException(400, "查询词需要包含英文标题或关键词")
-    items = discover_mod.search_arxiv(f'all:"{raw}"', max)
-    if not items:
-        items = discover_mod.search_arxiv(f"ti:{raw}", max)
-    if not items:
-        items = discover_mod.search_arxiv(f"all:{raw}", max)
+    items: list[dict] = []
+    last_err = ""
+    answered = False
+    # 三种写法依次降级：只要有一次上游正常返回，就算"检索成功"（哪怕 0 条）
+    for expr in (f'all:"{raw}"', f"ti:{raw}", f"all:{raw}"):
+        got, err = discover_mod.search_arxiv_ex(expr, max)
+        if err:
+            last_err = err
+            continue
+        answered = True
+        if got:
+            items = got
+            break
     _mark_in_library(db, items)
-    return {"ok": True, "q": q, "items": items, "source": "arxiv.org",
-            "ms": int((time.time() - t0) * 1000)}
+    payload = {"q": q, "items": items, "source": "arxiv.org",
+               "ms": int((time.time() - t0) * 1000)}
+    if items:
+        payload["ok"] = True
+    elif answered:
+        # 上游正常但没有命中：这是关键词问题，给一句可执行的提示而不是空白
+        payload.update(ok=True, degraded=False, note="没有匹配的论文，换个关键词或贴标题原文试试")
+    else:
+        payload.update(ok=False, degraded=True,
+                       error=f"arXiv 暂时不可用：{last_err}。稍后重试，或直接粘贴 arXiv 编号导入")
+    return payload
 
 
 @router.post("/discover/import")

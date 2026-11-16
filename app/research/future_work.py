@@ -35,6 +35,19 @@ _METHOD_RESULT = re.compile(
 )
 _SECTION_HINT = re.compile(r"conclusion|future|limitation|discussion", re.I)
 _SPLIT = re.compile(r"(?<=[.!?])\s+(?=[A-Z(])")
+# 参考文献条目与目录行：中文期刊的参考文献常被版面判成正文块（GB/T 7714 的
+# `[C]//`、`[J].`、`pp.` 形态），一旦落到 text 块里，"未来研究方向"的触发词
+# （limitation / future）会从条目里的标题命中，于是整条参考文献被当成研究空白。
+# 这类句子没有任何研究动作，只是排版垃圾，必须在这里挡掉。
+_REFERENCE_ENTRY = re.compile(
+    r"\[[A-Z]{1,2}\]\s*//|\[(?:J|M|D|C|R|S|P)\]\.|//\s*[A-Z][A-Za-z]|"
+    r"\bProceedings of (?:the )?\d|\bpp?\.\s*\d+\s*[-–—]\s*\d+|"
+    r"\bvol\.\s*\d+\s*[,，(]|\bdoi:\s*10\.|\barXiv:\d{4}\.\d{4,5}",
+)
+# 目录行/导航句：点线 + 页码、或独立成行的 "目录 / CONTENTS"。
+_TOC_LINE = re.compile(
+    r"(?:\.{3,}|…{2,}|·{3,})\s*\d{1,4}\s*$|^(?:目\s*录|contents|table of contents)\s*$", re.I
+)
 _STOP = {
     "the", "and", "for", "with", "that", "this", "from", "into", "using", "based",
     "also", "more", "such", "work", "future", "could", "would", "have", "been",
@@ -122,6 +135,9 @@ def collect_future_work(db: Session, max_items: int = 60) -> dict:
         for sent in _SPLIT.split(text):
             sent = sent.strip()
             if not (25 <= len(sent) <= 420) or not _is_research_future(sent):
+                continue
+            # 结构噪声先挡一层：条目/目录句即使含 limitation 之类的词也不是研究问题
+            if _REFERENCE_ENTRY.search(sent) or _TOC_LINE.search(sent):
                 continue
             raw.append({"doc_id": c.doc_id, "page": c.page, "bbox": c.bbox,
                         "section": c.section_path, "text": sent,

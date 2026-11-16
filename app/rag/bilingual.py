@@ -630,6 +630,49 @@ def _en_key(doc_id: str) -> str:
     return f"{doc_id}:en"
 
 
+def _en_status_path(doc_id: str) -> Path:
+    return Path(settings.db_path).parent / "exports" / f"{doc_id}_en.status.json"
+
+
+def _dump_en_status(doc_id: str) -> None:
+    """把任务终态落一份到磁盘。
+
+    状态原本只在 `_JOBS` 里，进程一重启就没了：前端拿到的是
+    `running=false / total=0 / error=""`——既不知道跑完了、也不知道为什么没结果，
+    看起来就是"任务凭空消失"。落一份终态，重启后至少能显示上次的失败原因。
+    中间态不落盘：重启后线程已经死了，再对外说"运行中"就是撒谎。
+    """
+    import json as _json
+    import time as _time
+
+    j = _JOBS.get(_en_key(doc_id)) or {}
+    try:
+        path = _en_status_path(doc_id)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(_json.dumps({
+            "total": j.get("total", 0), "done": j.get("done", 0),
+            "segments": j.get("segments", 0), "skipped": j.get("skipped", 0),
+            "error": j.get("error", ""), "ms": j.get("ms", 0),
+            "at": int(_time.time()),
+        }, ensure_ascii=False), encoding="utf-8")
+    except Exception:  # noqa: BLE001 落盘失败不该覆盖真正的失败原因
+        log.warning("中译英状态落盘失败：%s", doc_id, exc_info=True)
+
+
+def _load_en_status(doc_id: str) -> dict:
+    """读回终态。读不到就返回空 dict（真的没跑过）。"""
+    import json as _json
+
+    try:
+        path = _en_status_path(doc_id)
+        if not path.exists():
+            return {}
+        data = _json.loads(path.read_text(encoding="utf-8"))
+        return data if isinstance(data, dict) else {}
+    except Exception:  # noqa: BLE001
+        return {}
+
+
 def _batch_by_chars(pairs: list[tuple[int, str]], limit: int = 1200,
                     max_items: int = 6) -> list[list[tuple[int, str]]]:
     """按字符数分批：中译英的输出比原文长，一批塞太多会被输出预算截断。"""
@@ -757,10 +800,12 @@ def _run_en_job(doc_id: str) -> None:
             "text": text, "path": str(path), "segments": len(segs),
             "ms": int((_time.time() - t0) * 1000), "running": False,
         })
+        _dump_en_status(doc_id)
         log.info("整篇译英完成：%s，%d/%d 段，%.1fs", doc_id, len(out_map), len(segs), _time.time() - t0)
     except Exception as exc:  # noqa: BLE001 后台线程不能让异常逃逸
         log.exception("整篇译英失败：%s", doc_id)
         _JOBS[key].update({"error": str(exc)[:200], "running": False})
+        _dump_en_status(doc_id)
     finally:
         db.close()
 
@@ -768,16 +813,21 @@ def _run_en_job(doc_id: str) -> None:
 def en_status(db: Session, doc_id: str) -> dict:
     """整篇译英进度。没跑过时返回 null 状态，让前端决定是否显示按钮。"""
     j = _JOBS.get(_en_key(doc_id)) or {}
-    text = j.get("text") or ""
     if not j:
+        # 内存里没有：进程重启过。先看有没有落盘的终态（含上次的失败原因），
+        # 再退到产出文件——"静默归零"比"明确说上次失败了"难排查得多。
+        disk = _load_en_status(doc_id)
+        if disk:
+            j = dict(disk, running=False)
+    text = j.get("text") or ""
+    exp_path = Path(settings.db_path).parent / "exports" / f"{doc_id}_en.md"
+    if not text and exp_path.exists():
         # 进程重启后内存里的 job 没了，但产出的 Markdown 还在——
         # 重新读出来比让用户再花一次模型额度重译一次要合理
-        path = Path(settings.db_path).parent / "exports" / f"{doc_id}_en.md"
-        if path.exists():
-            try:
-                text = path.read_text(encoding="utf-8")
-            except Exception:  # noqa: BLE001
-                text = ""
+        try:
+            text = exp_path.read_text(encoding="utf-8")
+        except Exception:  # noqa: BLE001
+            text = ""
     return {
         "running": bool(j.get("running")),
         "total": j.get("total", 0),
@@ -788,6 +838,6 @@ def en_status(db: Session, doc_id: str) -> dict:
         "error": j.get("error", ""),
         "ms": j.get("ms", 0),
         "preview": text[:6000],
-        "path": j.get("path", ""),
+        "path": j.get("path") or (str(exp_path) if exp_path.exists() else ""),
         "started": bool(j),
     }

@@ -98,8 +98,30 @@ def _parse(xml: str, limit: int) -> list[dict]:
     return out
 
 
-def search_arxiv(query: str, limit: int = 8, *, sort: str = "relevance") -> list[dict]:
-    """按 arXiv 查询语法检索。query 为原始表达式（`ti:"..."` / `all:...` / 组合式）。"""
+def _describe_arxiv_error(exc: Exception) -> str:
+    """把上游异常翻成用户能看懂的一句话。
+
+    `429` 必须单独说：arXiv 限流时它返回的是正常 HTTP 响应，只是没有条目，
+    如果只报"检索失败"，用户会以为是断网；报"限流，等一会儿"才知道该干什么。
+    """
+    status = getattr(getattr(exc, "response", None), "status_code", None)
+    if status == 429:
+        return "arXiv 限流（429），等一分钟再试"
+    if status:
+        return f"arXiv 返回 {status}"
+    if isinstance(exc, httpx.TimeoutException):
+        return "连接 arXiv 超时"
+    return f"{type(exc).__name__}"
+
+
+def search_arxiv_ex(query: str, limit: int = 8, *, sort: str = "relevance") -> tuple[list[dict], str]:
+    """检索并**带回失败原因**：`(结果, 错误说明)`。
+
+    空列表 + 空原因 = 上游确实没有匹配（关键词问题）；
+    空列表 + 有原因 = 上游挂了（限流/超时），这是两件完全不同的事。
+    原来的 `search_arxiv` 把异常吞成 `[]`，接口层只能一律回 `ok: true`，
+    429 期间用户看到的是"没搜到"，会以为自己关键词写错。
+    """
     params = {
         "search_query": query,
         "start": 0,
@@ -108,10 +130,18 @@ def search_arxiv(query: str, limit: int = 8, *, sort: str = "relevance") -> list
         "sortOrder": "descending" if sort == "submittedDate" else "descending",
     }
     try:
-        return _parse(_fetch(params), limit)
+        return _parse(_fetch(params), limit), ""
     except Exception as exc:  # noqa: BLE001 外部服务抖动不能把整个页面打挂
         log.warning("arXiv 检索失败（%s）：%s", query[:60], exc)
-        return []
+        return [], _describe_arxiv_error(exc)
+
+
+def search_arxiv(query: str, limit: int = 8, *, sort: str = "relevance") -> list[dict]:
+    """按 arXiv 查询语法检索。query 为原始表达式（`ti:"..."` / `all:...` / 组合式）。
+
+    只要结果的旧签名，保留给不关心失败原因的调用方（追踪、候选补全等）。
+    """
+    return search_arxiv_ex(query, limit, sort=sort)[0]
 
 
 def _clean_query_text(title: str) -> str:

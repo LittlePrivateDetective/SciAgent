@@ -531,12 +531,22 @@ def reembed_all(batch_size: int = 48) -> dict:
     }
 
 
+_LAST_RESCAN: dict = {}
+
+
 def rescan_library() -> dict:
-    """把 data/pdf 下的官方测试集批量入库（首次启动/演示前一键灌库）。"""
+    """把 data/pdf 下的官方测试集批量入库（首次启动/演示前一键灌库）。
+
+    判重跳过的文件单独留一份明细：界面上"39 篇"和"库里 36 篇"对不上，
+    用户只会以为导入坏了。明细里带上"与哪篇重复"，一眼就知道是扫描件和
+    版本同族被挡住了，而不是丢了论文。
+    """
     from app.db.session import SessionLocal
 
     pdfs = sorted(settings.pdf_dir.glob("*.pdf"))
-    stats = {"total": len(pdfs), "ok": 0, "dup": 0, "failed": 0, "details": []}
+    stats = {"total": len(pdfs), "ok": 0, "dup": 0, "failed": 0,
+             "duplicates": [], "details": []}
+    _LAST_RESCAN.clear()
     for p in pdfs:
         with SessionLocal() as db:
             exist = db.scalar(select(Document).where(Document.filename == p.name))
@@ -549,8 +559,22 @@ def rescan_library() -> dict:
                 stats["details"].append({"file": p.name, "status": "ok", "chunks": r["chunks"]})
             elif r.get("stage") == "duplicate":
                 stats["dup"] += 1
+                same = (r.get("duplicates") or [{}])[0]
+                stats["duplicates"].append({
+                    "file": p.name,
+                    "same_as": same.get("title") or same.get("filename") or "",
+                    "reason": same.get("reason", ""),
+                    "similarity": same.get("similarity", 0),
+                    "suggestion": same.get("suggestion", ""),
+                })
                 stats["details"].append({"file": p.name, "status": "duplicate"})
             else:
                 stats["failed"] += 1
                 stats["details"].append({"file": p.name, "status": "failed", "error": r.get("error")})
+    _LAST_RESCAN.update(stats, at=int(time.time()))
     return stats
+
+
+def last_rescan_stats() -> dict:
+    """最近一次批量导入的结果（内存里，进程重启后为空）。"""
+    return dict(_LAST_RESCAN)

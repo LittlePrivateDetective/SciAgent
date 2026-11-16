@@ -61,7 +61,7 @@ jobs:
           if git ls-files | grep -E '(^|/)\.env$'; then
             echo "::error::仓库里出现了 .env"; exit 1
           fi
-          if git grep -nIE 'sk-[A-Za-z0-9]{25,}|gho_[A-Za-z0-9]{20,}' -- . ; then
+          if git grep -nIE '(^|[^A-Za-z0-9])sk-[A-Za-z0-9]{25,}|(^|[^A-Za-z0-9])gho_[A-Za-z0-9]{20,}' -- . ; then
             echo "::error::疑似真实密钥"; exit 1
           fi
           echo "未发现明文密钥 ✓"

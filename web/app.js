@@ -667,6 +667,13 @@ const app = createApp({
         const r = await fetch(`/api/discover/search?q=${encodeURIComponent(q)}&max=8`).then((x) => x.json());
         this.disc.results = r.items || [];
         this.disc.searchMs = r.ms || 0;
+        // 后端现在会区分"没搜到"和"arXiv 挂了"：后者必须说出来，
+        // 否则用户盯着空列表会去改关键词，而真正该做的是等一会儿再试。
+        if (r.ok === false && r.error) {
+          ElementPlus.ElMessage.warning(r.error);
+        } else if (r.note && !this.disc.results.length) {
+          ElementPlus.ElMessage.info(r.note);
+        }
       } catch (e) {
         ElementPlus.ElMessage.error("arXiv 检索失败，检查网络后重试");
       } finally {
@@ -952,13 +959,33 @@ const app = createApp({
 
     async rescan() {
       this.rescanning = true;
+      const askedAt = Math.floor(Date.now() / 1000);
       const r = await fetch("/api/library/rescan", { method: "POST" }).then((x) => x.json());
       ElementPlus.ElMessage.info(r.message || "已开始导入");
-      // 后台任务，轮询几次让用户看到增长
+      // 后台任务，轮询几次让用户看到增长；跑完后把"入库 N 篇"和
+      // "判重跳过 M 篇"一起报出来——只显示磁盘上的 39 篇而库里是 36 篇，
+      // 用户会以为导入丢了论文。
       let n = 0;
       const timer = setInterval(async () => {
         await this.loadDocs();
         await this.loadInfo();
+        try {
+          const st = await fetch("/api/library/rescan/last").then((x) => x.json());
+          if (st && st.total && (st.at || 0) >= askedAt - 1) {
+            clearInterval(timer);
+            this.rescanning = false;
+            let msg = `导入完成：入库 ${st.ok} 篇`;
+            if (st.dup) msg += `，判重跳过 ${st.dup} 篇`;
+            if (st.failed) msg += `，失败 ${st.failed} 篇`;
+            ElementPlus.ElMessage[st.failed ? "warning" : "success"](msg);
+            const dups = st.duplicates || [];
+            if (dups.length) {
+              // 判重是正确行为，但必须说清"跟谁重复"，否则等于没解释
+              console.info("判重跳过：", dups.map((d) => `${d.file} ≈ ${d.same_as}`).join("；"));
+            }
+            return;
+          }
+        } catch (e) { /* 还没跑完就继续轮询 */ }
         if (++n > 40) { clearInterval(timer); this.rescanning = false; }
       }, 3000);
     },

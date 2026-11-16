@@ -755,12 +755,20 @@ def _num_heading_tail_ok(rest: str, block: Block, body: float) -> bool:
     - `3 BERT` / `2 T5`：编号 + 全大写缩写。字号比正文大（12pt vs 10.9pt）就不是表格。
     - `4.1 GLUE` / `5.1 BASELINES`：编号 + 全大写单词。原判据要求全大写词 ≥6 字符，
       GLUE 只有 4 个字母，于是 BERT 的第 4.1 节整节消失，章节树从 4 直接跳到 4.2。
+
+    但"字号偏大"这个放宽条件单独用太松：GPT-4 正文里的 `90 M speakers` 是**表格
+    行内短语**，字号 10pt、正文 7.4pt，一样满足 1.05 倍。所以先把"首词是单个大写
+    字母"这一种单独挡掉——那是量纲（M/B/T/K）的形态，而 `3 BERT` 的首词是 4 个
+    字母的全大写缩写，不受影响。
     """
     if _plausible_heading_tail(rest):
         return True
     if not _starts_like_title(rest):
         return False
     core = rest.strip(" .:：")
+    head = re.match(r"^([A-Z])(?:\s|$)", core)
+    if head and head.group(1) not in ("A", "I") and not re.match(r"^[A-Z]{2,}", core):
+        return False
     if block.bold and core.isupper() and 3 <= len(core) <= 20 and " " not in core:
         return True
     return block.size >= body * 1.05
