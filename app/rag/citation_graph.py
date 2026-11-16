@@ -159,15 +159,39 @@ def _pagerank(g: nx.DiGraph, alpha: float = 0.85, max_iter: int = 200, tol: floa
     return {nodes[i]: float(x[i]) for i in range(n)}
 
 
-def build_graph(db: Session, *, force: bool = False) -> dict:
-    """构建引用图谱并返回前端所需的全部数据（含缓存）。"""
+def build_graph(db: Session, *, force: bool = False, doc_ids: list[str] | None = None) -> dict:
+    """构建引用图谱并返回前端所需的全部数据（含缓存）。
+
+    doc_ids 非空时只在这些文献之间建图：节点集合、连边、PageRank、介数中心性、
+    社区发现、角色阈值全部在子图上重算。
+    不这么做会得到一个错的东西——若只在原图上隐藏其他节点，PageRank 仍带着
+    全库的影响力，被选中的边缘节点会继承它跟库外文献的关系，"只看这几篇"
+    就成了一句空话。
+    """
     docs = list(db.scalars(select(Document)).all())
+    if doc_ids:
+        keep = set(doc_ids)
+        docs = [d for d in docs if d.id in keep]
     cites = list(db.scalars(select(Citation)).all())
-    key = f"{len(docs)}:{len(cites)}:{sum(d.page_count or 0 for d in docs)}"
+    scope = ",".join(sorted(d.id for d in docs))
+    key = f"{len(docs)}:{len(cites)}:{sum(d.page_count or 0 for d in docs)}:{scope if doc_ids else ''}"
 
     with _LOCK:
         if not force and _CACHE["key"] == key and time.time() - _CACHE["ts"] < TTL:
             return _CACHE["data"]
+
+    if not docs:
+        empty = {
+            "nodes": [],
+            "edges": [],
+            "stats": {"documents": 0, "nodes": 0, "edges": 0, "total_reference_entries": 0,
+                      "matched": 0, "matched_by": {}, "density": 0.0},
+            "clusters": [],
+            "insights": {},
+        }
+        with _LOCK:
+            _CACHE.update({"key": key, "data": empty, "ts": time.time()})
+        return empty
 
     index = _build_index(docs)
     g = nx.DiGraph()
@@ -184,9 +208,21 @@ def build_graph(db: Session, *, force: bool = False) -> dict:
     by_id = {d.id: d for d in docs}
     matched_by: dict[str, int] = {"arxiv": 0, "doi": 0, "title": 0, "none": 0}
     touched = 0
+    scoped_refs = 0
 
     for c in cites:
-        if c.dst_doc_id and c.dst_doc_id in by_id:
+        # 只统计选中范围内的文献：否则"已选 5 篇"的统计里会混进全库 3,679 条
+        # 参考文献，命中数也跟着虚高，图上一看就对不上。
+        if c.src_doc_id not in by_id:
+            continue
+        scoped_refs += 1
+        if c.dst_doc_id:
+            if c.dst_doc_id not in by_id:
+                # 已确认指向库内某篇，但那篇不在本次选择里 → 这条边在子图上不存在。
+                # 不能退回 match_reference 重匹配：那会把它错配到选中的另一篇上，
+                # 凭空造出一条不存在的引用边。
+                matched_by["none"] = matched_by.get("none", 0) + 1
+                continue
             dst, how = c.dst_doc_id, c.matched_by or "title"
         else:
             dst, how = match_reference(c.raw_text or "", index)
@@ -205,7 +241,7 @@ def build_graph(db: Session, *, force: bool = False) -> dict:
         "documents": len(docs),
         "nodes": g.number_of_nodes(),
         "edges": g.number_of_edges(),
-        "total_reference_entries": len(cites),
+        "total_reference_entries": scoped_refs,
         "matched": sum(v for k, v in matched_by.items() if k != "none"),
         "matched_by": matched_by,
         "density": round(nx.density(g), 4) if g.number_of_nodes() > 1 else 0.0,

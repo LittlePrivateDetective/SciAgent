@@ -1152,9 +1152,15 @@ def list_tasks(limit: int = 20, db: Session = Depends(get_db)):
 
 # ---------------- 图谱 ----------------
 @router.get("/graph")
-def citation_graph(db: Session = Depends(get_db), refresh: bool = Query(False, description="true=跳缓存重算")):
+def citation_graph(db: Session = Depends(get_db),
+                   refresh: bool = Query(False, description="true=跳缓存重算"),
+                   doc_ids: str | None = Query(
+                       None,
+                       description="逗号分隔的文献 id；只在这些文献之间建图。不传=全库",
+                   )):
     """引用图谱 + 图算法（PageRank / 介数中心性 / 社区发现），识别基石与桥接论文。"""
-    return build_citation_graph(db, force=refresh)
+    ids = [x.strip() for x in (doc_ids or "").split(",") if x.strip()] or None
+    return build_citation_graph(db, force=refresh, doc_ids=ids)
 
 
 class SurveyRequest(BaseModel):

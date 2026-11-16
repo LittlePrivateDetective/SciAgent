@@ -378,6 +378,9 @@ const app = createApp({
         docId: "",
       },
       graph: { nodes: [], edges: [], stats: null, insights: null, clusters: [] },
+      // 图谱的文献筛选：applied 为空数组 = 全库（默认）；非空 = 只在这些文献之间建图。
+      // 注意不是"隐藏其他节点"，后端会在子图上重算 PageRank / 角色 / 社区。
+      graphPick: { visible: false, ids: [], applied: [], loading: false },
       graphLoading: false,
       selectedNode: null,
       dup: { visible: false, message: "", items: [], pendingId: "" },
@@ -3127,11 +3130,55 @@ const app = createApp({
       await this.jump({ page: seg.page, bbox: [x0, y0, x1, y1], doc_id: this.activeDocId, text: seg.en });
     },
 
+    // 图谱的文献筛选（只把勾选的文献送进建图，不是把别的节点藏起来：
+    // 后端在子图上重算 PageRank 与角色，否则被选中的边缘节点会继承库外的影响力）
+    openGraphPick() {
+      if (!this.docs.length) {
+        ElementPlus.ElMessage.warning("文献库为空，先导入文献");
+        return;
+      }
+      this.graphPick.ids = this.graphPick.applied.length
+        ? [...this.graphPick.applied]
+        : this.docs.map((d) => d.id);
+      this.graphPick.visible = true;
+    },
+
+    graphPickAll() {
+      this.graphPick.ids = this.docs.map((d) => d.id);
+    },
+
+    graphPickNone() {
+      this.graphPick.ids = [];
+    },
+
+    async applyGraphPick() {
+      if (!this.graphPick.ids.length) {
+        ElementPlus.ElMessage.warning("至少选一篇文献；如果想回到全库，点「全选」再构建");
+        return;
+      }
+      // 全选等价于全库：回落到不带 doc_ids 的路径，免得同一张图在缓存里存两份
+      this.graphPick.applied = this.graphPick.ids.length === this.docs.length
+        ? []
+        : [...this.graphPick.ids];
+      this.graphPick.visible = false;
+      await this.loadGraph(true);
+      const n = (this.graph.nodes || []).length;
+      ElementPlus.ElMessage.success(
+        this.graphPick.applied.length ? `已按 ${n} 篇文献重新建图` : "已恢复全库图谱"
+      );
+    },
+
     async loadGraph(force) {
       this.graphLoading = true;
       try {
-        const r = await fetch(`/api/graph${force ? "?refresh=true" : ""}`).then((x) => x.json());
+        // 只在"确实筛过"的时候带 doc_ids：全选等于全库，走不带参的旧路径，
+        // 这样默认打开图谱仍然是 39 篇 213 边，和之前完全一致。
+        const qs = new URLSearchParams();
+        if (force) qs.set("refresh", "true");
+        if (this.graphPick.applied.length) qs.set("doc_ids", this.graphPick.applied.join(","));
+        const r = await fetch(`/api/graph${qs.toString() ? "?" + qs.toString() : ""}`).then((x) => x.json());
         this.graph = r;
+        this.selectedNode = null;   // 换了文献集合，旧选中节点可能已不在图上
         await nextTick();
         this.renderGraph();
         if (force) ElementPlus.ElMessage.success("已重算图谱");
@@ -3216,8 +3263,10 @@ const app = createApp({
           value: n,
           itemStyle: { color: roleColor[n.role] || "#4a7fd4", opacity: inFocus ? 1 : 0.16 },
           label: {
-            show: n.role === "cornerstone" || n.role === "bridge" || Boolean(sel && nb.has(n.id)),
-            fontSize: n.id === sel ? 13 : 11,
+            // 每个节点都显示标题——这是明确要求：图上不许有"没有名字的圈"。
+            // 挤的问题是靠上面的文献选择器解决（少选几篇），不是靠藏标签。
+            show: true,
+            fontSize: n.id === sel ? 13 : 10.5,
             fontWeight: n.id === sel ? "bold" : "normal",
           },
           category: n.cluster,
@@ -3241,9 +3290,11 @@ const app = createApp({
         force: { repulsion: [700, 1400], edgeLength: [130, 300], gravity: 0.035 },
         scaleLimit: { min: 0.35, max: 3 },
         emphasis: { focus: "adjacency", lineStyle: { width: 2.5 } },
-        // 标签避让：重叠时自动隐藏，比人工挑阈值可靠
-        labelLayout: { hideOverlap: true },
-        label: { position: "right", fontSize: 11, formatter: (p) => (p.name || "").slice(0, 30) },
+        // 不启用 hideOverlap：那个选项会在标签重叠时把一部分直接隐藏，
+        // 与本项目"每个圆圈都要有名字"的要求冲突。挤的时候应该少选几篇文献，
+        // 而不是让图悄悄少显示几个名字。
+        labelLayout: { hideOverlap: false },
+        label: { position: "right", fontSize: 10, formatter: (p) => (p.name || "").slice(0, 26) },
         lineStyle: { color: "#c2c9d4", width: 1, curveness: 0.12, opacity: 0.75 },
         edgeSymbol: ["none", "arrow"],
         edgeSymbolSize: [0, 6],

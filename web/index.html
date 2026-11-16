@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SciAgent · 科研智能体</title>
   <link rel="stylesheet" href="/static/vendor/element-plus.css" />
-  <link rel="stylesheet" href="/static/style.css?v=58" />
+  <link rel="stylesheet" href="/static/style.css?v=59" />
   <link rel="stylesheet" href="/static/vendor/katex.min.css" />
   <script src="/static/vendor/katex.min.js"></script>
   <script src="/static/vendor/katex-auto-render.min.js"></script>
@@ -339,6 +339,9 @@
             <i class="dot normal"></i>普通
             <i class="dot peripheral"></i>边缘
           </span>
+          <el-button size="small" text @click="openGraphPick">
+            选择文献（{{ graphPick.applied.length || docs.length }}/{{ docs.length }}）
+          </el-button>
           <el-button size="small" text @click="genSurvey" :loading="survey.loading">生成领域综述</el-button>
           <el-button size="small" text @click="openFutureWork" :loading="fw.loading">未来工作方向</el-button>
           <span v-if="graphLoading" class="graph-loading">计算中…</span>
@@ -737,6 +740,37 @@
     <div v-else class="empty">文献里没有识别到 Future Work / Limitations 段落</div>
   </el-dialog>
 
+  <!-- 图谱的文献筛选：勾哪些就用哪些建图。
+       不是"把其他节点藏起来"——后端收到 doc_ids 后会在子图上重算 PageRank、
+       介数中心性与基石/桥接判定，所以"只选 5 篇"得到的是这 5 篇之间真实的
+       引用结构，而不是原图的一个裁剪视图。 -->
+  <el-dialog v-model="graphPick.visible" title="选择参与建图的文献" width="640px">
+    <div class="gp-bar">
+      <span class="gp-count">已选 <b>{{ graphPick.ids.length }}</b> / {{ docs.length }} 篇</span>
+      <span class="gp-acts">
+        <el-button size="small" text @click="graphPickAll">一键全选</el-button>
+        <el-button size="small" text @click="graphPickNone">清空</el-button>
+      </span>
+    </div>
+    <div class="gp-list">
+      <label v-for="d in docs" :key="d.id" class="gp-item">
+        <input type="checkbox" :value="d.id" v-model="graphPick.ids" />
+        <span class="gp-name" :title="d.title || d.filename">{{ d.title || d.filename }}</span>
+        <span class="gp-year">{{ d.year || '' }}</span>
+      </label>
+    </div>
+    <div class="gp-hint">
+      只在这些文献之间连边，PageRank、介数与角色判定都在子图上重算。
+      选 3–8 篇时节点少、名字不会挤在一起，看局部引用关系最清楚。
+    </div>
+    <template #footer>
+      <el-button size="small" @click="graphPick.visible = false">取消</el-button>
+      <el-button size="small" type="primary" :loading="graphLoading" @click="applyGraphPick">
+        按所选重建图谱
+      </el-button>
+    </template>
+  </el-dialog>
+
   <!-- 去重确认 -->
   <el-dialog v-model="dup.visible" title="检测到重复文献" width="520px">
     <p class="dup-msg">{{ dup.message }}</p>
@@ -1054,6 +1088,6 @@
   </nav>
 </div>
 
-<script src="/static/app.js?v=58"></script>
+<script src="/static/app.js?v=59"></script>
 </body>
 </html>
