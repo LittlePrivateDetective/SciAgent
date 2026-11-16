@@ -79,3 +79,6 @@ data/sections_diff.txt
 *.bak-*
 # llama.cpp 源码树（146MB，量化工具，复现时按文档重新拉取）
 ml/llama.cpp-master/
+
+# 本地离线演示环境（从 deploy 复制的备份，含 embedding_local，不进仓库）
+deploy-local/
