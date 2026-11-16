@@ -2,14 +2,14 @@
  * SciAgent 演示实例 —— Cloudflare Worker 反向代理 + 定时保活
  *
  * 解决两件事：
- * 1) 给一个好看好记的地址：sci.zp-avatar.cn → 平台的 sciagent-research.app.workbuddy.host
+ * 1) 给一个好看好记的地址：sciagent.zp-avatar.cn → 平台的 sciagent-research.app.workbuddy.host
  * 2) 每 5 分钟打一次 /api/warm，让托管沙箱不进入休眠（冷启动实测 21–28 秒）
  *
  * 部署方式（Cloudflare 控制台，不用装 wrangler）：
  *   Workers & Pages → Create → Worker → 粘贴本文件 → Deploy
  *   → Settings → Variables：加 SHARECODE（明文变量即可，别加 Secret 也一样）
  *   → Settings → Triggers → Cron Triggers：加 `* /5 * * * *`（去掉空格）
- *   → Settings → Domains & Routes → Add Custom Domain：sci.zp-avatar.cn
+ *   → Settings → Domains & Routes → Add Custom Domain：sciagent.zp-avatar.cn
  *
  * 为什么用 Worker 而不是纯 DNS CNAME：
  *   纯 CNAME 只是把域名指过去，没有地方挂定时器，沙箱照样会睡。

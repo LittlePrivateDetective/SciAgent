@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import json
+import os
 import sqlite3
 import sys
 import time
@@ -19,7 +20,14 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 DB = ROOT / "deploy" / "data" / "sciagent.db"
-MODEL_DIR = Path(r"D:\models\models\BAAI--bge-small-zh-v1.5\snapshots\master")
+# 换模型跑同一套 A/B 时用环境变量覆盖，不用改脚本：
+#   AB_MODEL_DIR=D:/models/models/bge-m3 AB_CACHE=ab_bge_m3.npy AB_BATCH=16 python scripts/ab_embed.py
+MODEL_DIR = Path(os.environ.get(
+    "AB_MODEL_DIR",
+    r"D:\models\models\BAAI--bge-small-zh-v1.5\snapshots\master",
+))
+AB_CACHE = os.environ.get("AB_CACHE", "ab_local_vec.npy")
+AB_BATCH = int(os.environ.get("AB_BATCH", "48"))
 OUT = ROOT / "data" / "ab_embed.json"
 
 # bge 中文模型检索时要加的指令前缀；不加会掉几个点，官方 README 明确要求
@@ -76,7 +84,7 @@ def load_chunks() -> tuple[list[str], list[str], list[str], np.ndarray]:
     return ids, docs, texts, mat.astype(np.float32)
 
 
-def local_encode(texts: list[str], device: str, batch: int = 48, max_len: int = 512) -> np.ndarray:
+def local_encode(texts: list[str], device: str, batch: int = AB_BATCH, max_len: int = 512) -> np.ndarray:
     import torch
     from transformers import AutoModel, AutoTokenizer
 
@@ -141,7 +149,7 @@ def main() -> None:
 
     import torch
     dev = "cuda" if torch.cuda.is_available() else "cpu"
-    cache = ROOT / "data" / "ab_local_vec.npy"
+    cache = ROOT / "data" / AB_CACHE
     print(f"本地模型编码 {len(texts)} 块（device={dev}）…")
     t0 = time.perf_counter()
     if cache.exists():
@@ -155,7 +163,7 @@ def main() -> None:
             loc_mat = local_encode(texts, dev)
         except (RuntimeError, MemoryError) as exc:   # 显存被 Ollama 占着时退回 CPU
             print(f"  {dev} 编码失败（{exc}），退回 CPU/256 token")
-            loc_mat = local_encode(texts, "cpu", batch=64, max_len=256)
+            loc_mat = local_encode(texts, "cpu", batch=32, max_len=512)
         np.save(cache, loc_mat)
     build_s = time.perf_counter() - t0
     print(f"  完成：{build_s:.1f}s · 本地维度 {loc_mat.shape[1]}")

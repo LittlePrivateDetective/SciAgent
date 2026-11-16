@@ -101,6 +101,10 @@ class Chunk(Base):
     char_len: Mapped[int] = mapped_column(Integer, default=0)
     # 稠密向量：float32 小端字节串；None 表示尚未向量化
     embedding: Mapped[bytes | None] = mapped_column(LargeBinary, nullable=True)
+    # 纯本地模式用的向量（bge-m3，同样是 1024 维）。
+    # 维度和 embedding 一样、语义空间完全不同，两套不能混用，所以分列存：
+    # 云版读写 embedding，离线版读写 embedding_local，互不影响，也随时能切回去。
+    embedding_local: Mapped[bytes | None] = mapped_column(LargeBinary, nullable=True)
 
     doc: Mapped[Document] = relationship(back_populates="chunks")
 

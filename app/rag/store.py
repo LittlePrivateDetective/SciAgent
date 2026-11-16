@@ -26,23 +26,29 @@ class SQLiteVectorStore:
     name = "sqlite"
 
     def __init__(self) -> None:
-        self._cache: dict[str, tuple[list[str], np.ndarray, int]] = {}
+        # key 里带向量列名：云版读 embedding，离线版读 embedding_local，
+        # 两套向量语义空间不同，绝不能让一方的缓存被另一方命中。
+        self._cache: dict[tuple[str, str], tuple[list[str], np.ndarray, int]] = {}
 
-    def _version(self) -> int:
+    @staticmethod
+    def _column(name: str):
+        return Chunk.embedding_local if name == "local" else Chunk.embedding
+
+    def _version(self, column: str) -> int:
+        col = self._column(column)
         with SessionLocal() as db:
-            return int(
-                db.scalar(select(func.count(Chunk.id)).where(Chunk.embedding.is_not(None))) or 0
-            )
+            return int(db.scalar(select(func.count(Chunk.id)).where(col.is_not(None))) or 0)
 
-    def _load(self, doc_ids: tuple[str, ...]) -> tuple[list[str], np.ndarray]:
-        ver = self._version()
-        key = ",".join(sorted(doc_ids)) or "*"
+    def _load(self, doc_ids: tuple[str, ...], column: str = "embedding"):
+        col = self._column(column)
+        ver = self._version(column)
+        key = (column, ",".join(sorted(doc_ids)) or "*")
         hit = self._cache.get(key)
         if hit and hit[2] == ver:
             return hit[0], hit[1]
 
         with SessionLocal() as db:
-            stmt = select(Chunk.id, Chunk.embedding).where(Chunk.embedding.is_not(None))
+            stmt = select(Chunk.id, col).where(col.is_not(None))
             if doc_ids:
                 stmt = stmt.where(Chunk.doc_id.in_(doc_ids))
             rows = db.execute(stmt).all()
@@ -56,9 +62,16 @@ class SQLiteVectorStore:
         self._cache[key] = (ids, mat, ver)
         return ids, mat
 
-    def search(self, qvec: np.ndarray, doc_ids: list[str] | None = None, top_k: int = 20):
-        ids, mat = self._load(tuple(doc_ids or ()))
-        if not ids:
+    def search(self, qvec: np.ndarray, doc_ids: list[str] | None = None, top_k: int = 20,
+               column: str = "embedding"):
+        ids, mat = self._load(tuple(doc_ids or ()), column)
+        if not ids or mat.shape[0] == 0:
+            return []
+        if mat.shape[1] != qvec.shape[0]:
+            # 维度对不上说明模式和向量列错配（例如离线模式读到了云端的 1024 维但查询用了别的模型），
+            # 直接返回空让上层走 BM25，而不是拿错位向量算出噪声却当成正常结果。
+            log.warning("向量维度不匹配：列 %s 是 %d 维，查询是 %d 维，跳过稠密检索",
+                        column, mat.shape[1], qvec.shape[0])
             return []
         scores = mat @ qvec
         k = min(top_k, len(ids))

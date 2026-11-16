@@ -13,6 +13,7 @@ from functools import lru_cache
 import httpx
 import numpy as np
 
+from app.core import runtime
 from app.core.config import settings
 from app.core.logger import get_logger
 
@@ -57,10 +58,36 @@ def _api_embed(texts: list[str]) -> np.ndarray:
 
 @lru_cache(maxsize=1)
 def _local_model():
-    from sentence_transformers import SentenceTransformer
+    """本地 embedding 模型（CLS 池化 + 归一化）。
 
-    log.info("加载本地 embedding 模型：%s", settings.emb_local_model)
-    return SentenceTransformer(settings.emb_local_model)
+    没有用 sentence-transformers：它会把 scikit-learn / scipy 一起拉进来，
+    体积翻倍，而这里需要的只是"分词 → 前向 → 取 CLS → L2 归一化"，
+    十来行就够。运行环境因此只需要 torch(CPU) + transformers。
+    """
+    import torch
+    from transformers import AutoModel, AutoTokenizer
+
+    path = str(settings.emb_local_model)
+    log.info("加载本地 embedding 模型：%s", path)
+    tok = AutoTokenizer.from_pretrained(path)
+    model = AutoModel.from_pretrained(path)
+    model.eval()
+    return tok, model
+
+
+def _local_embed(texts: list[str], batch: int = 16, max_len: int = 512) -> np.ndarray:
+    import torch
+
+    tok, model = _local_model()
+    out: list[np.ndarray] = []
+    with torch.no_grad():
+        for i in range(0, len(texts), batch):
+            b = tok([t[:4000] for t in texts[i : i + batch]], padding=True, truncation=True,
+                    max_length=max_len, return_tensors="pt")
+            h = model(**b).last_hidden_state[:, 0]      # bge / bge-m3 都用 CLS 池化
+            h = torch.nn.functional.normalize(h, dim=-1)
+            out.append(h.float().numpy())
+    return np.vstack(out).astype(np.float32)
 
 
 def embed_texts(texts: list[str]) -> np.ndarray:
@@ -68,12 +95,14 @@ def embed_texts(texts: list[str]) -> np.ndarray:
     if not texts:
         return np.zeros((0, settings.emb_dim), dtype=np.float32)
 
-    provider = settings.emb_provider.lower()
+    # 离线模式强制走本地：这是"完全断网"的关键一步，不能因为 .env 里还留着
+    # EMB_PROVIDER=api 就偷偷发一次网络请求。
+    provider = "local" if runtime.is_offline() else settings.emb_provider.lower()
     try:
         if provider == "api" and settings.emb_api_key:
             mat = _api_embed(texts)
         elif provider == "local":
-            mat = _local_model().encode(texts, normalize_embeddings=True).astype(np.float32)
+            mat = _local_embed(texts)
         else:
             mat = np.vstack([_hash_embed(t, settings.emb_dim) for t in texts])
     except Exception as exc:  # noqa: BLE001 任何异常都降级，绝不让入库失败
@@ -86,8 +115,32 @@ def embed_texts(texts: list[str]) -> np.ndarray:
     return (mat / norms).astype(np.float32)
 
 
+# 查询向量缓存：同一个问题（含"重新生成"、连续追问同一句）不必再打一次远程接口。
+# 一条 1024 维 float32 只占 4KB，512 条约 2MB，换掉的是每次 150–300ms 的网络往返。
+# 只缓存**查询**，不缓存入库文本——入库是批量且一次性的，缓存只会白占内存。
+_QUERY_VEC_CACHE: dict[tuple[str, str], np.ndarray] = {}
+_QUERY_VEC_MAX = 512
+
+
+def clear_query_cache() -> None:
+    """切换运行模式后必须调用：同一句话在云端/离线两种模式下算出的向量不同，
+    留着旧缓存会让切换后的第一次检索拿到错误向量，而且不报错。"""
+    _QUERY_VEC_CACHE.clear()
+
+
 def embed_query(text: str) -> np.ndarray:
-    return embed_texts([text])[0]
+    # 缓存键带上运行模式：云端和离线是两套语义空间，同一个问题算出来的向量
+    # 不一样，混用会让切换后的第一次检索拿到错误向量（且看起来毫无异常）。
+    key = ("offline" if runtime.is_offline() else settings.emb_provider.lower(),
+           (text or "").strip())
+    hit = _QUERY_VEC_CACHE.get(key)
+    if hit is not None:
+        return hit
+    vec = embed_texts([text])[0]
+    if len(_QUERY_VEC_CACHE) >= _QUERY_VEC_MAX:
+        _QUERY_VEC_CACHE.pop(next(iter(_QUERY_VEC_CACHE)), None)
+    _QUERY_VEC_CACHE[key] = vec
+    return vec
 
 
 def to_bytes(vec: np.ndarray) -> bytes:

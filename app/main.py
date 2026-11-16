@@ -101,6 +101,11 @@ WEB_DIR = BASE_DIR / "web"
 
 @app.on_event("startup")
 async def _startup() -> None:
+    # 先恢复上次的运行模式（云端 / 纯本地），再动别的初始化：
+    # 否则会先用云端跑一轮，向量列和 LLM 路由都对不上当前模式。
+    from app.core import runtime
+
+    runtime.load_mode()
     settings.ensure_dirs()
     init_db()
     # 后台改过的参数存在 app_settings 表里，启动时回灌——否则重启一次全部失效，

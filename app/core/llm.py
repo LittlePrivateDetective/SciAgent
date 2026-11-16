@@ -17,6 +17,7 @@ from typing import Iterable, Iterator, Sequence
 
 import httpx
 
+from app.core import runtime
 from app.core.config import settings
 from app.core.logger import get_logger
 
@@ -241,6 +242,15 @@ class LLMGateway:
         要 local 而本机没开 Ollama，就退回全局策略，而不是硬着头皮 502。
         """
         if settings.llm_mock:
+            return "mock"
+
+        # 离线模式优先于一切（除了显式 mock）：它的定义就是"不发任何网络请求"，
+        # 请求头里带不带 cloud 都不该把流量导出去。本机没装模型时仍然走 mock 分支，
+        # 因为 route 末尾会按 ollama_enabled 兜底，不会硬发请求。
+        if runtime.is_offline():
+            if settings.ollama_enabled:
+                return "local"
+            log.warning("离线模式开启，但 OLLAMA_ENABLED 未打开，按 mock 兜底")
             return "mock"
 
         forced = _ROUTE_OVERRIDE.get()

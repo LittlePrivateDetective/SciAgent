@@ -1,0 +1,24 @@
+# Cloudflare Worker 部署配置（wrangler）
+#
+# 用法：
+#   cd ops/cloudflare
+#   wrangler login                 # 浏览器里授权一次
+#   wrangler secret put SHARECODE  # 粘贴访问码（不写进仓库）
+#   wrangler deploy
+#
+# custom_domain = true 会让 wrangler 自动创建 sciagent.zp-avatar.cn 的 DNS 记录
+# 并签证书，不需要再去控制台点「添加自定义域」。
+
+name = "sciagent-proxy"
+main = "worker.js"
+compatibility_date = "2026-11-16"
+
+workers_dev = false
+
+[[routes]]
+pattern = "sciagent.zp-avatar.cn"
+custom_domain = true
+
+# 定时保活：每 5 分钟打一次 /api/warm，吃掉托管沙箱的冷启动
+[triggers]
+crons = ["*/5 * * * *"]

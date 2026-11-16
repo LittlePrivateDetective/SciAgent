@@ -322,6 +322,11 @@ const app = createApp({
         visible: false, loading: false, markdown: "", chars: 0, total: 0,
         translated: 0, missing: 0, verbatim: 0, ratio: 0, title: "", docId: "", truncated: false,
       },
+      // 运行模式：cloud / offline。offline 会同时换掉查询向量、向量表、重排和生成，
+      // 是"纯本地版"的总开关；和下面只切生成模型的 askRoute 不是一回事。
+      offlineMode: false,
+      offlineSwitching: false,
+      offlineInfo: {},
       messages: [],
       // 消息自增 id：模板的 :key 用它而不是下标。删中间一条时，下标会让
       // 后面的节点复用前一条的 DOM（气泡里是 v-html），出现"删了 A 却显示 B"。
@@ -546,6 +551,10 @@ const app = createApp({
     async loadInfo() {
       const r = await fetch("/api/system/info").then((x) => x.json());
       this.info = r;
+      this.offlineMode = r.mode === "offline";
+      this.offlineInfo = r.offline || {};
+      // 离线模式下生成必然走本机，把这一问的路由也钉过去，避免按钮显示"云端"却跑本地
+      if (this.offlineMode) this.askRoute = "local";
       // 后台把全局路由钉成 local 时，界面默认就该显示本地——否则徽标写着云端、
       // 实际跑的是本地，用户看不出这一问到底谁答的。
       if (r && r.llm && r.llm.route === "local") this.askRoute = "local";
@@ -2100,6 +2109,38 @@ const app = createApp({
       this.messages.splice(0, this.messages.length);
       this.scrollChat();
       ElementPlus.ElMessage({ message: `已清空 ${n} 条记录`, type: "success", duration: 1500 });
+    },
+
+    /// 一键切换云 / 纯本地。
+    /// 切换是全局的（影响所有人、下一次提问立即生效），所以失败时必须把开关拨回去，
+    /// 否则界面显示"离线"而实际还在云端，比不提供开关更糟。
+    async toggleOffline(want) {
+      if (this.offlineSwitching) return;
+      this.offlineSwitching = true;
+      try {
+        const r = await fetch("/api/system/mode", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ mode: want ? "offline" : "cloud" }),
+        });
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(data.detail || ("HTTP " + r.status));
+        this.offlineMode = data.mode === "offline";
+        this.offlineInfo = data.offline || {};
+        this.info.mode = data.mode;
+        if (this.offlineMode) this.askRoute = "local";
+        ElementPlus.ElMessage({
+          message: this.offlineMode
+            ? "已切到纯本地：检索与生成本机完成，断网仍可用"
+            : "已切回云端：检索与生成恢复正常",
+          type: "success", duration: 2200,
+        });
+      } catch (e) {
+        this.offlineMode = !want;      // 拨回原状态
+        ElementPlus.ElMessage.error("切换失败：" + e.message);
+      } finally {
+        this.offlineSwitching = false;
+      }
     },
 
     toggleThink() {

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SciAgent · 科研智能体</title>
   <link rel="stylesheet" href="/static/vendor/element-plus.css" />
-  <link rel="stylesheet" href="/static/style.css?v=46" />
+  <link rel="stylesheet" href="/static/style.css?v=47" />
   <link rel="stylesheet" href="/static/vendor/katex.min.css" />
   <script src="/static/vendor/katex.min.js"></script>
   <script src="/static/vendor/katex-auto-render.min.js"></script>
@@ -31,6 +31,20 @@
       <span class="sub">锚点可验证的科研智能体</span>
     </div>
     <div class="badges">
+      <!-- 离线模式：比"云端/本地 3B"更重的一层开关——它同时换掉检索用的向量模型、
+           向量表、重排和生成。开着时整条链路不发一个网络请求。
+           不满足条件时开关置灰，悬停说明缺什么。 -->
+      <label class="offline-switch" :class="{ on: offlineMode, off: !offlineInfo.ready && !offlineMode }"
+             :title="offlineMode
+               ? '当前为纯本地模式：检索、重排、生成全部在本机，不发网络请求'
+               : (offlineInfo.ready
+                  ? '一键切到纯本地：向量/重排/生成都走本机，断网也能用'
+                  : '离线模式还不满足条件：' + (offlineInfo.reasons || []).join('；'))">
+        <input type="checkbox" :checked="offlineMode" :disabled="offlineSwitching || (!offlineMode && !offlineInfo.ready)"
+               @change="toggleOffline($event.target.checked)" />
+        <span class="offline-dot"></span>
+        <span class="offline-label">{{ offlineMode ? "离线" : "云端" }}</span>
+      </label>
       <!-- 模型切换：两个明确的按钮，不是"看起来像状态标签"的下拉。
            只有本机探测到可用本地模型时才出现——公网实例没有 Ollama，
            这里保持只读徽标，不给出点了必错的选项。
@@ -1013,6 +1027,6 @@
   </nav>
 </div>
 
-<script src="/static/app.js?v=46"></script>
+<script src="/static/app.js?v=47"></script>
 </body>
 </html>

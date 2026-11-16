@@ -1,0 +1,16 @@
+# 纯本地模式的额外依赖（云版不需要装）
+
+云版只调远程接口，不需要任何推理框架。只有要让**检索链路也完全离线**时，
+才需要下面这两样——它们必须在运行环境（不是训练环境）里装好。
+
+```bash
+# CPU 版即可：本地只做 bge-m3 的向量化，3B 生成交给 Ollama
+pip install torch --index-url https://download.pytorch.org/whl/cpu
+pip install transformers
+```
+
+装完约占用 300–400 MB 磁盘。**不要装 sentence-transformers**：
+`app/rag/embed.py` 用的是 transformers 直接前向 + CLS 池化，
+sentence-transformers 会额外拉进 scikit-learn / scipy，体积翻倍而功能一样。
+
+模型：bge-m3（1024 维，多语种，2.27 GB），放在 `EMB_LOCAL_MODEL` 指向的目录。

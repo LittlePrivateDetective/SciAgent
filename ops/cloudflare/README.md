@@ -19,30 +19,27 @@
    - 名称 `SHARECODE`，值就是演示链接里 `?sharecode=` 后面那串
    （不加这个变量，Worker 会在访问时报 403「链接不完整」）
 4. **Settings → Triggers → Cron Triggers** → 添加 `*/5 * * * *`
-5. **Settings → Domains & Routes → Add → Custom Domain** → `sci.zp-avatar.cn`
+5. **Settings → Domains & Routes → Add → Custom Domain** → `sciagent.zp-avatar.cn`
    （域名已在这个账号下，证书自动签发，几分钟生效）
 
-## 域名用哪个
+## 域名
 
-`sci.zp-avatar.cn` 和 `sciagent.zp-avatar.cn` 可以**同时绑在同一个 Worker 上**：
-「域和路由 → 添加自定义域」加两条就行，证书各自自动签发。
+已定：**`sciagent.zp-avatar.cn`**（和项目名一致，写进文档、录视频都用它）。
 
-- `sci` 短，口播和视频里念着顺
-- `sciagent` 和项目名一致，适合写进技术文档
-
-建议两个都绑，互不影响。
+如果以后想在口播时念一个更短的，可以再给同一个 Worker 加一条自定义域
+（`sci.zp-avatar.cn`），两条互不影响、证书各自自动签发；不加也不影响现有链接。
 
 ## 部署完怎么验证（3 条命令）
 
 ```bash
 # 1. 首页 200，且地址栏不会跳到 app.workbuddy.host
-curl -sI https://sci.zp-avatar.cn | head -3
+curl -sI https://sciagent.zp-avatar.cn | head -3
 
 # 2. 接口不带 sharecode 也应是 200（证明 Worker 补参数生效）
-curl -s -o /dev/null -w "%{http_code}\n" https://sci.zp-avatar.cn/api/documents
+curl -s -o /dev/null -w "%{http_code}\n" https://sciagent.zp-avatar.cn/api/documents
 
 # 3. 问答必须是流式：应该先看到 data: {...} 逐条出来
-curl -sN -X POST https://sci.zp-avatar.cn/api/chat/stream \
+curl -sN -X POST https://sciagent.zp-avatar.cn/api/chat/stream \
   -H "Content-Type: application/json" \
   -d '{"question":"BERT 的预训练任务是什么","mode":"qa"}'
 ```
@@ -54,8 +51,8 @@ curl -sN -X POST https://sci.zp-avatar.cn/api/chat/stream \
 
 | 入口 | 地址 |
 | --- | --- |
-| 前台 | `https://sci.zp-avatar.cn/` |
-| 后台 | `https://sci.zp-avatar.cn/admin` |
+| 前台 | `https://sciagent.zp-avatar.cn/` |
+| 后台 | `https://sciagent.zp-avatar.cn/admin` |
 
 地址栏不再出现 sharecode（Worker 在转发时补上），评委看到的是一个干净的域名。
 
@@ -63,7 +60,7 @@ curl -sN -X POST https://sci.zp-avatar.cn/api/chat/stream \
 
 - **别在 Worker 里缓存 `/api/*`**：`worker.js` 里统一 `cache-control: no-store`，
   问答是流式的，一旦被边缘缓存，前端"逐字出现"会变成整段蹦出来。
-- **提交材料仍然填平台链接**，不填 `sci.zp-avatar.cn`：`.cn` 域名在国内公开访问
+- **提交材料仍然填平台链接**，不填 `sciagent.zp-avatar.cn`：`.cn` 域名在国内公开访问
   严格说要备案，比赛材料里没必要引入这个灰色项。这个域名是给你录视频、给同学
   演示、答辩现场用的。
 

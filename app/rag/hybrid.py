@@ -14,11 +14,13 @@ from __future__ import annotations
 import math
 import re
 import time
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 
 import numpy as np
 from sqlalchemy import select
 
+from app.core import runtime
 from app.core.config import settings
 from app.core.logger import get_logger
 from app.db.models import Chunk, Document
@@ -392,7 +394,22 @@ def search(
     doc_ids: list[str] | None = None,
     top_k: int | None = None,
     alpha: float | None = None,
+    profile: dict | None = None,
 ) -> list[Hit]:
+    """混合召回。`profile` 是可选的分阶段计时容器（毫秒），只用于诊断与 SSE 展示。
+
+    为什么单独开一个容器而不是打日志：单次问答的耗时要在**界面上**能看见，
+    否则"优化检索"只能靠猜。routes 层把它塞进 retrieve 事件的 profile 字段里。
+    """
+    prof = profile if profile is not None else {}
+    _t = time.perf_counter()
+
+    def mark(key: str) -> None:
+        nonlocal _t
+        now = time.perf_counter()
+        prof[key] = round((now - _t) * 1000, 1)
+        _t = now
+
     top_k = top_k or settings.top_k
     alpha = settings.hybrid_alpha if alpha is None else alpha
     # hash 向量只保留词袋信息，语义能力接近零；此时把稠密权重压低，主要靠 BM25，
@@ -401,19 +418,33 @@ def search(
         alpha = min(alpha, 0.2)
 
     bm25, id_list = _get_bm25(doc_ids)
+    mark("index")
     if not id_list:
         return []
 
     sparse = bm25.scores(tokenize(query))
+    mark("sparse")
+
+    # 语料加载是本地 SQLite 查询、查询向量化是一次远程 HTTP 调用，两者互不依赖。
+    # 串行时"等网络"的时间白白叠在"查库"后面（实测合计 200–350ms），并发后只剩较慢的那个。
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        f_corpus = pool.submit(_load_corpus, doc_ids)
+        f_qvec = pool.submit(embed_query, query)
+        chunks, names = f_corpus.result()
+        qvec = f_qvec.result()
+    mark("load_embed")
 
     # 先取块对象：后面既要按 doc 加权，也要回填命中信息，只查一次
-    chunks, names = _load_corpus(doc_ids)
     by_id = {c.id: c for c in chunks}
 
     # 稠密路
-    qvec = embed_query(query)
-    dense_hits = dict(get_store().search(qvec, doc_ids, top_k=max(30, top_k * 3)))
+    # 云版读 chunks.embedding（qwen 向量），离线版读 chunks.embedding_local（bge-m3）。
+    # 两套向量同维但不同空间，读错列不会报错、只会悄悄降低召回，所以这里显式分派。
+    emb_col = "local" if runtime.is_offline() else "embedding"
+    dense_hits = dict(get_store().search(qvec, doc_ids, top_k=max(30, top_k * 3),
+                                         column=emb_col))
     dense = np.array([dense_hits.get(cid, 0.0) for cid in id_list])
+    mark("dense")
 
     # RRF 融合（名次倒数），alpha 用作两路的软权重
     def rrf_ranks(scores: np.ndarray) -> np.ndarray:
@@ -536,7 +567,9 @@ def _api_rerank(query: str, hits: list[Hit], top_k: int) -> list[Hit] | None:
     失败一律返回 None，由调用方退回本地规则重排——演示现场绝不能因为外部
     服务抖动而整条链路不可用。
     """
-    if settings.rerank_provider.lower() == "none" or not hits:
+    # 离线模式绝不发网络请求：直接返回 None，由调用方退回"关键词覆盖率 + 位置先验"
+    # 的本地规则重排。这一步是"完全断网"能成立的前提之一。
+    if runtime.is_offline() or settings.rerank_provider.lower() == "none" or not hits:
         return None
     key = settings.rerank_api_key or settings.emb_api_key or settings.llm_api_key
     if not key or not settings.rerank_url:
@@ -723,7 +756,9 @@ def _ensure_table_candidates(query: str, hits: list[Hit], doc_ids: list[str] | N
         # 两路都要看：中文问句问英文表格时 BM25 命中的是 0（"复杂度" vs "complexity"），
         # 只有向量分能把表挑出来；反过来术语型提问（"BLEU 41.16"）BM25 更准。
         sparse = bm25.scores(tokenize(query))
-        dense = dict(get_store().search(embed_query(query), doc_ids, top_k=200))
+        dense = dict(get_store().search(
+            embed_query(query), doc_ids, top_k=200,
+            column="local" if runtime.is_offline() else "embedding"))
 
         scored: list[tuple[float, float, int]] = []
         for cid, (i, c) in by_id.items():
@@ -783,7 +818,7 @@ def _ensure_table_slot(query: str, final: list[Hit], pool: list[Hit], top_k: int
 
 
 def search_with_rerank(query: str, doc_ids: list[str] | None = None, top_k: int | None = None,
-                       stitch_n: int = 3) -> list[Hit]:
+                       stitch_n: int = 3, profile: dict | None = None) -> list[Hit]:
     """召回 → 重排。优先用重排模型，不可用时用「关键词覆盖率 + 位置先验」兜底。
 
     候选池为什么是 top_k×4（而不是原来的 ×2）：cross-encoder 是唯一能把
@@ -798,9 +833,13 @@ def search_with_rerank(query: str, doc_ids: list[str] | None = None, top_k: int 
     表格的下一行，白占 prompt），对比题给 3。总量控制不住的话，top_k=5
     实际会变成 8 条，自适应就失去意义了。
     """
+    prof = profile if profile is not None else {}
+    _t = time.perf_counter()
     top_k = top_k or settings.top_k
     cand_n = max(top_k * 4, 40)
-    hits = search(query, doc_ids, top_k=cand_n)
+    hits = search(query, doc_ids, top_k=cand_n, profile=prof)
+    prof["recall_ms"] = round((time.perf_counter() - _t) * 1000, 1)
+    prof["candidates"] = len(hits)
     if not hits:
         return []
 
@@ -808,7 +847,11 @@ def search_with_rerank(query: str, doc_ids: list[str] | None = None, top_k: int 
     hits = _ensure_table_candidates(query, hits, doc_ids)
 
     # 重排多要一些：后面要从中挑"分数最高的表格"补位，只拿 8 条往往里面没有表
+    _t = time.perf_counter()
     remote = _api_rerank(query, hits, min(max(top_k * 3, 24), len(hits)))
+    prof["rerank_ms"] = round((time.perf_counter() - _t) * 1000, 1)
+    prof["rerank_hits"] = len(remote or [])
+    prof["rerank_by"] = "api" if remote else "local" 
     if remote:
         final = _ensure_mentioned_docs(remote[:top_k], query, top_k, doc_ids)
         # 补位用的表格池：优先用重排给过分数的，其次退回召回阶段的词法分。

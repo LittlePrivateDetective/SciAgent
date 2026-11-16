@@ -17,6 +17,7 @@ from sqlalchemy.orm import Session
 from app.agents import nodes as agent_nodes
 from app.agents.graph import run as run_agent
 from app.core.cache import answer_cache, answer_ttl, make_key
+from app.core import runtime
 from app.core.config import resolve_doc_file, settings
 from app.core.guard import guard
 from app.core.llm import gateway, local_model_status, want_thinking
@@ -82,6 +83,66 @@ PENDING: dict[str, dict] = {}
 
 
 # ---------------- 系统 ----------------
+def _offline_status(db: Session) -> dict:
+    """离线模式可用性：三样东西缺一不可（本地向量 / 模型文件 / 本机 Ollama）。
+
+    前端拿它决定开关能不能拨。不满足时把原因说清楚，比给一个点了必错的开关有用。
+    """
+    total = db.scalar(select(func.count(Chunk.id))) or 0
+    vec = db.scalar(select(func.count(Chunk.id)).where(Chunk.embedding_local.is_not(None))) or 0
+    model_path = Path(str(settings.emb_local_model))
+    model_ok = model_path.exists()
+    ollama = bool(local_model_status().get("available"))
+    reasons = []
+    if not total or vec < total * 0.95:
+        reasons.append(f"本地向量未就绪（{vec}/{total}），先跑 scripts/build_local_vectors.py")
+    if not model_ok:
+        reasons.append(f"找不到本地向量模型：{model_path}")
+    if not ollama:
+        reasons.append("本机 Ollama 不可用，生成仍需云端")
+    return {
+        "vectors": vec,
+        "total": total,
+        "model": str(model_path),
+        "ollama": ollama,
+        "ready": not reasons,
+        "reasons": reasons,
+    }
+
+
+class ModeIn(BaseModel):
+    mode: str = Field(default="cloud", description="cloud / offline")
+
+
+@router.get("/system/mode")
+def get_runtime_mode(db: Session = Depends(get_db)):
+    return {"mode": runtime.get_mode(), "offline": _offline_status(db)}
+
+
+@router.post("/system/mode")
+def set_runtime_mode(body: ModeIn, db: Session = Depends(get_db)):
+    """一键切换云 / 纯本地。
+
+    切到 offline 前必须校验三样东西都在，否则会出现"开关拨过去了、一问就报错"
+    ——比不提供开关更糟。切换后要清两层缓存：
+      · 向量库内存缓存（两套向量维度相同、语义不同，残留会悄悄降召回）
+      · 查询向量缓存（同一个问题在两种模式下算出的向量不一样）
+    """
+    want = runtime.OFFLINE if body.mode == "offline" else runtime.CLOUD
+    if want == runtime.OFFLINE:
+        st = _offline_status(db)
+        if not st["ready"]:
+            raise HTTPException(status_code=409, detail="；".join(st["reasons"]))
+    mode = runtime.set_mode(want)
+    get_store().reset()
+    from app.rag import embed as embed_mod
+
+    embed_mod.clear_query_cache()
+    answer_cache.clear()
+    log.info("运行模式已切换：%s", mode)
+    return {"ok": True, "mode": mode, "offline": _offline_status(db)}
+
+
 @router.get("/system/info")
 def system_info(db: Session = Depends(get_db)):
     return {
@@ -102,6 +163,9 @@ def system_info(db: Session = Depends(get_db)):
                 and settings.rerank_provider.lower() != "none"
             ),
         },
+        # 运行模式：cloud / offline。前端据此决定"离线模式"开关的状态。
+        "mode": runtime.get_mode(),
+        "offline": _offline_status(db),
         "counts": {
             "documents": db.scalar(select(func.count(Document.id))) or 0,
             "chunks": db.scalar(select(func.count(Chunk.id))) or 0,
