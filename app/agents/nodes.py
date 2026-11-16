@@ -647,7 +647,10 @@ def finalize(state: dict) -> dict:
     # node_verify 里挂上的 author_check 弄丢，并把 rate 算回 0。
     if evidence and not state.get("deterministic"):
         state["verify"] = verify(body, evidence, state.get("goal", ""))
-    table = citation_table(evidence)
+    # 确定性答案不附"引用来源"表：它的依据是元数据，不是检索到的这些片段。
+    # 挂一张 5 条证据的表在下面，等于暗示"答案是从这 5 段推出来的"，
+    # 反而给人一个可以去核对、但核不对的错觉。
+    table = "" if state.get("deterministic") else citation_table(evidence)
     state["answer_rendered"] = body + table
     # 导出用的"可核验版"：每个 [1] 后面直接跟 [p7@x0,y0,x1,y1]，拿到 PDF 里能精准定位
     state["answer_anchored"] = attach_anchors(body, evidence) + table
