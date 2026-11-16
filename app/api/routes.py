@@ -1377,6 +1377,27 @@ class StreamIn(BaseModel):
     no_cache: bool = False
 
 
+def _author_fact(question: str, doc_ids) -> str | None:
+    """作者枚举题的确定性答案；不适用时返回 None。
+
+    流式接口原本是独立实现，漏掉了 /chat 里那条"作者名单走元数据"的路径。
+    后果很具体：界面默认走流式，于是「Attention 的第 6 作者是谁」在网页上
+    答成 Jakob Uszkoreit（那是第 4 位），用 /api/chat 同一个问题却答对。
+    两条路径给出不同答案，比答错更难解释。
+    """
+    ids = [str(i) for i in (doc_ids or []) if i]
+    if len(set(ids)) != 1:
+        return None
+    try:
+        from app.agents.factcheck import author_answer
+        meta = agent_nodes._author_meta({"doc_ids": ids})
+        if not meta:
+            return None
+        return author_answer(question, meta["authors"], meta["pdf"])
+    except Exception:  # noqa: BLE001 元数据缺失不该让整条链路 500
+        return None
+
+
 @router.post("/chat/stream")
 def chat_stream(body: StreamIn, db: Session = Depends(get_db)):
     """SSE：先推真实的检索/校验思考事件，再逐 token 推答案。
@@ -1456,6 +1477,24 @@ def chat_stream(body: StreamIn, db: Session = Depends(get_db)):
             yield emit("thinking", stage="plan", state="done",
                        text=f"识别意图：{_intent_of(q, body.mode)} · 检索范围 {scope_n} 篇文献",
                        scope=scope_n)
+
+            # 作者枚举题不检索：名单在 documents.authors 里，让模型对着切块证据数
+            # 序号必然出错（首页作者区常被切在块缝里）。命中就直接推确定性答案。
+            fact = _author_fact(q, body.doc_ids)
+            if fact:
+                yield emit("thinking", stage="retrieve", state="done",
+                           text="命中作者元数据：按原文首页署名顺序直接给出，不检索正文",
+                           hits=0, docs=1, pages=0, latency_ms=0)
+                for i in range(0, len(fact), 16):
+                    yield emit("token", text=fact[i:i + 16])
+                    time.sleep(0.008)
+                yield emit("done", answer=fact, raw_answer=fact, evidence=[],
+                           verify={"total": 0, "valid": 0, "invalid": 0,
+                                   "rate": 0.0, "cleaned": fact},
+                           meta={"thinking": deep, "model": _route_model(gateway.route()),
+                                 "cache": "miss", "intent": "author"})
+                return
+
             yield emit("thinking", stage="retrieve", state="run",
                        text="检索中：BM25 + 稠密向量 + RRF 融合 → 重排")
             t = time.time()
@@ -1477,6 +1516,32 @@ def chat_stream(body: StreamIn, db: Session = Depends(get_db)):
             if not evidence:
                 yield emit("error", text="文献库中没有检索到相关内容")
                 yield emit("done", answer="没有检索到相关证据。", evidence=[], verify={})
+                return
+
+            # 与非流式共用同一道证据覆盖闸门：问题的主体术语在证据里一个都没出现，
+            # 就说明这批证据与问题无关，此时让模型作答只会凭空编。流式此前漏了这道闸，
+            # 同一问题在网页上会编、在 /api/chat 上会拒答。
+            from app.agents.factcheck import absent_entities, question_entities
+
+            gone = absent_entities(q, evidence)
+            if gone and len(gone) == len(question_entities(q)):
+                terms = "、".join(f"「{g}」" for g in gone[:4])
+                one_doc = len({e.get("doc_id") for e in evidence}) == 1
+                scope = "这篇文献" if one_doc else "检索到的证据"
+                said = (f"检索到的 {len(evidence)} 条证据里没有出现 {terms}，无法据此回答。\n\n"
+                        f"最可能的原因是{scope}本身没有讨论该主题。"
+                        "如果文献用中文表述同一概念，可以换个问法；"
+                        "如果希望跨库查找，把检索范围从「当前文献」切到「全部文献」再问一次。")
+                yield emit("thinking", stage="read", state="done",
+                           text=f"证据覆盖检查：主体术语 {terms} 均未出现，改为确定性拒答")
+                for i in range(0, len(said), 16):
+                    yield emit("token", text=said[i:i + 16])
+                    time.sleep(0.008)
+                yield emit("done", answer=said, raw_answer=said, evidence=evidence,
+                           verify={"total": 0, "valid": 0, "invalid": 0,
+                                   "rate": 0.0, "cleaned": said},
+                           meta={"thinking": deep, "model": None, "cache": "miss",
+                                 "intent": "coverage_block"})
                 return
 
             # 与 /api/chat 共用同一套证据排版：带「关键句」前置、表格保留换行。
