@@ -297,7 +297,24 @@ def smart_quotes(html: str) -> str:
     return "".join(out)
 
 
-def render_html(md_text: str) -> str:
+FIGURE_CSS = r"""
+/* ---------------- 配图（作品介绍文档用） ---------------- */
+figure { margin: 4mm 0 5mm 0; page-break-inside: avoid; text-align: center; }
+figure img { width: 100%; display: block; border: 0.5pt solid #d8dee9; }
+figcaption {
+  font-family: "Microsoft YaHei", sans-serif;
+  font-size: 8.5pt;
+  color: #6b7280;
+  margin-top: 2mm;
+  line-height: 1.55;
+  text-align: left;
+}
+.fig2 { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; page-break-inside: avoid; }
+.fig2 figure { margin: 0; }
+"""
+
+
+def render_html(md_text: str, doc_title: str = "SciAgent 技术文档") -> str:
     md = markdown.Markdown(
         extensions=["tables", "fenced_code", "toc", "sane_lists", "attr_list"],
         extension_configs={"toc": {"toc_depth": "1-2", "permalink": False}},
@@ -308,8 +325,8 @@ def render_html(md_text: str) -> str:
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<title>SciAgent 技术文档</title>
-<style>{CSS}</style>
+<title>{doc_title}</title>
+<style>{CSS}{FIGURE_CSS}</style>
 </head>
 <body>
 {body}
@@ -326,11 +343,18 @@ def find_edge() -> str:
 
 
 def main() -> None:
+    # 支持处理第二份文档：python scripts/build_doc.py 作品介绍文档
+    global SRC_MD, OUT_HTML, OUT_PDF
+    stem = sys.argv[1] if len(sys.argv) > 1 else "技术文档"
+    SRC_MD = DOCS / f"{stem}.md"
+    OUT_HTML = DOCS / f"{stem}.html"
+    OUT_PDF = DOCS / f"{stem}.pdf"
+
     if not SRC_MD.exists():
         raise SystemExit(f"源文件不存在：{SRC_MD}")
 
     md_text = SRC_MD.read_text(encoding="utf-8")
-    html = render_html(md_text)
+    html = render_html(md_text, doc_title=f"SciAgent · {stem}")
     OUT_HTML.write_text(html, encoding="utf-8")
     print(f"[1/3] HTML 已生成：{OUT_HTML.relative_to(ROOT)}　{len(html):,} 字节")
 
@@ -366,7 +390,7 @@ def main() -> None:
         n = doc.page_count
         chars = sum(len(p.get_text()) for p in doc)
         print(f"[3/3] 页数 {n}　可提取文字 {chars:,} 字　平均 {chars // max(n,1)} 字/页")
-        if n > 30:
+        if n > 30 and stem == "技术文档":
             print(f"⚠️  超出 30 页上限 {n - 30} 页，需要压缩")
             sys.exit(2)
     except ImportError:
