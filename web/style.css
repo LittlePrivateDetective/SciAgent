@@ -562,6 +562,12 @@ body {
   background: #f2f6ff; border-color: #bfd0f5; color: var(--brand);
   transform: translateX(2px);
 }
+/* 范围标签：告诉用户这条问题会以什么范围检索，避免"以为在问当前文献" */
+.sample-scope {
+  display: inline-block; margin-left: 6px; padding: 0 5px;
+  font-size: 10.5px; line-height: 16px; border-radius: 4px;
+  color: #6b7280; background: #eef1f6; text-indent: 0; vertical-align: 1px;
+}
 .sample-q::before { content: "▸ "; color: #b9c2d0; }
 .sample-q:hover::before { color: var(--brand); }
 

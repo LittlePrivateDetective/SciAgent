@@ -28,7 +28,7 @@ const UPSTREAM = "https://sciagent-research.app.workbuddy.host";
 /** 单次尝试的上限。两次加起来仍远低于 Cloudflare 的 100 秒边缘超时 */
 const TIMEOUT_GET_MS = 20000;
 /** 非 GET（主要是问答与上传）：首字节可能确实慢，给宽一点，但只试一次 */
-const TIMEOUT_WRITE_MS = 60000;
+const TIMEOUT_WRITE_MS = 85000;
 
 /** 把 sharecode 补进去：用户不用记那串码，地址栏也干净 */
 function withSharecode(url, sharecode) {

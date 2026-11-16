@@ -208,8 +208,51 @@ def _expand_query(question: str) -> str:
 
 
 # ---------------- 检索 ----------------
+def _lock_doc_by_title(state: dict) -> None:
+    """问题里点名了某篇论文时，把检索范围收窄到那一篇。
+
+    实测（推荐问题全量回归）：范围选「全部文献」问「Attention Is All You Need 的
+    第 6 作者是谁及机构」，检索命中的却是另外几篇讨论 Transformer 的论文
+    （GPT-3 等）——首页作者块根本没进来，于是答成「作者对、机构未提及」。
+
+    点名了标题就不该跨库猜。规则刻意保守，避免误锁：
+      · 标题规范化后整串出现在问题里，或标题的连续 ≥3 个词原样出现；
+      · 候选中得分唯一最高才锁（并列视为歧义，不锁）；
+      · 用户已经只选了一篇时不覆盖（显式选择优先）。
+    """
+    ids = state.get("doc_ids") or []
+    if len(ids) == 1:
+        return
+    core = re.sub(r"[^0-9a-z\u4e00-\u9fa5]+", " ", (state.get("goal") or "").lower()).strip()
+    if not core:
+        return
+    g = core.split()
+    with SessionLocal() as db:
+        rows = db.execute(select(Document.id, Document.title)).all()
+    best, best_id, tie = 0, None, False
+    for did, title in rows:
+        t = re.sub(r"[^0-9a-z\u4e00-\u9fa5]+", " ", (title or "").lower()).strip()
+        if len(t) < 6:
+            continue
+        score = len(t) if t in core else 0
+        toks = t.split()
+        if not score and len(toks) >= 3:
+            for i in range(len(g) - len(toks) + 1):
+                if g[i : i + len(toks)] == toks:
+                    score = len(t)
+                    break
+        if score > best:
+            best, best_id, tie = score, did, False
+        elif score and score == best:
+            tie = True
+    if best_id and not tie:
+        state["doc_ids"] = [best_id]
+        _step(state, "retriever", "lock_by_title", doc_id=best_id, score=best)
+
+
 def node_retrieve(state: dict) -> dict:
     t0 = time.time()
+    _lock_doc_by_title(state)
     query = state["goal"]
     for s in state.get("plan", [])[state.get("cursor", 0) :]:
         if s.get("type") == "retrieve" and s.get("query"):
