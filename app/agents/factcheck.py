@@ -221,3 +221,59 @@ def check_author_claim(question: str, answer: str, authors: list[str]) -> dict:
             f"{'、'.join(mentioned[:3]) if mentioned else '未识别到名单内人名'}"
         ),
     }
+
+
+# ---------------------------------------------------------------- 证据覆盖闸门
+# 向量检索永远会返回 top-k，哪怕整篇文献跟问题毫无关系也能凑出十几条。
+# 实测：问「对比 BERT 与 Transformer」而当前文献全文 0 处提到 BERT，
+# 模型仍编出一段"承袭关系"，并挂上真实存在的 [13]；界面显示"引用校验 5/5 命中"
+# ——那道校验只认编号有效，不认内容相关，反而给了用户"已验证"的错觉。
+# 这里把"证据里有没有问题的主体"变成一个确定性判断，不交给模型自由发挥。
+
+_ENTITY = re.compile(r"[A-Za-z][A-Za-z0-9\-]{2,}")
+_ENTITY_STOP = {
+    "the", "and", "for", "with", "that", "this", "from", "are", "was", "were",
+    "has", "have", "can", "not", "but", "you", "how", "what", "why", "when",
+    "which", "who", "use", "using", "used", "does", "did", "its", "their",
+}
+
+
+def question_entities(question: str) -> list[str]:
+    """抽出问题里的英文专有名词/缩写（BERT / Transformer / BLEU / GPT-4）。
+
+    只收**含大写字母**的词：这是"专有名词与缩写"的可靠特征，也正是模型最容易
+    张冠李戴的对象。全小写词一律不收——实测收进来会误伤："Adam 的 beta1 是多少"
+    里 beta1 是小写普通变量名，而证据把同一量写成希腊字母 β1，按字面比对必然
+    判成"未提及"，把本来答得对的问题拦下来。
+    """
+    out: list[str] = []
+    for m in _ENTITY.finditer(question or ""):
+        w = m.group(0).strip("-")
+        if len(w) < 3 or w.lower() in _ENTITY_STOP:
+            continue
+        if not any(c.isupper() for c in w):
+            continue
+        if w not in out:
+            out.append(w)
+    return out
+
+
+def absent_entities(question: str, evidence: list[dict]) -> list[str]:
+    """返回"问题提到、但证据文本里一次都没出现"的实体。
+
+    只要有实体缺失就返回它——问题问的是这些词的对比，缺一个就凑不齐论据。
+    大小写不敏感；连字符做归一（GPT-4 与 GPT4、BERT-base 与 BERTbase 视为同一个词），
+    否则写法差异会把"文献其实讲过"的题误拦下来。
+    """
+    ents = question_entities(question)
+    if not ents:
+        return []
+    blob = " ".join((e.get("text") or "") for e in evidence).lower()
+    flat = blob.replace("-", "").replace(" ", "")
+    miss: list[str] = []
+    for e in ents:
+        low = e.lower()
+        if low in blob or low.replace("-", "").replace(" ", "") in flat:
+            continue
+        miss.append(e)
+    return miss

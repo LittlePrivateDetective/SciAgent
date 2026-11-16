@@ -390,6 +390,33 @@ def node_answer(state: dict) -> dict:
         _step(state, "writer", "answer", note="no_evidence")
         return state
 
+    # 证据里连问题的主体都没出现 → 不交给模型。
+    # 向量检索永远返回 top-k，整篇文献跟问题无关也能凑出十几条证据；模型拿到
+    # 这些无关片段仍会顺着"对比/分析"的指令往下写，编出一段看起来完整的话，
+    # 再挂上真实存在的编号——而引用校验只认编号有效、不认内容相关，界面照样显示
+    # "5/5 命中"。实测就是"当前文献全文 0 处 BERT，却答出 BERT 的承袭关系"。
+    # 这一步用确定性判断把这种答案挡在模型之前。
+    from app.agents.factcheck import absent_entities
+
+    gone = absent_entities(state.get("goal", ""), evidence)
+    if gone:
+        terms = "、".join(f"「{g}」" for g in gone[:4])
+        one_doc = len({e.get("doc_id") for e in evidence}) == 1
+        scope = "这篇文献" if one_doc else "检索到的证据"
+        state["answer"] = (
+            f"检索到的 {len(evidence)} 条证据里没有出现 {terms}，无法据此回答。\n\n"
+            f"最可能的原因是{scope}本身没有讨论该主题。"
+            "如果文献用中文表述同一概念，可以换个问法；"
+            "如果希望跨库查找，把检索范围从「当前文献」切到「全部文献」再问一次。"
+        )
+        state["citations"] = []
+        state["verify"] = {"total": 0, "valid": 0, "invalid": 0, "rate": 0.0, "cleaned": state["answer"]}
+        state["confidence"] = "low"
+        state["deterministic"] = True
+        _step(state, "writer", "answer", note="entities_absent", missing=gone[:4],
+              latency_ms=int((time.time() - t0) * 1000))
+        return state
+
     # 是否走"多篇对比"模板：必须以用户意图为准。
     # 早期版本用"证据里出现多篇文档"就判定对比，结果单篇问题只要同时召回两篇
     # 就会被强行做成对比表格（实测"Adam 的 beta1"被拿去跟 PPO 论文对比）。

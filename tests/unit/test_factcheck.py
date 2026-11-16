@@ -8,6 +8,8 @@
 from __future__ import annotations
 
 from app.agents.factcheck import (
+    absent_entities,
+    question_entities,
     _to_int,
     affiliation_of,
     author_answer,
@@ -128,3 +130,47 @@ def test_check_not_applicable_for_other_questions():
     # 名单缺失时也不能判人家错
     r2 = check_author_claim("第6作者是谁", "随便答", [])
     assert r2["applicable"] is False
+
+
+# ---------------------------------------------------------------- 证据覆盖闸门
+def test_entities_extracted_from_mixed_question():
+    """中英混写的问题里，英文术语要被抽成硬实体。"""
+    assert question_entities("对比 BERT 与 Transformer 编码器在结构上的承袭关系") == [
+        "BERT",
+        "Transformer",
+    ]
+
+
+def test_chinese_only_question_has_no_entities():
+    """纯中文问题不触发闸门，否则正常提问会被误拦。"""
+    assert question_entities("这篇论文的主要贡献是什么") == []
+    assert absent_entities("这篇论文的主要贡献是什么", [{"text": "任意内容"}]) == []
+
+
+def test_absent_entities_blocks_unrelated_evidence():
+    """真实事故：当前文献全文 0 处 BERT，模型却答出了承袭关系。"""
+    ev = [{"text": "定义 5（深度集成架构）L = <E, c, φ>，c 为增广算子"}, {"text": "级联层由基学习器集合构成"}]
+    assert absent_entities("对比 BERT 与 Transformer 编码器", ev) == ["BERT", "Transformer"]
+
+
+def test_absent_entities_passes_when_mentioned():
+    """证据里提到过就不拦（大小写不敏感，词根命中即可）。"""
+    ev = [{"text": "BERT 采用 Transformer 的双向编码结构"}]
+    assert absent_entities("对比 BERT 与 Transformer", ev) == []
+    assert absent_entities("BERT 怎么训练", [{"text": "bert 使用掩码语言模型"}]) == []
+
+
+def test_absent_entities_partial_hit_not_blocked():
+    """只缺一个不算全缺：模型仍可基于命中的那部分回答。"""
+    ev = [{"text": "Transformer 由多层注意力堆叠"}]
+    assert absent_entities("对比 BERT 与 Transformer", ev) == ["BERT"]
+    assert absent_entities("对比 BERT 与 Transformer", ev) != []
+
+
+def test_lowercase_variable_not_treated_as_entity():
+    """误伤案例：证据把 beta1 写成 β1。全小写变量名不该被当成硬实体，
+    否则"本来答得对"的参数题会被拦下来。"""
+    q = "Adam 优化器的 beta1 和 beta2 是多少"
+    assert question_entities(q) == ["Adam"]          # beta1/beta2 全小写，不收
+    ev = [{"text": "Adam 优化器中 β1 = 0.9，β2 = 0.98，ϵ = 10−9"}]
+    assert absent_entities(q, ev) == []
