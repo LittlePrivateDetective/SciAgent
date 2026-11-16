@@ -439,10 +439,16 @@ def node_answer(state: dict) -> dict:
     # 再挂上真实存在的编号——而引用校验只认编号有效、不认内容相关，界面照样显示
     # "5/5 命中"。实测就是"当前文献全文 0 处 BERT，却答出 BERT 的承袭关系"。
     # 这一步用确定性判断把这种答案挡在模型之前。
-    from app.agents.factcheck import absent_entities
+    from app.agents.factcheck import absent_entities, question_entities
 
+    # 判据是"问题的主体词**全都**不在证据里"，不是"缺一个就拦"。
+    # 缺一个就拦会大面积误伤：问"参考文献里 Layer Normalization 的作者"时
+    # References 这个词本身不在片段里；问"《Attention Is All You Need》和 BERT
+    # 的对比"时标题里的 Need 也不在片段里——按旧判据这两题都被拦死，而证据其实
+    # 支持作答。只有整题的主体词一个都没出现，才说明这批证据与问题无关。
     gone = absent_entities(state.get("goal", ""), evidence)
-    if gone:
+    all_absent = bool(gone) and len(gone) == len(question_entities(state.get("goal", "")))
+    if all_absent:
         terms = "、".join(f"「{g}」" for g in gone[:4])
         one_doc = len({e.get("doc_id") for e in evidence}) == 1
         scope = "这篇文献" if one_doc else "检索到的证据"
@@ -611,6 +617,12 @@ def node_review(state: dict) -> dict:
     # 审稿人只能看见检索到的证据片段，看不到那份名单，改起来一定是往错的方向改。
     if state.get("deterministic"):
         _step(state, "reviewer", "skip", note="deterministic_answer")
+        return state
+    # 本地 3B 做不了自我审查：实测它会把审稿指令本身当成答案吐回来
+    # （输出"若问题严重，给出修订版；否则留空"），把本来完整的一段答案毁掉。
+    # 离线形态本来就不要求"再稳一点"，跳过这一遍是净收益。
+    if runtime.is_offline():
+        _step(state, "reviewer", "skip", note="offline_no_self_review")
         return state
     # 审稿是一次额外的全量 LLM 调用（约 1.5–3 秒），只在不亏的时候做：
     # - 深思模式：用户选了"想稳"，就该有这一遍；

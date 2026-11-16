@@ -232,10 +232,26 @@ def check_author_claim(question: str, answer: str, authors: list[str]) -> dict:
 
 _ENTITY = re.compile(r"[A-Za-z][A-Za-z0-9\-]{2,}")
 _ENTITY_STOP = {
+    # 英文虚词
     "the", "and", "for", "with", "that", "this", "from", "are", "was", "were",
     "has", "have", "can", "not", "but", "you", "how", "what", "why", "when",
     "which", "who", "use", "using", "used", "does", "did", "its", "their",
+    # 论文结构词。问"参考文献里的完整作者"时，References 这个词本身不会出现在
+    # 任何正文片段里；把它当硬实体比对，等于把整题判死（实测误伤 S5）。
+    "references", "reference", "appendix", "table", "tables", "figure", "figures",
+    "section", "sections", "chapter", "algorithm", "equation", "eq", "paper",
+    "pdf", "page", "pages", "abstract", "introduction", "conclusion", "keywords",
+    # 书名号内标题的虚词。问题里整串带上《Attention Is All You Need》，其中
+    # Need / All / You 在正文里根本不会出现，却足以把整道题拦下来（实测误伤 C1）。
+    "need", "all", "you", "your", "our", "one", "two", "first", "last", "new",
+    "state", "art", "based", "towards", "toward", "about", "into", "than",
+    "does", "how", "many", "much", "what", "s", "t", "et", "al",
 }
+
+# 带序号的模型名在原文里往往不带序号：问题写 GPT-1，GPT-1 的论文从标题到正文
+# 都没出现过 "GPT-1"（它自称 Generative Pre-Training）。按字面比对必然判"未提及"，
+# 把本来能答的题拦掉（实测误伤 C2 / C4）。
+_RE_ORDINAL_SUFFIX = re.compile(r"[-_]\d+$")
 
 
 def question_entities(question: str) -> list[str]:
@@ -274,6 +290,10 @@ def absent_entities(question: str, evidence: list[dict]) -> list[str]:
     for e in ents:
         low = e.lower()
         if low in blob or low.replace("-", "").replace(" ", "") in flat:
+            continue
+        # 去掉序号后缀再试一次：GPT-1 → gpt，BERT-base → bert
+        stem = _RE_ORDINAL_SUFFIX.sub("", low)
+        if stem and (stem in blob or stem.replace("-", "") in flat):
             continue
         miss.append(e)
     return miss
