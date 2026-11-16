@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SciAgent · 科研智能体</title>
   <link rel="stylesheet" href="/static/vendor/element-plus.css" />
-  <link rel="stylesheet" href="/static/style.css?v=54" />
+  <link rel="stylesheet" href="/static/style.css?v=56" />
   <link rel="stylesheet" href="/static/vendor/katex.min.css" />
   <script src="/static/vendor/katex.min.js"></script>
   <script src="/static/vendor/katex-auto-render.min.js"></script>
@@ -31,21 +31,12 @@
       <span class="sub">锚点可验证的科研智能体</span>
     </div>
     <div class="badges">
-      <!-- 离线模式：比"云端/本地 3B"更重的一层开关——它同时换掉检索用的向量模型、
-           向量表、重排和生成。开着时整条链路不发一个网络请求。
-           不满足条件时开关置灰，悬停说明缺什么。 -->
-      <label class="offline-switch" v-if="offlineExpose"
-             :class="{ on: offlineMode, off: !offlineInfo.ready && !offlineMode }"
-             :title="offlineMode
-               ? '当前为纯本地模式：检索、重排、生成全部在本机，不发网络请求'
-               : (offlineInfo.ready
-                  ? '一键切到纯本地：向量/重排/生成都走本机，断网也能用'
-                  : '离线模式还不满足条件：' + (offlineInfo.reasons || []).join('；'))">
-        <input type="checkbox" :checked="offlineMode" :disabled="offlineSwitching || (!offlineMode && !offlineInfo.ready)"
-               @change="toggleOffline($event.target.checked)" />
-        <span class="offline-dot"></span>
-        <span class="offline-label">{{ offlineMode ? "离线" : "云端" }}</span>
-      </label>
+      <!-- 顶栏只留一个「云端 / 本地 3B」切换器。
+           此前这里是两个控件并排：一个「云端 ⇄ 离线」小开关（切全局 routing），
+           一个「云端 / 本地 3B」按钮组（切本次提问的模型）。功能确实不同，但视觉上
+           就是三个都写着「云端 / 本地」的按钮，用户第一反应是"为什么有三个按钮"。
+           现在合并：点「本地 3B」同时把全局切到纯本地（检索用本地向量、重排与生成
+           都在本机），点「云端」切回。行为等于原来两套控件加起来，但只有一个入口。 -->
       <!-- 模型切换：两个明确的按钮，不是"看起来像状态标签"的下拉。
            只有本机探测到可用本地模型时才出现——公网实例没有 Ollama，
            这里保持只读徽标，不给出点了必错的选项。
@@ -361,6 +352,17 @@
             <div class="node-row"><span>PageRank</span><b>{{ selectedNode.pagerank }}</b></div>
             <div class="node-row"><span>介数中心性</span><b>{{ selectedNode.betweenness }}</b></div>
             <div class="node-row"><span>角色</span><b>{{ roleName(selectedNode.role) }}</b></div>
+            <!-- 选中后把分支列出来：图上标签会互相压，列表才能逐条读清 -->
+            <div v-if="gNeighbors.citedBy.length" class="nl-group">
+              <div class="nl-head">被这 {{ gNeighbors.citedBy.length }} 篇引用</div>
+              <a v-for="n in gNeighbors.citedBy" :key="n.id" class="nl-item"
+                 :title="n.label" @click="focusNode(n)">{{ n.label }}</a>
+            </div>
+            <div v-if="gNeighbors.cites.length" class="nl-group">
+              <div class="nl-head">引用了这 {{ gNeighbors.cites.length }} 篇</div>
+              <a v-for="n in gNeighbors.cites" :key="n.id" class="nl-item"
+                 :title="n.label" @click="focusNode(n)">{{ n.label }}</a>
+            </div>
             <el-button size="small" text @click="openFromGraph(selectedNode)">打开这篇</el-button>
           </div>
         </div>
@@ -1026,6 +1028,6 @@
   </nav>
 </div>
 
-<script src="/static/app.js?v=54"></script>
+<script src="/static/app.js?v=56"></script>
 </body>
 </html>

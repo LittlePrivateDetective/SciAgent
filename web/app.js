@@ -394,6 +394,21 @@ const app = createApp({
     // 本地模型是否真的可用：开关 + Ollama 端口可达 + 模型名在本机，三条件后端合判。
     // 公网实例答案是 false，这里就不渲染切换按钮——不给点了必错的选项。
     localReady() { return !!(this.info.local && this.info.local.available); },
+
+    // 选中节点的邻居：谁引用了它、它引用了谁。侧卡里把标题列出来，
+    // 图上标签一多会互相压着，列表才是能逐条读清的地方。
+    gNeighbors() {
+      const sel = this.selectedNode;
+      if (!sel) return { cites: [], citedBy: [] };
+      const byId = {};
+      (this.graph.nodes || []).forEach((n) => { byId[n.id] = n; });
+      const cites = [], citedBy = [];
+      for (const e of this.graph.edges || []) {
+        if (e.source === sel.id && byId[e.target]) cites.push(byId[e.target]);
+        else if (e.target === sel.id && byId[e.source]) citedBy.push(byId[e.source]);
+      }
+      return { cites, citedBy };
+    },
     // 本地不可用时按钮改成灰色常显，靠这条说明"为什么点不了"。
     // 原来三条件不满足就整块不渲染，用户第一反应是"功能被删了"——已经遇到三次。
     localHint() {
@@ -2221,9 +2236,15 @@ const app = createApp({
             (this.info.local && this.info.local.reason) || "本地模型不可用，已保持云端");
           return;
         }
+        // 顶栏合并成一个控件后，「本地 3B」不只是换个生成模型：检索用的向量表、
+        // 重排也要一起切到本机，否则断网时检索那一层还在发网络请求，"能用"就落空。
+        if (!this.offlineMode) await this.toggleOffline(true);
         ElementPlus.ElMessage.info(
-          `本次提问走本地 ${this.info.local.model}：3B 出字约 6 字/秒，长答案要等 30 秒左右`
+          `已切到本地 ${this.info.local.model}：检索与生成都在本机，断网可用；`
+          + `3B 出字约 6 字/秒，长答案要等 30 秒左右`
           + (this.thinkDeep ? "；本地没有思维链，深思已临时关闭" : ""));
+      } else if (this.offlineMode) {
+        await this.toggleOffline(false);
       }
       this.askRoute = route;
     },
@@ -3134,19 +3155,7 @@ const app = createApp({
         normal: "#4a7fd4",
         peripheral: "#9aa4b2",
       };
-      const nodes = (this.graph.nodes || []).map((n) => ({
-        id: n.id,
-        name: n.label,
-        symbolSize: n.size,
-        value: n,
-        itemStyle: { color: roleColor[n.role] || "#4a7fd4" },
-        // 只给核心节点常显标签：38 篇的图上，入度≥2 的就有 24 个，标签会叠成
-        // 一片糊（实测截图里中间的论文名互相压着看不清）。基石+桥接共 13 个，
-        // 刚好够看懂结构；其余节点鼠标悬停有 tooltip，点一下也有侧卡。
-        label: { show: n.role === "cornerstone" || n.role === "bridge" },
-        category: n.cluster,
-      }));
-
+      const focus = this.graphFocus();
       _chart.setOption(
         {
           tooltip: {
@@ -3156,22 +3165,7 @@ const app = createApp({
               return `<b>${v.label}</b><br/>被引 ${v.in_degree} · 引文 ${v.out_degree}<br/>PageRank ${v.pagerank}`;
             },
           },
-          series: [
-            {
-              type: "graph",
-              layout: "force",
-              roam: true,
-              draggable: true,
-              force: { repulsion: 260, edgeLength: [60, 160], gravity: 0.08 },
-              emphasis: { focus: "adjacency", lineStyle: { width: 2.5 } },
-              label: { position: "right", fontSize: 11, formatter: (p) => (p.name || "").slice(0, 26) },
-              lineStyle: { color: "#c2c9d4", width: 1, curveness: 0.12, opacity: 0.75 },
-              edgeSymbol: ["none", "arrow"],
-              edgeSymbolSize: [0, 6],
-              data: nodes,
-              links: (this.graph.edges || []).map((e) => ({ source: e.source, target: e.target })),
-            },
-          ],
+          series: [{ type: "graph", ...this.graphSeries() }],
           animationDuration: 700,
         },
         true
@@ -3179,8 +3173,87 @@ const app = createApp({
 
       _chart.off("click");
       _chart.on("click", (p) => {
-        if (p.dataType === "node") this.selectedNode = p.data.value;
+        if (p.dataType === "node") {
+          // 再点同一个节点 = 取消聚焦，回到全局视图
+          this.selectedNode = this.selectedNode && this.selectedNode.id === p.data.value.id
+            ? null : p.data.value;
+        } else {
+          this.selectedNode = null;
+        }
+        this.applyGraphFocus();
       });
+    },
+
+    // 选中某篇后，它的直接邻居（谁引它 / 它引谁）要把标题显示出来：
+    // 默认只有基石/桥接常显标签，39 篇全显会糊成一片；但聚焦之后"这些分支叫什么"
+    // 恰恰是点这一下想知道的答案，藏起来就没意义了。
+    graphFocus() {
+      const sel = this.selectedNode && this.selectedNode.id;
+      const nb = new Set();
+      if (sel) {
+        for (const e of this.graph.edges || []) {
+          if (e.source === sel) nb.add(e.target);
+          else if (e.target === sel) nb.add(e.source);
+        }
+      }
+      return { sel, nb };
+    },
+
+    graphSeries() {
+      const roleColor = {
+        cornerstone: "#d94f4f", bridge: "#8a63d2", normal: "#4a7fd4", peripheral: "#9aa4b2",
+      };
+      const { sel, nb } = this.graphFocus();
+      const data = (this.graph.nodes || []).map((n) => {
+        const inFocus = !sel || n.id === sel || nb.has(n.id);
+        return {
+          id: n.id,
+          name: n.label,
+          symbolSize: n.size,
+          value: n,
+          itemStyle: { color: roleColor[n.role] || "#4a7fd4", opacity: inFocus ? 1 : 0.16 },
+          label: {
+            show: n.role === "cornerstone" || n.role === "bridge" || Boolean(sel && nb.has(n.id)),
+            fontSize: n.id === sel ? 13 : 11,
+            fontWeight: n.id === sel ? "bold" : "normal",
+          },
+          category: n.cluster,
+        };
+      });
+      const links = (this.graph.edges || []).map((e) => {
+        const hot = sel && (e.source === sel || e.target === sel);
+        return {
+          source: e.source,
+          target: e.target,
+          lineStyle: { width: hot ? 2.2 : 1, opacity: sel ? (hot ? 0.95 : 0.1) : 0.75 },
+        };
+      });
+      return {
+        layout: "force",
+        roam: true,
+        draggable: true,
+        force: { repulsion: 260, edgeLength: [60, 160], gravity: 0.08 },
+        emphasis: { focus: "adjacency", lineStyle: { width: 2.5 } },
+        label: { position: "right", fontSize: 11, formatter: (p) => (p.name || "").slice(0, 30) },
+        lineStyle: { color: "#c2c9d4", width: 1, curveness: 0.12, opacity: 0.75 },
+        edgeSymbol: ["none", "arrow"],
+        edgeSymbolSize: [0, 6],
+        data,
+        links,
+      };
+    },
+
+    // 从侧卡点邻居：把焦点移过去，图上随之重聚焦
+    focusNode(n) {
+      if (!n) return;
+      this.selectedNode = n;
+      this.applyGraphFocus();
+    },
+
+    // 只更新样式，不重建图表：notMerge 会让力导向重新布局，整片节点跳走。
+    applyGraphFocus() {
+      if (!_chart) return;
+      _chart.setOption({ series: [this.graphSeries()] });
     },
 
     roleName(role) {
