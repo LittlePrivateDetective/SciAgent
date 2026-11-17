@@ -469,6 +469,111 @@ def restore_document(db: Session, doc_id: str, actor: str = "") -> dict:
             "chunks": result.get("chunks", 0), "message": "已从回收站恢复"}
 
 
+def purge_document(db: Session, doc_id: str, actor: str = "") -> dict:
+    """彻底删除：删快照 + 删源 PDF + 清页图缓存。**不可恢复。**
+
+    与 delete_document 的分界：那个只是把文献移进回收站（库内记录清了，
+    PDF 和快照都留），随时能恢复；这里是回收站里的第二道门，删掉之后
+    连 PDF 都不在了，恢复的入口随之消失。
+
+    源文件不盲删：同一份 PDF 被重复导入时，两个快照会指向同一个 file_path，
+    删掉一个就把另一个的恢复能力也毁了。所以先查有没有别人在用。
+    """
+    entry = db.get(TrashEntry, doc_id)
+    if not entry:
+        return {"ok": False, "error": "回收站中没有这条记录"}
+
+    file_path = (entry.file_path or "").strip()
+    shared = 0
+    if file_path:
+        shared = db.scalar(
+            select(func.count()).select_from(TrashEntry).where(
+                TrashEntry.file_path == file_path, TrashEntry.doc_id != doc_id
+            )
+        ) or 0
+        shared += db.scalar(
+            select(func.count()).select_from(Document).where(Document.file_path == file_path)
+        ) or 0
+
+    removed_file = False
+    file_note = ""
+    path = Path(file_path) if file_path else None
+    if path is None or not path.exists():
+        file_note = "源文件已不存在"
+    elif shared:
+        file_note = f"源文件还被 {shared} 条记录引用，保留未删"
+    else:
+        try:
+            path.unlink()
+            removed_file = True
+        except OSError as exc:  # noqa: BLE001 删不掉也要把记录清掉，否则回收站永远删不干净
+            file_note = f"源文件删除失败：{exc}"
+            log.warning("彻底删除：源文件删除失败 %s：%s", path, exc)
+
+    # 页图缓存按 {doc_id}_{page}_{dpi}.png 命名，按前缀清；清不掉不影响主流程
+    removed_cache = 0
+    try:
+        cache_dir = settings.data_path / "cache" / "pages"
+        if cache_dir.is_dir():
+            for f in cache_dir.glob(f"{doc_id}_*.png"):
+                try:
+                    f.unlink()
+                    removed_cache += 1
+                except OSError:
+                    pass
+    except Exception as exc:  # noqa: BLE001
+        log.debug("彻底删除：页图缓存清理跳过（%s）", exc)
+
+    detail = {
+        "doc_id": doc_id, "filename": entry.filename, "title": entry.title,
+        "file_path": file_path, "chunk_count": entry.chunk_count,
+        "page_count": entry.page_count, "removed_file": removed_file,
+        "removed_cache": removed_cache, "note": file_note,
+    }
+    db.delete(entry)
+    db.add(AuditLog(action="purge", doc_id=doc_id,
+                    detail=json.dumps(detail, ensure_ascii=False), actor=actor or "ui"))
+    db.commit()
+    invalidate_cache()
+    invalidate_graph()
+    log.info("已彻底删除 %s（%s），源文件：%s", doc_id, entry.filename,
+             "已删" if removed_file else file_note or "未删")
+    return {"ok": True, **detail, "message": "已彻底删除，无法恢复"}
+
+
+def purge_all_trash(db: Session, actor: str = "") -> dict:
+    """清空回收站：逐条走 purge_document，逐条给出结果。
+
+    不写成一条 DELETE：源文件要真删、共用文件要跳过、某一条失败不该让
+    剩下的一起回滚——逐条处理才能如实告诉用户"清了几条、哪条没清掉"。
+    """
+    rows = list(db.scalars(select(TrashEntry)).all())
+    if not rows:
+        return {"ok": True, "purged": 0, "failed": [], "removed_files": 0, "message": "回收站已经是空的"}
+
+    purged, failed, files = 0, [], 0
+    for r in rows:
+        try:
+            out = purge_document(db, r.doc_id, actor=actor)
+        except Exception as exc:  # noqa: BLE001 单条失败不能中断整批
+            db.rollback()
+            failed.append({"doc_id": r.doc_id, "filename": r.filename, "error": str(exc)})
+            continue
+        if out.get("ok"):
+            purged += 1
+            files += 1 if out.get("removed_file") else 0
+        else:
+            failed.append({"doc_id": r.doc_id, "filename": r.filename,
+                           "error": out.get("error") or "未知原因"})
+    return {
+        "ok": not failed,
+        "purged": purged,
+        "removed_files": files,
+        "failed": failed,
+        "message": f"已彻底删除 {purged} 条" + (f"，{len(failed)} 条失败" if failed else ""),
+    }
+
+
 def reembed_all(batch_size: int = 48) -> dict:
     """换 embedding 模型后，重算全库向量（不重新解析 PDF，几秒钟搞定）。
 

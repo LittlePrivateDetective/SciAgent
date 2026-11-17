@@ -63,6 +63,8 @@ from app.parse.structure import render_page_png
 from app.pipeline.ingest import (
     delete_document,
     ingest,
+    purge_all_trash,
+    purge_document,
     rescan_library,
     restore_document,
     save_upload,
@@ -1290,6 +1292,21 @@ def rescan_last():
 @router.post("/documents/{doc_id}/restore")
 def restore_doc(doc_id: str, actor: str = "ui", db: Session = Depends(get_db)):
     return restore_document(db, doc_id, actor=actor)
+
+
+@router.delete("/documents/trash/{doc_id}")
+def purge_trash_doc(doc_id: str, actor: str = "ui", db: Session = Depends(get_db)):
+    """彻底删除一条：删快照 + 源 PDF + 页图缓存，不可恢复。
+
+    与「恢复」并列，是回收站里的第二道门；前端必须先二次确认再调这里。
+    """
+    return purge_document(db, doc_id, actor=actor)
+
+
+@router.post("/documents/trash/purge-all")
+def purge_trash_all(actor: str = "ui", db: Session = Depends(get_db)):
+    """清空回收站。逐条处理，返回清掉几条、哪几条失败。"""
+    return purge_all_trash(db, actor=actor)
 
 
 @router.get("/audit")

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SciAgent · 科研智能体</title>
   <link rel="stylesheet" href="/static/vendor/element-plus.css" />
-  <link rel="stylesheet" href="/static/style.css?v=59" />
+  <link rel="stylesheet" href="/static/style.css?v=60" />
   <link rel="stylesheet" href="/static/vendor/katex.min.css" />
   <script src="/static/vendor/katex.min.js"></script>
   <script src="/static/vendor/katex-auto-render.min.js"></script>
@@ -786,7 +786,7 @@
   </el-dialog>
 
   <!-- 回收站：删除可恢复，配合后端审计日志 -->
-  <el-dialog v-model="trash.visible" title="回收站（删除可恢复）" width="640px">
+  <el-dialog v-model="trash.visible" title="回收站（可恢复 / 可彻底删除）" width="680px">
     <div v-if="!trash.items.length" class="empty">回收站是空的</div>
     <div v-for="t in trash.items" :key="t.doc_id" class="trash-item">
       <div class="trash-main">
@@ -796,9 +796,20 @@
           {{ t.page_count }} 页 · {{ t.chunk_count }} 段 · {{ t.deleted_at }} · {{ t.reason }}
         </div>
       </div>
-      <el-button size="small" type="primary" plain :disabled="!t.restorable"
-                 @click="restoreTrash(t)">恢复</el-button>
+      <!-- 恢复依赖磁盘上的源 PDF；源文件没了就只能彻底删掉这条快照 -->
+      <div class="trash-acts">
+        <el-button size="small" type="primary" plain :disabled="!t.restorable"
+                   @click="restoreTrash(t)">恢复</el-button>
+        <el-button size="small" type="danger" plain @click="purgeTrash(t)">彻底删除</el-button>
+      </div>
     </div>
+    <template #footer v-if="trash.items.length">
+      <span class="trash-foot-note">彻底删除会连磁盘上的 PDF 一起删掉，无法撤销</span>
+      <el-button size="small" @click="trash.visible = false">关闭</el-button>
+      <el-button size="small" type="danger" :loading="trash.purging" @click="purgeAllTrash">
+        清空回收站（{{ trash.items.length }}）
+      </el-button>
+    </template>
   </el-dialog>
 
   <!-- 论文发现与推荐（官方 1.4）：搜索下载 / 补全参考文献 / 新论文推荐。
@@ -1088,6 +1099,6 @@
   </nav>
 </div>
 
-<script src="/static/app.js?v=59"></script>
+<script src="/static/app.js?v=60"></script>
 </body>
 </html>

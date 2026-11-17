@@ -341,7 +341,7 @@ const app = createApp({
       // 才逐个推得出来（非流式是一次性返回整段，用户只看到一个 loading 圈）。
       // 关掉仍可用：一次性返回，适合网络差时兜底。
       streamMode: true,
-      trash: { visible: false, items: [] },
+      trash: { visible: false, items: [], purging: false },
       // 论文发现与推荐（官方 1.4）：三个 tab 各自独立加载，互不阻塞
       disc: {
         visible: false, tab: "search", q: "", searching: false, searched: false,
@@ -2397,6 +2397,75 @@ const app = createApp({
         .then((x) => x.json());
       if (r.ok) ElementPlus.ElMessage.success(r.message || "已恢复");
       else ElementPlus.ElMessage.error(r.error || "恢复失败");
+      await this.openTrash();
+      await this.loadDocs();
+      await this.loadInfo();
+    },
+
+    // 彻底删除单条：二次确认 → DELETE。恢复靠的是磁盘上的 PDF，
+    // 这一步把 PDF 也删了，所以确认文案必须写清"无法撤销"，不能只写"确定吗"。
+    async purgeTrash(t) {
+      const name = t.title || t.filename;
+      try {
+        await ElementPlus.ElMessageBox.confirm(
+          `彻底删除《${name}》？磁盘上的 PDF 会一并删掉，之后连恢复的入口都没有了。`,
+          "确认彻底删除",
+          {
+            type: "warning",
+            confirmButtonText: "彻底删除",
+            cancelButtonText: "取消",
+            confirmButtonClass: "el-button--danger",
+          }
+        );
+      } catch (e) {
+        return;   // 用户取消
+      }
+      const r = await fetch(`/api/documents/trash/${t.doc_id}?actor=ui`, { method: "DELETE" })
+        .then((x) => x.json())
+        .catch((e) => ({ ok: false, error: String(e) }));
+      if (r.ok) {
+        ElementPlus.ElMessage.success(r.note ? `${r.message}（${r.note}）` : (r.message || "已彻底删除"));
+      } else {
+        ElementPlus.ElMessage.error(r.error || "彻底删除失败");
+      }
+      await this.openTrash();
+      await this.loadDocs();
+      await this.loadInfo();
+      if (this.activeDoc && this.activeDoc.id === t.doc_id) this.activeDoc = null;
+    },
+
+    async purgeAllTrash() {
+      const n = this.trash.items.length;
+      if (!n) return;
+      try {
+        await ElementPlus.ElMessageBox.confirm(
+          `清空回收站？这 ${n} 条记录和磁盘上的 PDF 都会被删掉，无法撤销。`,
+          "确认清空回收站",
+          {
+            type: "warning",
+            confirmButtonText: `删除全部 ${n} 条`,
+            cancelButtonText: "取消",
+            confirmButtonClass: "el-button--danger",
+          }
+        );
+      } catch (e) {
+        return;
+      }
+      this.trash.purging = true;
+      try {
+        const r = await fetch("/api/documents/trash/purge-all?actor=ui", { method: "POST" })
+          .then((x) => x.json());
+        if (r.ok) ElementPlus.ElMessage.success(r.message || "已清空回收站");
+        else ElementPlus.ElMessage.warning(r.message || "部分记录未能删除");
+        // 失败项逐条列出：静默吞掉会让人以为都删干净了
+        (r.failed || []).slice(0, 3).forEach((f) => {
+          ElementPlus.ElMessage.error(`${f.filename || f.doc_id}：${f.error}`);
+        });
+      } catch (e) {
+        ElementPlus.ElMessage.error("清空失败：" + e);
+      } finally {
+        this.trash.purging = false;
+      }
       await this.openTrash();
       await this.loadDocs();
       await this.loadInfo();
