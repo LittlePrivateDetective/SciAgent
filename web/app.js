@@ -1553,16 +1553,29 @@ const app = createApp({
       const HEADS = /^(Abstract|Introduction|Related\s+Work|Background|Methods?|Experiments?|Results?|Discussion|Conclusions?|References|Appendix|Acknowledg\w*)$/i;
       let cur = [];
       let buf = "";
+      // 行高中位数：用来判断"下一行"是继续同一段，还是跳到了另一段/另一栏。
+      // 后端已经按（栏, y, x）给了阅读顺序，这里只负责在坐标跳变处断开，
+      // 不再让"正文最后一句 + 页脚人名"粘成一条。
+      const hs = words.map((w) => w.h).filter((h) => h > 0).sort((a, b) => a - b);
+      const hMed = hs.length ? hs[Math.floor(hs.length / 2)] : 10;
+      let lastY = null;
       const flush = () => {
         if (!cur.length) return;
         sents.push({ text: buf.trim(), idx: cur.slice() });
         cur = [];
         buf = "";
+        lastY = null;
       };
       words.forEach((w, i) => {
+        if (cur.length && lastY != null) {
+          const dy = w.y - lastY;
+          // 回到上方 = 换栏或换块；往下跳超过 2.4 行 = 换段。两者都不该跨句拼接
+          if (dy < -hMed * 0.6 || dy > hMed * 2.4) flush();
+        }
         if (cur.length && buf.length > 30 && HEADS.test(w.t)) flush();
         cur.push(i);
         buf += (buf ? " " : "") + w.t;
+        lastY = w.y;
         const ends = /[.?!]$/.test(w.t) && !ABBR.test(w.t);
         // 240 字符封顶：超长"句子"多半是作者列表、表格行或断句失败的整段，
         // 一次送去翻译既慢又贵，译出来也不准
@@ -1580,6 +1593,11 @@ const app = createApp({
       const sents = this.tl.sents || [];
       const sent = w.si != null ? sents[w.si] : null;
       if (!sent || !sent.text || sent.text.length < 8) return;
+      // 目录行（点线 + 页码）、表格碎片（字母占比过低）译出来没有意义，
+      // 直接不弹：这类行以前会占着整个浮层，看起来像"选错句"
+      if (/\.{4,}|…{2,}/.test(sent.text)) return;
+      const letters = (sent.text.match(/[A-Za-z\u4e00-\u9fff]/g) || []).length;
+      if (letters / sent.text.length < 0.45) return;
 
       // 高亮立刻给，不跟着 380ms 的翻译延迟：先告诉用户"要译的是这句"，
       // 再出译文，比等译文出来才标位置更符合"悬停即定位"的直觉

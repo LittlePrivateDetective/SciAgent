@@ -578,11 +578,29 @@ def get_page_text(doc_id: str, page: int, db: Session = Depends(get_db)):
             if not 1 <= page <= len(pdf):
                 raise HTTPException(404, f"页码超出范围（共 {len(pdf)} 页）")
             pg = pdf[page - 1]
-            words = [
-                [w[4], round(w[0], 1), round(w[1], 1), round(w[2] - w[0], 1), round(w[3] - w[1], 1)]
-                for w in pg.get_text("words")
-                if w[4].strip()
-            ]
+            raw = [w for w in pg.get_text("words") if w[4].strip()]
+            # 阅读顺序必须在这里定，不能让前端按数组顺序拼句。
+            # PyMuPDF 的 words 按内容流给出，双栏论文里左右栏会交错——实测悬停在正文上，
+            # 译出来的是对面栏的参考文献人名串（"安库尔·帕里凯里，奥斯卡·斯特哈特…"）。
+            # 做法：按 (block, line) 归行 → 每行用起点 x 判定栏目 → 按 (栏, y, x) 排序，
+            # 得到「左栏自上而下、右栏自上而下」，跨栏的长行（ACL. 这种短尾行）也能各归各栏。
+            page_w = pg.rect.width
+            lines: dict[tuple[int, int], list] = {}
+            for w in raw:
+                lines.setdefault((int(w[5]), int(w[6])), []).append(w)
+
+            def _line_key(item):
+                (bno, lno), ws = item
+                x0 = min(x[0] for x in ws)
+                y0 = min(x[1] for x in ws)
+                col = 0 if x0 < page_w * 0.5 else 1
+                return (col, round(y0, 1), round(x0, 1), bno, lno)
+
+            words = []
+            for _, ws in sorted(lines.items(), key=_line_key):
+                for w in sorted(ws, key=lambda x: x[0]):
+                    words.append([w[4], round(w[0], 1), round(w[1], 1),
+                                  round(w[2] - w[0], 1), round(w[3] - w[1], 1)])
             width, height = round(pg.rect.width, 2), round(pg.rect.height, 2)
     except HTTPException:
         raise
