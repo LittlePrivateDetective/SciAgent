@@ -85,3 +85,50 @@ def test_purge_all_on_empty_is_not_error(tmp_path):
     db = _session(tmp_path)
     out = purge_all_trash(db)
     assert out["ok"] is True and out["purged"] == 0
+
+
+# ---------------------------------------------------------------- 事故回归
+def test_purge_keeps_pdf_when_library_doc_uses_relative_path(tmp_path, monkeypatch):
+    """2026-11-17 事故：Document 存绝对路径、TrashEntry 存相对路径。
+
+    直接比字符串永远不相等，共用检查形同虚设，清空回收站把 24 篇在用文献的
+    PDF 一起删了。这里让两边路径写法不同，断言文件必须留下。
+    """
+    db = _session(tmp_path)
+    (tmp_path / "data" / "pdf").mkdir(parents=True)
+    pdf = tmp_path / "data" / "pdf" / "a.pdf"
+    pdf.write_bytes(b"%PDF-1.4 live")
+
+    # 在库文献：绝对路径
+    db.add(Document(id="live1", filename="a.pdf", title="在用文献",
+                    file_path=str(pdf), status="ok"))
+    # 回收站：相对路径（历史快照就是这么存的）
+    db.add(TrashEntry(doc_id="old1", filename="a.pdf", title="在用文献",
+                      file_path="data/pdf/a.pdf", chunk_count=3, page_count=2,
+                      actor="ui", reason="duplicate"))
+    db.commit()
+
+    monkeypatch.chdir(tmp_path)
+    out = purge_document(db, "old1")
+
+    assert out["ok"] is True
+    assert out["removed_file"] is False, "在库文献还在用这份 PDF，不能删"
+    assert pdf.exists()
+    assert db.get(TrashEntry, "old1") is None   # 快照照样清掉
+
+
+def test_purge_keeps_pdf_when_same_filename_still_in_library(tmp_path, monkeypatch):
+    """路径写法再错一次也不会误删：同名文件还在库，就当它在用。"""
+    db = _session(tmp_path)
+    other = tmp_path / "elsewhere" / "a.pdf"
+    other.parent.mkdir(parents=True)
+    other.write_bytes(b"%PDF-1.4 other")
+    db.add(Document(id="live2", filename="a.pdf", title="同名", file_path=str(other), status="ok"))
+    db.add(TrashEntry(doc_id="old2", filename="a.pdf", title="同名",
+                      file_path=str(tmp_path / "gone" / "a.pdf"), chunk_count=1,
+                      page_count=1, actor="ui", reason="duplicate"))
+    db.commit()
+
+    out = purge_document(db, "old2")
+    assert out["removed_file"] is False
+    assert other.exists()

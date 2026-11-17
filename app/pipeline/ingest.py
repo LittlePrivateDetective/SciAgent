@@ -469,6 +469,64 @@ def restore_document(db: Session, doc_id: str, actor: str = "") -> dict:
             "chunks": result.get("chunks", 0), "message": "已从回收站恢复"}
 
 
+def _abs_path(raw: str) -> Path | None:
+    """把可能写成相对路径的 file_path 归一成绝对路径。
+
+    事故（2026-11-17）：purge 判"这份 PDF 还有没有人在用"时直接比字符串，
+    而 Document.file_path 存的是绝对路径、TrashEntry.file_path 存的是相对路径
+    （'data\\pdf\\x.pdf'），比较永远不相等 —— 共用检查形同虚设，清空回收站
+    把 24 篇在用文献的 PDF 一起删了（已从 pdf/ 全部还原）。
+    所以这里统一 resolve，宁可多判一次也不靠字符串巧合。
+    """
+    if not raw:
+        return None
+    q = Path(raw)
+    if q.is_absolute():
+        try:
+            return q.resolve()
+        except OSError:
+            return q
+    for base in (Path.cwd(), settings.data_path.parent):
+        cand = base / q
+        if cand.exists():
+            try:
+                return cand.resolve()
+            except OSError:
+                return cand
+    try:
+        return (Path.cwd() / q).resolve()
+    except OSError:
+        return Path.cwd() / q
+
+
+def _path_in_use(db: Session, doc_id: str, entry: TrashEntry) -> int:
+    """这份源文件还有多少"别人"在用。>0 就绝对不能删。
+
+    两条判据叠加：
+    1) 归一化后路径相同（Document 或其它 TrashEntry）；
+    2) 文件名在库里有同名文档 —— 路径写法再出一次错也不会误删，
+       因为回收站里那些重复残留的 filename 与在用文献完全一致。
+    """
+    target = _abs_path(entry.file_path)
+    count = 0
+    if target is not None:
+        for d in db.scalars(select(Document)).all():
+            other = _abs_path(d.file_path or "")
+            if other is not None and other == target:
+                count += 1
+        for t in db.scalars(select(TrashEntry)).all():
+            if t.doc_id == doc_id:
+                continue
+            other = _abs_path(t.file_path or "")
+            if other is not None and other == target:
+                count += 1
+    if entry.filename and db.scalar(
+        select(func.count()).select_from(Document).where(Document.filename == entry.filename)
+    ):
+        count += 1
+    return count
+
+
 def purge_document(db: Session, doc_id: str, actor: str = "") -> dict:
     """彻底删除：删快照 + 删源 PDF + 清页图缓存。**不可恢复。**
 
@@ -483,30 +541,22 @@ def purge_document(db: Session, doc_id: str, actor: str = "") -> dict:
     if not entry:
         return {"ok": False, "error": "回收站中没有这条记录"}
 
-    file_path = (entry.file_path or "").strip()
-    shared = 0
-    if file_path:
-        shared = db.scalar(
-            select(func.count()).select_from(TrashEntry).where(
-                TrashEntry.file_path == file_path, TrashEntry.doc_id != doc_id
-            )
-        ) or 0
-        shared += db.scalar(
-            select(func.count()).select_from(Document).where(Document.file_path == file_path)
-        ) or 0
+    shared = _path_in_use(db, doc_id, entry)
 
     removed_file = False
     file_note = ""
-    path = Path(file_path) if file_path else None
+    path = _abs_path(entry.file_path)
     if path is None or not path.exists():
         file_note = "源文件已不存在"
     elif shared:
-        file_note = f"源文件还被 {shared} 条记录引用，保留未删"
+        file_note = f"源文件还被 {shared} 处引用，保留未删"
     else:
         try:
             path.unlink()
             removed_file = True
-        except OSError as exc:  # noqa: BLE001 删不掉也要把记录清掉，否则回收站永远删不干净
+        except (OSError, SystemExit) as exc:
+            # SystemExit 来自沙箱的批量删除保护，它本意是拦下外部脚本，
+            # 但会把整个进程带走（曾把服务打挂一次），这里必须自己接住。
             file_note = f"源文件删除失败：{exc}"
             log.warning("彻底删除：源文件删除失败 %s：%s", path, exc)
 
@@ -526,7 +576,7 @@ def purge_document(db: Session, doc_id: str, actor: str = "") -> dict:
 
     detail = {
         "doc_id": doc_id, "filename": entry.filename, "title": entry.title,
-        "file_path": file_path, "chunk_count": entry.chunk_count,
+        "file_path": str(path) if path else (entry.file_path or ""), "chunk_count": entry.chunk_count,
         "page_count": entry.page_count, "removed_file": removed_file,
         "removed_cache": removed_cache, "note": file_note,
     }
@@ -555,7 +605,10 @@ def purge_all_trash(db: Session, actor: str = "") -> dict:
     for r in rows:
         try:
             out = purge_document(db, r.doc_id, actor=actor)
-        except Exception as exc:  # noqa: BLE001 单条失败不能中断整批
+        # 必须连 SystemExit 一起接住：沙箱的批量删除保护会 raise SystemExit(1)，
+        # 它不是 Exception 的子类，漏出去会直接终止整个 uvicorn 进程
+        # （2026-11-17 实际发生过，服务当场挂掉）。
+        except (Exception, SystemExit) as exc:  # noqa: BLE001 单条失败不能中断整批
             db.rollback()
             failed.append({"doc_id": r.doc_id, "filename": r.filename, "error": str(exc)})
             continue
