@@ -329,7 +329,10 @@ const app = createApp({
       offlineInfo: {},
       // 是否渲染那个开关。云端演示实例（EXPOSE_OFFLINE_SWITCH=0）为 false，
       // 界面就是纯云端形态；本机实例为 true，用来演示断网后的本地推理。
-      offlineExpose: true,
+      // 初值必须是 false：给 true 的话，从首屏到 /api/system/info 返回的这一两秒
+      // 里「本地 3B」按钮会先画出来再消失——线上要求"任何时刻都不出现本地入口"，
+      // 闪一下同样算出现，而且录屏时最容易被截到。
+      offlineExpose: false,
       messages: [],
       // 消息自增 id：模板的 :key 用它而不是下标。删中间一条时，下标会让
       // 后面的节点复用前一条的 DOM（气泡里是 v-html），出现"删了 A 却显示 B"。
@@ -576,7 +579,9 @@ const app = createApp({
       this.info = r;
       this.offlineMode = r.mode === "offline";
       this.offlineInfo = r.offline || {};
-      this.offlineExpose = r.expose_offline !== false;
+      // 用 === true 而不是 !== false：接口没返回/请求失败时宁可不渲染，
+      // 也不能让线上实例因为一次读不到配置就把本地入口画出来。
+      this.offlineExpose = r.expose_offline === true;
       // 离线模式下生成必然走本机，把这一问的路由也钉过去，避免按钮显示"云端"却跑本地
       if (this.offlineMode) this.askRoute = "local";
       // 后台把全局路由钉成 local 时，界面默认就该显示本地——否则徽标写着云端、
