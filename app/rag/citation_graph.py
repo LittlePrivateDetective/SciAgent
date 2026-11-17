@@ -33,7 +33,10 @@ RE_NORM = re.compile(r"[^a-z0-9\u4e00-\u9fff ]+")
 
 _CACHE: dict[str, Any] = {"key": None, "data": None, "ts": 0.0}
 _LOCK = threading.Lock()
-TTL = 600.0
+# 引用结构只在导入/删除文献时变，而那两处都会调 invalidate()，所以按时间兜底的
+# TTL 可以放长：原来 600 秒时，保活每 5 分钟打一次 warm，跨过 10 分钟刻度后
+# 缓存就过期，下一次有人点图谱又要现算 30 秒以上，反代读超时 20 秒 → 504。
+TTL = 3600.0
 
 
 def invalidate() -> None:
