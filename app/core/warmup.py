@@ -57,6 +57,41 @@ def warm_graph_async(tag: str = "warm") -> None:
                      name="warm-graph").start()
 
 
+# ---------------- 未来工作方向预计算 ----------------
+# 这条链路要算 146 条句向量 + 39 篇的块矩阵，线上沙箱实测 **43 秒**（本地 8 秒）。
+# 接口是读请求，反代 20 秒就切，等于用户第一次点必然等到超时。和图画谱一样，
+# 把这份计算挪到后台线程，保活每 5 分钟续一次缓存，用户点开时就是内存里那份。
+_FW_LOCK = threading.Lock()
+
+
+def _warm_future_work(tag: str) -> None:
+    if not _FW_LOCK.acquire(blocking=False):
+        return
+    try:
+        from app.db.session import SessionLocal
+        from app.research.future_work import collect_future_work
+
+        t0 = time.time()
+        db = SessionLocal()
+        try:
+            out = collect_future_work(db)
+        finally:
+            db.close()
+        stats = out.get("stats", {})
+        log.info("预热[%s]：未来工作 %d 条（命中 %d），%d ms", tag,
+                 stats.get("returned", 0), stats.get("possibly_addressed", 0),
+                 int((time.time() - t0) * 1000))
+    except Exception as exc:  # noqa: BLE001
+        log.warning("预热[%s]：未来工作失败 %s", tag, str(exc)[:120])
+    finally:
+        _FW_LOCK.release()
+
+
+def warm_future_work_async(tag: str = "warm") -> None:
+    threading.Thread(target=_warm_future_work, args=(tag,), daemon=True,
+                     name="warm-future-work").start()
+
+
 def warm_once(tag: str = "manual") -> dict:
     out: dict = {"ok": True, "route": settings.llm_route, "tag": tag}
     t0 = time.time()
@@ -87,6 +122,7 @@ def warm_once(tag: str = "manual") -> dict:
     out["total_ms"] = int((time.time() - t0) * 1000)
     log.info("预热[%s]：检索 %s / 生成 %s / 合计 %d ms", tag, out["retrieval"].get("ok"), out["llm"].get("ok"), out["total_ms"])
 
-    # 图谱不参与上面的耗时统计：它在后台线程里建，命中缓存时几乎不花时间
+    # 图谱与未来工作都不参与上面的耗时统计：它们在后台线程里建，命中缓存时几乎不花时间
     warm_graph_async(tag)
+    warm_future_work_async(tag)
     return out

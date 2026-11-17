@@ -163,11 +163,15 @@ def _doc_matrix(db: Session, doc_id: str, dim: int, offline: bool,
     """
     if doc_id in cache:
         return cache[doc_id]
-    rows = list(db.scalars(
-        select(Chunk).where(Chunk.doc_id == doc_id, Chunk.kind == "text")
-    ).all())
+    # 只取需要的列，不实例化 ORM 对象：一页几千块、几十篇下来，ORM 构造本身
+    # 在线上单核沙箱里就是十几秒（实测整条链路 43 秒，大头在这里）。
+    rows = db.execute(
+        select(Chunk.id, Chunk.text, Chunk.page, Chunk.bbox,
+               Chunk.embedding, Chunk.embedding_local)
+        .where(Chunk.doc_id == doc_id, Chunk.kind == "text")
+    ).all()
     vecs: list = []
-    keep: list[Chunk] = []
+    keep: list = []
     for c in rows:
         raw = c.embedding_local if offline else c.embedding
         if not raw:
@@ -250,7 +254,7 @@ def _related_pool(docs: dict[str, Document], source: Document, limit: int = 20) 
 # 结果缓存：这条链路要算 142 条句向量 + 多篇块矩阵，实测 7–10 秒。库里文献不变时
 # 反复点「未来工作方向」不该每次都重算——接口走的是读请求，反代 20 秒就切了。
 _FW_CACHE: dict = {"key": None, "data": None, "ts": 0.0}
-_FW_TTL = 600.0
+_FW_TTL = 3600.0
 
 
 def collect_future_work(db: Session, max_items: int = 60) -> dict:
@@ -354,6 +358,10 @@ def collect_future_work(db: Session, max_items: int = 60) -> dict:
                     for c in _candidates(item["text"], vecs[i], doc, mat, chs):
                         c["basis"] = basis
                         cands.append(c)
+            # 早停：引用后继里已经召回到候选，就不再扫同主题文献那一大池
+            # （39 篇全扫是 43 秒的主要来源；这一步让大多数条目只比 5–10 篇）
+            if cands:
+                break
         if cands:
             cands.sort(key=lambda x: (x.get("basis") != "successor", -x.get("block_cos", 0)))
             coarse[i] = cands[:3]
