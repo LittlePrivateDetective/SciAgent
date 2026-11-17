@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SciAgent · 科研智能体</title>
   <link rel="stylesheet" href="/static/vendor/element-plus.css" />
-  <link rel="stylesheet" href="/static/style.css?v=61" />
+  <link rel="stylesheet" href="/static/style.css?v=62" />
   <link rel="stylesheet" href="/static/vendor/katex.min.css" />
   <script src="/static/vendor/katex.min.js"></script>
   <script src="/static/vendor/katex-auto-render.min.js"></script>
@@ -718,12 +718,12 @@
   <!-- 未来工作探索（赛题 1.5.4）：
        内容全部来自各篇 PDF 的 Future Work / Limitations 原句，逐条标出出处（哪篇、
        哪年、哪一节、第几页），点标题能跳回原文。后端做了三步处理：
-       研究问题 / 工程待办分离 → 同族 4-gram 去重 → 与库内较新论文的原句对撞，
-       被后续工作触及过的标「可能已被做过」，避免给出早就有人做掉的 idea。 -->
+       研究问题 / 工程待办分离 → 同族 4-gram 去重 → 与**引用图上引用了这篇的后继文献**
+       做句向量比对（没有后继时才退到同主题较新文献，并标出来）。 -->
   <el-dialog v-model="fw.visible" title="未来工作方向（取自各篇 Future Work / Limitations 原句）" width="760px">
     <div class="fw-note">
       {{ fw.method }}
-      <span v-if="fw.stats"> · 扫描 {{ fw.stats.candidate_sentences }} 句，去重后 {{ fw.stats.after_dedup }} 句，其中 {{ fw.stats.possibly_addressed }} 条可能已被后续工作触及</span>
+      <span v-if="fw.stats"> · 扫描 {{ fw.stats.candidate_sentences }} 句，去重后 {{ fw.stats.after_dedup }} 句，其中 {{ fw.stats.possibly_addressed }} 条在后继文献里找到对应方法</span>
     </div>
     <div v-if="fw.items.length" class="fw-list">
       <div v-for="(it,i) in fw.items" :key="i" class="fw-item">
@@ -732,7 +732,10 @@
           <a class="fw-doc" :title="it.doc_title"
              @click="openFromGraph({id: it.doc_id, label: it.doc_title, filename: it.doc_title})">{{ it.doc_title }}</a>
           <span class="fw-src">{{ it.doc_year || '年份未知' }} · {{ it.section || 'Future Work' }} · p{{ it.page }}</span>
-          <span v-if="it.status === 'possibly_addressed'" class="fw-flag">可能已被后续工作触及</span>
+          <span v-if="it.status === 'possibly_addressed'" class="fw-flag"
+                :title="it.basis === 'related' ? '依据较弱：只是同主题的较新论文，它并没有引用本文' : '依据较强：这篇引用了本文，且方法句与这条未来工作高度相似'">
+            {{ it.basis === 'related' ? '同主题论文有相似做法' : '引用它的后续工作已有对应方法' }}
+          </span>
           <span v-else class="fw-flag open">仍开放</span>
         </div>
       </div>
@@ -1099,6 +1102,6 @@
   </nav>
 </div>
 
-<script src="/static/app.js?v=61"></script>
+<script src="/static/app.js?v=62"></script>
 </body>
 </html>

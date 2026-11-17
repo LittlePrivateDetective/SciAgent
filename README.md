@@ -49,7 +49,7 @@ SciAgent 让模型**只能引用检索到的 chunk**，服务端把 chunk 换成
 | 外部工具链 | ✅ | Function Calling 选工具 → arXiv / GitHub / Crossref 真实 API；重试 → 降级 → 如实标注 |
 | 学术图表 | ✅ | CSV 实验表格**无损**转 4 类图 × 5 种代码：柱状/折线/雷达/三线表 → Mermaid·TikZ(pgfplots)·Matplotlib·LaTeX·Markdown；原始数值逐格照搬（`41.0` 不会变成 `41`）；**自动生成 Figure Caption**（中英双版 + 核心趋势），模型写完把图注里每个数字回查原表，查不到的列出来（官方 1.6.3） |
 | 论文架构拓扑图 | ✅ | idea（可带上已生成的大纲）→ 一张分层架构图，**同时输出 Mermaid / Graphviz DOT / TikZ / Matplotlib 四种代码**。模型只产出节点与边，代码由渲染层生成——四种格式必然描述同一张图，且不会出现模型写错的 `\node` 语法；预览用 ECharts 自绘分层图，不依赖外部渲染器（官方 1.6.2） |
-| Future Work 对撞 | ✅ | 候选句抽取 → 4-gram 语义去重 → 与库内后续论文关键词对撞 |
+| 未来工作方向 | ✅ | 候选句抽取 → 4-gram 语义去重 → 与**引用图上引用了本文的后继文献**做句向量比对（块级召回 + 句级精排；无后继时退到同主题文献并标注依据） |
 | 代码复现性 | ✅ | 正文抽 GitHub 仓库 → star/许可证/最后更新/归档状态加权分级 |
 | 流式输出 | ✅ | SSE token 级增量 + 思考过程时间线 + 完成事件带证据与校验 |
 | 问答提速 | ✅ | 一次问答原本串行跑五次模型调用（规划/改写/作答/审稿/反思）。现在：规划与查询改写**并行**、规划与反思**关掉思维链**（结构化任务，思维链只加延迟）、审稿只在深思或有未核实引用时才跑、**证据条数按问题类型自适应**（数值 5 / 概念 7 / 对比 10，邻块 0–3）。对比题 16.5s → **6.6s** |
@@ -128,7 +128,7 @@ app/
 ├── agents/    state 状态 / prompts 提示词 / nodes 七节点 / graph 编排
 ├── pipeline/  ingest 入库管线（解析→去重→切块→向量化→落库）
 ├── tools/     external 外部 API 工具链 / chart CSV→五种图表代码+图注 / topology 架构图四格式
-├── research/  future_work 提炼对撞 / reproducibility 复现性评估
+├── research/  future_work 提炼与后继比对 / reproducibility 复现性评估
 └── api/       routes 全部 HTTP 接口
 web/           Vue3 + Element Plus 单页（CDN，无构建链）
 data/          pdf 测试集 / uploads 上传 / pages 页图 / chroma 向量 / sciagent.db
@@ -179,7 +179,7 @@ tests/         qa_suite 回归台 / qa_report 报告 / browser_cdp 浏览器驱�
 | POST | `/api/chat/stream` | SSE 流式问答（thinking / token / done 事件；`thinking=true` 时推理片段不逐字推，只报"推理完成（N 字）"） |
 | GET/POST | `/api/tools/*` | 工具健康检查、schema、显式调用、LLM Function Calling 决策 |
 | POST | `/api/tools/csv2chart` | CSV → 柱状/折线/雷达/三线表 × Mermaid / TikZ / Matplotlib / LaTeX / Markdown + Figure Caption |
-| GET | `/api/research/future-work` | Future Work 提炼去重与后续论文对撞 |
+| GET | `/api/research/future-work` | Future Work 提炼去重与后继文献比对 |
 | GET | `/api/research/reproducibility` | 论文开源代码复现性评估 |
 | GET | `/api/documents/trash` · `/api/audit` | 回收站与关键写操作审计 |
 | POST | `/api/documents/{id}/restore` | 从回收站恢复（重新解析源文件） |
