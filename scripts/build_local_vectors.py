@@ -10,7 +10,7 @@
   这个脚本只在建索引时跑一次，用训练环境跑最省事。它只写 SQLite，不依赖 app 包。
 
 用法：
-    ml/.venv/Scripts/python.exe scripts/build_local_vectors.py
+    ml/.venv/Scripts/python.exe scripts/build_local_vectors.py            # 云端打包库 deploy/data/
     # 想换模型：AB_MODEL_DIR=... 同 ab_embed.py
 """
 from __future__ import annotations
@@ -93,4 +93,9 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    # 可选参数：目标库。默认写云端打包库 deploy/data/sciagent.db；
+    # 本机实例读的是 data/sciagent.db，两个库各有各的 embedding_local。
+    if len(sys.argv) > 1:
+        DB = Path(sys.argv[1]).resolve()
+        print(f"目标库 {DB}", flush=True)
     main()
